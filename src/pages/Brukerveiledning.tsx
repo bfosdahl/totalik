@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { t } from "@/i18n/t";
 import {
   Shield, 
   Target, 
@@ -35,10 +36,10 @@ const Brukerveiledning = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Brukerveiledning</h1>
+            <h1 className="text-3xl font-bold">{t("auto.brukerveiledning")}</h1>
           </div>
           <p className="text-muted-foreground text-lg">
-            Lær hvordan du bruker systemet og de ulike modulene
+            {t("auto.laer_hvordan_du_bruker_systemet_og_de_ul")}
           </p>
         </div>
 
@@ -46,19 +47,19 @@ const Brukerveiledning = () => {
           <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto p-2 bg-muted/50">
             <TabsTrigger value="ik-hms" className="flex items-center gap-2 py-3">
               <Shield className="h-4 w-4" />
-              <span className="hidden sm:inline">IK/HMS</span>
+              <span className="hidden sm:inline">{t("auto.ik_hms")}</span>
             </TabsTrigger>
             <TabsTrigger value="ik-mat" className="flex items-center gap-2 py-3">
               <ChefHat className="h-4 w-4" />
-              <span className="hidden sm:inline">IK/MAT</span>
+              <span className="hidden sm:inline">{t("auto.ik_mat")}</span>
             </TabsTrigger>
             <TabsTrigger value="ks-bygg" className="flex items-center gap-2 py-3">
               <HardHat className="h-4 w-4" />
-              <span className="hidden sm:inline">KS Bygg</span>
+              <span className="hidden sm:inline">{t("auto.ks_bygg")}</span>
             </TabsTrigger>
             <TabsTrigger value="generelt" className="flex items-center gap-2 py-3">
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Generelt</span>
+              <span className="hidden sm:inline">{t("auto.generelt")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -71,9 +72,9 @@ const Brukerveiledning = () => {
                     <Shield className="h-6 w-6 text-emerald-500" />
                   </div>
                   <div>
-                    <CardTitle>IK/HMS - Internkontroll for Helse, Miljø og Sikkerhet</CardTitle>
+                    <CardTitle>{t("auto.ik_hms_internkontroll_for_helse_miljoe_o")}</CardTitle>
                     <CardDescription>
-                      Komplett system for å oppfylle kravene i Internkontrollforskriften
+                      {t("auto.komplett_system_for_aa_oppfylle_kravene_")}
                     </CardDescription>
                   </div>
                 </div>
@@ -83,10 +84,9 @@ const Brukerveiledning = () => {
                   <div className="flex gap-3">
                     <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-medium text-blue-900 dark:text-blue-100">Hva er IK/HMS?</p>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">{t("auto.hva_er_ik_hms")}</p>
                       <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                        Internkontrollforskriften pålegger alle norske virksomheter å jobbe systematisk med helse, miljø og sikkerhet. 
-                        Dette systemet hjelper deg å dokumentere og følge opp dette arbeidet på en enkel måte.
+                        {t("auto.internkontrollforskriften_paalegger_alle")}
                       </p>
                     </div>
                   </div>
@@ -104,23 +104,22 @@ const Brukerveiledning = () => {
                         <ClipboardCheck className="h-5 w-5 text-emerald-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Oppsett</p>
-                        <p className="text-sm text-muted-foreground font-normal">Kom i gang med HMS-arbeidet</p>
+                        <p className="font-semibold">{t("auto.oppsett")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.kom_i_gang_med_hms_arbeidet")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Oppsett-siden er startpunktet for å bygge opp din HMS-dokumentasjon. Her fyller du ut grunnleggende informasjon 
-                        om bedriften og setter opp strukturen for HMS-arbeidet.
+                        {t("auto.oppsett_siden_er_startpunktet_for_aa_byg")}
                       </p>
                       
                       <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                         <div className="flex gap-3">
                           <Sparkles className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-amber-900 dark:text-amber-100">Tips: Bruk Oppsett-hjelperen</p>
+                            <p className="font-medium text-amber-900 dark:text-amber-100">{t("auto.tips_bruk_oppsett_hjelperen")}</p>
                             <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
                               Klikk på "Oppsett-hjelperen" knappen øverst på siden for å få AI-assistert hjelp til å sette opp 
                               HMS-systemet basert på din bransje og bedriftsstørrelse.
@@ -130,48 +129,48 @@ const Brukerveiledning = () => {
                       </div>
 
                       <div className="space-y-3">
-                        <p className="font-medium">Fanene i Oppsett:</p>
+                        <p className="font-medium">{t("auto.fanene_i_oppsett")}</p>
                         <div className="grid gap-3">
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Målsetting</p>
-                              <p className="text-sm text-muted-foreground">Definer HMS-målene for bedriften. Velg fra forhåndsdefinerte mål eller legg til egne.</p>
+                              <p className="font-medium">{t("auto.maalsetting")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.definer_hms_maalene_for_bedriften_velg_f")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Organisering</p>
-                              <p className="text-sm text-muted-foreground">Sett opp organisasjonskartet med roller og ansvar for HMS-arbeidet.</p>
+                              <p className="font-medium">{t("auto.organisering")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.sett_opp_organisasjonskartet_med_roller_")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Risikovurdering</p>
-                              <p className="text-sm text-muted-foreground">Identifiser farekilder og vurder risiko ved hjelp av 5x5-matrisen.</p>
+                              <p className="font-medium">{t("auto.risikovurdering")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.identifiser_farekilder_og_vurder_risiko_")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Handlingsplan</p>
-                              <p className="text-sm text-muted-foreground">Lag tiltak for å redusere risiko, med ansvarlige og frister.</p>
+                              <p className="font-medium">{t("auto.handlingsplan")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.lag_tiltak_for_aa_redusere_risiko_med_an")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Rutiner</p>
-                              <p className="text-sm text-muted-foreground">Dokumenter HMS-rutiner for ulike arbeidsoppgaver og situasjoner.</p>
+                              <p className="font-medium">{t("auto.rutiner")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.dokumenter_hms_rutiner_for_ulike_arbeids")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Håndbok</p>
-                              <p className="text-sm text-muted-foreground">Generer en komplett HMS-håndbok som PDF basert på informasjonen du har lagt inn.</p>
+                              <p className="font-medium">{t("auto.haandbok")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.generer_en_komplett_hms_haandbok_som_pdf")}</p>
                             </div>
                           </div>
                         </div>
@@ -188,25 +187,24 @@ const Brukerveiledning = () => {
                         <Target className="h-5 w-5 text-yellow-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Målsetting</p>
-                        <p className="text-sm text-muted-foreground font-normal">Sett HMS-mål for bedriften</p>
+                        <p className="font-semibold">{t("auto.maalsetting")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.sett_hms_maal_for_bedriften")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Her definerer du bedriftens HMS-mål. Målene bør være konkrete og målbare, slik at du kan følge opp 
-                        om de nås.
+                        {t("auto.her_definerer_du_bedriftens_hms_maal_maa")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Slik bruker du målsetting-siden:</p>
+                        <p className="font-medium">{t("auto.slik_bruker_du_maalsetting_siden")}</p>
                         <ol className="list-decimal list-inside space-y-2 text-sm">
-                          <li>Gjennomgå de forhåndsdefinerte målene og velg hvilke som passer for din bedrift</li>
+                          <li>{t("auto.gjennomgaa_de_forhaandsdefinerte_maalene")}</li>
                           <li>Legg til egne mål ved å klikke "Legg til mål"</li>
-                          <li>Prioriter målene etter viktighet</li>
-                          <li>Målene blir automatisk inkludert i HMS-håndboken</li>
+                          <li>{t("auto.prioriter_maalene_etter_viktighet")}</li>
+                          <li>{t("auto.maalene_blir_automatisk_inkludert_i_hms_")}</li>
                         </ol>
                       </div>
 
@@ -214,11 +212,11 @@ const Brukerveiledning = () => {
                         <div className="flex gap-3">
                           <Lightbulb className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-green-900 dark:text-green-100">Eksempler på gode mål</p>
+                            <p className="font-medium text-green-900 dark:text-green-100">{t("auto.eksempler_paa_gode_maal")}</p>
                             <ul className="text-sm text-green-800 dark:text-green-200 mt-1 space-y-1">
-                              <li>• Null arbeidsulykker med fravær</li>
-                              <li>• Redusere sykefravær med 10% innen året</li>
-                              <li>• Gjennomføre vernerunde hver måned</li>
+                              <li>{t("auto.null_arbeidsulykker_med_fravaer")}</li>
+                              <li>{t("auto.redusere_sykefravaer_med_10_innen_aaret")}</li>
+                              <li>{t("auto.gjennomfoere_vernerunde_hver_maaned")}</li>
                             </ul>
                           </div>
                         </div>
@@ -235,40 +233,39 @@ const Brukerveiledning = () => {
                         <Building2 className="h-5 w-5 text-sky-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Organisering</p>
-                        <p className="text-sm text-muted-foreground font-normal">Roller og ansvar i HMS-arbeidet</p>
+                        <p className="font-semibold">{t("auto.organisering")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.roller_og_ansvar_i_hms_arbeidet")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Organiseringssiden dokumenterer hvem som har ansvar for ulike deler av HMS-arbeidet. 
-                        Dette er et krav i Internkontrollforskriften.
+                        {t("auto.organiseringssiden_dokumenterer_hvem_som")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Viktige roller:</p>
+                        <p className="font-medium">{t("auto.viktige_roller")}</p>
                         <div className="grid gap-3">
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                            <Badge variant="outline" className="shrink-0">Påkrevd</Badge>
+                            <Badge variant="outline" className="shrink-0">{t("auto.paakrevd")}</Badge>
                             <div>
-                              <p className="font-medium">Daglig leder</p>
-                              <p className="text-sm text-muted-foreground">Har det overordnede ansvaret for HMS-arbeidet.</p>
+                              <p className="font-medium">{t("auto.daglig_leder")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.har_det_overordnede_ansvaret_for_hms_arb")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                            <Badge variant="outline" className="shrink-0">Anbefalt</Badge>
+                            <Badge variant="outline" className="shrink-0">{t("auto.anbefalt")}</Badge>
                             <div>
-                              <p className="font-medium">HMS-ansvarlig</p>
-                              <p className="text-sm text-muted-foreground">Koordinerer det daglige HMS-arbeidet.</p>
+                              <p className="font-medium">{t("auto.hms_ansvarlig")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.koordinerer_det_daglige_hms_arbeidet")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                            <Badge variant="outline" className="shrink-0">Ved 5+ ansatte</Badge>
+                            <Badge variant="outline" className="shrink-0">{t("auto.ved_5_ansatte")}</Badge>
                             <div>
-                              <p className="font-medium">Verneombud</p>
-                              <p className="text-sm text-muted-foreground">Ivaretar arbeidstakernes interesser i HMS-spørsmål.</p>
+                              <p className="font-medium">{t("auto.verneombud")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.ivaretar_arbeidstakernes_interesser_i_hm")}</p>
                             </div>
                           </div>
                         </div>
@@ -278,10 +275,9 @@ const Brukerveiledning = () => {
                         <div className="flex gap-3">
                           <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-blue-900 dark:text-blue-100">Unntak fra verneombudskravet</p>
+                            <p className="font-medium text-blue-900 dark:text-blue-100">{t("auto.unntak_fra_verneombudskravet")}</p>
                             <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                              Bedrifter med færre enn 5 ansatte kan avtale skriftlig med de ansatte at de ikke skal ha verneombud. 
-                              Denne avtalen kan signeres digitalt i systemet.
+                              {t("auto.bedrifter_med_faerre_enn_5_ansatte_kan_a")}
                             </p>
                           </div>
                         </div>
@@ -298,41 +294,40 @@ const Brukerveiledning = () => {
                         <AlertTriangle className="h-5 w-5 text-red-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Risikovurdering</p>
-                        <p className="text-sm text-muted-foreground font-normal">Identifiser og vurder farer</p>
+                        <p className="font-semibold">{t("auto.risikovurdering")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.identifiser_og_vurder_farer")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Risikovurdering er kjernen i HMS-arbeidet. Her identifiserer du farekilder, 
-                        vurderer sannsynlighet og konsekvens, og planlegger tiltak.
+                        {t("auto.risikovurdering_er_kjernen_i_hms_arbeide")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Slik gjør du en risikovurdering:</p>
+                        <p className="font-medium">{t("auto.slik_gjoer_du_en_risikovurdering")}</p>
                         <ol className="list-decimal list-inside space-y-2 text-sm">
-                          <li><strong>Identifiser farekilde</strong> - Hva kan forårsake skade? (f.eks. "Arbeid i høyden")</li>
-                          <li><strong>Beskriv uønsket hendelse</strong> - Hva kan skje? (f.eks. "Fall fra stige")</li>
-                          <li><strong>Vurder sannsynlighet</strong> - Hvor ofte kan dette skje? (1-5)</li>
-                          <li><strong>Vurder konsekvens</strong> - Hvor alvorlig blir skaden? (1-5)</li>
-                          <li><strong>Beregn risiko</strong> - Systemet beregner risikonivå automatisk</li>
-                          <li><strong>Planlegg tiltak</strong> - Hva kan gjøres for å redusere risikoen?</li>
+                          <li><strong>{t("auto.identifiser_farekilde")}</strong> - Hva kan forårsake skade? (f.eks. "Arbeid i høyden")</li>
+                          <li><strong>{t("auto.beskriv_uoensket_hendelse")}</strong> - Hva kan skje? (f.eks. "Fall fra stige")</li>
+                          <li><strong>{t("auto.vurder_sannsynlighet")}</strong> - Hvor ofte kan dette skje? (1-5)</li>
+                          <li><strong>{t("auto.vurder_konsekvens")}</strong> - Hvor alvorlig blir skaden? (1-5)</li>
+                          <li><strong>{t("auto.beregn_risiko")}</strong> {t("auto.systemet_beregner_risikonivaa_automatisk")}</li>
+                          <li><strong>{t("auto.planlegg_tiltak")}</strong> {t("auto.hva_kan_gjoeres_for_aa_redusere_risikoen")}</li>
                         </ol>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2 text-center text-sm">
                         <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                          <p className="font-bold text-green-700 dark:text-green-300">Grønn</p>
+                          <p className="font-bold text-green-700 dark:text-green-300">{t("auto.groenn")}</p>
                           <p className="text-green-600 dark:text-green-400">Lav risiko (1-4)</p>
                         </div>
                         <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                          <p className="font-bold text-yellow-700 dark:text-yellow-300">Gul</p>
+                          <p className="font-bold text-yellow-700 dark:text-yellow-300">{t("auto.gul")}</p>
                           <p className="text-yellow-600 dark:text-yellow-400">Middels risiko (5-12)</p>
                         </div>
                         <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                          <p className="font-bold text-red-700 dark:text-red-300">Rød</p>
+                          <p className="font-bold text-red-700 dark:text-red-300">{t("auto.roed")}</p>
                           <p className="text-red-600 dark:text-red-400">Høy risiko (13-25)</p>
                         </div>
                       </div>
@@ -341,10 +336,9 @@ const Brukerveiledning = () => {
                         <div className="flex gap-3">
                           <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-red-900 dark:text-red-100">Viktig om røde risikoer</p>
+                            <p className="font-medium text-red-900 dark:text-red-100">{t("auto.viktig_om_roede_risikoer")}</p>
                             <p className="text-sm text-red-800 dark:text-red-200 mt-1">
-                              Røde risikoer krever obligatorisk revurdering etter at tiltak er iverksatt. 
-                              Du må dokumentere at risikoen er redusert før den kan lukkes.
+                              {t("auto.roede_risikoer_krever_obligatorisk_revur")}
                             </p>
                           </div>
                         </div>
@@ -361,39 +355,39 @@ const Brukerveiledning = () => {
                         <Users className="h-5 w-5 text-purple-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Ansatte</p>
-                        <p className="text-sm text-muted-foreground font-normal">Administrer ansatte og kompetanse</p>
+                        <p className="font-semibold">{t("auto.ansatte")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.administrer_ansatte_og_kompetanse")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Ansattelisten gir oversikt over alle ansatte med deres kurs, HMS-kort og dokumenter.
+                        {t("auto.ansattelisten_gir_oversikt_over_alle_ans")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Funksjoner:</p>
+                        <p className="font-medium">{t("auto.funksjoner")}</p>
                         <div className="grid gap-3">
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Kursregister</p>
-                              <p className="text-sm text-muted-foreground">Hold oversikt over kurs og sertifikater med utløpsdato. Systemet varsler automatisk før kurs utløper.</p>
+                              <p className="font-medium">{t("auto.kursregister")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.hold_oversikt_over_kurs_og_sertifikater_")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">HMS-kort</p>
-                              <p className="text-sm text-muted-foreground">Registrer HMS-kort med bilde og utløpsdato.</p>
+                              <p className="font-medium">{t("auto.hms_kort")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.registrer_hms_kort_med_bilde_og_utloepsd")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Dokumenter</p>
-                              <p className="text-sm text-muted-foreground">Last opp arbeidskontrakter, attester og andre dokumenter per ansatt.</p>
+                              <p className="font-medium">{t("auto.dokumenter")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.last_opp_arbeidskontrakter_attester_og_a")}</p>
                             </div>
                           </div>
                         </div>
@@ -410,45 +404,45 @@ const Brukerveiledning = () => {
                         <AlertTriangle className="h-5 w-5 text-orange-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Avvik</p>
-                        <p className="text-sm text-muted-foreground font-normal">Rapporter og følg opp avvik</p>
+                        <p className="font-semibold">{t("auto.avvik")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.rapporter_og_foelg_opp_avvik")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Avvikssystemet brukes til å registrere og følge opp hendelser, nestenulykker og brudd på rutiner.
+                        {t("auto.avvikssystemet_brukes_til_aa_registrere_")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">To typer rapporter:</p>
+                        <p className="font-medium">{t("auto.to_typer_rapporter")}</p>
                         <div className="grid gap-3">
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                            <Badge className="bg-blue-500">Avvik</Badge>
+                            <Badge className="bg-blue-500">{t("auto.avvik")}</Badge>
                             <div>
-                              <p className="font-medium">Kvalitetsavvik</p>
-                              <p className="text-sm text-muted-foreground">Brudd på rutiner, mangler i dokumentasjon, etc.</p>
+                              <p className="font-medium">{t("auto.kvalitetsavvik")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.brudd_paa_rutiner_mangler_i_dokumentasjo")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <Badge className="bg-red-500">RUH</Badge>
                             <div>
-                              <p className="font-medium">Rapport Uønsket Hendelse</p>
-                              <p className="text-sm text-muted-foreground">Ulykker, nestenulykker, skader. Inkluderer ekstra felt for alvorlighetsgrad og årsaksanalyse.</p>
+                              <p className="font-medium">{t("auto.rapport_uoensket_hendelse")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.ulykker_nestenulykker_skader_inkluderer_")}</p>
                             </div>
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-3">
-                        <p className="font-medium">Avviksprosessen:</p>
+                        <p className="font-medium">{t("auto.avviksprosessen")}</p>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline">Ny</Badge>
+                          <Badge variant="outline">{t("auto.ny")}</Badge>
                           <ArrowRight className="h-4 w-4" />
-                          <Badge variant="outline" className="bg-yellow-100">Under behandling</Badge>
+                          <Badge variant="outline" className="bg-yellow-100">{t("auto.under_behandling")}</Badge>
                           <ArrowRight className="h-4 w-4" />
-                          <Badge variant="outline" className="bg-green-100">Lukket</Badge>
+                          <Badge variant="outline" className="bg-green-100">{t("auto.lukket")}</Badge>
                         </div>
                       </div>
                     </div>
@@ -463,46 +457,46 @@ const Brukerveiledning = () => {
                         <ClipboardCheck className="h-5 w-5 text-indigo-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">HMS-aktiviteter</p>
-                        <p className="text-sm text-muted-foreground font-normal">Planlegg og gjennomfør HMS-aktiviteter</p>
+                        <p className="font-semibold">{t("auto.hms_aktiviteter_2")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.planlegg_og_gjennomfoer_hms_aktiviteter")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Her planlegger og dokumenterer du løpende HMS-aktiviteter som vernerunder, revisjoner og kontroller.
+                        {t("auto.her_planlegger_og_dokumenterer_du_loepen")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Tilgjengelige skjemaer:</p>
+                        <p className="font-medium">{t("auto.tilgjengelige_skjemaer")}</p>
                         <div className="grid gap-3">
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Vernerunde</p>
-                              <p className="text-sm text-muted-foreground">Systematisk gjennomgang av arbeidsplassen med sjekkliste.</p>
+                              <p className="font-medium">{t("auto.vernerunde")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.systematisk_gjennomgang_av_arbeidsplasse")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Årlig HMS-revisjon</p>
-                              <p className="text-sm text-muted-foreground">Gjennomgang av hele HMS-systemet årlig.</p>
+                              <p className="font-medium">{t("auto.aarlig_hms_revisjon")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.gjennomgang_av_hele_hms_systemet_aarlig")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Elektrisk kontroll</p>
-                              <p className="text-sm text-muted-foreground">Dokumentasjon av elektrisk anlegg og utstyr.</p>
+                              <p className="font-medium">{t("auto.elektrisk_kontroll")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.dokumentasjon_av_elektrisk_anlegg_og_uts")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Lover og forskrifter</p>
-                              <p className="text-sm text-muted-foreground">Finn hvilke lover og forskrifter som gjelder for din bedrift.</p>
+                              <p className="font-medium">{t("auto.lover_og_forskrifter")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.finn_hvilke_lover_og_forskrifter_som_gje")}</p>
                             </div>
                           </div>
                         </div>
@@ -519,22 +513,22 @@ const Brukerveiledning = () => {
                         <FileText className="h-5 w-5 text-teal-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Stoffkartotek</p>
-                        <p className="text-sm text-muted-foreground font-normal">Oversikt over kjemikalier</p>
+                        <p className="font-semibold">{t("auto.stoffkartotek")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.oversikt_over_kjemikalier")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Stoffkartoteket gir oversikt over alle kjemikalier og farlige stoffer som brukes i bedriften.
+                        {t("auto.stoffkartoteket_gir_oversikt_over_alle_k")}
                       </p>
                       
                       <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                         <div className="flex gap-3">
                           <Sparkles className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-amber-900 dark:text-amber-100">Automatisk utfylling</p>
+                            <p className="font-medium text-amber-900 dark:text-amber-100">{t("auto.automatisk_utfylling")}</p>
                             <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
                               Last opp et sikkerhetsdatablad (SDS) som PDF, og systemet fyller automatisk ut 
                               produktnavn, produsent og fareklasser ved hjelp av AI.
@@ -544,13 +538,13 @@ const Brukerveiledning = () => {
                       </div>
 
                       <div className="space-y-3">
-                        <p className="font-medium">For hvert kjemikalie registreres:</p>
+                        <p className="font-medium">{t("auto.for_hvert_kjemikalie_registreres")}</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                          <li>Produktnavn og produsent</li>
-                          <li>Fareklasser og faresymboler</li>
-                          <li>Bruksområde</li>
+                          <li>{t("auto.produktnavn_og_produsent")}</li>
+                          <li>{t("auto.fareklasser_og_faresymboler")}</li>
+                          <li>{t("auto.bruksomraade")}</li>
                           <li>Sikkerhetsdatablad (PDF)</li>
-                          <li>Notater om bruk og håndtering</li>
+                          <li>{t("auto.notater_om_bruk_og_haandtering")}</li>
                         </ul>
                       </div>
                     </div>
@@ -565,19 +559,19 @@ const Brukerveiledning = () => {
                         <MessageSquare className="h-5 w-5 text-violet-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">HMS-assistent</p>
-                        <p className="text-sm text-muted-foreground font-normal">AI-drevet hjelp med HMS</p>
+                        <p className="font-semibold">{t("auto.hms_assistent")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.ai_drevet_hjelp_med_hms")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        HMS-assistenten er en AI-chatbot som kan svare på spørsmål om HMS og hjelpe deg med dokumentasjon.
+                        {t("auto.hms_assistenten_er_en_ai_chatbot_som_kan")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Eksempler på hva du kan spørre om:</p>
+                        <p className="font-medium">{t("auto.eksempler_paa_hva_du_kan_spoerre_om")}</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                           <li>"Hva er kravene til verneombud?"</li>
                           <li>"Hvordan gjennomfører jeg en risikovurdering?"</li>
@@ -597,46 +591,46 @@ const Brukerveiledning = () => {
                         <Clock className="h-5 w-5 text-rose-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">Timeregistrering</p>
-                        <p className="text-sm text-muted-foreground font-normal">Registrer arbeidstid</p>
+                        <p className="font-semibold">{t("auto.timeregistrering")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.registrer_arbeidstid")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        Timeregistreringssystemet lar ansatte registrere arbeidstid enkelt og oversiktlig.
+                        {t("auto.timeregistreringssystemet_lar_ansatte_re")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Funksjoner:</p>
+                        <p className="font-medium">{t("auto.funksjoner")}</p>
                         <div className="grid gap-3">
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Manuell registrering</p>
-                              <p className="text-sm text-muted-foreground">Legg inn timer med start/slutt-tid og beskrivelse.</p>
+                              <p className="font-medium">{t("auto.manuell_registrering")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.legg_inn_timer_med_start_slutt_tid_og_be")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Stemplingsur</p>
-                              <p className="text-sm text-muted-foreground">Stemple inn/ut med ett klikk eller QR-kode.</p>
+                              <p className="font-medium">{t("auto.stemplingsur")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.stemple_inn_ut_med_ett_klikk_eller_qr_ko")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Ukeoversikt</p>
-                              <p className="text-sm text-muted-foreground">Se timer per dag og totalt for uken.</p>
+                              <p className="font-medium">{t("auto.ukeoversikt")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.se_timer_per_dag_og_totalt_for_uken")}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                             <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                             <div>
-                              <p className="font-medium">Eksport</p>
-                              <p className="text-sm text-muted-foreground">Eksporter timelister til Excel.</p>
+                              <p className="font-medium">{t("auto.eksport")}</p>
+                              <p className="text-sm text-muted-foreground">{t("auto.eksporter_timelister_til_excel")}</p>
                             </div>
                           </div>
                         </div>
@@ -653,27 +647,26 @@ const Brukerveiledning = () => {
                         <BookOpen className="h-5 w-5 text-cyan-500" />
                       </div>
                       <div className="text-left">
-                        <p className="font-semibold">HMS-håndbok</p>
-                        <p className="text-sm text-muted-foreground font-normal">Generer komplett dokumentasjon</p>
+                        <p className="font-semibold">{t("auto.hms_haandbok")}</p>
+                        <p className="text-sm text-muted-foreground font-normal">{t("auto.generer_komplett_dokumentasjon")}</p>
                       </div>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 pb-6">
                     <div className="space-y-4">
                       <p>
-                        HMS-håndboken samler all informasjon du har lagt inn i systemet til ett komplett dokument 
-                        som kan lastes ned som PDF.
+                        {t("auto.hms_haandboken_samler_all_informasjon_du")}
                       </p>
                       
                       <div className="space-y-3">
-                        <p className="font-medium">Håndboken inneholder:</p>
+                        <p className="font-medium">{t("auto.haandboken_inneholder")}</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                          <li>Bedriftsinformasjon og logo</li>
-                          <li>HMS-mål og policy</li>
-                          <li>Organisasjonskart med roller og ansvar</li>
-                          <li>Risikovurderinger og handlingsplaner</li>
-                          <li>Rutiner og prosedyrer</li>
-                          <li>Lover og forskrifter som gjelder</li>
+                          <li>{t("auto.bedriftsinformasjon_og_logo")}</li>
+                          <li>{t("auto.hms_maal_og_policy")}</li>
+                          <li>{t("auto.organisasjonskart_med_roller_og_ansvar")}</li>
+                          <li>{t("auto.risikovurderinger_og_handlingsplaner")}</li>
+                          <li>{t("auto.rutiner_og_prosedyrer_2")}</li>
+                          <li>{t("auto.lover_og_forskrifter_som_gjelder")}</li>
                         </ul>
                       </div>
 
@@ -681,10 +674,9 @@ const Brukerveiledning = () => {
                         <div className="flex gap-3">
                           <Lightbulb className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-green-900 dark:text-green-100">Tips</p>
+                            <p className="font-medium text-green-900 dark:text-green-100">{t("auto.tips_3")}</p>
                             <p className="text-sm text-green-800 dark:text-green-200 mt-1">
-                              Håndboken oppdateres automatisk når du gjør endringer i systemet. 
-                              Du kan når som helst laste ned en oppdatert versjon.
+                              {t("auto.haandboken_oppdateres_automatisk_naar_du")}
                             </p>
                           </div>
                         </div>
@@ -705,9 +697,9 @@ const Brukerveiledning = () => {
                     <ChefHat className="h-6 w-6 text-orange-500" />
                   </div>
                   <div>
-                    <CardTitle>IK/MAT - Internkontroll for Mattrygghet</CardTitle>
+                    <CardTitle>{t("auto.ik_mat_internkontroll_for_mattrygghet")}</CardTitle>
                     <CardDescription>
-                      Dokumentasjon kommer snart...
+                      {t("auto.dokumentasjon_kommer_snart")}
                     </CardDescription>
                   </div>
                 </div>
@@ -715,7 +707,7 @@ const Brukerveiledning = () => {
               <CardContent>
                 <div className="text-center py-12 text-muted-foreground">
                   <ChefHat className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>Brukerveiledning for IK/MAT-modulen er under utvikling.</p>
+                  <p>{t("auto.brukerveiledning_for_ik_mat_modulen_er_u")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -730,9 +722,9 @@ const Brukerveiledning = () => {
                     <HardHat className="h-6 w-6 text-blue-500" />
                   </div>
                   <div>
-                    <CardTitle>KS Bygg - Kvalitetssikring for Byggeprosjekter</CardTitle>
+                    <CardTitle>{t("auto.ks_bygg_kvalitetssikring_for_byggeprosje")}</CardTitle>
                     <CardDescription>
-                      Dokumentasjon kommer snart...
+                      {t("auto.dokumentasjon_kommer_snart")}
                     </CardDescription>
                   </div>
                 </div>
@@ -740,7 +732,7 @@ const Brukerveiledning = () => {
               <CardContent>
                 <div className="text-center py-12 text-muted-foreground">
                   <HardHat className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>Brukerveiledning for KS Bygg-modulen er under utvikling.</p>
+                  <p>{t("auto.brukerveiledning_for_ks_bygg_modulen_er_")}</p>
                 </div>
               </CardContent>
             </Card>
@@ -755,9 +747,9 @@ const Brukerveiledning = () => {
                     <Settings className="h-6 w-6 text-gray-500" />
                   </div>
                   <div>
-                    <CardTitle>Generell bruk</CardTitle>
+                    <CardTitle>{t("auto.generell_bruk")}</CardTitle>
                     <CardDescription>
-                      Dokumentasjon kommer snart...
+                      {t("auto.dokumentasjon_kommer_snart")}
                     </CardDescription>
                   </div>
                 </div>
@@ -765,7 +757,7 @@ const Brukerveiledning = () => {
               <CardContent>
                 <div className="text-center py-12 text-muted-foreground">
                   <Settings className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>Generell brukerveiledning er under utvikling.</p>
+                  <p>{t("auto.generell_brukerveiledning_er_under_utvik")}</p>
                 </div>
               </CardContent>
             </Card>

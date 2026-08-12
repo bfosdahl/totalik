@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
 import { getProffConfig, ProffConfig } from "./proffConfig";
 import { useSpeech } from "@/hooks/useSpeech";
+import { t } from "@/i18n/t";
 
 interface Message {
   id: string;
@@ -297,7 +298,7 @@ export const MascotChatHelper = () => {
               className="relative group cursor-grab active:cursor-grabbing"
             >
               <div className={`absolute -top-2 -right-2 ${proffConfig.id === 'mat' ? 'bg-orange-500' : 'bg-primary'} text-white text-xs px-2 py-1 rounded-full animate-pulse pointer-events-none`}>
-                Tips!
+                {t("auto.tips")}
               </div>
               <img
                 src={proffConfig.mascotImage}
@@ -402,7 +403,7 @@ export const MascotChatHelper = () => {
               <div className="flex items-start gap-2">
                 <Lightbulb className={`h-5 w-5 ${tipsIconClass} shrink-0 mt-0.5`} />
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground mb-1">Dagens tips:</p>
+                  <p className="text-xs text-muted-foreground mb-1">{t("auto.dagens_tips")}</p>
                   <p className="text-sm">{proffConfig.tips[currentTip]}</p>
                 </div>
                 <Button

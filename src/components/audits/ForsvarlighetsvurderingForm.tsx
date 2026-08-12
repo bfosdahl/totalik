@@ -18,6 +18,7 @@ import SignatureCanvas from "react-signature-canvas";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 import {
   Plus,
   FileText,
@@ -136,7 +137,7 @@ export default function ForsvarlighetsvurderingForm() {
 
   const handleCreateNew = async () => {
     if (!formData.title.trim() || !formData.employer_name.trim()) {
-      toast.error("Fyll inn tittel og arbeidsgiver");
+      toast.error(t("auto.fyll_inn_tittel_og_arbeidsgiver"));
       return;
     }
 
@@ -227,10 +228,9 @@ export default function ForsvarlighetsvurderingForm() {
               <Shield className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold mb-1">Forsvarlighetsvurdering</h2>
+              <h2 className="text-lg font-semibold mb-1">{t("auto.forsvarlighetsvurdering")}</h2>
               <p className="text-muted-foreground text-sm">
-                Dokumenter vurderinger for kortere HMS-opplæring, arbeidstidsordninger eller andre forhold 
-                som krever en felles vurdering mellom arbeidsgiver, verneombud og tillitsvalgte.
+                {t("auto.dokumenter_vurderinger_for_kortere_hms_o")}
               </p>
             </div>
           </div>
@@ -251,11 +251,11 @@ export default function ForsvarlighetsvurderingForm() {
         <div className="flex gap-3">
           <AlertCircle className="w-5 h-5 text-info shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-medium text-info mb-1">Når skal dette brukes?</p>
+            <p className="font-medium text-info mb-1">{t("auto.naar_skal_dette_brukes")}</p>
             <ul className="text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Før avtale om kortere HMS-opplæring enn 40 timer for verneombud</li>
-              <li>Før nye arbeidstidsordninger/turnus iverksettes</li>
-              <li>Ved endringer i systemer som påvirker helse og sikkerhet</li>
+              <li>{t("auto.foer_avtale_om_kortere_hms_opplaering_en")}</li>
+              <li>{t("auto.foer_nye_arbeidstidsordninger_turnus_ive")}</li>
+              <li>{t("auto.ved_endringer_i_systemer_som_paavirker_h")}</li>
             </ul>
           </div>
         </div>
@@ -268,12 +268,12 @@ export default function ForsvarlighetsvurderingForm() {
         transition={{ delay: 0.2 }}
         className="space-y-4"
       >
-        <h3 className="text-lg font-semibold">Lagrede vurderinger</h3>
+        <h3 className="text-lg font-semibold">{t("auto.lagrede_vurderinger")}</h3>
         
         {vurderinger.length === 0 ? (
           <Card className="p-8 text-center">
             <ClipboardCheck className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">Ingen forsvarlighetsvurderinger registrert ennå.</p>
+            <p className="text-muted-foreground">{t("auto.ingen_forsvarlighetsvurderinger_registre")}</p>
             <Button variant="outline" className="mt-4" onClick={() => setShowNewDialog(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Opprett første vurdering
@@ -341,7 +341,7 @@ export default function ForsvarlighetsvurderingForm() {
               Ny forsvarlighetsvurdering
             </DialogTitle>
             <DialogDescription>
-              Fyll ut skjemaet for å dokumentere en forsvarlighetsvurdering
+              {t("auto.fyll_ut_skjemaet_for_aa_dokumentere_en_f")}
             </DialogDescription>
           </DialogHeader>
 
@@ -356,7 +356,7 @@ export default function ForsvarlighetsvurderingForm() {
                 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label>Type vurdering</Label>
+                    <Label>{t("auto.type_vurdering")}</Label>
                     <Select
                       value={formData.assessment_type}
                       onValueChange={(v) => setFormData({ ...formData, assessment_type: v as typeof formData.assessment_type })}
@@ -365,30 +365,30 @@ export default function ForsvarlighetsvurderingForm() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="kortere_opplaring">Kortere HMS-opplæring for verneombud</SelectItem>
-                        <SelectItem value="arbeidstid">Arbeidstidsordning</SelectItem>
-                        <SelectItem value="annet">Annen forsvarlighetsvurdering</SelectItem>
+                        <SelectItem value="kortere_opplaring">{t("auto.kortere_hms_opplaering_for_verneombud")}</SelectItem>
+                        <SelectItem value="arbeidstid">{t("auto.arbeidstidsordning")}</SelectItem>
+                        <SelectItem value="annet">{t("auto.annen_forsvarlighetsvurdering")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label>Tittel *</Label>
+                    <Label>{t("auto.tittel_2")}</Label>
                     <Input
                       className="mt-1"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="F.eks. Vurdering av kortere opplæring 2025"
+                      placeholder={t("auto.f_eks_vurdering_av_kortere_opplaering_20")}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label>Beskrivelse</Label>
+                  <Label>{t("auto.beskrivelse")}</Label>
                   <Textarea
                     className="mt-1"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Beskriv bakgrunnen for vurderingen..."
+                    placeholder={t("auto.beskriv_bakgrunnen_for_vurderingen")}
                     rows={3}
                   />
                 </div>
@@ -410,7 +410,7 @@ export default function ForsvarlighetsvurderingForm() {
                       className="mt-1"
                       value={formData.employer_name}
                       onChange={(e) => setFormData({ ...formData, employer_name: e.target.value })}
-                      placeholder="Navn på arbeidsgiver/leder"
+                      placeholder={t("auto.navn_paa_arbeidsgiver_leder")}
                     />
                   </div>
                   <div>
@@ -419,36 +419,36 @@ export default function ForsvarlighetsvurderingForm() {
                       className="mt-1"
                       value={formData.employer_title}
                       onChange={(e) => setFormData({ ...formData, employer_title: e.target.value })}
-                      placeholder="F.eks. Daglig leder"
+                      placeholder={t("auto.f_eks_daglig_leder")}
                     />
                   </div>
                   <div>
-                    <Label>Verneombud</Label>
+                    <Label>{t("auto.verneombud")}</Label>
                     <Input
                       className="mt-1"
                       value={formData.verneombud_name}
                       onChange={(e) => setFormData({ ...formData, verneombud_name: e.target.value })}
-                      placeholder="Navn på verneombud"
+                      placeholder={t("auto.navn_paa_verneombud")}
                     />
                   </div>
                   <div>
-                    <Label>Tillitsvalgt</Label>
+                    <Label>{t("auto.tillitsvalgt")}</Label>
                     <Input
                       className="mt-1"
                       value={formData.tillitsvalgt_name}
                       onChange={(e) => setFormData({ ...formData, tillitsvalgt_name: e.target.value })}
-                      placeholder="Navn på tillitsvalgt"
+                      placeholder={t("auto.navn_paa_tillitsvalgt")}
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <Label>Andre deltakere</Label>
+                  <Label>{t("auto.andre_deltakere")}</Label>
                   <Input
                     className="mt-1"
                     value={formData.other_participants}
                     onChange={(e) => setFormData({ ...formData, other_participants: e.target.value })}
-                    placeholder="F.eks. Vara-verneombud, HMS-rådgiver"
+                    placeholder={t("auto.f_eks_vara_verneombud_hms_raadgiver")}
                   />
                 </div>
               </div>
@@ -463,29 +463,29 @@ export default function ForsvarlighetsvurderingForm() {
                 </h3>
 
                 <div>
-                  <Label>Overordnet risikonivå</Label>
+                  <Label>{t("auto.overordnet_risikonivaa")}</Label>
                   <Select
                     value={formData.risk_level}
                     onValueChange={(v) => setFormData({ ...formData, risk_level: v as typeof formData.risk_level })}
                   >
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Velg risikonivå" />
+                      <SelectValue placeholder={t("auto.velg_risikonivaa")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="lav">Lav risiko</SelectItem>
-                      <SelectItem value="moderat">Moderat risiko</SelectItem>
-                      <SelectItem value="hoy">Høy risiko</SelectItem>
+                      <SelectItem value="lav">{t("auto.lav_risiko")}</SelectItem>
+                      <SelectItem value="moderat">{t("auto.moderat_risiko")}</SelectItem>
+                      <SelectItem value="hoy">{t("auto.hoey_risiko")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label>Begrunnelse for risikovurdering</Label>
+                  <Label>{t("auto.begrunnelse_for_risikovurdering")}</Label>
                   <Textarea
                     className="mt-1"
                     value={formData.risk_justification}
                     onChange={(e) => setFormData({ ...formData, risk_justification: e.target.value })}
-                    placeholder="Beskriv hvilke risikofaktorer som er vurdert..."
+                    placeholder={t("auto.beskriv_hvilke_risikofaktorer_som_er_vur")}
                     rows={3}
                   />
                 </div>
@@ -493,7 +493,7 @@ export default function ForsvarlighetsvurderingForm() {
                 {/* Risk factors list */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <Label>Identifiserte risikofaktorer</Label>
+                    <Label>{t("auto.identifiserte_risikofaktorer")}</Label>
                     <Button variant="outline" size="sm" onClick={addRiskFactor}>
                       <Plus className="w-3 h-3 mr-1" />
                       Legg til
@@ -502,7 +502,7 @@ export default function ForsvarlighetsvurderingForm() {
                   {riskFactors.map((rf, idx) => (
                     <div key={rf.id} className="flex gap-2 mb-2">
                       <Input
-                        placeholder="Kategori"
+                        placeholder={t("auto.kategori")}
                         value={rf.category}
                         onChange={(e) => {
                           const updated = [...riskFactors];
@@ -512,7 +512,7 @@ export default function ForsvarlighetsvurderingForm() {
                         className="w-32"
                       />
                       <Input
-                        placeholder="Beskrivelse av risikofaktor"
+                        placeholder={t("auto.beskrivelse_av_risikofaktor")}
                         value={rf.description}
                         onChange={(e) => {
                           const updated = [...riskFactors];
@@ -533,9 +533,9 @@ export default function ForsvarlighetsvurderingForm() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="lav">Lav</SelectItem>
-                          <SelectItem value="moderat">Moderat</SelectItem>
-                          <SelectItem value="hoy">Høy</SelectItem>
+                          <SelectItem value="lav">{t("auto.lav")}</SelectItem>
+                          <SelectItem value="moderat">{t("auto.moderat")}</SelectItem>
+                          <SelectItem value="hoy">{t("auto.hoey")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button
@@ -562,25 +562,25 @@ export default function ForsvarlighetsvurderingForm() {
                   
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <Label>Foreslått opplæringstimer</Label>
+                      <Label>{t("auto.foreslaatt_opplaeringstimer")}</Label>
                       <Input
                         type="number"
                         className="mt-1"
                         value={formData.proposed_training_hours}
                         onChange={(e) => setFormData({ ...formData, proposed_training_hours: e.target.value })}
-                        placeholder="F.eks. 24"
+                        placeholder={t("auto.f_eks_24")}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">Lovens minimum er 40 timer</p>
+                      <p className="text-xs text-muted-foreground mt-1">{t("auto.lovens_minimum_er_40_timer")}</p>
                     </div>
                   </div>
 
                   <div>
-                    <Label>Begrunnelse for kortere opplæring</Label>
+                    <Label>{t("auto.begrunnelse_for_kortere_opplaering")}</Label>
                     <Textarea
                       className="mt-1"
                       value={formData.training_justification}
                       onChange={(e) => setFormData({ ...formData, training_justification: e.target.value })}
-                      placeholder="Begrunn hvorfor kortere opplæring er forsvarlig..."
+                      placeholder={t("auto.begrunn_hvorfor_kortere_opplaering_er_fo")}
                       rows={3}
                     />
                   </div>
@@ -588,7 +588,7 @@ export default function ForsvarlighetsvurderingForm() {
                   {/* Training topics */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <Label>Opplæringsemner som skal dekkes</Label>
+                      <Label>{t("auto.opplaeringsemner_som_skal_dekkes")}</Label>
                       <Button variant="outline" size="sm" onClick={addTrainingTopic}>
                         <Plus className="w-3 h-3 mr-1" />
                         Legg til
@@ -597,7 +597,7 @@ export default function ForsvarlighetsvurderingForm() {
                     {trainingTopics.map((tt, idx) => (
                       <div key={tt.id} className="flex gap-2 mb-2">
                         <Input
-                          placeholder="Emne"
+                          placeholder={t("auto.emne_2")}
                           value={tt.topic}
                           onChange={(e) => {
                             const updated = [...trainingTopics];
@@ -608,7 +608,7 @@ export default function ForsvarlighetsvurderingForm() {
                         />
                         <Input
                           type="number"
-                          placeholder="Timer"
+                          placeholder={t("auto.timer")}
                           value={tt.hours || ""}
                           onChange={(e) => {
                             const updated = [...trainingTopics];
@@ -638,34 +638,34 @@ export default function ForsvarlighetsvurderingForm() {
                   </h3>
                   
                   <div>
-                    <Label>Beskrivelse av arbeidstidsordning</Label>
+                    <Label>{t("auto.beskrivelse_av_arbeidstidsordning")}</Label>
                     <Textarea
                       className="mt-1"
                       value={formData.work_schedule_description}
                       onChange={(e) => setFormData({ ...formData, work_schedule_description: e.target.value })}
-                      placeholder="Beskriv vaktordning, turnus, eller arbeidstidsordning..."
+                      placeholder={t("auto.beskriv_vaktordning_turnus_eller_arbeids")}
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <Label>Vurdering av tretthet og årvåkenhet</Label>
+                    <Label>{t("auto.vurdering_av_tretthet_og_aarvaakenhet")}</Label>
                     <Textarea
                       className="mt-1"
                       value={formData.fatigue_assessment}
                       onChange={(e) => setFormData({ ...formData, fatigue_assessment: e.target.value })}
-                      placeholder="Hvordan påvirker ordningen tretthet og årvåkenhet?"
+                      placeholder={t("auto.hvordan_paavirker_ordningen_tretthet_og_")}
                       rows={2}
                     />
                   </div>
 
                   <div>
-                    <Label>Vurdering av balanse mellom jobb og fritid</Label>
+                    <Label>{t("auto.vurdering_av_balanse_mellom_jobb_og_frit")}</Label>
                     <Textarea
                       className="mt-1"
                       value={formData.work_life_balance_assessment}
                       onChange={(e) => setFormData({ ...formData, work_life_balance_assessment: e.target.value })}
-                      placeholder="Hvordan påvirker ordningen arbeidstakers fritid og familieliv?"
+                      placeholder={t("auto.hvordan_paavirker_ordningen_arbeidstaker")}
                       rows={2}
                     />
                   </div>
@@ -682,7 +682,7 @@ export default function ForsvarlighetsvurderingForm() {
                 </h3>
                 
                 <div>
-                  <Label>Vurderingens konklusjon</Label>
+                  <Label>{t("auto.vurderingens_konklusjon")}</Label>
                   <Select
                     value={formData.conclusion}
                     onValueChange={(v) => setFormData({ ...formData, conclusion: v as typeof formData.conclusion })}
@@ -691,20 +691,20 @@ export default function ForsvarlighetsvurderingForm() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="forsvarlig">Forsvarlig</SelectItem>
-                      <SelectItem value="forsvarlig_med_tiltak">Forsvarlig med tiltak</SelectItem>
-                      <SelectItem value="ikke_forsvarlig">Ikke forsvarlig</SelectItem>
+                      <SelectItem value="forsvarlig">{t("auto.forsvarlig")}</SelectItem>
+                      <SelectItem value="forsvarlig_med_tiltak">{t("auto.forsvarlig_med_tiltak")}</SelectItem>
+                      <SelectItem value="ikke_forsvarlig">{t("auto.ikke_forsvarlig")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label>Begrunnelse for konklusjon</Label>
+                  <Label>{t("auto.begrunnelse_for_konklusjon")}</Label>
                   <Textarea
                     className="mt-1"
                     value={formData.conclusion_justification}
                     onChange={(e) => setFormData({ ...formData, conclusion_justification: e.target.value })}
-                    placeholder="Begrunn konklusjonen..."
+                    placeholder={t("auto.begrunn_konklusjonen")}
                     rows={3}
                   />
                 </div>
@@ -712,7 +712,7 @@ export default function ForsvarlighetsvurderingForm() {
                 {formData.conclusion === "forsvarlig_med_tiltak" && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <Label>Nødvendige tiltak</Label>
+                      <Label>{t("auto.noedvendige_tiltak")}</Label>
                       <Button variant="outline" size="sm" onClick={addRequiredMeasure}>
                         <Plus className="w-3 h-3 mr-1" />
                         Legg til
@@ -721,7 +721,7 @@ export default function ForsvarlighetsvurderingForm() {
                     {requiredMeasures.map((rm, idx) => (
                       <div key={rm.id} className="flex gap-2 mb-2 flex-wrap">
                         <Input
-                          placeholder="Tiltak"
+                          placeholder={t("auto.tiltak")}
                           value={rm.description}
                           onChange={(e) => {
                             const updated = [...requiredMeasures];
@@ -731,7 +731,7 @@ export default function ForsvarlighetsvurderingForm() {
                           className="flex-1 min-w-[200px]"
                         />
                         <Input
-                          placeholder="Ansvarlig"
+                          placeholder={t("auto.ansvarlig_2")}
                           value={rm.responsible}
                           onChange={(e) => {
                             const updated = [...requiredMeasures];
@@ -774,7 +774,7 @@ export default function ForsvarlighetsvurderingForm() {
                 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <Label>Neste gjennomgang</Label>
+                    <Label>{t("auto.neste_gjennomgang")}</Label>
                     <Input
                       type="date"
                       className="mt-1"
@@ -783,19 +783,19 @@ export default function ForsvarlighetsvurderingForm() {
                     />
                   </div>
                   <div>
-                    <Label>Gjennomgangsfrekvens</Label>
+                    <Label>{t("auto.gjennomgangsfrekvens")}</Label>
                     <Select
                       value={formData.review_frequency}
                       onValueChange={(v) => setFormData({ ...formData, review_frequency: v })}
                     >
                       <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Velg frekvens" />
+                        <SelectValue placeholder={t("auto.velg_frekvens")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="arlig">Årlig</SelectItem>
-                        <SelectItem value="halvaarlig">Halvårlig</SelectItem>
-                        <SelectItem value="kvartalsvis">Kvartalsvis</SelectItem>
-                        <SelectItem value="ved_behov">Ved behov</SelectItem>
+                        <SelectItem value="arlig">{t("auto.aarlig")}</SelectItem>
+                        <SelectItem value="halvaarlig">{t("auto.halvaarlig")}</SelectItem>
+                        <SelectItem value="kvartalsvis">{t("auto.kvartalsvis")}</SelectItem>
+                        <SelectItem value="ved_behov">{t("auto.ved_behov")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -811,13 +811,13 @@ export default function ForsvarlighetsvurderingForm() {
                   Signaturer
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Alle parter bør signere for å bekrefte at vurderingen er gjennomført i fellesskap.
+                  {t("auto.alle_parter_boer_signere_for_aa_bekrefte")}
                 </p>
 
                 <div className="grid gap-6 md:grid-cols-3">
                   {/* Employer signature */}
                   <div>
-                    <Label>Arbeidsgiver</Label>
+                    <Label>{t("auto.arbeidsgiver")}</Label>
                     <div className="mt-1 border rounded-lg bg-white">
                       <SignatureCanvas
                         ref={employerSigRef}
@@ -837,7 +837,7 @@ export default function ForsvarlighetsvurderingForm() {
 
                   {/* Verneombud signature */}
                   <div>
-                    <Label>Verneombud</Label>
+                    <Label>{t("auto.verneombud")}</Label>
                     <div className="mt-1 border rounded-lg bg-white">
                       <SignatureCanvas
                         ref={verneombudSigRef}
@@ -883,7 +883,7 @@ export default function ForsvarlighetsvurderingForm() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowNewDialog(false); resetForm(); }}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleCreateNew} disabled={isCreating}>
               {isCreating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -922,7 +922,7 @@ export default function ForsvarlighetsvurderingForm() {
                 {/* Description */}
                 {selectedVurdering.description && (
                   <div>
-                    <Label className="text-muted-foreground">Beskrivelse</Label>
+                    <Label className="text-muted-foreground">{t("auto.beskrivelse")}</Label>
                     <p className="mt-1">{selectedVurdering.description}</p>
                   </div>
                 )}
@@ -937,18 +937,18 @@ export default function ForsvarlighetsvurderingForm() {
                   </CardHeader>
                   <CardContent className="grid gap-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Arbeidsgiver:</span>
+                      <span className="text-muted-foreground">{t("auto.arbeidsgiver_2")}</span>
                       <span>{selectedVurdering.employer_name} {selectedVurdering.employer_title && `(${selectedVurdering.employer_title})`}</span>
                     </div>
                     {selectedVurdering.verneombud_name && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Verneombud:</span>
+                        <span className="text-muted-foreground">{t("auto.verneombud_2")}</span>
                         <span>{selectedVurdering.verneombud_name}</span>
                       </div>
                     )}
                     {selectedVurdering.tillitsvalgt_name && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tillitsvalgt:</span>
+                        <span className="text-muted-foreground">{t("auto.tillitsvalgt_2")}</span>
                         <span>{selectedVurdering.tillitsvalgt_name}</span>
                       </div>
                     )}
@@ -1005,33 +1005,33 @@ export default function ForsvarlighetsvurderingForm() {
                   </CardHeader>
                   <CardContent className="grid gap-4 md:grid-cols-3">
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Arbeidsgiver</p>
+                      <p className="text-sm text-muted-foreground mb-1">{t("auto.arbeidsgiver")}</p>
                       {selectedVurdering.employer_signature ? (
                         <div className="border rounded p-1 bg-muted/20">
                           <img src={selectedVurdering.employer_signature} alt="Signatur" className="max-h-16" />
                         </div>
                       ) : (
-                        <p className="text-xs text-muted-foreground italic">Ikke signert</p>
+                        <p className="text-xs text-muted-foreground italic">{t("auto.ikke_signert")}</p>
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Verneombud</p>
+                      <p className="text-sm text-muted-foreground mb-1">{t("auto.verneombud")}</p>
                       {selectedVurdering.verneombud_signature ? (
                         <div className="border rounded p-1 bg-muted/20">
                           <img src={selectedVurdering.verneombud_signature} alt="Signatur" className="max-h-16" />
                         </div>
                       ) : (
-                        <p className="text-xs text-muted-foreground italic">Ikke signert</p>
+                        <p className="text-xs text-muted-foreground italic">{t("auto.ikke_signert")}</p>
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Tillitsvalgt</p>
+                      <p className="text-sm text-muted-foreground mb-1">{t("auto.tillitsvalgt")}</p>
                       {selectedVurdering.tillitsvalgt_signature ? (
                         <div className="border rounded p-1 bg-muted/20">
                           <img src={selectedVurdering.tillitsvalgt_signature} alt="Signatur" className="max-h-16" />
                         </div>
                       ) : (
-                        <p className="text-xs text-muted-foreground italic">Ikke signert</p>
+                        <p className="text-xs text-muted-foreground italic">{t("auto.ikke_signert")}</p>
                       )}
                     </div>
                   </CardContent>
@@ -1056,7 +1056,7 @@ export default function ForsvarlighetsvurderingForm() {
               Slett
             </Button>
             <Button variant="outline" onClick={() => setShowViewDialog(false)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
           </DialogFooter>
         </DialogContent>

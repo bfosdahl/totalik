@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { t } from "@/i18n/t";
 
 export default function IkHmsImportHandbook() {
   const { profile, isLoading } = useAuth();
@@ -27,7 +28,7 @@ export default function IkHmsImportHandbook() {
         <div className="max-w-3xl mx-auto py-8">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>Ingen bedrift tilknyttet din bruker.</AlertDescription>
+            <AlertDescription>{t("auto.ingen_bedrift_tilknyttet_din_bruker")}</AlertDescription>
           </Alert>
         </div>
       </AppLayout>
@@ -38,9 +39,9 @@ export default function IkHmsImportHandbook() {
     <AppLayout>
       <div className="max-w-3xl mx-auto py-4 sm:py-8 px-4">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Importer HMS-håndbok</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.importer_hms_haandbok")}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Last opp en eksisterende HMS-håndbok for å overføre alt innhold til systemet — inkludert historiske avvik med originale datoer.
+            {t("auto.last_opp_en_eksisterende_hms_haandbok_fo")}
           </p>
         </div>
 

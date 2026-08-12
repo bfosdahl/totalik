@@ -52,6 +52,7 @@ import { applyImportedHmsSetup, getImportedHmsData, clearImportedHmsData, type I
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 import { SelectableCard } from "@/components/ui/selectable-card";
 import { ResetDeviationsDialog } from "@/components/admin/ResetDeviationsDialog";
+import { t } from "@/i18n/t";
 const companySchema = z.object({
   name: z.string().min(1, "Bedriftsnavn er påkrevd").max(100),
   org_number: z.string().optional(),
@@ -71,14 +72,14 @@ interface AdminInviteData {
 }
 
 const MODULE_OPTIONS = [
-  { type: "IK_HMS", name: "IK HMS", description: "Internkontroll for helse, miljø og sikkerhet" },
-  { type: "IK_MAT", name: "IK MAT", description: "Internkontroll for matsikkerhet" },
-  { type: "IK_ALKOHOL", name: "IK Alkohol", description: "Internkontroll for alkoholhåndtering" },
-  { type: "IK_BYGG", name: "KS Bygg", description: "Kvalitetssikring for byggprosjekter" },
-  { type: "IK_FDV", name: "IK FDV", description: "Forvaltning, drift og vedlikehold av bygg" },
-  { type: "PERSONALHANDBOK", name: "Personalhåndbok", description: "Digital personalhåndbok" },
-  { type: "GDPR", name: "GDPR", description: "Personvern og datahåndtering" },
-  { type: "APENHETSLOVEN", name: "Åpenhetsloven", description: "Aktsomhetsvurderinger" },
+  { type: "IK_HMS", name: "IK HMS", description: t("auto.internkontroll_for_helse_miljoe_og_sikke") },
+  { type: "IK_MAT", name: "IK MAT", description: t("auto.internkontroll_for_matsikkerhet") },
+  { type: "IK_ALKOHOL", name: "IK Alkohol", description: t("auto.internkontroll_for_alkoholhaandtering") },
+  { type: "IK_BYGG", name: "KS Bygg", description: t("auto.kvalitetssikring_for_byggprosjekter") },
+  { type: "IK_FDV", name: "IK FDV", description: t("auto.forvaltning_drift_og_vedlikehold_av_bygg") },
+  { type: "PERSONALHANDBOK", name: "Personalhåndbok", description: t("auto.digital_personalhaandbok") },
+  { type: "GDPR", name: "GDPR", description: t("auto.personvern_og_datahaandtering") },
+  { type: "APENHETSLOVEN", name: "Åpenhetsloven", description: t("auto.aktsomhetsvurderinger") },
 ];
 
 export default function AdminCompanies() {
@@ -148,7 +149,7 @@ export default function AdminCompanies() {
       // Auto-open dialog with prefilled data
       setIsDialogOpen(true);
       toast({
-        title: "PDF-data klar",
+        title: t("auto.pdf_data_klar"),
         description: `Bedriftsinfo fra "${data.firmanavn}" er forhåndsutfylt. Verifiser og opprett bedriften.`,
       });
     }
@@ -283,31 +284,31 @@ export default function AdminCompanies() {
           
           if (response.error) {
             toast({ 
-              title: "Bedrift opprettet", 
+              title: t("auto.bedrift_opprettet"), 
               description: `Bedrift opprettet og synkronisert, men kunne ikke invitere admin: ${response.error.message}`,
               variant: "destructive"
             });
           } else {
             toast({ 
-              title: "Bedrift opprettet", 
-              description: "Bedrift opprettet, synkronisert til kurssystem og administrator invitert." 
+              title: t("auto.bedrift_opprettet"), 
+              description: t("auto.bedrift_opprettet_synkronisert_til_kurss") 
             });
           }
         } catch (err: any) {
           toast({ 
-            title: "Bedrift opprettet", 
+            title: t("auto.bedrift_opprettet"), 
             description: `Bedrift opprettet og synkronisert, men kunne ikke invitere admin: ${err.message}`,
             variant: "destructive"
           });
         }
       } else {
-        toast({ title: "Bedrift opprettet", description: "Ny bedrift er lagt til og synkronisert til kurssystemet." });
+        toast({ title: t("auto.bedrift_opprettet"), description: t("auto.ny_bedrift_er_lagt_til_og_synkronisert_t") });
       }
       
       resetForm();
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -329,10 +330,10 @@ export default function AdminCompanies() {
       setInviteDialogOpen(false);
       setInviteCompany(null);
       setAdminData({ email: "", firstName: "", lastName: "" });
-      toast({ title: "Administrator invitert", description: "E-post sendt til ny administrator." });
+      toast({ title: t("auto.administrator_invitert"), description: t("auto.e_post_sendt_til_ny_administrator") });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -357,10 +358,10 @@ export default function AdminCompanies() {
       setIsDialogOpen(false);
       setEditingCompany(null);
       resetForm();
-      toast({ title: "Bedrift oppdatert" });
+      toast({ title: t("auto.bedrift_oppdatert") });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -389,10 +390,10 @@ export default function AdminCompanies() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
-      toast({ title: "Bedrift slettet" });
+      toast({ title: t("auto.bedrift_slettet") });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -406,12 +407,12 @@ export default function AdminCompanies() {
     },
     onSuccess: (data) => {
       toast({ 
-        title: "Synkronisert", 
+        title: t("auto.synkronisert"), 
         description: `Bedrift og ansatte synkronisert til kurssystemet.` 
       });
     },
     onError: (error) => {
-      toast({ title: "Synkroniseringsfeil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.synkroniseringsfeil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -474,16 +475,16 @@ export default function AdminCompanies() {
     if (!editingCompany && formData.email && formData.email.trim().length > 0) {
       if (!inviteAdmin) {
         toast({
-          title: "Mangler admin-bruker",
-          description: "Bedriften har en kontakt-e-post. Kryss av for «Inviter administrator» og fyll inn navn, ellers blir e-posten en kontakt uten faktisk bruker.",
+          title: t("auto.mangler_admin_bruker"),
+          description: t("auto.bedriften_har_en_kontakt_e_post_kryss_av"),
           variant: "destructive",
         });
         return;
       }
       if (!adminData.email || !adminData.firstName?.trim() || !adminData.lastName?.trim()) {
         toast({
-          title: "Mangler navn på admin",
-          description: "Fyll inn e-post, fornavn og etternavn på administrator før du oppretter bedriften.",
+          title: t("auto.mangler_navn_paa_admin"),
+          description: t("auto.fyll_inn_e_post_fornavn_og_etternavn_paa"),
           variant: "destructive",
         });
         return;
@@ -540,11 +541,11 @@ export default function AdminCompanies() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge variant="success">Aktiv</Badge>;
+        return <Badge variant="success">{t("auto.aktiv")}</Badge>;
       case "inactive":
-        return <Badge variant="secondary">Inaktiv</Badge>;
+        return <Badge variant="secondary">{t("auto.inaktiv")}</Badge>;
       case "suspended":
-        return <Badge variant="destructive">Suspendert</Badge>;
+        return <Badge variant="destructive">{t("auto.suspendert")}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -560,9 +561,9 @@ export default function AdminCompanies() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Bedrifter</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.bedrifter")}</h1>
             <p className="text-muted-foreground">
-              Administrer bedrifter og lisenser
+              {t("auto.administrer_bedrifter_og_lisenser")}
             </p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
@@ -608,7 +609,7 @@ export default function AdminCompanies() {
                 <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm">
                   <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <span className="font-medium text-primary">PDF-data forhåndsutfylt</span>
+                    <span className="font-medium text-primary">{t("auto.pdf_data_forhaandsutfylt")}</span>
                     <span className="text-muted-foreground ml-1">
                       ({importedData.farekilder?.length || 0} farekilder, {importedData.hmsmal?.length || 0} mål)
                     </span>
@@ -621,7 +622,7 @@ export default function AdminCompanies() {
                     onClick={() => {
                       clearImportedHmsData();
                       setImportedData(null);
-                      toast({ title: "PDF-data fjernet", description: "Standardoppsett vil bli brukt." });
+                      toast({ title: t("auto.pdf_data_fjernet"), description: t("auto.standardoppsett_vil_bli_brukt") });
                     }}
                   >
                     <X className="h-3 w-3" />
@@ -633,17 +634,17 @@ export default function AdminCompanies() {
                 <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 space-y-2">
-                    <Label htmlFor="name">Bedriftsnavn *</Label>
+                    <Label htmlFor="name">{t("auto.bedriftsnavn_2")}</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Bedrift AS"
+                      placeholder={t("auto.bedrift_as")}
                     />
                     {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="org_number">Org.nummer</Label>
+                    <Label htmlFor="org_number">{t("auto.org_nummer")}</Label>
                     <Input
                       id="org_number"
                       value={formData.org_number}
@@ -652,7 +653,7 @@ export default function AdminCompanies() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon</Label>
+                    <Label htmlFor="phone">{t("auto.telefon")}</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
@@ -661,7 +662,7 @@ export default function AdminCompanies() {
                     />
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <Label htmlFor="email">E-post</Label>
+                    <Label htmlFor="email">{t("auto.e_post_2")}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -672,16 +673,16 @@ export default function AdminCompanies() {
                     {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                   </div>
                   <div className="col-span-2 space-y-2">
-                    <Label htmlFor="address">Adresse</Label>
+                    <Label htmlFor="address">{t("auto.adresse")}</Label>
                     <Input
                       id="address"
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="Gateadresse 1"
+                      placeholder={t("auto.gateadresse_1")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="postal_code">Postnummer</Label>
+                    <Label htmlFor="postal_code">{t("auto.postnummer")}</Label>
                     <Input
                       id="postal_code"
                       value={formData.postal_code}
@@ -690,12 +691,12 @@ export default function AdminCompanies() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="city">Sted</Label>
+                    <Label htmlFor="city">{t("auto.sted")}</Label>
                     <Input
                       id="city"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      placeholder="Oslo"
+                      placeholder={t("auto.oslo")}
                     />
                   </div>
                 </div>
@@ -703,7 +704,7 @@ export default function AdminCompanies() {
                 {/* Module selection section - only for new companies */}
                 {!editingCompany && (
                   <div className="border-t border-border pt-4 mt-4">
-                    <Label className="text-sm font-medium mb-3 block">Velg moduler</Label>
+                    <Label className="text-sm font-medium mb-3 block">{t("auto.velg_moduler")}</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {MODULE_OPTIONS.map((module) => (
                         <SelectableCard
@@ -731,14 +732,14 @@ export default function AdminCompanies() {
                         onCheckedChange={(checked) => setInviteAdmin(checked === true)}
                       />
                       <Label htmlFor="inviteAdmin" className="text-sm font-medium cursor-pointer">
-                        Inviter bedriftsadministrator
+                        {t("auto.inviter_bedriftsadministrator")}
                       </Label>
                     </div>
                     
                     {inviteAdmin && (
                       <div className="grid grid-cols-2 gap-4 p-4 bg-secondary/30 rounded-lg">
                         <div className="col-span-2 space-y-2">
-                          <Label htmlFor="adminEmail">Administrator e-post *</Label>
+                          <Label htmlFor="adminEmail">{t("auto.administrator_e_post")}</Label>
                           <Input
                             id="adminEmail"
                             type="email"
@@ -748,25 +749,25 @@ export default function AdminCompanies() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="adminFirstName">Fornavn</Label>
+                          <Label htmlFor="adminFirstName">{t("auto.fornavn")}</Label>
                           <Input
                             id="adminFirstName"
                             value={adminData.firstName}
                             onChange={(e) => setAdminData({ ...adminData, firstName: e.target.value })}
-                            placeholder="Fornavn"
+                            placeholder={t("auto.fornavn")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="adminLastName">Etternavn</Label>
+                          <Label htmlFor="adminLastName">{t("auto.etternavn")}</Label>
                           <Input
                             id="adminLastName"
                             value={adminData.lastName}
                             onChange={(e) => setAdminData({ ...adminData, lastName: e.target.value })}
-                            placeholder="Etternavn"
+                            placeholder={t("auto.etternavn")}
                           />
                         </div>
                         <p className="col-span-2 text-xs text-muted-foreground">
-                          Administrator vil motta en e-post med innloggingsinformasjon.
+                          {t("auto.administrator_vil_motta_en_e_post_med_in")}
                         </p>
                       </div>
                     )}
@@ -776,7 +777,7 @@ export default function AdminCompanies() {
                 
                 <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
                     {editingCompany ? "Lagre endringer" : "Opprett bedrift"}
@@ -795,7 +796,7 @@ export default function AdminCompanies() {
         >
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Søk etter bedrift..."
+            placeholder={t("auto.soek_etter_bedrift")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
@@ -813,24 +814,24 @@ export default function AdminCompanies() {
             <table className="w-full">
               <thead className="bg-secondary/50">
                 <tr>
-                  <th className="text-left p-4 font-medium text-sm">Bedrift</th>
-                  <th className="text-left p-4 font-medium text-sm">Org.nummer</th>
-                  <th className="text-left p-4 font-medium text-sm">Status</th>
-                  <th className="text-left p-4 font-medium text-sm">Opprettet</th>
-                  <th className="text-right p-4 font-medium text-sm">Handlinger</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.bedrift")}</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.org_nummer")}</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.status_2")}</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.opprettet_2")}</th>
+                  <th className="text-right p-4 font-medium text-sm">{t("auto.handlinger")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      Laster...
+                      {t("auto.laster")}
                     </td>
                   </tr>
                 ) : filteredCompanies?.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      Ingen bedrifter funnet
+                      {t("auto.ingen_bedrifter_funnet")}
                     </td>
                   </tr>
                 ) : (
@@ -947,7 +948,7 @@ export default function AdminCompanies() {
           {totalFiltered > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-border">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Vis</span>
+                <span>{t("auto.vis")}</span>
                 <select
                   value={pageSize}
                   onChange={(e) => setPageSize(Number(e.target.value))}
@@ -957,7 +958,7 @@ export default function AdminCompanies() {
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                 </select>
-                <span>per side</span>
+                <span>{t("auto.per_side")}</span>
                 <span className="ml-2">
                   ({(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalFiltered)} av {totalFiltered})
                 </span>
@@ -996,11 +997,11 @@ export default function AdminCompanies() {
         >
           {isLoading ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
-              Laster...
+              {t("auto.laster")}
             </div>
           ) : filteredCompanies?.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
-              Ingen bedrifter funnet
+              {t("auto.ingen_bedrifter_funnet")}
             </div>
           ) : (
             paginatedCompanies?.map((company) => (
@@ -1147,11 +1148,11 @@ export default function AdminCompanies() {
             {inviteCompany && (
               <form onSubmit={submitInviteAdmin} className="space-y-4 mt-4">
                 <div className="p-3 bg-secondary/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Bedrift</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.bedrift")}</p>
                   <p className="font-medium">{inviteCompany.name}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="inviteEmail">E-post *</Label>
+                  <Label htmlFor="inviteEmail">{t("auto.e_post")}</Label>
                   <Input
                     id="inviteEmail"
                     type="email"
@@ -1163,30 +1164,30 @@ export default function AdminCompanies() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="inviteFirstName">Fornavn</Label>
+                    <Label htmlFor="inviteFirstName">{t("auto.fornavn")}</Label>
                     <Input
                       id="inviteFirstName"
                       value={adminData.firstName}
                       onChange={(e) => setAdminData({ ...adminData, firstName: e.target.value })}
-                      placeholder="Fornavn"
+                      placeholder={t("auto.fornavn")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="inviteLastName">Etternavn</Label>
+                    <Label htmlFor="inviteLastName">{t("auto.etternavn")}</Label>
                     <Input
                       id="inviteLastName"
                       value={adminData.lastName}
                       onChange={(e) => setAdminData({ ...adminData, lastName: e.target.value })}
-                      placeholder="Etternavn"
+                      placeholder={t("auto.etternavn")}
                     />
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Administrator vil motta en e-post med innloggingsinformasjon.
+                  {t("auto.administrator_vil_motta_en_e_post_med_in")}
                 </p>
                 <div className="flex justify-end gap-3 pt-2">
                   <Button type="button" variant="outline" onClick={() => setInviteDialogOpen(false)}>
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button type="submit" disabled={inviteAdminMutation.isPending} className="gap-2">
                     <Mail className="w-4 h-4" />

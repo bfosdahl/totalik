@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface LogoUploadProps {
   currentLogoUrl: string | null;
@@ -32,18 +33,18 @@ export function LogoUpload({ currentLogoUrl, companyId, onLogoChange }: LogoUplo
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast.error("Vennligst velg en bildefil");
+      toast.error(t("auto.vennligst_velg_en_bildefil"));
       return;
     }
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Bildet må være mindre enn 2MB");
+      toast.error(t("auto.bildet_maa_vaere_mindre_enn_2mb"));
       return;
     }
 
     if (!companyId) {
-      toast.error("Bedrifts-ID mangler");
+      toast.error(t("auto.bedrifts_id_mangler"));
       return;
     }
 
@@ -79,10 +80,10 @@ export function LogoUpload({ currentLogoUrl, companyId, onLogoChange }: LogoUplo
 
       setPreviewUrl(urlWithCacheBust);
       onLogoChange(publicUrl);
-      toast.success("Logo lastet opp!");
+      toast.success(t("auto.logo_lastet_opp"));
     } catch (error) {
       console.error("Logo upload error:", error);
-      toast.error("Kunne ikke laste opp logo. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_laste_opp_logo_proev_igjen"));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -114,10 +115,10 @@ export function LogoUpload({ currentLogoUrl, companyId, onLogoChange }: LogoUplo
 
       setPreviewUrl(null);
       onLogoChange(null);
-      toast.success("Logo fjernet");
+      toast.success(t("auto.logo_fjernet_2"));
     } catch (error) {
       console.error("Logo removal error:", error);
-      toast.error("Kunne ikke fjerne logo. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_fjerne_logo_proev_igjen"));
     } finally {
       setIsUploading(false);
     }
@@ -177,7 +178,7 @@ export function LogoUpload({ currentLogoUrl, companyId, onLogoChange }: LogoUplo
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              PNG, JPG eller SVG. Maks 2MB. Vises på forsiden av håndboken.
+              {t("auto.png_jpg_eller_svg_maks_2mb_vises_paa_for")}
             </p>
           </div>
         </div>

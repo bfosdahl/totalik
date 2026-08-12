@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Library, Search, Loader2 } from "lucide-react";
 import { useCompanyKsChecklistTemplates, CompanyKsChecklistTemplate } from "@/hooks/useCompanyKsChecklistTemplates";
+import { t } from "@/i18n/t";
 
 interface Props {
   open: boolean;
@@ -68,7 +69,7 @@ export function ImportCompanyChecklistsDialog({ open, onOpenChange, onImport, is
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk i firmaets sjekkliste-maler..."
+            placeholder={t("auto.soek_i_firmaets_sjekkliste_maler")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -123,7 +124,7 @@ export function ImportCompanyChecklistsDialog({ open, onOpenChange, onImport, is
           <span className="text-sm text-muted-foreground">{selected.size} valgt</span>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleImport} disabled={selected.size === 0 || isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

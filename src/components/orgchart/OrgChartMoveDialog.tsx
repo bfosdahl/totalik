@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2, ArrowRight } from 'lucide-react';
 import type { OrgChartNode, TreeNode } from '@/hooks/useOrgChart';
+import { t } from "@/i18n/t";
 
 interface OrgChartMoveDialogProps {
   open: boolean;
@@ -67,14 +68,14 @@ const OrgChartMoveDialog: React.FC<OrgChartMoveDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Flytt "{movingNode.role_title}"</DialogTitle>
           <DialogDescription>
-            Velg ny overordnet for denne noden. Alle underordnede vil følge med.
+            {t("auto.velg_ny_overordnet_for_denne_noden_alle_")}
           </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
             <div className="text-sm">
-              <span className="text-muted-foreground">Fra: </span>
+              <span className="text-muted-foreground">{t("auto.fra_3")} </span>
               <span className="font-medium">
                 {movingNode.parent_node_id 
                   ? nodes.find(n => n.id === movingNode.parent_node_id)?.role_title || 'Ukjent'
@@ -83,7 +84,7 @@ const OrgChartMoveDialog: React.FC<OrgChartMoveDialogProps> = ({
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm">
-              <span className="text-muted-foreground">Til: </span>
+              <span className="text-muted-foreground">{t("auto.til_3")} </span>
               <span className="font-medium">
                 {newParentId 
                   ? nodes.find(n => n.id === newParentId)?.role_title || 'Velg...'
@@ -93,13 +94,13 @@ const OrgChartMoveDialog: React.FC<OrgChartMoveDialogProps> = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="newParent">Ny overordnet</Label>
+            <Label htmlFor="newParent">{t("auto.ny_overordnet")}</Label>
             <Select 
               value={newParentId || 'none'} 
               onValueChange={(v) => setNewParentId(v === 'none' ? null : v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Velg ny overordnet" />
+                <SelectValue placeholder={t("auto.velg_ny_overordnet")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Ingen (toppnivå)</SelectItem>
@@ -114,7 +115,7 @@ const OrgChartMoveDialog: React.FC<OrgChartMoveDialogProps> = ({
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

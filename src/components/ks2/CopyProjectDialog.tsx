@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import type { Json } from "@/integrations/supabase/types";
+import { t } from "@/i18n/t";
 
 interface CopyProjectDialogProps {
   open: boolean;
@@ -50,12 +51,12 @@ export function CopyProjectDialog({
 
   const handleCopy = async () => {
     if (!profile?.company_id || !user?.id) {
-      toast.error("Du må være logget inn");
+      toast.error(t("auto.du_maa_vaere_logget_inn"));
       return;
     }
 
     if (!projectName.trim()) {
-      toast.error("Prosjektnavn er påkrevd");
+      toast.error(t("auto.prosjektnavn_er_paakrevd"));
       return;
     }
 
@@ -193,12 +194,12 @@ export function CopyProjectDialog({
         }
       }
 
-      toast.success("Prosjekt kopiert!");
+      toast.success(t("auto.prosjekt_kopiert"));
       onOpenChange(false);
       onSuccess();
     } catch (error) {
       console.error("Error copying project:", error);
-      toast.error("Kunne ikke kopiere prosjekt");
+      toast.error(t("auto.kunne_ikke_kopiere_prosjekt"));
     } finally {
       setIsLoading(false);
     }
@@ -224,17 +225,17 @@ export function CopyProjectDialog({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="project-name">Nytt prosjektnavn</Label>
+            <Label htmlFor="project-name">{t("auto.nytt_prosjektnavn")}</Label>
             <Input
               id="project-name"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Skriv inn prosjektnavn"
+              placeholder={t("auto.skriv_inn_prosjektnavn")}
             />
           </div>
 
           <div className="space-y-3">
-            <Label>Hva skal kopieres?</Label>
+            <Label>{t("auto.hva_skal_kopieres")}</Label>
             
             <div className="flex items-center space-x-2">
               <Checkbox

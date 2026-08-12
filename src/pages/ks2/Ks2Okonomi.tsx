@@ -46,21 +46,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const COST_CATEGORIES = [
-  { value: "materials", label: "Materialer" },
-  { value: "labor", label: "Arbeidskraft" },
-  { value: "subcontractors", label: "Underleverandører" },
-  { value: "equipment", label: "Utstyr/maskiner" },
-  { value: "transport", label: "Transport" },
-  { value: "other", label: "Annet" },
+  { value: "materials", label: t("auto.materialer") },
+  { value: "labor", label: t("auto.arbeidskraft") },
+  { value: "subcontractors", label: t("auto.underleverandoerer") },
+  { value: "equipment", label: t("auto.utstyr_maskiner") },
+  { value: "transport", label: t("auto.transport") },
+  { value: "other", label: t("auto.annet") },
 ];
 
 const INVOICE_STATUSES = [
-  { value: "draft", label: "Utkast", color: "bg-muted text-muted-foreground" },
-  { value: "sent", label: "Sendt", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  { value: "paid", label: "Betalt", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-  { value: "overdue", label: "Forfalt", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
+  { value: "draft", label: t("auto.utkast"), color: "bg-muted text-muted-foreground" },
+  { value: "sent", label: t("auto.sendt"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+  { value: "paid", label: t("auto.betalt"), color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  { value: "overdue", label: t("auto.forfalt"), color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
 ];
 
 export default function Ks2Okonomi() {
@@ -125,7 +126,7 @@ export default function Ks2Okonomi() {
 
     if (error) {
       console.error("Upload error:", error);
-      toast.error("Kunne ikke laste opp fil");
+      toast.error(t("auto.kunne_ikke_laste_opp_fil"));
       return null;
     }
     return { path: filePath, name: file.name };
@@ -320,8 +321,8 @@ export default function Ks2Okonomi() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Økonomioversikt</h1>
-          <p className="text-muted-foreground">Budsjett, kostnader og fakturering</p>
+          <h1 className="text-2xl font-bold">{t("auto.oekonomioversikt")}</h1>
+          <p className="text-muted-foreground">{t("auto.budsjett_kostnader_og_fakturering")}</p>
         </div>
         <Button onClick={handleOpenBudget}>
           <Save className="h-4 w-4 mr-2" />
@@ -339,7 +340,7 @@ export default function Ks2Okonomi() {
               </div>
               <div>
                 <p className="text-lg font-bold">{formatCurrency(totals.totalContract)}</p>
-                <p className="text-xs text-muted-foreground">Kontraktsum</p>
+                <p className="text-xs text-muted-foreground">{t("auto.kontraktsum")}</p>
               </div>
             </div>
           </CardContent>
@@ -352,7 +353,7 @@ export default function Ks2Okonomi() {
               </div>
               <div>
                 <p className="text-lg font-bold">{formatCurrency(totals.totalActual)}</p>
-                <p className="text-xs text-muted-foreground">Påløpte kostnader</p>
+                <p className="text-xs text-muted-foreground">{t("auto.paaloepte_kostnader")}</p>
               </div>
             </div>
           </CardContent>
@@ -365,7 +366,7 @@ export default function Ks2Okonomi() {
               </div>
               <div>
                 <p className="text-lg font-bold">{formatCurrency(totals.totalInvoiced)}</p>
-                <p className="text-xs text-muted-foreground">Fakturert</p>
+                <p className="text-xs text-muted-foreground">{t("auto.fakturert")}</p>
               </div>
             </div>
           </CardContent>
@@ -391,7 +392,7 @@ export default function Ks2Okonomi() {
       {totals.totalBudget > 0 && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Budsjettforbruk</CardTitle>
+            <CardTitle className="text-base">{t("auto.budsjettforbruk")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -429,11 +430,11 @@ export default function Ks2Okonomi() {
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Registrer kostnad</DialogTitle>
+                  <DialogTitle>{t("auto.registrer_kostnad")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label>Kategori</Label>
+                    <Label>{t("auto.kategori")}</Label>
                     <Select
                       value={costForm.category}
                       onValueChange={(v) => setCostForm({ ...costForm, category: v })}
@@ -451,11 +452,11 @@ export default function Ks2Okonomi() {
                     </Select>
                   </div>
                   <div>
-                    <Label>Beskrivelse *</Label>
+                    <Label>{t("auto.beskrivelse_2")}</Label>
                     <Input
                       value={costForm.description}
                       onChange={(e) => setCostForm({ ...costForm, description: e.target.value })}
-                      placeholder="Hva gjelder kostnaden"
+                      placeholder={t("auto.hva_gjelder_kostnaden")}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -469,7 +470,7 @@ export default function Ks2Okonomi() {
                       />
                     </div>
                     <div>
-                      <Label>Dato</Label>
+                      <Label>{t("auto.dato")}</Label>
                       <Input
                         type="date"
                         value={costForm.date}
@@ -479,15 +480,15 @@ export default function Ks2Okonomi() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Leverandør</Label>
+                      <Label>{t("auto.leverandoer")}</Label>
                       <Input
                         value={costForm.supplier}
                         onChange={(e) => setCostForm({ ...costForm, supplier: e.target.value })}
-                        placeholder="Leverandørnavn"
+                        placeholder={t("auto.leverandoernavn")}
                       />
                     </div>
                     <div>
-                      <Label>Fakturanr</Label>
+                      <Label>{t("auto.fakturanr")}</Label>
                       <Input
                         value={costForm.invoice_number}
                         onChange={(e) => setCostForm({ ...costForm, invoice_number: e.target.value })}
@@ -516,7 +517,7 @@ export default function Ks2Okonomi() {
                   </div>
                   <div className="flex justify-end gap-2 pt-4">
                     <Button variant="outline" onClick={() => { setCostDialogOpen(false); setCostFile(null); }}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button
                       onClick={handleSaveCost}
@@ -535,11 +536,11 @@ export default function Ks2Okonomi() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Dato</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Beskrivelse</TableHead>
-                    <TableHead>Leverandør</TableHead>
-                    <TableHead className="text-right">Beløp</TableHead>
+                    <TableHead>{t("auto.dato")}</TableHead>
+                    <TableHead>{t("auto.kategori")}</TableHead>
+                    <TableHead>{t("auto.beskrivelse")}</TableHead>
+                    <TableHead>{t("auto.leverandoer")}</TableHead>
+                    <TableHead className="text-right">{t("auto.beloep")}</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -558,7 +559,7 @@ export default function Ks2Okonomi() {
                               size="sm"
                               variant="ghost"
                               onClick={() => viewFile((entry as any).file_path)}
-                              title="Vis vedlegg"
+                              title={t("auto.vis_vedlegg")}
                             >
                               <Paperclip className="h-4 w-4 text-blue-500" />
                             </Button>
@@ -581,8 +582,8 @@ export default function Ks2Okonomi() {
             <Card>
               <CardContent className="py-12 text-center">
                 <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen kostnader registrert</h3>
-                <p className="text-muted-foreground mb-4">Registrer kostnader for å følge opp budsjett</p>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_kostnader_registrert")}</h3>
+                <p className="text-muted-foreground mb-4">{t("auto.registrer_kostnader_for_aa_foelge_opp_bu")}</p>
                 <Button onClick={() => setCostDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Registrer kostnad
@@ -603,12 +604,12 @@ export default function Ks2Okonomi() {
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Ny faktura</DialogTitle>
+                  <DialogTitle>{t("auto.ny_faktura")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Fakturanummer *</Label>
+                      <Label>{t("auto.fakturanummer")}</Label>
                       <Input
                         value={invoiceForm.invoice_number}
                         onChange={(e) => setInvoiceForm({ ...invoiceForm, invoice_number: e.target.value })}
@@ -616,7 +617,7 @@ export default function Ks2Okonomi() {
                       />
                     </div>
                     <div>
-                      <Label>Status</Label>
+                      <Label>{t("auto.status_2")}</Label>
                       <Select
                         value={invoiceForm.status}
                         onValueChange={(v) => setInvoiceForm({ ...invoiceForm, status: v })}
@@ -635,11 +636,11 @@ export default function Ks2Okonomi() {
                     </div>
                   </div>
                   <div>
-                    <Label>Beskrivelse</Label>
+                    <Label>{t("auto.beskrivelse")}</Label>
                     <Input
                       value={invoiceForm.description}
                       onChange={(e) => setInvoiceForm({ ...invoiceForm, description: e.target.value })}
-                      placeholder="Hva faktureres"
+                      placeholder={t("auto.hva_faktureres")}
                     />
                   </div>
                   <div>
@@ -653,7 +654,7 @@ export default function Ks2Okonomi() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Fakturadato</Label>
+                      <Label>{t("auto.fakturadato")}</Label>
                       <Input
                         type="date"
                         value={invoiceForm.invoice_date}
@@ -661,7 +662,7 @@ export default function Ks2Okonomi() {
                       />
                     </div>
                     <div>
-                      <Label>Forfallsdato</Label>
+                      <Label>{t("auto.forfallsdato")}</Label>
                       <Input
                         type="date"
                         value={invoiceForm.due_date}
@@ -690,7 +691,7 @@ export default function Ks2Okonomi() {
                   </div>
                   <div className="flex justify-end gap-2 pt-4">
                     <Button variant="outline" onClick={() => { setInvoiceDialogOpen(false); setInvoiceFile(null); }}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button
                       onClick={handleSaveInvoice}
@@ -709,12 +710,12 @@ export default function Ks2Okonomi() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Fakturanr</TableHead>
-                    <TableHead>Beskrivelse</TableHead>
-                    <TableHead>Dato</TableHead>
-                    <TableHead>Forfall</TableHead>
-                    <TableHead className="text-right">Beløp</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("auto.fakturanr")}</TableHead>
+                    <TableHead>{t("auto.beskrivelse")}</TableHead>
+                    <TableHead>{t("auto.dato")}</TableHead>
+                    <TableHead>{t("auto.forfall")}</TableHead>
+                    <TableHead className="text-right">{t("auto.beloep")}</TableHead>
+                    <TableHead>{t("auto.status_2")}</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -736,7 +737,7 @@ export default function Ks2Okonomi() {
                               size="sm"
                               variant="ghost"
                               onClick={() => viewFile((invoice as any).file_path)}
-                              title="Vis vedlegg"
+                              title={t("auto.vis_vedlegg")}
                             >
                               <Paperclip className="h-4 w-4 text-blue-500" />
                             </Button>
@@ -746,7 +747,7 @@ export default function Ks2Okonomi() {
                               size="sm"
                               variant="ghost"
                               onClick={() => handleMarkPaid(invoice)}
-                              title="Merk som betalt"
+                              title={t("auto.merk_som_betalt")}
                             >
                               <CheckCircle2 className="h-4 w-4 text-green-600" />
                             </Button>
@@ -769,8 +770,8 @@ export default function Ks2Okonomi() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Receipt className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen fakturaer</h3>
-                <p className="text-muted-foreground mb-4">Opprett fakturaer for å følge opp innbetalinger</p>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_fakturaer")}</h3>
+                <p className="text-muted-foreground mb-4">{t("auto.opprett_fakturaer_for_aa_foelge_opp_innb")}</p>
                 <Button onClick={() => setInvoiceDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Ny faktura
@@ -785,7 +786,7 @@ export default function Ks2Okonomi() {
       <Dialog open={budgetDialogOpen} onOpenChange={setBudgetDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Rediger budsjett</DialogTitle>
+            <DialogTitle>{t("auto.rediger_budsjett")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -798,10 +799,10 @@ export default function Ks2Okonomi() {
               />
             </div>
             <div className="border-t pt-4">
-              <p className="text-sm font-medium mb-3">Budsjett per kategori</p>
+              <p className="text-sm font-medium mb-3">{t("auto.budsjett_per_kategori")}</p>
               <div className="space-y-3">
                 <div>
-                  <Label>Materialer</Label>
+                  <Label>{t("auto.materialer")}</Label>
                   <Input
                     type="number"
                     value={budgetForm.budget_materials}
@@ -810,7 +811,7 @@ export default function Ks2Okonomi() {
                   />
                 </div>
                 <div>
-                  <Label>Arbeidskraft</Label>
+                  <Label>{t("auto.arbeidskraft")}</Label>
                   <Input
                     type="number"
                     value={budgetForm.budget_labor}
@@ -819,7 +820,7 @@ export default function Ks2Okonomi() {
                   />
                 </div>
                 <div>
-                  <Label>Underleverandører</Label>
+                  <Label>{t("auto.underleverandoerer")}</Label>
                   <Input
                     type="number"
                     value={budgetForm.budget_subcontractors}
@@ -828,7 +829,7 @@ export default function Ks2Okonomi() {
                   />
                 </div>
                 <div>
-                  <Label>Annet</Label>
+                  <Label>{t("auto.annet")}</Label>
                   <Input
                     type="number"
                     value={budgetForm.budget_other}
@@ -840,10 +841,10 @@ export default function Ks2Okonomi() {
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setBudgetDialogOpen(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={handleSaveBudget} disabled={upsertFinances.isPending}>
-                Lagre
+                {t("auto.lagre")}
               </Button>
             </div>
           </div>
@@ -858,13 +859,13 @@ export default function Ks2Okonomi() {
               Slett {deleteType?.type === "cost" ? "kostnad" : "faktura"}?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette? Handlingen kan ikke angres.
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_handli")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

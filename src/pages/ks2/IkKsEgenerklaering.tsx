@@ -24,6 +24,7 @@ import {
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import jsPDF from "jspdf";
+import { t } from "@/i18n/t";
 
 export default function IkKsEgenerklaering() {
   const { company } = useAuth();
@@ -171,12 +172,12 @@ export default function IkKsEgenerklaering() {
             {/* Document content */}
             <div className="max-w-2xl mx-auto space-y-6 text-sm leading-relaxed">
               <h2 className="text-center text-base font-bold tracking-wide">
-                EGENERKLÆRING – KVALITETSSIKRINGSSYSTEM
+                {t("auto.egenerklaering_kvalitetssikringssystem")}
               </h2>
 
               <div className="space-y-1 text-muted-foreground">
-                <p>Virksomhet: <span className="font-medium text-foreground">{company?.name || "_________________________________"}</span></p>
-                <p>Organisasjonsnummer: <span className="font-medium text-foreground">{company?.org_number || "_________________________"}</span></p>
+                <p>{t("auto.virksomhet_2")} <span className="font-medium text-foreground">{company?.name || "_________________________________"}</span></p>
+                <p>{t("auto.organisasjonsnummer_2")} <span className="font-medium text-foreground">{company?.org_number || "_________________________"}</span></p>
               </div>
 
               <Separator />
@@ -187,21 +188,20 @@ export default function IkKsEgenerklaering() {
               </p>
 
               <p>
-                Systemet er tilpasset virksomhetens størrelse og aktiviteter, og skal sikre at arbeid 
-                planlegges, utføres og dokumenteres i samsvar med gjeldende lover, forskrifter og krav til kvalitet.
+                {t("auto.systemet_er_tilpasset_virksomhetens_stoe")}
               </p>
 
-              <p className="font-medium">Kvalitetssikringssystemet omfatter blant annet:</p>
+              <p className="font-medium">{t("auto.kvalitetssikringssystemet_omfatter_blant")}</p>
 
               <ul className="list-disc list-inside space-y-1.5 pl-2">
-                <li>Klare ansvarsforhold og rutiner for gjennomføring av arbeid</li>
-                <li>Kontroll og dokumentasjon av utført arbeid</li>
-                <li>Håndtering av avvik og forbedringstiltak</li>
-                <li>Jevnlig gjennomgang og oppdatering av systemet</li>
+                <li>{t("auto.klare_ansvarsforhold_og_rutiner_for_gjen")}</li>
+                <li>{t("auto.kontroll_og_dokumentasjon_av_utfoert_arb")}</li>
+                <li>{t("auto.haandtering_av_avvik_og_forbedringstilta")}</li>
+                <li>{t("auto.jevnlig_gjennomgang_og_oppdatering_av_sy")}</li>
               </ul>
 
               <p>
-                Systemet er gjort kjent for ansatte og brukes aktivt i virksomhetens prosjekter og leveranser.
+                {t("auto.systemet_er_gjort_kjent_for_ansatte_og_b")}
               </p>
 
               <Separator />
@@ -209,13 +209,13 @@ export default function IkKsEgenerklaering() {
               {/* Signature section */}
               <div className="grid grid-cols-2 gap-6 pt-2">
                 <div>
-                  <p className="text-muted-foreground text-xs mb-1">Sted</p>
+                  <p className="text-muted-foreground text-xs mb-1">{t("auto.sted")}</p>
                   <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
                     {selfDeclaration?.city || ""}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs mb-1">Dato</p>
+                  <p className="text-muted-foreground text-xs mb-1">{t("auto.dato")}</p>
                   <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
                     {selfDeclaration?.manager_signed_at ? formatDate(selfDeclaration.manager_signed_at) : ""}
                   </p>
@@ -224,19 +224,19 @@ export default function IkKsEgenerklaering() {
 
               <div className="space-y-3 pt-2">
                 <div>
-                  <p className="text-muted-foreground text-xs mb-1">Navn</p>
+                  <p className="text-muted-foreground text-xs mb-1">{t("auto.navn_2")}</p>
                   <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
                     {selfDeclaration?.manager_name || ""}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs mb-1">Stilling</p>
+                  <p className="text-muted-foreground text-xs mb-1">{t("auto.stilling_2")}</p>
                   <p className="font-medium border-b border-border pb-1 min-h-[1.5rem]">
-                    Daglig leder
+                    {t("auto.daglig_leder")}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs mb-1">Signatur</p>
+                  <p className="text-muted-foreground text-xs mb-1">{t("auto.signatur")}</p>
                   <div className="border-b border-border pb-1 min-h-[3rem]">
                     {selfDeclaration?.manager_signature && (
                       <img 

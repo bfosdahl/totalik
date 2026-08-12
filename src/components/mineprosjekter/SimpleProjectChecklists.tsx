@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface SimpleProjectChecklistsProps {
   projectId: string;
@@ -67,11 +68,11 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500/10 text-green-600 border-green-500/20">Fullført</Badge>;
+        return <Badge className="bg-green-500/10 text-green-600 border-green-500/20">{t("auto.fullfoert")}</Badge>;
       case "in_progress":
-        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Pågår</Badge>;
+        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">{t("auto.paagaar")}</Badge>;
       default:
-        return <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">Ikke startet</Badge>;
+        return <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">{t("auto.ikke_startet")}</Badge>;
     }
   };
 
@@ -164,7 +165,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
               <ClipboardList className="h-4 w-4 text-primary" />
               <div>
                 <p className="text-lg font-bold">{checklistTemplates.length}</p>
-                <p className="text-xs text-muted-foreground">Maler</p>
+                <p className="text-xs text-muted-foreground">{t("auto.maler")}</p>
               </div>
             </div>
           </CardContent>
@@ -175,7 +176,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
               <Clock className="h-4 w-4 text-blue-500" />
               <div>
                 <p className="text-lg font-bold">{checklists.filter(c => c.status === 'in_progress').length}</p>
-                <p className="text-xs text-muted-foreground">Pågår</p>
+                <p className="text-xs text-muted-foreground">{t("auto.paagaar")}</p>
               </div>
             </div>
           </CardContent>
@@ -186,7 +187,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               <div>
                 <p className="text-lg font-bold">{checklists.filter(c => c.status === 'completed').length}</p>
-                <p className="text-xs text-muted-foreground">Fullførte</p>
+                <p className="text-xs text-muted-foreground">{t("auto.fullfoerte")}</p>
               </div>
             </div>
           </CardContent>
@@ -197,7 +198,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
               <CheckSquare className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-lg font-bold">{checklists.length}</p>
-                <p className="text-xs text-muted-foreground">Totalt</p>
+                <p className="text-xs text-muted-foreground">{t("auto.totalt")}</p>
               </div>
             </div>
           </CardContent>
@@ -208,7 +209,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Søk i sjekklister..."
+          placeholder={t("auto.soek_i_sjekklister")}
           className="pl-9"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -223,7 +224,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
               <ClipboardList className="w-5 h-5" />
               Sjekkliste-maler
             </CardTitle>
-            <CardDescription>Velg en mal for å starte ny egenkontroll</CardDescription>
+            <CardDescription>{t("auto.velg_en_mal_for_aa_starte_ny_egenkontrol")}</CardDescription>
           </div>
           <Button onClick={() => {
             setExistingChecklist(null);
@@ -231,12 +232,12 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
             setShowWizard(true);
           }}>
             <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Ny egenkontroll</span>
+            <span className="hidden sm:inline">{t("auto.ny_egenkontroll")}</span>
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
           {Object.keys(groupedTemplates).length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">Ingen sjekkliste-maler tilgjengelig</p>
+            <p className="text-muted-foreground text-center py-8">{t("auto.ingen_sjekkliste_maler_tilgjengelig")}</p>
           ) : (
             Object.entries(groupedTemplates)
               .sort(([a], [b]) => (CHECKLIST_CATEGORIES[a] || a).localeCompare(CHECKLIST_CATEGORIES[b] || b))
@@ -377,7 +378,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
           <div className="space-y-4">
             <Badge>{previewTemplate?.category}</Badge>
             <div>
-              <h4 className="font-medium mb-2">Kontrollpunkter</h4>
+              <h4 className="font-medium mb-2">{t("auto.kontrollpunkter_2")}</h4>
               <div className="space-y-2">
                 {Array.isArray(previewTemplate?.checkpoints) &&
                   previewTemplate.checkpoints.map((cp: any, idx: number) => (
@@ -416,7 +417,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
                 </p>
               )}
               <div>
-                <h4 className="font-medium mb-2">Kontrollpunkter</h4>
+                <h4 className="font-medium mb-2">{t("auto.kontrollpunkter_2")}</h4>
                 <div className="space-y-2">
                   {Array.isArray(viewingChecklist.checklist_items) && viewingChecklist.checklist_items.map((item: any, idx: number) => (
                     <div key={idx} className="flex items-start justify-between gap-2 p-2 bg-muted/50 rounded">

@@ -61,6 +61,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments } from "@/hooks/useDepartments";
+import { t } from "@/i18n/t";
 
 interface UserManagementSettingsProps {
   onBack: () => void;
@@ -196,7 +197,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       setUsers(usersWithRoles);
     } catch (error) {
       console.error("Error loading users:", error);
-      toast.error("Kunne ikke laste brukere");
+      toast.error(t("auto.kunne_ikke_laste_brukere"));
     } finally {
       setLoading(false);
     }
@@ -208,12 +209,12 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
   const handleInviteUser = async () => {
     if (!inviteForm.email.trim()) {
-      toast.error("E-post er påkrevd");
+      toast.error(t("auto.e_post_er_paakrevd"));
       return;
     }
 
     if (inviteForm.role === "department_admin" && (!inviteForm.departmentId || inviteForm.departmentId === "none")) {
-      toast.error("Du må velge en avdeling for avdelingsleder");
+      toast.error(t("auto.du_maa_velge_en_avdeling_for_avdelingsle"));
       return;
     }
 
@@ -233,7 +234,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast.success("Bruker invitert!");
+      toast.success(t("auto.bruker_invitert"));
       setInviteDialogOpen(false);
       setInviteForm({ email: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       loadUsers();
@@ -247,11 +248,11 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
   const handleCreateUserDirect = async () => {
     if (!createForm.email.trim()) {
-      toast.error("E-post er påkrevd");
+      toast.error(t("auto.e_post_er_paakrevd"));
       return;
     }
     if (!createForm.password || createForm.password.length < 6) {
-      toast.error("Passord må være minst 6 tegn");
+      toast.error(t("auto.passord_maa_vaere_minst_6_tegn"));
       return;
     }
 
@@ -299,7 +300,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         });
       }
 
-      toast.success("Bruker opprettet!");
+      toast.success(t("auto.bruker_opprettet_2"));
       setCreateDirectDialogOpen(false);
       setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       setShowPassword(false);
@@ -414,7 +415,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         }
       }
 
-      toast.success("Bruker oppdatert!");
+      toast.success(t("auto.bruker_oppdatert"));
       setEditDialogOpen(false);
       setSelectedUser(null);
       loadUsers();
@@ -431,7 +432,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
     // Prevent deactivating yourself
     if (selectedUser.user_id === user?.id) {
-      toast.error("Du kan ikke deaktivere din egen konto");
+      toast.error(t("auto.du_kan_ikke_deaktivere_din_egen_konto"));
       return;
     }
 
@@ -444,7 +445,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       if (error) throw error;
 
-      toast.success("Bruker deaktivert");
+      toast.success(t("auto.bruker_deaktivert"));
       setDeleteDialogOpen(false);
       setSelectedUser(null);
       loadUsers();
@@ -475,7 +476,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
   const handleSuspendUser = async (companyUser: CompanyUser) => {
     if (companyUser.user_id === user?.id) {
-      toast.error("Du kan ikke suspendere din egen konto");
+      toast.error(t("auto.du_kan_ikke_suspendere_din_egen_konto"));
       return;
     }
 
@@ -487,7 +488,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       if (error) throw error;
 
-      toast.success("Bruker suspendert");
+      toast.success(t("auto.bruker_suspendert"));
       loadUsers();
     } catch (error: any) {
       console.error("Error suspending user:", error);
@@ -504,7 +505,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast.success("Bruker reaktivert. Husk å tildele avdeling og eventuell rolle.");
+      toast.success(t("auto.bruker_reaktivert_husk_aa_tildele_avdeli"));
       loadUsers();
     } catch (error: any) {
       console.error("Error reactivating user:", error);
@@ -532,9 +533,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
   const getStatusBadge = (status: UserStatus) => {
     switch (status) {
       case "pending_approval":
-        return <Badge variant="outline" className="text-amber-600 border-amber-500 bg-amber-50 dark:bg-amber-950/30">Venter godkjenning</Badge>;
+        return <Badge variant="outline" className="text-amber-600 border-amber-500 bg-amber-50 dark:bg-amber-950/30">{t("auto.venter_godkjenning")}</Badge>;
       case "suspended":
-        return <Badge variant="outline" className="text-destructive border-destructive">Suspendert</Badge>;
+        return <Badge variant="outline" className="text-destructive border-destructive">{t("auto.suspendert")}</Badge>;
       default:
         return null;
     }
@@ -543,16 +544,16 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
   const getRoleBadge = (role: string, isDepartmentAdmin?: boolean) => {
     switch (role) {
       case "system_admin":
-        return <Badge variant="default" className="bg-primary">System Admin</Badge>;
+        return <Badge variant="default" className="bg-primary">{t("auto.system_admin")}</Badge>;
       case "company_admin":
-        return <Badge variant="secondary">Administrator</Badge>;
+        return <Badge variant="secondary">{t("auto.administrator")}</Badge>;
       case "department_admin":
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Avdelingsleder</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{t("auto.avdelingsleder")}</Badge>;
       default:
         if (isDepartmentAdmin) {
-          return <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">Avdelingsleder</Badge>;
+          return <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{t("auto.avdelingsleder")}</Badge>;
         }
-        return <Badge variant="outline">Bruker</Badge>;
+        return <Badge variant="outline">{t("auto.bruker")}</Badge>;
     }
   };
 
@@ -590,7 +591,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               <Users className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Brukere og tilgang</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t("auto.brukere_og_tilgang")}</h1>
               <p className="text-muted-foreground">
                 Administrer brukere i {company.name}
               </p>
@@ -623,9 +624,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <Users className="w-12 h-12 text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Ingen brukere ennå</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_brukere_ennaa")}</h3>
             <p className="text-muted-foreground mb-4">
-              Legg til eller inviter brukere for å gi dem tilgang til bedriftens HMS-system.
+              {t("auto.legg_til_eller_inviter_brukere_for_aa_gi")}
             </p>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setCreateDirectDialogOpen(true)}>
@@ -671,12 +672,12 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       {getStatusBadge(companyUser.status)}
                       {!companyUser.is_active && companyUser.status !== "suspended" && (
                         <Badge variant="outline" className="text-destructive border-destructive">
-                          Deaktivert
+                          {t("auto.deaktivert")}
                         </Badge>
                       )}
                       {companyUser.user_id === user?.id && (
                         <Badge variant="outline" className="text-primary border-primary">
-                          Deg
+                          {t("auto.deg")}
                         </Badge>
                       )}
                     </div>
@@ -748,14 +749,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Inviter ny bruker</DialogTitle>
+            <DialogTitle>{t("auto.inviter_ny_bruker")}</DialogTitle>
             <DialogDescription>
-              Send en invitasjon til en ny bruker. De vil motta en e-post med innloggingsinformasjon.
+              {t("auto.send_en_invitasjon_til_en_ny_bruker_de_v")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="invite-email">E-post *</Label>
+              <Label htmlFor="invite-email">{t("auto.e_post")}</Label>
               <Input
                 id="invite-email"
                 type="email"
@@ -766,26 +767,26 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="invite-firstname">Fornavn</Label>
+                <Label htmlFor="invite-firstname">{t("auto.fornavn")}</Label>
                 <Input
                   id="invite-firstname"
                   value={inviteForm.firstName}
                   onChange={(e) => setInviteForm({ ...inviteForm, firstName: e.target.value })}
-                  placeholder="Ola"
+                  placeholder={t("auto.ola")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="invite-lastname">Etternavn</Label>
+                <Label htmlFor="invite-lastname">{t("auto.etternavn")}</Label>
                 <Input
                   id="invite-lastname"
                   value={inviteForm.lastName}
                   onChange={(e) => setInviteForm({ ...inviteForm, lastName: e.target.value })}
-                  placeholder="Nordmann"
+                  placeholder={t("auto.nordmann")}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="invite-role">Rolle</Label>
+              <Label htmlFor="invite-role">{t("auto.rolle")}</Label>
               <Select
                 value={inviteForm.role}
                 onValueChange={(value: "company_admin" | "department_admin" | "user") => 
@@ -826,7 +827,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             </div>
             {hasDepartments && inviteForm.role === "department_admin" && (
               <div className="space-y-2">
-                <Label htmlFor="invite-department">Avdeling *</Label>
+                <Label htmlFor="invite-department">{t("auto.avdeling")}</Label>
                 <Select
                   value={inviteForm.departmentId}
                   onValueChange={(value) => 
@@ -834,7 +835,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg avdeling" />
+                    <SelectValue placeholder={t("auto.velg_avdeling")} />
                   </SelectTrigger>
                   <SelectContent>
                     {departments.filter(d => d.is_active).map((dept) => (
@@ -852,7 +853,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleInviteUser} disabled={isSubmitting}>
               {isSubmitting ? (
@@ -870,14 +871,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       <Dialog open={createDirectDialogOpen} onOpenChange={setCreateDirectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Legg til ny bruker</DialogTitle>
+            <DialogTitle>{t("auto.legg_til_ny_bruker")}</DialogTitle>
             <DialogDescription>
-              Opprett en bruker direkte med e-post og passord. Brukeren kan logge inn umiddelbart.
+              {t("auto.opprett_en_bruker_direkte_med_e_post_og_")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="create-email">E-post *</Label>
+              <Label htmlFor="create-email">{t("auto.e_post")}</Label>
               <Input
                 id="create-email"
                 type="email"
@@ -887,14 +888,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-password">Passord *</Label>
+              <Label htmlFor="create-password">{t("auto.passord_2")}</Label>
               <div className="relative">
                 <Input
                   id="create-password"
                   type={showPassword ? "text" : "password"}
                   value={createForm.password}
                   onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                  placeholder="Minst 6 tegn"
+                  placeholder={t("auto.minst_6_tegn")}
                   className="pr-10"
                 />
                 <Button
@@ -914,26 +915,26 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="create-firstname">Fornavn</Label>
+                <Label htmlFor="create-firstname">{t("auto.fornavn")}</Label>
                 <Input
                   id="create-firstname"
                   value={createForm.firstName}
                   onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
-                  placeholder="Ola"
+                  placeholder={t("auto.ola")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-lastname">Etternavn</Label>
+                <Label htmlFor="create-lastname">{t("auto.etternavn")}</Label>
                 <Input
                   id="create-lastname"
                   value={createForm.lastName}
                   onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
-                  placeholder="Nordmann"
+                  placeholder={t("auto.nordmann")}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-role">Rolle</Label>
+              <Label htmlFor="create-role">{t("auto.rolle")}</Label>
               <Select
                 value={createForm.role}
                 onValueChange={(value: "company_admin" | "department_admin" | "user") => 
@@ -974,7 +975,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             </div>
             {hasDepartments && (
               <div className="space-y-2">
-                <Label htmlFor="create-department">Avdeling</Label>
+                <Label htmlFor="create-department">{t("auto.avdeling_2")}</Label>
                 <Select
                   value={createForm.departmentId}
                   onValueChange={(value) => 
@@ -1002,14 +1003,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Tildel brukeren til en avdeling for å filtrere data.
+                  {t("auto.tildel_brukeren_til_en_avdeling_for_aa_f")}
                 </p>
               </div>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDirectDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleCreateUserDirect} disabled={isSubmitting}>
               {isSubmitting ? (
@@ -1027,34 +1028,34 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rediger bruker</DialogTitle>
+            <DialogTitle>{t("auto.rediger_bruker")}</DialogTitle>
             <DialogDescription>
-              Oppdater brukerens informasjon og tilgangsnivå.
+              {t("auto.oppdater_brukerens_informasjon_og_tilgan")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-firstname">Fornavn</Label>
+                <Label htmlFor="edit-firstname">{t("auto.fornavn")}</Label>
                 <Input
                   id="edit-firstname"
                   value={editForm.firstName}
                   onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
-                  placeholder="Fornavn"
+                  placeholder={t("auto.fornavn")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-lastname">Etternavn</Label>
+                <Label htmlFor="edit-lastname">{t("auto.etternavn")}</Label>
                 <Input
                   id="edit-lastname"
                   value={editForm.lastName}
                   onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
-                  placeholder="Etternavn"
+                  placeholder={t("auto.etternavn")}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-role">Rolle</Label>
+              <Label htmlFor="edit-role">{t("auto.rolle")}</Label>
               <Select
                 value={editForm.role}
                 onValueChange={(value: "company_admin" | "department_admin" | "user") => 
@@ -1090,7 +1091,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             </div>
             {hasDepartments && editForm.role === "department_admin" && (
               <div className="space-y-2">
-                <Label htmlFor="edit-department">Avdeling *</Label>
+                <Label htmlFor="edit-department">{t("auto.avdeling")}</Label>
                 <Select
                   value={editForm.departmentId}
                   onValueChange={(value) => 
@@ -1098,7 +1099,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg avdeling" />
+                    <SelectValue placeholder={t("auto.velg_avdeling")} />
                   </SelectTrigger>
                   <SelectContent>
                     {departments.filter(d => d.is_active).map((dept) => (
@@ -1116,7 +1117,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleEditUser} disabled={isSubmitting}>
               {isSubmitting ? (
@@ -1134,14 +1135,13 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Deaktiver bruker?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.deaktiver_bruker")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil deaktivere denne brukeren? 
-              De vil ikke lenger ha tilgang til bedriftens HMS-system.
+              {t("auto.er_du_sikker_paa_at_du_vil_deaktivere_de")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeactivateUser}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

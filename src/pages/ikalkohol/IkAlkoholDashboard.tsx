@@ -21,6 +21,7 @@ import { useIkAlkohol } from "@/hooks/useIkAlkohol";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, addDays, isBefore, isAfter } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function IkAlkoholDashboard() {
   const navigate = useNavigate();
@@ -84,9 +85,9 @@ export default function IkAlkoholDashboard() {
   const openIncidents = incidents.filter(i => i.status !== "Lukket").length;
 
   const quickActions = [
-    { label: "Ny hendelse", icon: Plus, path: "/ik-alkohol/hendelser?new=true", color: "text-red-500" },
-    { label: "Planlegg revisjon", icon: CalendarCheck, path: "/ik-alkohol/internkontroll?tab=oppfolging", color: "text-blue-500" },
-    { label: "Generer PDF", icon: FileText, path: "/ik-alkohol/internkontroll?export=true", color: "text-emerald-500" },
+    { label: t("auto.ny_hendelse"), icon: Plus, path: "/ik-alkohol/hendelser?new=true", color: "text-red-500" },
+    { label: t("auto.planlegg_revisjon"), icon: CalendarCheck, path: "/ik-alkohol/internkontroll?tab=oppfolging", color: "text-blue-500" },
+    { label: t("auto.generer_pdf"), icon: FileText, path: "/ik-alkohol/internkontroll?export=true", color: "text-emerald-500" },
   ];
 
   return (
@@ -100,7 +101,7 @@ export default function IkAlkoholDashboard() {
               IK Alkohol
             </h1>
             <p className="text-muted-foreground mt-1">
-              Internkontroll etter alkoholloven
+              {t("auto.internkontroll_etter_alkoholloven")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -180,7 +181,7 @@ export default function IkAlkoholDashboard() {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Hurtighandlinger</CardTitle>
+            <CardTitle className="text-lg">{t("auto.hurtighandlinger")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -204,15 +205,15 @@ export default function IkAlkoholDashboard() {
           {/* Recent Incidents */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Siste hendelser</CardTitle>
+              <CardTitle className="text-lg">{t("auto.siste_hendelser")}</CardTitle>
               <Button variant="ghost" size="sm" onClick={() => navigate("/ik-alkohol/hendelser")}>
-                Se alle
+                {t("auto.se_alle")}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </CardHeader>
             <CardContent>
               {incidents.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Ingen hendelser registrert</p>
+                <p className="text-muted-foreground text-sm">{t("auto.ingen_hendelser_registrert")}</p>
               ) : (
                 <div className="space-y-3">
                   {incidents.slice(0, 5).map((incident) => (
@@ -238,15 +239,15 @@ export default function IkAlkoholDashboard() {
           {/* Upcoming Reviews */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Kommende revisjoner</CardTitle>
+              <CardTitle className="text-lg">{t("auto.kommende_revisjoner")}</CardTitle>
               <Button variant="ghost" size="sm" onClick={() => navigate("/ik-alkohol/internkontroll?tab=oppfolging")}>
-                Se alle
+                {t("auto.se_alle")}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </CardHeader>
             <CardContent>
               {reviews.filter(r => r.status === "Planlagt").length === 0 ? (
-                <p className="text-muted-foreground text-sm">Ingen planlagte revisjoner</p>
+                <p className="text-muted-foreground text-sm">{t("auto.ingen_planlagte_revisjoner")}</p>
               ) : (
                 <div className="space-y-3">
                   {reviews.filter(r => r.status === "Planlagt").slice(0, 5).map((review) => (
@@ -257,7 +258,7 @@ export default function IkAlkoholDashboard() {
                           {format(new Date(review.planned_date), "d. MMM yyyy", { locale: nb })}
                         </p>
                       </div>
-                      <Badge variant="outline">Planlagt</Badge>
+                      <Badge variant="outline">{t("auto.planlagt")}</Badge>
                     </div>
                   ))}
                 </div>

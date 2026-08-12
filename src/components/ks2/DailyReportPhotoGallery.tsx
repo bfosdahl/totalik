@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 interface Photo {
   path: string;
@@ -75,7 +76,7 @@ export function DailyReportPhotoGallery({ photos }: Props) {
           {lightbox ? (
             <img src={lightbox} alt="" className="max-w-full max-h-full object-contain" />
           ) : (
-            <div className="text-white">Laster…</div>
+            <div className="text-white">{t("auto.laster_2")}</div>
           )}
         </div>
       )}

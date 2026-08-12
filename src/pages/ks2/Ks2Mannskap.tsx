@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n/t";
 import {
   Dialog,
   DialogContent,
@@ -154,7 +155,7 @@ export default function Ks2Mannskap() {
       setChecklists(checklistRes.data || []);
     } catch (err: any) {
       console.error("Error loading crew:", err);
-      toast.error("Kunne ikke laste mannskap: " + (err.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_laste_mannskap") + (err.message || "Ukjent feil"));
     } finally {
       setIsLoading(false);
     }
@@ -203,14 +204,14 @@ export default function Ks2Mannskap() {
   const handleSave = async () => {
     if (!projectId || !profile?.company_id) return;
     if (!selectedUserId) {
-      toast.error("Velg en ansatt");
+      toast.error(t("auto.velg_en_ansatt"));
       return;
     }
 
     const finalRole = projectRole === "Annet" ? customRole.trim() : projectRole;
     const user = companyUsers.find((u) => u.user_id === selectedUserId);
     if (!user) {
-      toast.error("Ugyldig bruker");
+      toast.error(t("auto.ugyldig_bruker"));
       return;
     }
 
@@ -234,26 +235,26 @@ export default function Ks2Mannskap() {
           .update(payload)
           .eq("id", editingMember.id);
         if (error) throw error;
-        toast.success("Mannskap oppdatert");
+        toast.success(t("auto.mannskap_oppdatert"));
       } else {
         const { error } = await supabase
           .from("ks_module2_project_crew")
           .insert({ ...payload, added_by: profile.user_id });
         if (error) {
           if (error.code === "23505") {
-            toast.error("Denne ansatte er allerede lagt til på prosjektet");
+            toast.error(t("auto.denne_ansatte_er_allerede_lagt_til_paa_p"));
             return;
           }
           throw error;
         }
-        toast.success("Mannskap lagt til");
+        toast.success(t("auto.mannskap_lagt_til"));
       }
       setDialogOpen(false);
       resetForm();
       fetchData();
     } catch (err: any) {
       console.error(err);
-      toast.error("Kunne ikke lagre: " + (err.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_lagre") + (err.message || "Ukjent feil"));
     } finally {
       setIsSaving(false);
     }
@@ -267,11 +268,11 @@ export default function Ks2Mannskap() {
         .delete()
         .eq("id", deleteId);
       if (error) throw error;
-      toast.success("Fjernet fra mannskap");
+      toast.success(t("auto.fjernet_fra_mannskap"));
       setDeleteId(null);
       fetchData();
     } catch (err: any) {
-      toast.error("Kunne ikke slette: " + (err.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_slette_2") + (err.message || "Ukjent feil"));
     }
   };
 
@@ -330,11 +331,11 @@ export default function Ks2Mannskap() {
         if (error) throw error;
       }
 
-      toast.success("Sjekklister oppdatert");
+      toast.success(t("auto.sjekklister_oppdatert"));
       setAssignDialogOpen(false);
       fetchData();
     } catch (err: any) {
-      toast.error("Kunne ikke oppdatere: " + (err.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_oppdatere") + (err.message || "Ukjent feil"));
     } finally {
       setIsAssigning(false);
     }
@@ -378,9 +379,9 @@ export default function Ks2Mannskap() {
             <HardHat className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Mannskapsliste</h2>
+            <h2 className="text-2xl font-bold">{t("auto.mannskapsliste")}</h2>
             <p className="text-muted-foreground">
-              Oversikt over ansatte på prosjektet og delegering av sjekklister
+              {t("auto.oversikt_over_ansatte_paa_prosjektet_og_")}
             </p>
           </div>
         </div>
@@ -399,7 +400,7 @@ export default function Ks2Mannskap() {
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Totalt mannskap</p>
+                <p className="text-sm text-muted-foreground">{t("auto.totalt_mannskap")}</p>
                 <p className="text-2xl font-bold">{crew.length}</p>
               </div>
             </div>
@@ -410,7 +411,7 @@ export default function Ks2Mannskap() {
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Aktive</p>
+                <p className="text-sm text-muted-foreground">{t("auto.aktive")}</p>
                 <p className="text-2xl font-bold">{crew.filter((c) => c.is_active).length}</p>
               </div>
             </div>
@@ -421,7 +422,7 @@ export default function Ks2Mannskap() {
             <div className="flex items-center gap-3">
               <ClipboardCheck className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Sjekklister tildelt</p>
+                <p className="text-sm text-muted-foreground">{t("auto.sjekklister_tildelt")}</p>
                 <p className="text-2xl font-bold">
                   {checklists.filter((c) => c.responsible_user_id).length} / {checklists.length}
                 </p>
@@ -435,7 +436,7 @@ export default function Ks2Mannskap() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Søk i mannskap..."
+          placeholder={t("auto.soek_i_mannskap")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -445,16 +446,16 @@ export default function Ks2Mannskap() {
       {/* Crew table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Mannskap på prosjektet</CardTitle>
+          <CardTitle className="text-lg">{t("auto.mannskap_paa_prosjektet")}</CardTitle>
           <CardDescription>
-            Klikk på en person for å delegere sjekklister og se detaljer
+            {t("auto.klikk_paa_en_person_for_aa_delegere_sjek")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredCrew.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <HardHat className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p className="font-medium">Ingen mannskap er lagt til ennå</p>
+              <p className="font-medium">{t("auto.ingen_mannskap_er_lagt_til_ennaa")}</p>
               {canManage && (
                 <p className="text-sm mt-1">Klikk "Legg til mannskap" for å komme i gang</p>
               )}
@@ -464,11 +465,11 @@ export default function Ks2Mannskap() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Navn</TableHead>
-                    <TableHead>Rolle</TableHead>
-                    <TableHead>Periode</TableHead>
-                    <TableHead>Sjekklister</TableHead>
-                    <TableHead className="text-right">Handlinger</TableHead>
+                    <TableHead>{t("auto.navn_2")}</TableHead>
+                    <TableHead>{t("auto.rolle")}</TableHead>
+                    <TableHead>{t("auto.periode")}</TableHead>
+                    <TableHead>{t("auto.sjekklister")}</TableHead>
+                    <TableHead className="text-right">{t("auto.handlinger")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -519,7 +520,7 @@ export default function Ks2Mannskap() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => openAssignDialog(member)}
-                                  title="Tildel sjekklister"
+                                  title={t("auto.tildel_sjekklister")}
                                 >
                                   <ClipboardCheck className="h-4 w-4" />
                                 </Button>
@@ -527,7 +528,7 @@ export default function Ks2Mannskap() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => openEditDialog(member)}
-                                  title="Rediger"
+                                  title={t("auto.rediger")}
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </Button>
@@ -535,7 +536,7 @@ export default function Ks2Mannskap() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setDeleteId(member.id)}
-                                  title="Fjern"
+                                  title={t("auto.fjern")}
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
@@ -561,25 +562,25 @@ export default function Ks2Mannskap() {
               {editingMember ? "Rediger mannskap" : "Legg til mannskap"}
             </DialogTitle>
             <DialogDescription>
-              Velg en ansatt fra bedriften og angi rolle og ansvarsområder på prosjektet.
+              {t("auto.velg_en_ansatt_fra_bedriften_og_angi_rol")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label>Ansatt *</Label>
+              <Label>{t("auto.ansatt_2")}</Label>
               <Select
                 value={selectedUserId}
                 onValueChange={setSelectedUserId}
                 disabled={!!editingMember || usersLoading}
               >
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Velg ansatt..." />
+                  <SelectValue placeholder={t("auto.velg_ansatt_2")} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableUsers.length === 0 ? (
                     <div className="px-2 py-3 text-sm text-muted-foreground text-center">
-                      Ingen flere ansatte å legge til
+                      {t("auto.ingen_flere_ansatte_aa_legge_til")}
                     </div>
                   ) : (
                     availableUsers.map((u) => (
@@ -593,10 +594,10 @@ export default function Ks2Mannskap() {
             </div>
 
             <div>
-              <Label>Rolle på prosjektet</Label>
+              <Label>{t("auto.rolle_paa_prosjektet")}</Label>
               <Select value={projectRole} onValueChange={setProjectRole}>
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Velg rolle..." />
+                  <SelectValue placeholder={t("auto.velg_rolle_2")} />
                 </SelectTrigger>
                 <SelectContent>
                   {ROLE_OPTIONS.map((r) => (
@@ -609,7 +610,7 @@ export default function Ks2Mannskap() {
               {projectRole === "Annet" && (
                 <Input
                   className="mt-2"
-                  placeholder="Skriv inn rolle..."
+                  placeholder={t("auto.skriv_inn_rolle")}
                   value={customRole}
                   onChange={(e) => setCustomRole(e.target.value)}
                 />
@@ -618,7 +619,7 @@ export default function Ks2Mannskap() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Startdato</Label>
+                <Label>{t("auto.startdato")}</Label>
                 <Input
                   type="date"
                   value={startDate}
@@ -627,7 +628,7 @@ export default function Ks2Mannskap() {
                 />
               </div>
               <div>
-                <Label>Sluttdato</Label>
+                <Label>{t("auto.sluttdato")}</Label>
                 <Input
                   type="date"
                   value={endDate}
@@ -638,22 +639,22 @@ export default function Ks2Mannskap() {
             </div>
 
             <div>
-              <Label>Ansvarsområder</Label>
+              <Label>{t("auto.ansvarsomraader_2")}</Label>
               <Textarea
                 value={responsibilities}
                 onChange={(e) => setResponsibilities(e.target.value)}
-                placeholder="F.eks. ansvarlig for taktekking, sikring av stillas..."
+                placeholder={t("auto.f_eks_ansvarlig_for_taktekking_sikring_a")}
                 className="mt-1"
                 rows={3}
               />
             </div>
 
             <div>
-              <Label>Notater</Label>
+              <Label>{t("auto.notater")}</Label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Interne notater..."
+                placeholder={t("auto.interne_notater_2")}
                 className="mt-1"
                 rows={2}
               />
@@ -662,7 +663,7 @@ export default function Ks2Mannskap() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -676,7 +677,7 @@ export default function Ks2Mannskap() {
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Tildel sjekklister</DialogTitle>
+            <DialogTitle>{t("auto.tildel_sjekklister")}</DialogTitle>
             <DialogDescription>
               Velg hvilke sjekklister {assigningMember?.display_name} skal være ansvarlig for.
             </DialogDescription>
@@ -685,7 +686,7 @@ export default function Ks2Mannskap() {
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {checklists.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">
-                Ingen sjekklister på prosjektet ennå
+                {t("auto.ingen_sjekklister_paa_prosjektet_ennaa")}
               </p>
             ) : (
               checklists.map((c) => {
@@ -730,7 +731,7 @@ export default function Ks2Mannskap() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleAssignChecklists} disabled={isAssigning}>
               {isAssigning && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -744,15 +745,14 @@ export default function Ks2Mannskap() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Fjerne fra mannskap?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.fjerne_fra_mannskap")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Personen fjernes fra prosjektets mannskapsliste. Eventuelle sjekklister
-              denne personen er ansvarlig for vil beholde tildelingen.
+              {t("auto.personen_fjernes_fra_prosjektets_mannska")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Fjern</AlertDialogAction>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("auto.fjern")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

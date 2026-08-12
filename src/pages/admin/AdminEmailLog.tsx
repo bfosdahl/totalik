@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Search, Mail, CheckCircle, Eye, MousePointerClick, AlertTriangle, XCircle, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface EmailLog {
   id: string;
@@ -34,14 +35,14 @@ interface EmailLog {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: typeof Mail }> = {
-  sent: { label: "Sendt", variant: "secondary", icon: Mail },
-  delivered: { label: "Levert", variant: "default", icon: CheckCircle },
-  opened: { label: "Åpnet", variant: "default", icon: Eye },
-  clicked: { label: "Klikket", variant: "default", icon: MousePointerClick },
-  bounced: { label: "Bounced", variant: "destructive", icon: AlertTriangle },
-  failed: { label: "Feilet", variant: "destructive", icon: XCircle },
-  complained: { label: "Klaget", variant: "destructive", icon: AlertTriangle },
-  delayed: { label: "Forsinket", variant: "outline", icon: RefreshCw },
+  sent: { label: t("auto.sendt"), variant: "secondary", icon: Mail },
+  delivered: { label: t("auto.levert"), variant: "default", icon: CheckCircle },
+  opened: { label: t("auto.aapnet"), variant: "default", icon: Eye },
+  clicked: { label: t("auto.klikket"), variant: "default", icon: MousePointerClick },
+  bounced: { label: t("auto.bounced"), variant: "destructive", icon: AlertTriangle },
+  failed: { label: t("auto.feilet"), variant: "destructive", icon: XCircle },
+  complained: { label: t("auto.klaget"), variant: "destructive", icon: AlertTriangle },
+  delayed: { label: t("auto.forsinket"), variant: "outline", icon: RefreshCw },
 };
 
 export default function AdminEmailLog() {
@@ -103,8 +104,8 @@ export default function AdminEmailLog() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold">E-postlogg</h1>
-              <p className="text-muted-foreground">Oversikt over alle sendte e-poster og status</p>
+              <h1 className="text-2xl font-bold">{t("auto.e_postlogg")}</h1>
+              <p className="text-muted-foreground">{t("auto.oversikt_over_alle_sendte_e_poster_og_st")}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -116,7 +117,7 @@ export default function AdminEmailLog() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Totalt sendt</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.totalt_sendt")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.total}</div>
@@ -124,7 +125,7 @@ export default function AdminEmailLog() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Levert</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.levert")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">{stats.delivered}</div>
@@ -132,7 +133,7 @@ export default function AdminEmailLog() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Åpnet</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.aapnet")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">{stats.opened}</div>
@@ -140,7 +141,7 @@ export default function AdminEmailLog() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Feilet</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.feilet")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
@@ -153,7 +154,7 @@ export default function AdminEmailLog() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Søk etter e-post, emne, navn eller bedrift..."
+                placeholder={t("auto.soek_etter_e_post_emne_navn_eller_bedrif")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -161,17 +162,17 @@ export default function AdminEmailLog() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filtrer status" />
+                <SelectValue placeholder={t("auto.filtrer_status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle statuser</SelectItem>
-                <SelectItem value="sent">Sendt</SelectItem>
-                <SelectItem value="delivered">Levert</SelectItem>
-                <SelectItem value="opened">Åpnet</SelectItem>
-                <SelectItem value="clicked">Klikket</SelectItem>
-                <SelectItem value="bounced">Bounced</SelectItem>
-                <SelectItem value="failed">Feilet</SelectItem>
-                <SelectItem value="complained">Klaget</SelectItem>
+                <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+                <SelectItem value="sent">{t("auto.sendt")}</SelectItem>
+                <SelectItem value="delivered">{t("auto.levert")}</SelectItem>
+                <SelectItem value="opened">{t("auto.aapnet")}</SelectItem>
+                <SelectItem value="clicked">{t("auto.klikket")}</SelectItem>
+                <SelectItem value="bounced">{t("auto.bounced")}</SelectItem>
+                <SelectItem value="failed">{t("auto.feilet")}</SelectItem>
+                <SelectItem value="complained">{t("auto.klaget")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -186,17 +187,17 @@ export default function AdminEmailLog() {
               ) : logs.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Mail className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                  <p>Ingen e-poster funnet</p>
+                  <p>{t("auto.ingen_e_poster_funnet")}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Mottaker</TableHead>
-                      <TableHead className="hidden md:table-cell">Emne</TableHead>
-                      <TableHead className="hidden lg:table-cell">Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="hidden sm:table-cell">Tidspunkt</TableHead>
+                      <TableHead>{t("auto.mottaker")}</TableHead>
+                      <TableHead className="hidden md:table-cell">{t("auto.emne_2")}</TableHead>
+                      <TableHead className="hidden lg:table-cell">{t("auto.type")}</TableHead>
+                      <TableHead>{t("auto.status_2")}</TableHead>
+                      <TableHead className="hidden sm:table-cell">{t("auto.tidspunkt_2")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -245,61 +246,61 @@ export default function AdminEmailLog() {
         <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>E-postdetaljer</DialogTitle>
+              <DialogTitle>{t("auto.e_postdetaljer")}</DialogTitle>
             </DialogHeader>
             {selectedLog && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Mottaker</p>
+                    <p className="text-muted-foreground">{t("auto.mottaker")}</p>
                     <p className="font-medium">{selectedLog.recipient_name || "–"}</p>
                     <p>{selectedLog.recipient_email}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Status</p>
+                    <p className="text-muted-foreground">{t("auto.status_2")}</p>
                     <StatusBadge status={selectedLog.status} />
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Emne</p>
+                    <p className="text-muted-foreground">{t("auto.emne_2")}</p>
                     <p className="font-medium">{selectedLog.subject || "–"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Type</p>
+                    <p className="text-muted-foreground">{t("auto.type")}</p>
                     <p>{selectedLog.email_type}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Sendt av</p>
+                    <p className="text-muted-foreground">{t("auto.sendt_av")}</p>
                     <p>{selectedLog.sent_by || "–"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Bedrift</p>
+                    <p className="text-muted-foreground">{t("auto.bedrift")}</p>
                     <p>{selectedLog.company_name || "–"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Sendt</p>
+                    <p className="text-muted-foreground">{t("auto.sendt")}</p>
                     <p>{format(new Date(selectedLog.created_at), "dd.MM.yyyy HH:mm:ss", { locale: nb })}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Resend ID</p>
+                    <p className="text-muted-foreground">{t("auto.resend_id")}</p>
                     <p className="text-xs font-mono break-all">{selectedLog.resend_email_id || "–"}</p>
                   </div>
                 </div>
 
                 {/* Timeline */}
                 <div className="border-t pt-4">
-                  <p className="text-sm font-medium mb-2">Tidslinje</p>
+                  <p className="text-sm font-medium mb-2">{t("auto.tidslinje")}</p>
                   <div className="space-y-2 text-sm">
-                    <TimelineItem label="Sendt" time={selectedLog.created_at} />
-                    <TimelineItem label="Levert" time={selectedLog.delivered_at} />
-                    <TimelineItem label="Åpnet" time={selectedLog.opened_at} />
-                    <TimelineItem label="Klikket" time={selectedLog.clicked_at} />
-                    {selectedLog.bounced_at && <TimelineItem label="Bounced" time={selectedLog.bounced_at} error />}
+                    <TimelineItem label={t("auto.sendt")} time={selectedLog.created_at} />
+                    <TimelineItem label={t("auto.levert")} time={selectedLog.delivered_at} />
+                    <TimelineItem label={t("auto.aapnet")} time={selectedLog.opened_at} />
+                    <TimelineItem label={t("auto.klikket")} time={selectedLog.clicked_at} />
+                    {selectedLog.bounced_at && <TimelineItem label={t("auto.bounced")} time={selectedLog.bounced_at} error />}
                   </div>
                 </div>
 
                 {selectedLog.error_message && (
                   <div className="border-t pt-4">
-                    <p className="text-sm font-medium text-destructive mb-1">Feilmelding</p>
+                    <p className="text-sm font-medium text-destructive mb-1">{t("auto.feilmelding")}</p>
                     <p className="text-sm bg-destructive/10 p-3 rounded-md">{selectedLog.error_message}</p>
                   </div>
                 )}

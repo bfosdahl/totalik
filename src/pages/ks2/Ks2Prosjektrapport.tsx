@@ -45,6 +45,7 @@ import { useKsModule2Subcontractors } from "@/hooks/useKsModule2Subcontractors";
 import { supabase } from "@/integrations/supabase/client";
 import { generateProjectReportPdf, ReportSections, KsHandbokData } from "@/utils/ksModule2ProjectReport";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 // Helper to re-sign expired storage URLs before PDF generation
 const reSignStorageUrl = async (url: string): Promise<string> => {
@@ -154,7 +155,7 @@ export default function Ks2Prosjektrapport() {
         setProject(data);
       } catch (error) {
         console.error("Error fetching project:", error);
-        toast.error("Kunne ikke hente prosjektdata");
+        toast.error(t("auto.kunne_ikke_hente_prosjektdata"));
       } finally {
         setIsLoadingProject(false);
       }
@@ -164,14 +165,14 @@ export default function Ks2Prosjektrapport() {
 
   const handleGenerateReport = async () => {
     if (!project || !projectId) {
-      toast.error("Prosjektdata mangler");
+      toast.error(t("auto.prosjektdata_mangler"));
       return;
     }
 
     setIsGenerating(true);
     const hasPhotos = sections.includeChecklistPhotos || sections.includeAvvikPhotos;
     if (hasPhotos) {
-      toast.info("Genererer rapport med bilder - dette kan ta litt tid...");
+      toast.info(t("auto.genererer_rapport_med_bilder_dette_kan_t"));
     }
 
     // Fetch KS Handbook data if included
@@ -401,10 +402,10 @@ export default function Ks2Prosjektrapport() {
         ksHandbok: ksHandbokData,
       }, sections);
 
-      toast.success("Prosjektrapport generert!");
+      toast.success(t("auto.prosjektrapport_generert"));
     } catch (error) {
       console.error("Error generating report:", error);
-      toast.error("Kunne ikke generere rapport");
+      toast.error(t("auto.kunne_ikke_generere_rapport"));
     } finally {
       setIsGenerating(false);
     }
@@ -433,9 +434,9 @@ export default function Ks2Prosjektrapport() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Prosjektrapport / FDV-pakke</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">{t("auto.prosjektrapport_fdv_pakke")}</h1>
         <p className="text-sm sm:text-base text-muted-foreground">
-          Generer samlet prosjektdokumentasjon som PDF
+          {t("auto.generer_samlet_prosjektdokumentasjon_som")}
         </p>
       </div>
 
@@ -444,9 +445,9 @@ export default function Ks2Prosjektrapport() {
         <div className="lg:col-span-2 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Velg innhold</CardTitle>
+              <CardTitle className="text-lg">{t("auto.velg_innhold")}</CardTitle>
               <CardDescription>
-                Velg hvilke seksjoner som skal inkluderes i rapporten
+                {t("auto.velg_hvilke_seksjoner_som_skal_inkludere")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -455,8 +456,8 @@ export default function Ks2Prosjektrapport() {
                 icon={Info}
                 iconBgColor="bg-blue-100"
                 iconColor="text-blue-600"
-                label="Prosjektinformasjon"
-                description="Grunnleggende prosjektdata og status"
+                label={t("auto.prosjektinformasjon")}
+                description={t("auto.grunnleggende_prosjektdata_og_status")}
                 checked={sections.includeProjectInfo}
                 onCheckedChange={(checked) => 
                   setSections(s => ({ ...s, includeProjectInfo: !!checked }))
@@ -464,7 +465,7 @@ export default function Ks2Prosjektrapport() {
               />
 
               <Separator className="my-4" />
-              <div className="text-sm font-medium text-muted-foreground mb-2">Kvalitetssikring</div>
+              <div className="text-sm font-medium text-muted-foreground mb-2">{t("auto.kvalitetssikring")}</div>
 
               {/* Checklists */}
               <div className="space-y-2">
@@ -472,7 +473,7 @@ export default function Ks2Prosjektrapport() {
                   icon={ClipboardList}
                   iconBgColor="bg-green-100"
                   iconColor="text-green-600"
-                  label="Sjekklister og egenkontroller"
+                  label={t("auto.sjekklister_og_egenkontroller")}
                   description={`${checklistsInReport} av ${checklists.length} valgt for rapport (${completedChecklists} fullført)`}
                   checked={sections.includeChecklists}
                   onCheckedChange={(checked) => 
@@ -482,14 +483,14 @@ export default function Ks2Prosjektrapport() {
                 {sections.includeChecklists && (
                   <div className="ml-14 space-y-2">
                     <SubOption
-                      label="Inkluder sjekkpunktdetaljer"
-                      description="Viser alle sjekkpunkter med svar"
+                      label={t("auto.inkluder_sjekkpunktdetaljer")}
+                      description={t("auto.viser_alle_sjekkpunkter_med_svar")}
                       checked={sections.includeChecklistDetails}
                       onCheckedChange={(checked) => setSections(s => ({ ...s, includeChecklistDetails: checked }))}
                     />
                     <SubOption
-                      label="Inkluder bilder"
-                      description="Legger ved opplastede bilder fra sjekklister"
+                      label={t("auto.inkluder_bilder")}
+                      description={t("auto.legger_ved_opplastede_bilder_fra_sjekkli")}
                       checked={sections.includeChecklistPhotos}
                       onCheckedChange={(checked) => setSections(s => ({ ...s, includeChecklistPhotos: checked }))}
                     />
@@ -513,14 +514,14 @@ export default function Ks2Prosjektrapport() {
                 {sections.includeAvvik && (
                   <div className="ml-14 space-y-2">
                     <SubOption
-                      label="Inkluder beskrivelser og tiltak"
-                      description="Viser full beskrivelse og korrigerende tiltak"
+                      label={t("auto.inkluder_beskrivelser_og_tiltak")}
+                      description={t("auto.viser_full_beskrivelse_og_korrigerende_t")}
                       checked={sections.includeAvvikDetails}
                       onCheckedChange={(checked) => setSections(s => ({ ...s, includeAvvikDetails: checked }))}
                     />
                     <SubOption
-                      label="Inkluder bilder"
-                      description="Legger ved opplastede bilder fra avvik"
+                      label={t("auto.inkluder_bilder")}
+                      description={t("auto.legger_ved_opplastede_bilder_fra_avvik")}
                       checked={sections.includeAvvikPhotos}
                       onCheckedChange={(checked) => setSections(s => ({ ...s, includeAvvikPhotos: checked }))}
                     />
@@ -534,7 +535,7 @@ export default function Ks2Prosjektrapport() {
                   icon={Shield}
                   iconBgColor="bg-purple-100"
                   iconColor="text-purple-600"
-                  label="Uavhengig kontroll"
+                  label={t("auto.uavhengig_kontroll")}
                   description={`${approvedUk} av ${ukList.length} godkjent`}
                   checked={sections.includeUk}
                   onCheckedChange={(checked) => 
@@ -544,8 +545,8 @@ export default function Ks2Prosjektrapport() {
                 {sections.includeUk && (
                   <div className="ml-14">
                     <SubOption
-                      label="Inkluder kommentarer og beskrivelser"
-                      description="Viser detaljert kontrollinformasjon"
+                      label={t("auto.inkluder_kommentarer_og_beskrivelser")}
+                      description={t("auto.viser_detaljert_kontrollinformasjon")}
                       checked={sections.includeUkDetails}
                       onCheckedChange={(checked) => setSections(s => ({ ...s, includeUkDetails: checked }))}
                     />
@@ -554,14 +555,14 @@ export default function Ks2Prosjektrapport() {
               </div>
 
               <Separator className="my-4" />
-              <div className="text-sm font-medium text-muted-foreground mb-2">HMS / SHA</div>
+              <div className="text-sm font-medium text-muted-foreground mb-2">{t("auto.hms_sha")}</div>
 
               {/* SHA Plan */}
               <SectionToggle
                 icon={FileText}
                 iconBgColor="bg-emerald-100"
                 iconColor="text-emerald-600"
-                label="SHA-plan"
+                label={t("auto.sha_plan")}
                 description={shaPlan ? `Status: ${shaPlan.status}` : "Ikke opprettet"}
                 checked={sections.includeShaPlan}
                 onCheckedChange={(checked) => 
@@ -585,8 +586,8 @@ export default function Ks2Prosjektrapport() {
                 {sections.includeSja && (
                   <div className="ml-14">
                     <SubOption
-                      label="Inkluder risikoanalyse og tiltak"
-                      description="Viser identifiserte risikoer og risikoreduserende tiltak"
+                      label={t("auto.inkluder_risikoanalyse_og_tiltak")}
+                      description={t("auto.viser_identifiserte_risikoer_og_risikore")}
                       checked={sections.includeSjaDetails}
                       onCheckedChange={(checked) => setSections(s => ({ ...s, includeSjaDetails: checked }))}
                     />
@@ -600,7 +601,7 @@ export default function Ks2Prosjektrapport() {
                   icon={ShieldCheck}
                   iconBgColor="bg-violet-100"
                   iconColor="text-violet-600"
-                  label="Vernerunder"
+                  label={t("auto.vernerunder")}
                   description={`${completedVernerunder} av ${vernerunder.length} fullført`}
                   checked={sections.includeVernerunder}
                   onCheckedChange={(checked) => 
@@ -610,8 +611,8 @@ export default function Ks2Prosjektrapport() {
                 {sections.includeVernerunder && (
                   <div className="ml-14">
                     <SubOption
-                      label="Inkluder funn og observasjoner"
-                      description="Viser alle registrerte funn fra vernerundene"
+                      label={t("auto.inkluder_funn_og_observasjoner")}
+                      description={t("auto.viser_alle_registrerte_funn_fra_vernerun")}
                       checked={sections.includeVernerundeDetails}
                       onCheckedChange={(checked) => setSections(s => ({ ...s, includeVernerundeDetails: checked }))}
                     />
@@ -624,7 +625,7 @@ export default function Ks2Prosjektrapport() {
                 icon={FlaskConical}
                 iconBgColor="bg-orange-100"
                 iconColor="text-orange-600"
-                label="Stoffkartotek"
+                label={t("auto.stoffkartotek")}
                 description={`${stoffkartotekList.length} kjemikalier`}
                 checked={sections.includeStoffkartotek}
                 onCheckedChange={(checked) => 
@@ -633,14 +634,14 @@ export default function Ks2Prosjektrapport() {
               />
 
               <Separator className="my-4" />
-              <div className="text-sm font-medium text-muted-foreground mb-2">Prosjektstyring</div>
+              <div className="text-sm font-medium text-muted-foreground mb-2">{t("auto.prosjektstyring")}</div>
 
               {/* Milestones / Fremdriftsplan */}
               <SectionToggle
                 icon={GanttChart}
                 iconBgColor="bg-blue-100"
                 iconColor="text-blue-600"
-                label="Fremdriftsplan / Milepæler"
+                label={t("auto.fremdriftsplan_milepaeler")}
                 description={`${milestones.length} milepæler`}
                 checked={sections.includeMilestones}
                 onCheckedChange={(checked) => 
@@ -653,7 +654,7 @@ export default function Ks2Prosjektrapport() {
                 icon={Users}
                 iconBgColor="bg-indigo-100"
                 iconColor="text-indigo-600"
-                label="Møtereferater"
+                label={t("auto.moetereferater")}
                 description={`${completedMeetings} av ${meetings.length} fullført`}
                 checked={sections.includeMeetings}
                 onCheckedChange={(checked) => 
@@ -662,14 +663,14 @@ export default function Ks2Prosjektrapport() {
               />
 
               <Separator className="my-4" />
-              <div className="text-sm font-medium text-muted-foreground mb-2">Økonomi</div>
+              <div className="text-sm font-medium text-muted-foreground mb-2">{t("auto.oekonomi")}</div>
 
               {/* Finances */}
               <SectionToggle
                 icon={Wallet}
                 iconBgColor="bg-amber-100"
                 iconColor="text-amber-600"
-                label="Økonomioversikt"
+                label={t("auto.oekonomioversikt")}
                 description={finances ? `Kontraktssum: ${finances.contract_sum?.toLocaleString('nb-NO')} kr` : "Ikke registrert"}
                 checked={sections.includeFinances}
                 onCheckedChange={(checked) => 
@@ -682,7 +683,7 @@ export default function Ks2Prosjektrapport() {
                 icon={FileText}
                 iconBgColor="bg-cyan-100"
                 iconColor="text-cyan-600"
-                label="Endringsmeldinger"
+                label={t("auto.endringsmeldinger")}
                 description={`${approvedChangeOrders} av ${changeOrders.length} godkjent`}
                 checked={sections.includeChangeOrders}
                 onCheckedChange={(checked) => 
@@ -695,7 +696,7 @@ export default function Ks2Prosjektrapport() {
                 icon={FileWarning}
                 iconBgColor="bg-rose-100"
                 iconColor="text-rose-600"
-                label="Reklamasjoner"
+                label={t("auto.reklamasjoner")}
                 description={`${resolvedClaims} av ${claims.length} lukket`}
                 checked={sections.includeClaims}
                 onCheckedChange={(checked) => 
@@ -704,14 +705,14 @@ export default function Ks2Prosjektrapport() {
               />
 
               <Separator className="my-4" />
-              <div className="text-sm font-medium text-muted-foreground mb-2">Partnere</div>
+              <div className="text-sm font-medium text-muted-foreground mb-2">{t("auto.partnere")}</div>
 
               {/* Subcontractors */}
               <SectionToggle
                 icon={Building2}
                 iconBgColor="bg-purple-100"
                 iconColor="text-purple-600"
-                label="Underleverandører"
+                label={t("auto.underleverandoerer")}
                 description={`${approvedSubcontractors} av ${subcontractors.length} godkjent`}
                 checked={sections.includeSubcontractors}
                 onCheckedChange={(checked) => 
@@ -720,14 +721,14 @@ export default function Ks2Prosjektrapport() {
               />
 
               <Separator className="my-4" />
-              <div className="text-sm font-medium text-muted-foreground mb-2">Dokumentasjon</div>
+              <div className="text-sm font-medium text-muted-foreground mb-2">{t("auto.dokumentasjon")}</div>
 
               {/* Routines */}
               <SectionToggle
                 icon={BookOpen}
                 iconBgColor="bg-teal-100"
                 iconColor="text-teal-600"
-                label="Rutiner"
+                label={t("auto.rutiner")}
                 description={`${routines.length} rutiner`}
                 checked={sections.includeRoutines}
                 onCheckedChange={(checked) => 
@@ -740,8 +741,8 @@ export default function Ks2Prosjektrapport() {
                 icon={FolderOpen}
                 iconBgColor="bg-gray-100"
                 iconColor="text-gray-600"
-                label="Dokumentoversikt"
-                description="Oversikt over prosjektdokumenter"
+                label={t("auto.dokumentoversikt")}
+                description={t("auto.oversikt_over_prosjektdokumenter")}
                 checked={sections.includeDocuments}
                 onCheckedChange={(checked) => 
                   setSections(s => ({ ...s, includeDocuments: !!checked }))
@@ -753,7 +754,7 @@ export default function Ks2Prosjektrapport() {
                 icon={BookOpen}
                 iconBgColor="bg-sky-100"
                 iconColor="text-sky-600"
-                label="KS Håndbok"
+                label={t("auto.ks_haandbok")}
                 description="Bedriftens kvalitetssikringshåndbok (mål, org, rutiner)"
                 checked={sections.includeKsHandbok}
                 onCheckedChange={(checked) => 
@@ -768,28 +769,28 @@ export default function Ks2Prosjektrapport() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Sammendrag</CardTitle>
+              <CardTitle className="text-lg">{t("auto.sammendrag")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <SummaryRow label="Sjekklister" count={checklists.length} />
-                <SummaryRow label="Avvik" count={avvikList.length} />
-                <SummaryRow label="UK-kontroller" count={ukList.length} />
+                <SummaryRow label={t("auto.sjekklister")} count={checklists.length} />
+                <SummaryRow label={t("auto.avvik")} count={avvikList.length} />
+                <SummaryRow label={t("auto.uk_kontroller")} count={ukList.length} />
                 <SummaryRow label="SJA" count={sjaList.length} />
-                <SummaryRow label="Vernerunder" count={vernerunder.length} />
-                <SummaryRow label="Stoffkartotek" count={stoffkartotekList.length} />
-                <SummaryRow label="Milepæler" count={milestones.length} />
-                <SummaryRow label="Møtereferater" count={meetings.length} />
-                <SummaryRow label="Endringsmeldinger" count={changeOrders.length} />
-                <SummaryRow label="Reklamasjoner" count={claims.length} />
-                <SummaryRow label="Underleverandører" count={subcontractors.length} />
-                <SummaryRow label="Rutiner" count={routines.length} />
+                <SummaryRow label={t("auto.vernerunder")} count={vernerunder.length} />
+                <SummaryRow label={t("auto.stoffkartotek")} count={stoffkartotekList.length} />
+                <SummaryRow label={t("auto.milepaeler")} count={milestones.length} />
+                <SummaryRow label={t("auto.moetereferater")} count={meetings.length} />
+                <SummaryRow label={t("auto.endringsmeldinger")} count={changeOrders.length} />
+                <SummaryRow label={t("auto.reklamasjoner")} count={claims.length} />
+                <SummaryRow label={t("auto.underleverandoerer")} count={subcontractors.length} />
+                <SummaryRow label={t("auto.rutiner")} count={routines.length} />
               </div>
 
               <Separator />
 
               <div className="text-sm text-muted-foreground">
-                Rapporten vil inneholde alle valgte seksjoner med oppsummering og detaljer.
+                {t("auto.rapporten_vil_inneholde_alle_valgte_seks")}
               </div>
 
               <Button 

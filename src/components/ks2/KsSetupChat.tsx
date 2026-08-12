@@ -7,6 +7,7 @@ import { Loader2, Send, User, Sparkles, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { t } from "@/i18n/t";
 
 interface Message {
   role: "user" | "assistant";
@@ -202,7 +203,7 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
         role: "assistant",
         content: "Beklager, det oppsto en feil. Prøv igjen."
       }]);
-      toast.error("Feil ved kommunikasjon med AI");
+      toast.error(t("auto.feil_ved_kommunikasjon_med_ai"));
     } finally {
       setIsLoading(false);
     }
@@ -215,13 +216,13 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
           <Sparkles className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-medium">KS Oppsett-hjelperen</h3>
-          <p className="text-xs text-muted-foreground">AI-assistent for KS-system tilpasning</p>
+          <h3 className="font-medium">{t("auto.ks_oppsett_hjelperen")}</h3>
+          <p className="text-xs text-muted-foreground">{t("auto.ai_assistent_for_ks_system_tilpasning")}</p>
         </div>
         {setupComplete && (
           <div className="ml-auto flex items-center gap-2 text-green-600">
             <CheckCircle className="w-4 h-4" />
-            <span className="text-sm">Oppsett klart!</span>
+            <span className="text-sm">{t("auto.oppsett_klart")}</span>
           </div>
         )}
       </div>
@@ -281,7 +282,7 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Skriv her..."
+            placeholder={t("auto.skriv_her")}
             disabled={isLoading || setupComplete}
           />
           <Button type="submit" size="icon" disabled={isLoading || !input.trim() || setupComplete}>

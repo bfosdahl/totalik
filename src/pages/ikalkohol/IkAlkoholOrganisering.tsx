@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const IkAlkoholOrganisering = () => {
   const navigate = useNavigate();
@@ -102,8 +103,8 @@ const IkAlkoholOrganisering = () => {
       <div className="container max-w-6xl mx-auto py-6 px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Organisering</h1>
-            <p className="text-muted-foreground">Roller, ansvar og vaktplan</p>
+            <h1 className="text-2xl font-bold">{t("auto.organisering")}</h1>
+            <p className="text-muted-foreground">{t("auto.roller_ansvar_og_vaktplan")}</p>
           </div>
         </div>
 
@@ -122,7 +123,7 @@ const IkAlkoholOrganisering = () => {
             </div>
 
             {organization.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground">Ingen roller registrert</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-muted-foreground">{t("auto.ingen_roller_registrert_2")}</CardContent></Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {organization.map(role => {
@@ -144,7 +145,7 @@ const IkAlkoholOrganisering = () => {
                           
                           {roleInfo?.responsibilities && (
                             <div className="mt-3 pt-3 border-t">
-                              <p className="text-xs font-medium text-muted-foreground mb-2">Ansvarsområder:</p>
+                              <p className="text-xs font-medium text-muted-foreground mb-2">{t("auto.ansvarsomraader")}</p>
                               <ul className="text-xs space-y-1">
                                 {roleInfo.responsibilities.map((r, i) => (
                                   <li key={i} className="flex items-start gap-2">
@@ -185,7 +186,7 @@ const IkAlkoholOrganisering = () => {
             </div>
 
             {shifts.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground">Ingen vakter registrert</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-muted-foreground">{t("auto.ingen_vakter_registrert")}</CardContent></Card>
             ) : (
               <div className="space-y-2">
                 {shifts.map(shift => (
@@ -217,15 +218,15 @@ const IkAlkoholOrganisering = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold">Opplæringsbekreftelse</h2>
-                  <p className="text-sm text-muted-foreground">Alle ansatte skal signere at de har mottatt opplæring i alkohollovgivning og internkontroll</p>
+                  <h2 className="text-lg font-semibold">{t("auto.opplaeringsbekreftelse")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("auto.alle_ansatte_skal_signere_at_de_har_mott")}</p>
                 </div>
                 <Button onClick={() => {
                   // Add all company users that don't already have a record
                   const existingUserIds = trainingRecords.map(r => r.employee_user_id).filter(Boolean);
                   const newUsers = companyUsers.filter(u => !existingUserIds.includes(u.user_id));
                   if (newUsers.length === 0) {
-                    toast.info("Alle ansatte er allerede lagt til");
+                    toast.info(t("auto.alle_ansatte_er_allerede_lagt_til"));
                     return;
                   }
                   newUsers.forEach(user => {
@@ -282,7 +283,7 @@ const IkAlkoholOrganisering = () => {
                               </Button>
                             )}
                             {record.signed_at && (
-                              <Badge className="bg-green-100 text-green-800">Signert</Badge>
+                              <Badge className="bg-green-100 text-green-800">{t("auto.signert")}</Badge>
                             )}
                             <Button size="sm" variant="ghost" onClick={() => deleteRecord.mutate(record.id)}>
                               <Trash2 className="h-4 w-4" />
@@ -317,9 +318,9 @@ const IkAlkoholOrganisering = () => {
             <DialogHeader><DialogTitle>{editingRoleId ? 'Rediger rolle' : 'Legg til rolle'}</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Rolletype *</label>
+                <label className="text-sm font-medium">{t("auto.rolletype_2")}</label>
                 <Select value={roleForm.role_type} onValueChange={(v) => setRoleForm({ ...roleForm, role_type: v })}>
-                  <SelectTrigger><SelectValue placeholder="Velg rolle" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("auto.velg_rolle")} /></SelectTrigger>
                   <SelectContent>
                     {ROLE_TYPES.map(r => (
                       <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -328,13 +329,13 @@ const IkAlkoholOrganisering = () => {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Ansatt *</label>
+                <label className="text-sm font-medium">{t("auto.ansatt_2")}</label>
                 {customNameMode ? (
                   <div className="flex gap-2">
                     <Input 
                       value={roleForm.employee_name} 
                       onChange={(e) => setRoleForm({ ...roleForm, employee_name: e.target.value, employee_id: '' })}
-                      placeholder="Skriv navn..."
+                      placeholder={t("auto.skriv_navn")}
                     />
                     <Button type="button" variant="outline" size="sm" onClick={() => setCustomNameMode(false)}>
                       <Users className="h-4 w-4" />
@@ -350,9 +351,9 @@ const IkAlkoholOrganisering = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0 bg-popover z-[9999]" align="start">
                       <Command>
-                        <CommandInput placeholder="Søk etter ansatt..." />
+                        <CommandInput placeholder={t("auto.soek_etter_ansatt")} />
                         <CommandList>
-                          <CommandEmpty>Ingen ansatte funnet</CommandEmpty>
+                          <CommandEmpty>{t("auto.ingen_ansatte_funnet")}</CommandEmpty>
                           <CommandGroup heading="Ansatte">
                             {companyUsers.map((user) => (
                               <CommandItem key={user.id} onSelect={() => selectEmployee(user)}>
@@ -375,17 +376,17 @@ const IkAlkoholOrganisering = () => {
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium">Telefon</label>
+                <label className="text-sm font-medium">{t("auto.telefon")}</label>
                 <Input value={roleForm.phone} onChange={(e) => setRoleForm({ ...roleForm, phone: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium">E-post</label>
+                <label className="text-sm font-medium">{t("auto.e_post_2")}</label>
                 <Input value={roleForm.email} onChange={(e) => setRoleForm({ ...roleForm, email: e.target.value })} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowRoleDialog(false)}>Avbryt</Button>
-              <Button onClick={handleSaveRole}>Lagre</Button>
+              <Button variant="outline" onClick={() => setShowRoleDialog(false)}>{t("auto.avbryt")}</Button>
+              <Button onClick={handleSaveRole}>{t("auto.lagre")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -393,24 +394,24 @@ const IkAlkoholOrganisering = () => {
         {/* Shift Dialog */}
         <Dialog open={showShiftDialog} onOpenChange={setShowShiftDialog}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Registrer vakt</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("auto.registrer_vakt")}</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Dato *</label>
+                <label className="text-sm font-medium">{t("auto.dato_2")}</label>
                 <Input type="date" value={shiftForm.shift_date} onChange={(e) => setShiftForm({ ...shiftForm, shift_date: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium">Tid</label>
-                <Input placeholder="f.eks. 18:00-03:00" value={shiftForm.shift_time} onChange={(e) => setShiftForm({ ...shiftForm, shift_time: e.target.value })} />
+                <label className="text-sm font-medium">{t("auto.tid")}</label>
+                <Input placeholder={t("auto.f_eks_18_00_03_00")} value={shiftForm.shift_time} onChange={(e) => setShiftForm({ ...shiftForm, shift_time: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium">Styrer *</label>
+                <label className="text-sm font-medium">{t("auto.styrer_2")}</label>
                 {styrerCustomMode ? (
                   <div className="flex gap-2">
                     <Input 
                       value={shiftForm.styrer_name} 
                       onChange={(e) => setShiftForm({ ...shiftForm, styrer_name: e.target.value })}
-                      placeholder="Skriv navn..."
+                      placeholder={t("auto.skriv_navn")}
                     />
                     <Button type="button" variant="outline" size="sm" onClick={() => setStyrerCustomMode(false)}>
                       <Users className="h-4 w-4" />
@@ -426,9 +427,9 @@ const IkAlkoholOrganisering = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0 bg-popover" align="start">
                       <Command>
-                        <CommandInput placeholder="Søk etter ansatt..." />
+                        <CommandInput placeholder={t("auto.soek_etter_ansatt")} />
                         <CommandList>
-                          <CommandEmpty>Ingen ansatte funnet</CommandEmpty>
+                          <CommandEmpty>{t("auto.ingen_ansatte_funnet")}</CommandEmpty>
                           <CommandGroup heading="Ansatte">
                             {companyUsers.map((user) => (
                               <CommandItem key={user.id} onSelect={() => { setShiftForm({ ...shiftForm, styrer_name: getUserDisplayName(user) }); setStyrerPopoverOpen(false); }}>
@@ -449,13 +450,13 @@ const IkAlkoholOrganisering = () => {
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium">Stedfortreder</label>
+                <label className="text-sm font-medium">{t("auto.stedfortreder")}</label>
                 {stedfortrederCustomMode ? (
                   <div className="flex gap-2">
                     <Input 
                       value={shiftForm.stedfortreder_name} 
                       onChange={(e) => setShiftForm({ ...shiftForm, stedfortreder_name: e.target.value })}
-                      placeholder="Skriv navn..."
+                      placeholder={t("auto.skriv_navn")}
                     />
                     <Button type="button" variant="outline" size="sm" onClick={() => setStedfortrederCustomMode(false)}>
                       <Users className="h-4 w-4" />
@@ -471,9 +472,9 @@ const IkAlkoholOrganisering = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0 bg-popover" align="start">
                       <Command>
-                        <CommandInput placeholder="Søk etter ansatt..." />
+                        <CommandInput placeholder={t("auto.soek_etter_ansatt")} />
                         <CommandList>
-                          <CommandEmpty>Ingen ansatte funnet</CommandEmpty>
+                          <CommandEmpty>{t("auto.ingen_ansatte_funnet")}</CommandEmpty>
                           <CommandGroup heading="Ansatte">
                             {companyUsers.map((user) => (
                               <CommandItem key={user.id} onSelect={() => { setShiftForm({ ...shiftForm, stedfortreder_name: getUserDisplayName(user) }); setStedfortrederPopoverOpen(false); }}>
@@ -495,8 +496,8 @@ const IkAlkoholOrganisering = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowShiftDialog(false)}>Avbryt</Button>
-              <Button onClick={handleSaveShift}>Lagre</Button>
+              <Button variant="outline" onClick={() => setShowShiftDialog(false)}>{t("auto.avbryt")}</Button>
+              <Button onClick={handleSaveShift}>{t("auto.lagre")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

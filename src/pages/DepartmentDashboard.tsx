@@ -27,6 +27,7 @@ import { useDepartmentDashboardStats } from "@/hooks/useDepartmentDashboardStats
 import { supabase } from "@/integrations/supabase/client";
 import { Department } from "@/hooks/useDepartments";
 import { AnonymousMessageButton } from "@/components/anonymous/AnonymousMessageButton";
+import { t } from "@/i18n/t";
 
 const DepartmentDashboard = () => {
   const { departmentId } = useParams<{ departmentId: string }>();
@@ -109,7 +110,7 @@ const DepartmentDashboard = () => {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-pulse text-muted-foreground">Laster avdeling...</div>
+          <div className="animate-pulse text-muted-foreground">{t("auto.laster_avdeling")}</div>
         </div>
       </AppLayout>
     );
@@ -147,7 +148,7 @@ const DepartmentDashboard = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <h1 className="text-xl md:text-2xl font-bold">{department.name}</h1>
-                      <Badge variant="secondary">Avdeling</Badge>
+                      <Badge variant="secondary">{t("auto.avdeling_2")}</Badge>
                     </div>
                     {department.city && (
                       <div className="flex items-center gap-1 text-muted-foreground mt-1">
@@ -164,12 +165,12 @@ const DepartmentDashboard = () => {
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => navigate("/employees")} className="gap-2">
                     <Users className="h-4 w-4" />
-                    <span className="hidden sm:inline">Ansatte</span>
+                    <span className="hidden sm:inline">{t("auto.ansatte")}</span>
                     <Badge variant="secondary" className="ml-1">{employeeCount}</Badge>
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => navigate("/settings?tab=departments")} className="gap-2">
                     <Settings className="h-4 w-4" />
-                    <span className="hidden sm:inline">Innstillinger</span>
+                    <span className="hidden sm:inline">{t("auto.innstillinger")}</span>
                   </Button>
                 </div>
               </div>
@@ -194,8 +195,7 @@ const DepartmentDashboard = () => {
                   <h2 className="text-lg md:text-xl font-bold">Sett opp HMS for {department.name} 🎉</h2>
                 </div>
                 <p className="text-sm md:text-base text-muted-foreground">
-                  Denne avdelingen trenger sitt eget HMS-oppsett. Start AI-veilederen for å få skreddersydd 
-                  risikovurdering, rutiner og handlingsplan for avdelingen.
+                  {t("auto.denne_avdelingen_trenger_sitt_eget_hms_o")}
                 </p>
               </div>
 
@@ -225,7 +225,7 @@ const DepartmentDashboard = () => {
                   HMS-oppsett for {department.name}
                 </CardTitle>
                 <CardDescription>
-                  Administrer avdelingens egne HMS-dokumenter og innstillinger
+                  {t("auto.administrer_avdelingens_egne_hms_dokumen")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -236,7 +236,7 @@ const DepartmentDashboard = () => {
                     onClick={() => navigate(`/avdeling/${departmentId}/maal`)}
                   >
                     <Target className="h-5 w-5 text-primary" />
-                    <span className="text-sm">Målsetting</span>
+                    <span className="text-sm">{t("auto.maalsetting")}</span>
                   </Button>
                   <Button 
                     variant="outline" 
@@ -244,7 +244,7 @@ const DepartmentDashboard = () => {
                     onClick={() => navigate(`/avdeling/${departmentId}/organisering`)}
                   >
                     <Users className="h-5 w-5 text-primary" />
-                    <span className="text-sm">Organisering</span>
+                    <span className="text-sm">{t("auto.organisering")}</span>
                   </Button>
                   <Button 
                     variant="outline" 
@@ -252,7 +252,7 @@ const DepartmentDashboard = () => {
                     onClick={() => navigate(`/avdeling/${departmentId}/rutiner`)}
                   >
                     <FileText className="h-5 w-5 text-primary" />
-                    <span className="text-sm">Rutiner</span>
+                    <span className="text-sm">{t("auto.rutiner")}</span>
                   </Button>
                   <Button 
                     variant="outline" 
@@ -260,7 +260,7 @@ const DepartmentDashboard = () => {
                     onClick={() => navigate(`/avdeling/${departmentId}/oppsett/ai`)}
                   >
                     <Sparkles className="h-5 w-5 text-primary" />
-                    <span className="text-sm">AI-oppsett</span>
+                    <span className="text-sm">{t("auto.ai_oppsett")}</span>
                   </Button>
                 </div>
               </CardContent>
@@ -271,36 +271,36 @@ const DepartmentDashboard = () => {
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatsCard
-            title="Samsvarsstatus"
+            title={t("auto.samsvarsstatus")}
             value={statsLoading ? "..." : `${compliancePercent}%`}
-            description="Oppfyller krav"
+            description={t("auto.oppfyller_krav")}
             icon={Shield}
             variant="success"
             delay={0}
             onClick={() => navigate("/setup")}
           />
           <StatsCard
-            title="Åpne avvik"
+            title={t("auto.aapne_avvik")}
             value={statsLoading ? "..." : openDeviations}
-            description="Krever handling"
+            description={t("auto.krever_handling")}
             icon={AlertTriangle}
             variant="warning"
             delay={0.1}
             onClick={() => navigate("/deviations")}
           />
           <StatsCard
-            title="Fullførte tiltak"
+            title={t("auto.fullfoerte_tiltak")}
             value={statsLoading ? "..." : completedActions}
-            description="Totalt"
+            description={t("auto.totalt")}
             icon={CheckCircle2}
             variant="success"
             delay={0.2}
             onClick={() => navigate("/setup?step=3")}
           />
           <StatsCard
-            title="Forfallende"
+            title={t("auto.forfallende")}
             value={statsLoading ? "..." : dueSoon}
-            description="Neste 7 dager"
+            description={t("auto.neste_7_dager")}
             icon={Clock}
             variant="destructive"
             delay={0.3}
@@ -328,7 +328,7 @@ const DepartmentDashboard = () => {
                       <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
                     )}
                     <div>
-                      <p className="font-medium">Mål for internkontroll</p>
+                      <p className="font-medium">{t("auto.maal_for_internkontroll_2")}</p>
                       <p className="text-sm text-muted-foreground">
                         {goalsCount > 0 ? `${goalsCount} mål definert` : "Ikke satt opp"}
                       </p>
@@ -351,7 +351,7 @@ const DepartmentDashboard = () => {
                       <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
                     )}
                     <div>
-                      <p className="font-medium">Organisering</p>
+                      <p className="font-medium">{t("auto.organisering")}</p>
                       <p className="text-sm text-muted-foreground">
                         {hasOrganization ? "Dokumentert" : "Ikke satt opp"}
                       </p>
@@ -374,7 +374,7 @@ const DepartmentDashboard = () => {
                       <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
                     )}
                     <div>
-                      <p className="font-medium">Rutiner</p>
+                      <p className="font-medium">{t("auto.rutiner")}</p>
                       <p className="text-sm text-muted-foreground">
                         {routinesCount > 0 ? `${routinesCount} rutiner etablert` : "Ikke satt opp"}
                       </p>
@@ -393,8 +393,8 @@ const DepartmentDashboard = () => {
                   <div className="flex items-center gap-3">
                     <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/30" />
                     <div>
-                      <p className="font-medium">Risikovurdering</p>
-                      <p className="text-sm text-muted-foreground">Ikke satt opp</p>
+                      <p className="font-medium">{t("auto.risikovurdering")}</p>
+                      <p className="text-sm text-muted-foreground">{t("auto.ikke_satt_opp")}</p>
                     </div>
                   </div>
                   <Button 
@@ -414,7 +414,7 @@ const DepartmentDashboard = () => {
             {/* Quick actions for department */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Hurtighandlinger</CardTitle>
+                <CardTitle className="text-base">{t("auto.hurtighandlinger")}</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-2">
                 <Button 
@@ -423,7 +423,7 @@ const DepartmentDashboard = () => {
                   onClick={() => navigate("/deviations")}
                 >
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  <span className="text-xs">Registrer avvik</span>
+                  <span className="text-xs">{t("auto.registrer_avvik")}</span>
                 </Button>
                 <Button 
                   variant="outline" 
@@ -431,7 +431,7 @@ const DepartmentDashboard = () => {
                   onClick={() => navigate(`/avdeling/${departmentId}/oppsett/ai`)}
                 >
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <span className="text-xs">AI-oppsett</span>
+                  <span className="text-xs">{t("auto.ai_oppsett")}</span>
                 </Button>
               </CardContent>
             </Card>
@@ -447,10 +447,10 @@ const DepartmentDashboard = () => {
                 <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
                   <ShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                 </div>
-                <h3 className="text-base md:text-lg font-semibold">Anonym varsling</h3>
+                <h3 className="text-base md:text-lg font-semibold">{t("auto.anonym_varsling")}</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Send en anonym melding til ledelsen om bekymringer, uønskede hendelser eller forbedringsforslag.
+                {t("auto.send_en_anonym_melding_til_ledelsen_om_b")}
               </p>
               <AnonymousMessageButton className="w-full" />
             </motion.div>

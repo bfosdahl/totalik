@@ -16,6 +16,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { useCompanyKsGoals, CompanyKsGoal } from "@/hooks/useCompanyKsGoals";
+import { t } from "@/i18n/t";
 import {
   Dialog,
   DialogContent,
@@ -65,9 +66,9 @@ export default function IkKsMaal() {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Kvalitetsmål</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("auto.kvalitetsmaal")}</h1>
             <p className="text-muted-foreground mt-1">
-              Bedriftens overordnede mål for kvalitetssikring
+              {t("auto.bedriftens_overordnede_maal_for_kvalitet")}
             </p>
           </div>
           
@@ -80,11 +81,11 @@ export default function IkKsMaal() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Legg til kvalitetsmål</DialogTitle>
+                <DialogTitle>{t("auto.legg_til_kvalitetsmaal")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>
-                  <label className="text-sm font-medium">Mål</label>
+                  <label className="text-sm font-medium">{t("auto.maal")}</label>
                   <Input
                     value={newGoal.goal_text}
                     onChange={(e) => setNewGoal({ ...newGoal, goal_text: e.target.value })}
@@ -96,13 +97,13 @@ export default function IkKsMaal() {
                   <Textarea
                     value={newGoal.description}
                     onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
-                    placeholder="Utdypende beskrivelse..."
+                    placeholder={t("auto.utdypende_beskrivelse")}
                     rows={3}
                   />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setShowNewDialog(false)}>
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button onClick={handleCreate} disabled={isSaving || !newGoal.goal_text.trim()}>
                     {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -118,11 +119,11 @@ export default function IkKsMaal() {
         {goals.length === 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Foreslåtte kvalitetsmål</CardTitle>
+              <CardTitle className="text-base">{t("auto.foreslaatte_kvalitetsmaal")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Klikk for å legge til et foreslått mål, eller opprett ditt eget:
+                {t("auto.klikk_for_aa_legge_til_et_foreslaatt_maa")}
               </p>
               <div className="space-y-2">
                 {DEFAULT_GOALS.map((goal, idx) => (
@@ -148,9 +149,9 @@ export default function IkKsMaal() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Target className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium text-lg mb-2">Ingen kvalitetsmål ennå</h3>
+                <h3 className="font-medium text-lg mb-2">{t("auto.ingen_kvalitetsmaal_ennaa")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Legg til bedriftens kvalitetsmål for KS-systemet
+                  {t("auto.legg_til_bedriftens_kvalitetsmaal_for_ks")}
                 </p>
               </CardContent>
             </Card>
@@ -221,14 +222,14 @@ function GoalCard({
         <CardContent className="pt-6">
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Mål</label>
+              <label className="text-sm font-medium">{t("auto.maal")}</label>
               <Input
                 value={editData.goal_text}
                 onChange={(e) => setEditData({ ...editData, goal_text: e.target.value })}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Beskrivelse</label>
+              <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
               <Textarea
                 value={editData.description}
                 onChange={(e) => setEditData({ ...editData, description: e.target.value })}

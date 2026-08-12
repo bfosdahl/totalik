@@ -26,6 +26,7 @@ import { Ks2ShaPlanCreate } from "@/components/ks2/sha/Ks2ShaPlanCreate";
 import { Ks2ShaPlanUpload } from "@/components/ks2/sha/Ks2ShaPlanUpload";
 import { Ks2ShaPlanView } from "@/components/ks2/sha/Ks2ShaPlanView";
 import { Ks2ShaTilpasning } from "@/components/ks2/sha/Ks2ShaTilpasning";
+import { t } from "@/i18n/t";
 
 export default function Ks2ShaPlan() {
   const { projectId } = useParams();
@@ -71,8 +72,8 @@ export default function Ks2ShaPlan() {
             <FileCheck className="h-6 w-6 text-emerald-500" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">SHA-plan</h2>
-            <p className="text-muted-foreground">Plan for sikkerhet, helse og arbeidsmiljø</p>
+            <h2 className="text-2xl font-bold">{t("auto.sha_plan")}</h2>
+            <p className="text-muted-foreground">{t("auto.plan_for_sikkerhet_helse_og_arbeidsmiljo")}</p>
           </div>
         </div>
 
@@ -83,7 +84,7 @@ export default function Ks2ShaPlan() {
               <Shield className="h-5 w-5 text-emerald-500 mt-0.5" />
               <div>
                 <p className="font-medium text-emerald-700 dark:text-emerald-400">
-                  SHA-plan er lovpålagt for de fleste bygge- og anleggsprosjekter
+                  {t("auto.sha_plan_er_lovpaalagt_for_de_fleste_byg")}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Planen skal utarbeides av byggherren og beskrive hvordan sikkerhet, helse og arbeidsmiljø skal ivaretas i prosjektet (Byggherreforskriften §8).
@@ -103,14 +104,14 @@ export default function Ks2ShaPlan() {
                   <FileText className="h-6 w-6 text-emerald-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Lag SHA-plan i systemet</CardTitle>
-                  <Badge className="mt-1 bg-emerald-500">Anbefalt</Badge>
+                  <CardTitle className="text-lg">{t("auto.lag_sha_plan_i_systemet")}</CardTitle>
+                  <Badge className="mt-1 bg-emerald-500">{t("auto.anbefalt")}</Badge>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-sm">
-                Vi henter automatisk all informasjon fra prosjektet:
+                {t("auto.vi_henter_automatisk_all_informasjon_fra")}
               </CardDescription>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
@@ -131,7 +132,7 @@ export default function Ks2ShaPlan() {
                 </li>
               </ul>
               <Button className="w-full mt-4 bg-emerald-500 hover:bg-emerald-600">
-                Opprett SHA-plan
+                {t("auto.opprett_sha_plan")}
               </Button>
             </CardContent>
           </Card>
@@ -144,14 +145,14 @@ export default function Ks2ShaPlan() {
                   <Upload className="h-6 w-6 text-blue-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Last opp ekstern SHA-plan</CardTitle>
-                  <CardDescription>Byggherren har allerede laget planen</CardDescription>
+                  <CardTitle className="text-lg">{t("auto.last_opp_ekstern_sha_plan")}</CardTitle>
+                  <CardDescription>{t("auto.byggherren_har_allerede_laget_planen")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription className="text-sm">
-                Last opp SHA-plan mottatt fra byggherre:
+                {t("auto.last_opp_sha_plan_mottatt_fra_byggherre")}
               </CardDescription>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
@@ -172,7 +173,7 @@ export default function Ks2ShaPlan() {
                 </li>
               </ul>
               <Button variant="outline" className="w-full mt-4 border-blue-500 text-blue-500 hover:bg-blue-500/10">
-                Last opp SHA-plan
+                {t("auto.last_opp_sha_plan")}
               </Button>
             </CardContent>
           </Card>
@@ -211,7 +212,7 @@ export default function Ks2ShaPlan() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-bold">SHA-plan</h2>
+              <h2 className="text-2xl font-bold">{t("auto.sha_plan")}</h2>
               {getStatusBadge()}
             </div>
             <p className="text-muted-foreground">
@@ -236,26 +237,26 @@ export default function Ks2ShaPlan() {
         <CardContent className="pt-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="text-center p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground">SHA-plan</p>
+              <p className="text-xs text-muted-foreground">{t("auto.sha_plan")}</p>
               <p className="font-semibold text-sm mt-1">
                 {shaPlan?.status === "approved" ? "✓ Godkjent" : 
                  shaPlan?.status === "signed" ? "✓ Signert" : "Utkast"}
               </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground">KP oppnevnt</p>
+              <p className="text-xs text-muted-foreground">{t("auto.kp_oppnevnt")}</p>
               <p className="font-semibold text-sm mt-1">
                 {shaPlan?.sha_coordinator_kp ? "✓ Ja" : "✗ Nei"}
               </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground">KU oppnevnt</p>
+              <p className="text-xs text-muted-foreground">{t("auto.ku_oppnevnt")}</p>
               <p className="font-semibold text-sm mt-1">
                 {shaPlan?.sha_coordinator_ku ? "✓ Ja" : "✗ Nei"}
               </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/50">
-              <p className="text-xs text-muted-foreground">Vår tilpasning</p>
+              <p className="text-xs text-muted-foreground">{t("auto.vaar_tilpasning")}</p>
               <p className="font-semibold text-sm mt-1">
                 {tilpasning?.status === "signed" ? "✓ Signert" : 
                  tilpasning ? "Utkast" : "Ikke opprettet"}
@@ -287,9 +288,9 @@ export default function Ks2ShaPlan() {
             onClick={() => navigate(`/ks/project/${projectId}/hms/riggplan`)}
           >
             {riggPlans.length > 0 ? (
-              <>Åpne riggplan <ArrowRight className="h-4 w-4 ml-1" /></>
+              <>{t("auto.aapne_riggplan")} <ArrowRight className="h-4 w-4 ml-1" /></>
             ) : (
-              <>Lag riggplan <ArrowRight className="h-4 w-4 ml-1" /></>
+              <>{t("auto.lag_riggplan")} <ArrowRight className="h-4 w-4 ml-1" /></>
             )}
           </Button>
         </CardContent>
@@ -298,8 +299,8 @@ export default function Ks2ShaPlan() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="plan">SHA-plan</TabsTrigger>
-          <TabsTrigger value="tilpasning">Vår tilpasning</TabsTrigger>
+          <TabsTrigger value="plan">{t("auto.sha_plan")}</TabsTrigger>
+          <TabsTrigger value="tilpasning">{t("auto.vaar_tilpasning")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="plan" className="mt-4">

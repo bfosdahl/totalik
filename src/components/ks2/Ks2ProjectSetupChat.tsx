@@ -7,6 +7,7 @@ import { Loader2, Send, Bot, User, Sparkles, CheckCircle, Paperclip, FileText } 
 import { supabase } from "@/integrations/supabase/client";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 async function extractPdfText(file: File): Promise<string> {
   const pdfjs: any = await import("pdfjs-dist");
@@ -233,7 +234,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
 
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
     if (!isPdf) {
-      toast.error("Kun PDF-filer støttes for øyeblikket");
+      toast.error(t("auto.kun_pdf_filer_stoettes_for_oeyeblikket"));
       return;
     }
     if (file.size > 15 * 1024 * 1024) {
@@ -245,7 +246,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     try {
       const text = await extractPdfText(file);
       if (!text || text.length < 30) {
-        toast.error("Klarte ikke å lese tekst fra PDF-en");
+        toast.error(t("auto.klarte_ikke_aa_lese_tekst_fra_pdf_en"));
         return;
       }
       const truncated = text.length > 18000 ? text.slice(0, 18000) + "\n\n[...avkortet...]" : text;
@@ -253,7 +254,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
       await sendMessage(message);
     } catch (err) {
       console.error("PDF parse error:", err);
-      toast.error("Kunne ikke lese PDF-filen");
+      toast.error(t("auto.kunne_ikke_lese_pdf_filen"));
     } finally {
       setParsingFile(false);
     }
@@ -267,13 +268,13 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           <Bot className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-medium">Prosjekt-hjelperen</h3>
-          <p className="text-xs text-muted-foreground">AI-assistent for prosjektoppsett</p>
+          <h3 className="font-medium">{t("auto.prosjekt_hjelperen")}</h3>
+          <p className="text-xs text-muted-foreground">{t("auto.ai_assistent_for_prosjektoppsett")}</p>
         </div>
         {setupComplete && (
           <div className="ml-auto flex items-center gap-2 text-green-600">
             <CheckCircle className="w-4 h-4" />
-            <span className="text-sm">Forslag klart!</span>
+            <span className="text-sm">{t("auto.forslag_klart")}</span>
           </div>
         )}
       </div>
@@ -381,7 +382,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
 
         <div className="flex justify-between mt-4">
           <Button variant="outline" onClick={onCancel} disabled={isLoading}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button
             variant="ghost"

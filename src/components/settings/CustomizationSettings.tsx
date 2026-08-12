@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AccentColorKey, accentColors, getColorValues, isCustomColor } from "@/hooks/useAccentColor";
 import { useFavoriteColors } from "@/hooks/useFavoriteColors";
+import { t } from "@/i18n/t";
 
 interface CustomizationSettingsProps {
   onBack: () => void;
@@ -53,12 +54,12 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
     if (!file || !company?.id) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Kun bildefiler er tillatt");
+      toast.error(t("auto.kun_bildefiler_er_tillatt"));
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Filen er for stor. Maksimal størrelse er 2MB");
+      toast.error(t("auto.filen_er_for_stor_maksimal_stoerrelse_er"));
       return;
     }
 
@@ -84,7 +85,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
 
       if (updateError) throw updateError;
 
-      toast.success("Logo oppdatert!");
+      toast.success(t("auto.logo_oppdatert"));
       refreshCompany?.();
     } catch (error: any) {
       console.error("Error uploading logo:", error);
@@ -111,7 +112,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
 
       if (updateError) throw updateError;
 
-      toast.success("Logo fjernet!");
+      toast.success(t("auto.logo_fjernet"));
       refreshCompany?.();
     } catch (error: any) {
       console.error("Error removing logo:", error);
@@ -156,7 +157,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
       if (error) throw error;
 
       setPreviewColor(null);
-      toast.success("Aksentfarge lagret!");
+      toast.success(t("auto.aksentfarge_lagret"));
       refreshCompany?.();
     } catch (error: any) {
       console.error("Error updating accent color:", error);
@@ -215,9 +216,9 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             <Palette className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Tilpasning</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.tilpasning")}</h1>
             <p className="text-muted-foreground">
-              Logo, farger og utseende
+              {t("auto.logo_farger_og_utseende")}
             </p>
           </div>
         </div>
@@ -230,9 +231,9 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
         transition={{ delay: 0.1 }}
         className="bg-card rounded-xl border border-border shadow-card p-6"
       >
-        <h3 className="text-lg font-semibold mb-4">Bedriftslogo</h3>
+        <h3 className="text-lg font-semibold mb-4">{t("auto.bedriftslogo")}</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Last opp bedriftens logo for bruk i håndbøker og dokumenter
+          {t("auto.last_opp_bedriftens_logo_for_bruk_i_haan")}
         </p>
 
         <div className="flex items-start gap-6">
@@ -246,7 +247,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             ) : (
               <div className="text-center text-muted-foreground">
                 <Upload className="w-8 h-8 mx-auto mb-2" />
-                <span className="text-xs">Ingen logo</span>
+                <span className="text-xs">{t("auto.ingen_logo")}</span>
               </div>
             )}
           </div>
@@ -294,7 +295,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
               onChange={handleLogoUpload}
             />
             <p className="text-xs text-muted-foreground">
-              Anbefalt størrelse: 512x512px. Maks 2MB. PNG eller JPG.
+              {t("auto.anbefalt_stoerrelse_512x512px_maks_2mb_p")}
             </p>
           </div>
         </div>
@@ -307,9 +308,9 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
         transition={{ delay: 0.2 }}
         className="bg-card rounded-xl border border-border shadow-card p-6"
       >
-        <h3 className="text-lg font-semibold mb-4">Fargetema</h3>
+        <h3 className="text-lg font-semibold mb-4">{t("auto.fargetema")}</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Velg utseende for applikasjonen
+          {t("auto.velg_utseende_for_applikasjonen")}
         </p>
 
         <div className="grid grid-cols-3 gap-4">
@@ -324,7 +325,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
               <Sun className="w-6 h-6 text-amber-600" />
             </div>
-            <span className="font-medium">Lyst</span>
+            <span className="font-medium">{t("auto.lyst")}</span>
           </button>
 
           <button
@@ -338,7 +339,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
               <Moon className="w-6 h-6 text-slate-300" />
             </div>
-            <span className="font-medium">Mørkt</span>
+            <span className="font-medium">{t("auto.moerkt")}</span>
           </button>
 
           <button
@@ -352,7 +353,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-slate-800 flex items-center justify-center">
               <Monitor className="w-6 h-6 text-primary" />
             </div>
-            <span className="font-medium">System</span>
+            <span className="font-medium">{t("auto.system")}</span>
           </button>
         </div>
       </motion.div>
@@ -366,15 +367,15 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-semibold">Aksentfarge</h3>
+            <h3 className="text-lg font-semibold">{t("auto.aksentfarge")}</h3>
             <p className="text-sm text-muted-foreground">
-              Velg hovedfargen som brukes i grensesnittet
+              {t("auto.velg_hovedfargen_som_brukes_i_grensesnit")}
             </p>
           </div>
           {isPreviewMode && (
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30">
               <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Forhåndsvisning</span>
+              <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t("auto.forhaandsvisning")}</span>
             </div>
           )}
         </div>
@@ -408,7 +409,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
 
         {/* Custom HEX Color */}
         <div className="border-t border-border pt-4">
-          <h4 className="text-sm font-medium mb-3">Egendefinert farge</h4>
+          <h4 className="text-sm font-medium mb-3">{t("auto.egendefinert_farge")}</h4>
           <div className="flex items-center gap-3">
             <div 
               className="w-10 h-10 rounded-lg border border-border flex-shrink-0"
@@ -522,10 +523,10 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
         >
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-5 h-5 text-amber-500" />
-            <h3 className="text-lg font-semibold">Favorittfarger</h3>
+            <h3 className="text-lg font-semibold">{t("auto.favorittfarger")}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Dine lagrede farger for rask tilgang
+            {t("auto.dine_lagrede_farger_for_rask_tilgang")}
           </p>
 
           <div className="flex flex-wrap gap-3">

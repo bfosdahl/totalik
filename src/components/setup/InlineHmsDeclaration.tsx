@@ -10,6 +10,7 @@ import { Loader2, FileText, CheckCircle2, User, ArrowRight } from "lucide-react"
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface InlineHmsDeclarationProps {
   companyId: string;
@@ -76,10 +77,10 @@ export function InlineHmsDeclaration({
         <div className="flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-success">Egenerklæring om HMS er allerede signert ✅</p>
+            <p className="text-sm font-medium text-success">{t("auto.egenerklaering_om_hms_er_allerede_signer")}</p>
           </div>
           <Button size="sm" onClick={onComplete} className="shrink-0">
-            Neste <ArrowRight className="w-4 h-4 ml-1" />
+            {t("auto.neste")} <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
       </Card>
@@ -89,7 +90,7 @@ export function InlineHmsDeclaration({
   const handleSubmit = async () => {
     const sig = usingSavedSignature ? savedSignature : sigRef.current?.toDataURL() || "";
     if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
-      toast.error("Vennligst signer før du lagrer");
+      toast.error(t("auto.vennligst_signer_foer_du_lagrer"));
       return;
     }
 
@@ -126,12 +127,12 @@ export function InlineHmsDeclaration({
         if (error) throw error;
       }
 
-      toast.success("Egenerklæring om HMS er signert og lagret!");
+      toast.success(t("auto.egenerklaering_om_hms_er_signert_og_lagr"));
       setStep("done");
       onComplete();
     } catch (error) {
       console.error("Error saving HMS self-declaration:", error);
-      toast.error("Kunne ikke lagre egenerklæringen. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_lagre_egenerklaeringen_proev_"));
     } finally {
       setIsSaving(false);
     }
@@ -144,7 +145,7 @@ export function InlineHmsDeclaration({
       <Card className="p-4 border-success/30 bg-success/5">
         <div className="flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-success" />
-          <p className="text-sm font-medium text-success">Egenerklæring om HMS signert og lagret! ✅</p>
+          <p className="text-sm font-medium text-success">{t("auto.egenerklaering_om_hms_signert_og_lagret")}</p>
         </div>
       </Card>
     );
@@ -154,25 +155,25 @@ export function InlineHmsDeclaration({
     <Card className="p-4 sm:p-5 border-primary/20 space-y-4">
       <div className="flex items-center gap-2">
         <FileText className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold">Egenerklæring om HMS</h3>
+        <h3 className="font-semibold">{t("auto.egenerklaering_om_hms")}</h3>
       </div>
 
       {step === "info" && (
         <>
           <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-2">
             <div className="grid grid-cols-[100px_1fr] gap-1">
-              <span className="text-muted-foreground">Firma:</span>
+              <span className="text-muted-foreground">{t("auto.firma")}</span>
               <span className="font-medium">{companyName}</span>
             </div>
             {companyAddress && (
               <div className="grid grid-cols-[100px_1fr] gap-1">
-                <span className="text-muted-foreground">Adresse:</span>
+                <span className="text-muted-foreground">{t("auto.adresse_2")}</span>
                 <span>{companyAddress}</span>
               </div>
             )}
             {(postalCode || city) && (
               <div className="grid grid-cols-[100px_1fr] gap-1">
-                <span className="text-muted-foreground">Postnr./-sted:</span>
+                <span className="text-muted-foreground">{t("auto.postnr_sted_2")}</span>
                 <span>{[postalCode, city].filter(Boolean).join(" ")}</span>
               </div>
             )}
@@ -186,10 +187,10 @@ export function InlineHmsDeclaration({
 
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" size="sm" onClick={onSkip}>
-              Signer senere
+              {t("auto.signer_senere")}
             </Button>
             <Button size="sm" onClick={() => setStep("sign")}>
-              Start signering
+              {t("auto.start_signering")}
             </Button>
           </div>
         </>
@@ -199,34 +200,34 @@ export function InlineHmsDeclaration({
         <>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs">Velg person eller skriv inn navn</Label>
+              <Label className="text-xs">{t("auto.velg_person_eller_skriv_inn_navn")}</Label>
               <Select value={selectedUserId} onValueChange={(v) => { setSelectedUserId(v); if (v === "custom") setManagerName(""); }}>
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Velg fra ansatte..." />
+                  <SelectValue placeholder={t("auto.velg_fra_ansatte")} />
                 </SelectTrigger>
                 <SelectContent>
                   {!isLoadingUsers && users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>{getUserDisplayName(user)}</SelectItem>
                   ))}
-                  <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                  <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {(selectedUserId === "custom" || !selectedUserId) && (
               <div>
-                <Label className="text-xs">Daglig leder / Ansvarlig</Label>
-                <Input value={managerName} onChange={(e) => setManagerName(e.target.value)} placeholder="Fullt navn" className="mt-1" />
+                <Label className="text-xs">{t("auto.daglig_leder_ansvarlig")}</Label>
+                <Input value={managerName} onChange={(e) => setManagerName(e.target.value)} placeholder={t("auto.fullt_navn")} className="mt-1" />
               </div>
             )}
 
             {selectedUserId && selectedUserId !== "custom" && (
-              <p className="text-sm"><strong>Valgt:</strong> {managerName}</p>
+              <p className="text-sm"><strong>{t("auto.valgt")}</strong> {managerName}</p>
             )}
 
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <Label className="text-xs">Signatur</Label>
+                <Label className="text-xs">{t("auto.signatur")}</Label>
                 {savedSignature && !usingSavedSignature && (
                   <Button type="button" variant="outline" size="sm" onClick={() => {
                     sigRef.current?.fromDataURL(savedSignature);
@@ -240,13 +241,13 @@ export function InlineHmsDeclaration({
                 <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-28 touch-none" }} backgroundColor="white" />
                 {!usingSavedSignature && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <p className="text-muted-foreground text-xs">Tegn signaturen din her</p>
+                    <p className="text-muted-foreground text-xs">{t("auto.tegn_signaturen_din_her")}</p>
                   </div>
                 )}
               </div>
               <div className="flex gap-2 items-center">
                 <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => { sigRef.current?.clear(); setUsingSavedSignature(false); }}>
-                  Tøm
+                  {t("auto.toem")}
                 </Button>
                 {usingSavedSignature && (
                   <span className="text-xs text-success flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Lagret signatur</span>
@@ -258,8 +259,8 @@ export function InlineHmsDeclaration({
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" size="sm" onClick={() => setStep("info")}>Tilbake</Button>
-            <Button variant="ghost" size="sm" onClick={onSkip}>Hopp over</Button>
+            <Button variant="outline" size="sm" onClick={() => setStep("info")}>{t("auto.tilbake")}</Button>
+            <Button variant="ghost" size="sm" onClick={onSkip}>{t("auto.hopp_over")}</Button>
             <Button size="sm" onClick={handleSubmit} disabled={isSaving || !managerName.trim()}>
               {isSaving && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
               Signer og lagre

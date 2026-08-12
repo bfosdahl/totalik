@@ -42,6 +42,7 @@ import { downloadChecklistTemplatePdf } from "@/utils/ksChecklistTemplatePdf";
 import UserSelect from "@/components/audits/UserSelect";
 import { saveChecklistToDocumentation } from "@/utils/saveChecklistToDocumentation";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 // Pre-selected template from Malbibliotek (admin templates)
 export interface PreSelectedTemplate {
@@ -259,7 +260,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   const handleConfirmCustomChecklist = () => {
     const validCheckpoints = customCheckpoints.filter(cp => cp.trim() !== "");
     if (!customChecklistName.trim() || validCheckpoints.length === 0) {
-      toast.error("Legg til navn og minst ett kontrollpunkt");
+      toast.error(t("auto.legg_til_navn_og_minst_ett_kontrollpunkt"));
       return;
     }
     
@@ -419,7 +420,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             });
             
             if (docId) {
-              toast.success("Egenkontroll lagret i dokumentasjon");
+              toast.success(t("auto.egenkontroll_lagret_i_dokumentasjon"));
             }
           }
           onClose({ saved: true });
@@ -468,7 +469,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
         });
         
         if (docId) {
-          toast.success("Egenkontroll lagret i dokumentasjon");
+          toast.success(t("auto.egenkontroll_lagret_i_dokumentasjon"));
         }
       }
       onClose({ saved: true });
@@ -512,7 +513,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
         {/* Step: Template */}
         {step === "template" && (
           <div className="space-y-6">
-            <p className="text-muted-foreground">Velg en mal for egenkontroll:</p>
+            <p className="text-muted-foreground">{t("auto.velg_en_mal_for_egenkontroll")}</p>
             
             {Object.entries(groupedTemplates).map(([category, templates]) => (
               <div key={category}>
@@ -550,9 +551,9 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 <div className="flex items-center gap-3">
                   <Edit className="h-8 w-8 text-primary" />
                   <div className="flex-1">
-                    <h4 className="font-medium">Lag egen sjekkliste</h4>
+                    <h4 className="font-medium">{t("auto.lag_egen_sjekkliste")}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Opprett en tilpasset sjekkliste med egne kontrollpunkter
+                      {t("auto.opprett_en_tilpasset_sjekkliste_med_egne")}
                     </p>
                   </div>
                   <Button onClick={handleStartCustomChecklist}>
@@ -569,9 +570,9 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 <div className="flex items-center gap-3">
                   <FileText className="h-8 w-8 text-muted-foreground" />
                   <div className="flex-1">
-                    <h4 className="font-medium">Bruk papirversjon</h4>
+                    <h4 className="font-medium">{t("auto.bruk_papirversjon")}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Last ned PDF-mal, fyll ut på papir, og last opp skannet versjon etterpå
+                      {t("auto.last_ned_pdf_mal_fyll_ut_paa_papir_og_la")}
                     </p>
                   </div>
                   <Button
@@ -595,22 +596,22 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
         {step === "custom" && (
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              Opprett en egendefinert sjekkliste med dine egne kontrollpunkter.
+              {t("auto.opprett_en_egendefinert_sjekkliste_med_d")}
             </p>
             
             <div>
-              <Label>Navn på sjekkliste *</Label>
+              <Label>{t("auto.navn_paa_sjekkliste")}</Label>
               <Input 
-                placeholder="F.eks. Kontroll av betongstøp"
+                placeholder={t("auto.f_eks_kontroll_av_betongstoep")}
                 value={customChecklistName}
                 onChange={(e) => setCustomChecklistName(e.target.value)}
               />
             </div>
             
             <div className="space-y-2">
-              <Label>Kontrollpunkter *</Label>
+              <Label>{t("auto.kontrollpunkter")}</Label>
               <p className="text-sm text-muted-foreground">
-                Legg til punktene som skal kontrolleres
+                {t("auto.legg_til_punktene_som_skal_kontrolleres")}
               </p>
               
               <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
@@ -620,7 +621,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                       {index + 1}.
                     </span>
                     <Input
-                      placeholder="Beskriv kontrollpunktet..."
+                      placeholder={t("auto.beskriv_kontrollpunktet")}
                       value={checkpoint}
                       onChange={(e) => updateCustomCheckpoint(index, e.target.value)}
                       autoFocus={editingCheckpointIndex === index}
@@ -673,14 +674,14 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
         {step === "details" && (
           <div className="space-y-4">
             <div>
-              <Label>Tittel *</Label>
+              <Label>{t("auto.tittel_2")}</Label>
               <Input value={title} onChange={(e) => setTitle(e.target.value)} />
             </div>
             <div>
-              <Label>Ansvarlig</Label>
+              <Label>{t("auto.ansvarlig_2")}</Label>
               <Select value={responsibleUserId} onValueChange={handleSelectUser}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg ansvarlig..." />
+                  <SelectValue placeholder={t("auto.velg_ansvarlig_2")} />
                 </SelectTrigger>
                 <SelectContent>
                   {users.map((user) => (
@@ -692,7 +693,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
               </Select>
             </div>
             <div>
-              <Label>Frist</Label>
+              <Label>{t("auto.frist_2")}</Label>
               <Input
                 type="date"
                 value={deadlineDate}
@@ -703,7 +704,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             {/* Execute now or later choice */}
             {!isPaper && (
               <div className="pt-2">
-                <Label className="mb-3 block">Når skal kontrollen utføres?</Label>
+                <Label className="mb-3 block">{t("auto.naar_skal_kontrollen_utfoeres")}</Label>
                 <RadioGroup
                   value={executeNow ? "now" : "later"}
                   onValueChange={(v) => setExecuteNow(v === "now")}
@@ -720,10 +721,10 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                       <RadioGroupItem value="now" id="execute-now" />
                       <div className="flex-1">
                         <Label htmlFor="execute-now" className="font-medium cursor-pointer">
-                          Utfør nå
+                          {t("auto.utfoer_naa")}
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          Fyll ut kontrollpunktene med en gang
+                          {t("auto.fyll_ut_kontrollpunktene_med_en_gang")}
                         </p>
                       </div>
                     </CardContent>
@@ -739,10 +740,10 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                       <RadioGroupItem value="later" id="execute-later" />
                       <div className="flex-1">
                         <Label htmlFor="execute-later" className="font-medium cursor-pointer">
-                          Planlegg til senere
+                          {t("auto.planlegg_til_senere")}
                         </Label>
                         <p className="text-sm text-muted-foreground">
-                          Opprett kontrollen og fyll ut når det passer
+                          {t("auto.opprett_kontrollen_og_fyll_ut_naar_det_p")}
                         </p>
                       </div>
                     </CardContent>
@@ -755,8 +756,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
               <Card className="bg-orange-500/10 border-orange-500/20">
                 <CardContent className="p-4">
                   <p className="text-sm">
-                    <strong>Papirversjon:</strong> Etter opprettelse kan du laste ned PDF-malen,
-                    fylle ut på papir, og laste opp det skannede skjemaet.
+                    <strong>{t("auto.papirversjon")}</strong> {t("auto.etter_opprettelse_kan_du_laste_ned_pdf_m")}
                   </p>
                 </CardContent>
               </Card>
@@ -795,7 +795,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Fyll ut kontrollpunktene nedenfor
+                {t("auto.fyll_ut_kontrollpunktene_nedenfor")}
               </p>
               <Badge>{calculateProgress()}% utfylt</Badge>
             </div>
@@ -844,7 +844,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                         {item.type === "number" && (
                           <Input
                             type="number"
-                            placeholder="Skriv inn verdi..."
+                            placeholder={t("auto.skriv_inn_verdi")}
                             value={item.value as number || ""}
                             onChange={(e) => updateItemValue(item.id, parseFloat(e.target.value) || null)}
                             className="max-w-[200px]"
@@ -853,7 +853,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
 
                         {item.type === "text" && (
                           <Textarea
-                            placeholder="Skriv inn tekst..."
+                            placeholder={t("auto.skriv_inn_tekst")}
                             value={item.value as string || ""}
                             onChange={(e) => updateItemValue(item.id, e.target.value)}
                           />
@@ -902,7 +902,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                                 Last opp
                               </Button>
                               {item.required && !item.photos?.length && (
-                                <span className="text-xs text-red-500">Obligatorisk bilde</span>
+                                <span className="text-xs text-red-500">{t("auto.obligatorisk_bilde")}</span>
                               )}
                             </div>
                             
@@ -933,7 +933,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                           <div className="border-2 border-dashed rounded-lg p-4 text-center">
                             <Pen className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground">
-                              Klikk for å signere
+                              {t("auto.klikk_for_aa_signere")}
                             </p>
                           </div>
                         )}
@@ -1032,7 +1032,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 Tilbake
               </Button>
               <Button className="flex-1" onClick={() => setStep("signature")}>
-                Gå til signering
+                {t("auto.gaa_til_signering")}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
@@ -1043,20 +1043,20 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
         {step === "signature" && (
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              Signer for å bekrefte at kontrollen er utført korrekt.
+              {t("auto.signer_for_aa_bekrefte_at_kontrollen_er_")}
             </p>
 
             <div className="space-y-2">
-              <Label>Ditt navn</Label>
+              <Label>{t("auto.ditt_navn")}</Label>
               <UserSelect
                 value={inspectorName}
                 onValueChange={setInspectorName}
-                placeholder="Velg eller skriv inn navn..."
+                placeholder={t("auto.velg_eller_skriv_inn_navn")}
               />
             </div>
 
             <SignaturePad
-              label="Din signatur"
+              label={t("auto.din_signatur")}
               onSave={setInspectorSignature}
               onClear={() => setInspectorSignature("")}
               existingSignature={inspectorSignature}
@@ -1085,27 +1085,27 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             <Card>
               <CardContent className="p-4 space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Mal</span>
+                  <span className="text-muted-foreground">{t("auto.mal")}</span>
                   <span className="font-medium">{selectedTemplate?.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tittel</span>
+                  <span className="text-muted-foreground">{t("auto.tittel")}</span>
                   <span className="font-medium">{title}</span>
                 </div>
                 {responsibleUserName && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Ansvarlig</span>
+                    <span className="text-muted-foreground">{t("auto.ansvarlig_2")}</span>
                     <span className="font-medium">{responsibleUserName}</span>
                   </div>
                 )}
                 {deadlineDate && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Frist</span>
+                    <span className="text-muted-foreground">{t("auto.frist_2")}</span>
                     <span className="font-medium">{deadlineDate}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Type</span>
+                  <span className="text-muted-foreground">{t("auto.type")}</span>
                   <Badge variant={isPaper ? "outline" : "default"}>
                     {isPaper ? "Papirversjon" : "Digital"}
                   </Badge>
@@ -1113,18 +1113,18 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 {!isPaper && (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Utfylt</span>
+                      <span className="text-muted-foreground">{t("auto.utfylt")}</span>
                       <span className="font-medium">{calculateProgress()}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Bilder</span>
+                      <span className="text-muted-foreground">{t("auto.bilder")}</span>
                       <span className="font-medium">
                         {items.reduce((sum, item) => sum + (item.photos?.length || 0), 0)} stk
                       </span>
                     </div>
                     {inspectorName && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Signert av</span>
+                        <span className="text-muted-foreground">{t("auto.signert_av_2")}</span>
                         <span className="font-medium flex items-center gap-1">
                           <Check className="h-3 w-3 text-green-500" />
                           {inspectorName}
@@ -1142,9 +1142,9 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                   <div className="flex items-center gap-3">
                     <Download className="h-8 w-8 text-primary" />
                     <div className="flex-1">
-                      <h4 className="font-medium">Last ned papirmal</h4>
+                      <h4 className="font-medium">{t("auto.last_ned_papirmal")}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Last ned PDF-malen, skriv ut og fyll ut på byggeplassen
+                        {t("auto.last_ned_pdf_malen_skriv_ut_og_fyll_ut_p")}
                       </p>
                     </div>
                     <Button
@@ -1157,7 +1157,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                           deadlineDate: deadlineDate || undefined,
                           items: selectedTemplate.items,
                         });
-                        toast.success("PDF lastet ned");
+                        toast.success(t("auto.pdf_lastet_ned"));
                       }}
                     >
                       <Download className="h-4 w-4 mr-2" />

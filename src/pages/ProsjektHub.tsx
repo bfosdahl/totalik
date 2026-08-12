@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { CreateTimeEntry } from "@/hooks/useTimeEntries";
+import { t } from "@/i18n/t";
 
 interface Shortcut {
   id: string;
@@ -59,15 +60,15 @@ interface Shortcut {
 }
 
 const allShortcuts: Shortcut[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", color: "bg-slate-500" },
-  { id: "timer", label: "Timer", icon: Clock, path: "/timeregistrering", color: "bg-primary" },
-  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", color: "bg-sky-500" },
+  { id: "dashboard", label: t("auto.dashboard"), icon: LayoutDashboard, path: "", color: "bg-slate-500" },
+  { id: "timer", label: t("auto.timer"), icon: Clock, path: "/timeregistrering", color: "bg-primary" },
+  { id: "sjekklister", label: t("auto.sjekklister"), icon: ClipboardCheck, path: "/sjekklister", color: "bg-sky-500" },
   { id: "sja", label: "SJA", icon: FileText, path: "/hms/sja", color: "bg-emerald-500" },
-  { id: "avvik", label: "Avvik", icon: AlertTriangle, path: "/avvik", color: "bg-orange-500" },
-  { id: "vernerunde", label: "Vernerunde", icon: HardHat, path: "/hms/vernerunder", color: "bg-blue-500" },
-  { id: "dagsrapport", label: "Dagsrapport", icon: FileText, path: "/dagsrapport", color: "bg-indigo-500" },
-  { id: "bilder", label: "Bilder", icon: ImageIcon, path: "/bilder", color: "bg-pink-500" },
-  { id: "stoff", label: "Stoffkartotek", icon: FlaskConical, path: "/hms/stoffkartotek", color: "bg-amber-600" },
+  { id: "avvik", label: t("auto.avvik"), icon: AlertTriangle, path: "/avvik", color: "bg-orange-500" },
+  { id: "vernerunde", label: t("auto.vernerunde"), icon: HardHat, path: "/hms/vernerunder", color: "bg-blue-500" },
+  { id: "dagsrapport", label: t("auto.dagsrapport"), icon: FileText, path: "/dagsrapport", color: "bg-indigo-500" },
+  { id: "bilder", label: t("auto.bilder"), icon: ImageIcon, path: "/bilder", color: "bg-pink-500" },
+  { id: "stoff", label: t("auto.stoffkartotek"), icon: FlaskConical, path: "/hms/stoffkartotek", color: "bg-amber-600" },
 ];
 
 // Hvilke snarveier som vises per prosjekttype/entreprenørrolle.
@@ -124,7 +125,7 @@ function ProjectRow({ project, onSelect, onToggleFavorite, compact, hasDraft }: 
               </Badge>
               {hasDraft && (
                 <Badge className="text-[10px] px-1.5 py-0 bg-amber-500 hover:bg-amber-500 text-white">
-                  Utkast
+                  {t("auto.utkast")}
                 </Badge>
               )}
             </div>
@@ -343,11 +344,11 @@ export default function ProsjektHub() {
         // submit-sti rydder selv – ingenting å gjøre her
       } else if (readDrafts()[selected.id]) {
         toast({
-          title: "Påminnelse",
+          title: t("auto.paaminnelse"),
           description: `Utkast beholdt for ${selected.project_name}. Klikk for å fortsette.`,
           action: (
             <ToastAction altText="Fortsett" onClick={() => setTimeDialogOpen(true)}>
-              Fortsett
+              {t("auto.fortsett")}
             </ToastAction>
           ),
         });
@@ -383,7 +384,7 @@ export default function ProsjektHub() {
         openedAt: readDrafts()[proj.id]?.openedAt ?? Date.now(),
       });
       toast({
-        title: "Timeføring ikke fullført",
+        title: t("auto.timefoering_ikke_fullfoert"),
         description: `Du forlot prosjekt-huben med en åpen timeføring på ${proj.name}. Utkastet er bevart.`,
         action: (
           <ToastAction
@@ -472,7 +473,7 @@ export default function ProsjektHub() {
         {/* Header */}
         <div className="flex items-center gap-2">
           {selected && (
-            <Button variant="ghost" size="icon" onClick={() => setSelected(null)} aria-label="Tilbake">
+            <Button variant="ghost" size="icon" onClick={() => setSelected(null)} aria-label={t("auto.tilbake")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
@@ -504,7 +505,7 @@ export default function ProsjektHub() {
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Søk på prosjekt, nummer, kunde, adresse"
+                  placeholder={t("auto.soek_paa_prosjekt_nummer_kunde_adresse")}
                   className="pl-10 h-11"
                 />
               </div>
@@ -520,7 +521,7 @@ export default function ProsjektHub() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 px-1">
                         <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <h2 className="text-sm font-semibold">Favoritter</h2>
+                        <h2 className="text-sm font-semibold">{t("auto.favoritter")}</h2>
                         <span className="text-xs text-muted-foreground">({favorites.length})</span>
                       </div>
                       <div className="space-y-2">
@@ -543,7 +544,7 @@ export default function ProsjektHub() {
                   {/* Alle */}
                   <div className="space-y-2">
                     {favorites.length > 0 && !search.trim() && (
-                      <h2 className="text-sm font-semibold px-1 pt-2">Alle prosjekter</h2>
+                      <h2 className="text-sm font-semibold px-1 pt-2">{t("auto.alle_prosjekter")}</h2>
                     )}
                     {filteredList.length === 0 ? (
                       <Card className="p-8 text-center text-sm text-muted-foreground">
@@ -590,7 +591,7 @@ export default function ProsjektHub() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                              Aktivt prosjekt
+                              {t("auto.aktivt_prosjekt")}
                             </p>
                             {selected.is_favorite && (
                               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
@@ -605,7 +606,7 @@ export default function ProsjektHub() {
                           </p>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                          Bytt
+                          {t("auto.bytt")}
                           <ChevronsUpDown className="h-4 w-4" />
                         </div>
                       </div>
@@ -618,7 +619,7 @@ export default function ProsjektHub() {
                   onOpenAutoFocus={(e) => e.preventDefault()}
                 >
                   <SheetHeader className="px-4 pt-4 pb-2">
-                    <SheetTitle>Bytt prosjekt</SheetTitle>
+                    <SheetTitle>{t("auto.bytt_prosjekt")}</SheetTitle>
                   </SheetHeader>
                   <div className="px-4 pb-3">
                     <div className="relative">
@@ -626,7 +627,7 @@ export default function ProsjektHub() {
                       <Input
                         value={switcherSearch}
                         onChange={(e) => setSwitcherSearch(e.target.value)}
-                        placeholder="Søk prosjekt"
+                        placeholder={t("auto.soek_prosjekt")}
                         className="pl-10 h-10"
                         autoFocus={false}
                       />
@@ -635,7 +636,7 @@ export default function ProsjektHub() {
                   <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-2">
                     {switcherList.length === 0 ? (
                       <p className="text-center text-sm text-muted-foreground py-8">
-                        Ingen treff.
+                        {t("auto.ingen_treff")}
                       </p>
                     ) : (
                       switcherList.map((p) => {
@@ -685,7 +686,7 @@ export default function ProsjektHub() {
                   <div className="flex items-center gap-2 px-1">
                     <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                     <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      Hopp til favoritt
+                      {t("auto.hopp_til_favoritt")}
                     </span>
                   </div>
                   <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
@@ -725,7 +726,7 @@ export default function ProsjektHub() {
                     <Plus className="h-5 w-5" />
                   </div>
                   <div className="text-left">
-                    <div className="font-semibold text-sm">Registrer timer</div>
+                    <div className="font-semibold text-sm">{t("auto.registrer_timer")}</div>
                     <div className="text-[11px] text-primary-foreground/80">
                       Før timer direkte på {selected.project_name}
                     </div>
@@ -785,7 +786,7 @@ export default function ProsjektHub() {
                   {selected.is_favorite ? "Favoritt" : "Marker favoritt"}
                 </Button>
                 <Button onClick={() => navigate(`/ks/project/${selected.id}`)}>
-                  Åpne prosjekt
+                  {t("auto.aapne_prosjekt")}
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
@@ -806,20 +807,20 @@ export default function ProsjektHub() {
               <AlertDialog open={confirmCloseOpen} onOpenChange={setConfirmCloseOpen}>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Lukke uten å lagre?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("auto.lukke_uten_aa_lagre")}</AlertDialogTitle>
                     <AlertDialogDescription>
                       Du har påbegynt en timeføring{selected ? ` på ${selected.project_name}` : ""}. Velg om du vil lagre utkastet for å fortsette senere, forkaste det, eller gå tilbake til skjemaet.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                     <AlertDialogCancel className="sm:mr-auto">
-                      Tilbake til skjema
+                      {t("auto.tilbake_til_skjema")}
                     </AlertDialogCancel>
                     <Button variant="outline" onClick={handleDiscardDraft}>
-                      Forkast
+                      {t("auto.forkast")}
                     </Button>
                     <AlertDialogAction onClick={handleKeepDraft}>
-                      Lagre utkast og lukk
+                      {t("auto.lagre_utkast_og_lukk")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 export function AnnualAuditDueDialog() {
   const { user } = useAuth();
@@ -63,7 +64,7 @@ export function AnnualAuditDueDialog() {
         body: { auditId: pendingAudit.id },
       });
       if (error) throw error;
-      toast.success("Bestillingen er sendt — vi tar kontakt!");
+      toast.success(t("auto.bestillingen_er_sendt_vi_tar_kontakt"));
       await qc.invalidateQueries({ queryKey: ["annual-audit-pending"] });
       setOpen(false);
     } catch (e: any) {
@@ -89,29 +90,29 @@ export function AnnualAuditDueDialog() {
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl">Tid for årlig HMS-revisjon</DialogTitle>
+          <DialogTitle className="text-2xl">{t("auto.tid_for_aarlig_hms_revisjon")}</DialogTitle>
           <DialogDescription>
-            Den årlige gjennomgangen av HMS-systemet ditt forfaller nå. Velg hvordan du vil gjennomføre den.
+            {t("auto.den_aarlige_gjennomgangen_av_hms_systeme")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 md:grid-cols-2 my-4">
           <Card className="p-5 border-2 hover:border-primary cursor-pointer transition" onClick={handleSelfService}>
             <CheckCircle2 className="h-8 w-8 text-primary mb-2" />
-            <h3 className="font-semibold text-lg mb-1">Gjør det selv</h3>
-            <p className="text-2xl font-bold text-primary mb-2">Gratis</p>
+            <h3 className="font-semibold text-lg mb-1">{t("auto.gjoer_det_selv")}</h3>
+            <p className="text-2xl font-bold text-primary mb-2">{t("auto.gratis")}</p>
             <p className="text-sm text-muted-foreground mb-4">
-              Logg deg inn, svar på 8 punkter, signer. Tar 30–60 min.
+              {t("auto.logg_deg_inn_svar_paa_8_punkter_signer_t")}
             </p>
-            <Button className="w-full" variant="outline">Start revisjon</Button>
+            <Button className="w-full" variant="outline">{t("auto.start_revisjon")}</Button>
           </Card>
 
           <Card className="p-5 border-2 border-orange-300 hover:border-orange-500 cursor-pointer transition bg-orange-50/40 dark:bg-orange-950/20">
             <Sparkles className="h-8 w-8 text-orange-600 mb-2" />
-            <h3 className="font-semibold text-lg mb-1">La Total-IK gjøre jobben</h3>
-            <p className="text-2xl font-bold text-orange-600 mb-2">990,- <span className="text-sm font-normal">eks. mva</span></p>
+            <h3 className="font-semibold text-lg mb-1">{t("auto.la_total_ik_gjoere_jobben")}</h3>
+            <p className="text-2xl font-bold text-orange-600 mb-2">990,- <span className="text-sm font-normal">{t("auto.eks_mva")}</span></p>
             <p className="text-sm text-muted-foreground mb-4">
-              Vi gjennomgår, dokumenterer og sender deg den ferdige revisjonen. Faktureres etter levering.
+              {t("auto.vi_gjennomgaar_dokumenterer_og_sender_de")}
             </p>
             <Button
               className="w-full bg-orange-600 hover:bg-orange-700"

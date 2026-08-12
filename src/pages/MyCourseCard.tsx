@@ -17,6 +17,7 @@ import { format, isPast, differenceInDays } from "date-fns";
 import { nb } from "date-fns/locale";
 import { EmployeeCourse } from "@/hooks/useEmployees";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 interface HmsCardInfo {
   hms_card_obtained: boolean | null;
@@ -68,21 +69,21 @@ export default function MyCourseCard() {
 
   const getCourseStatus = (course: EmployeeCourse) => {
     if (!course.expiry_date) {
-      return { status: "valid", label: "Gyldig", color: "bg-green-500", icon: CheckCircle2 };
+      return { status: "valid", label: t("auto.gyldig"), color: "bg-green-500", icon: CheckCircle2 };
     }
     
     const expiryDate = new Date(course.expiry_date);
     const daysUntilExpiry = differenceInDays(expiryDate, new Date());
     
     if (isPast(expiryDate)) {
-      return { status: "expired", label: "Utløpt", color: "bg-red-500", icon: XCircle };
+      return { status: "expired", label: t("auto.utloept"), color: "bg-red-500", icon: XCircle };
     }
     
     if (daysUntilExpiry <= 30) {
       return { status: "expiring", label: `${daysUntilExpiry}d`, color: "bg-amber-500", icon: AlertTriangle };
     }
     
-    return { status: "valid", label: "Gyldig", color: "bg-green-500", icon: CheckCircle2 };
+    return { status: "valid", label: t("auto.gyldig"), color: "bg-green-500", icon: CheckCircle2 };
   };
 
   const validCourses = courses.filter(c => {
@@ -103,7 +104,7 @@ export default function MyCourseCard() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-muted/50 to-background flex items-center justify-center p-4">
-        <div className="animate-pulse text-muted-foreground">Laster kompetansebevis...</div>
+        <div className="animate-pulse text-muted-foreground">{t("auto.laster_kompetansebevis")}</div>
       </div>
     );
   }
@@ -131,7 +132,7 @@ export default function MyCourseCard() {
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <Award className="h-4 w-4 text-primary" />
                 </div>
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider">Kompetansebevis</span>
+                <span className="text-xs font-semibold text-primary uppercase tracking-wider">{t("auto.kompetansebevis")}</span>
               </div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">NORGE</span>
             </div>
@@ -152,15 +153,15 @@ export default function MyCourseCard() {
             {/* Info */}
             <div className="flex-1 min-w-0 space-y-1">
               <div className="space-y-0.5">
-                <p className="text-[10px] text-muted-foreground font-medium">1. Etternavn / Surname</p>
+                <p className="text-[10px] text-muted-foreground font-medium">{t("auto.1_etternavn_surname")}</p>
                 <p className="text-sm font-semibold truncate">{profile?.last_name || "-"}</p>
               </div>
               <div className="space-y-0.5">
-                <p className="text-[10px] text-muted-foreground font-medium">2. Fornavn / Given name</p>
+                <p className="text-[10px] text-muted-foreground font-medium">{t("auto.2_fornavn_given_name")}</p>
                 <p className="text-sm font-semibold truncate">{profile?.first_name || "-"}</p>
               </div>
               <div className="space-y-0.5">
-                <p className="text-[10px] text-muted-foreground font-medium">3. Arbeidsgiver / Employer</p>
+                <p className="text-[10px] text-muted-foreground font-medium">{t("auto.3_arbeidsgiver_employer")}</p>
                 <p className="text-sm font-semibold truncate">{company?.name || "-"}</p>
               </div>
             </div>
@@ -171,24 +172,24 @@ export default function MyCourseCard() {
             <div className="flex items-center justify-between">
               <div className="text-center">
                 <p className="text-2xl font-bold text-primary">{validCourses.length}</p>
-                <p className="text-[10px] text-muted-foreground uppercase">Gyldige kurs</p>
+                <p className="text-[10px] text-muted-foreground uppercase">{t("auto.gyldige_kurs")}</p>
               </div>
               <div className="h-8 w-px bg-border" />
               <div className="text-center">
                 <p className="text-2xl font-bold text-foreground">{courses.length}</p>
-                <p className="text-[10px] text-muted-foreground uppercase">Totalt</p>
+                <p className="text-[10px] text-muted-foreground uppercase">{t("auto.totalt")}</p>
               </div>
               <div className="h-8 w-px bg-border" />
               <div className="text-center flex flex-col items-center">
                 {hmsCard?.hms_card_obtained ? (
                   <>
                     <Shield className="h-6 w-6 text-green-600" />
-                    <p className="text-[10px] text-muted-foreground uppercase">HMS-kort</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">{t("auto.hms_kort")}</p>
                   </>
                 ) : (
                   <>
                     <Shield className="h-6 w-6 text-muted-foreground/30" />
-                    <p className="text-[10px] text-muted-foreground uppercase">Ingen HMS</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">{t("auto.ingen_hms")}</p>
                   </>
                 )}
               </div>
@@ -198,13 +199,13 @@ export default function MyCourseCard() {
           {/* Courses List */}
           <div className="px-6 py-4">
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-3">
-              Registrerte kurs og sertifikater
+              {t("auto.registrerte_kurs_og_sertifikater")}
             </p>
             
             {courses.length === 0 ? (
               <div className="py-6 text-center text-muted-foreground">
                 <Award className="h-10 w-10 mx-auto mb-2 opacity-20" />
-                <p className="text-sm">Ingen kurs registrert</p>
+                <p className="text-sm">{t("auto.ingen_kurs_registrert")}</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -282,20 +283,20 @@ export default function MyCourseCard() {
                   <Shield className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="font-semibold text-green-800 dark:text-green-200">HMS-kort</p>
-                  <p className="text-xs text-green-600/70 dark:text-green-400/70">Arbeidstilsynets register</p>
+                  <p className="font-semibold text-green-800 dark:text-green-200">{t("auto.hms_kort")}</p>
+                  <p className="text-xs text-green-600/70 dark:text-green-400/70">{t("auto.arbeidstilsynets_register")}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {hmsCard.hms_card_number && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase">Kortnummer</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">{t("auto.kortnummer")}</p>
                     <p className="font-medium">{hmsCard.hms_card_number}</p>
                   </div>
                 )}
                 {hmsCard.hms_card_expiry_date && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase">Gyldig til</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">{t("auto.gyldig_til_2")}</p>
                     <p className="font-medium">
                       {format(new Date(hmsCard.hms_card_expiry_date), "dd.MM.yyyy")}
                     </p>

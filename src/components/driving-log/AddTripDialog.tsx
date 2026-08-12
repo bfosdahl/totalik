@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { CreateDrivingLogInput } from "@/hooks/useDrivingLog";
 import { format } from "date-fns";
+import { t } from "@/i18n/t";
 
 interface AddTripDialogProps {
   open: boolean;
@@ -98,105 +99,105 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrer ny tur</DialogTitle>
+          <DialogTitle>{t("auto.registrer_ny_tur")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="tripDate">Dato *</Label>
+              <Label htmlFor="tripDate">{t("auto.dato_2")}</Label>
               <Input id="tripDate" type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tripType">Type kjøring *</Label>
+              <Label htmlFor="tripType">{t("auto.type_kjoering")}</Label>
               <Select value={tripType} onValueChange={setTripType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="business">Yrkeskjøring</SelectItem>
-                  <SelectItem value="commute">Arbeidsreise</SelectItem>
-                  <SelectItem value="private">Privat</SelectItem>
+                  <SelectItem value="business">{t("auto.yrkeskjoering")}</SelectItem>
+                  <SelectItem value="commute">{t("auto.arbeidsreise")}</SelectItem>
+                  <SelectItem value="private">{t("auto.privat")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="purpose">Formål med turen</Label>
+            <Label htmlFor="purpose">{t("auto.formaal_med_turen")}</Label>
             <Input id="purpose" value={purpose} onChange={e => setPurpose(e.target.value)} placeholder="F.eks. Kundemøte hos Bygg AS (kan fylles inn senere)" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startLocation">Fra (startsted) *</Label>
-              <Input id="startLocation" value={startLocation} onChange={e => setStartLocation(e.target.value)} placeholder="F.eks. Kontoret, Oslo" required />
+              <Input id="startLocation" value={startLocation} onChange={e => setStartLocation(e.target.value)} placeholder={t("auto.f_eks_kontoret_oslo")} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="endLocation">Til (sluttsted)</Label>
-              <Input id="endLocation" value={endLocation} onChange={e => setEndLocation(e.target.value)} placeholder="Kan fylles inn etter turen" />
+              <Input id="endLocation" value={endLocation} onChange={e => setEndLocation(e.target.value)} placeholder={t("auto.kan_fylles_inn_etter_turen")} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="viaLocations">Via / stoppesteder</Label>
-            <Input id="viaLocations" value={viaLocations} onChange={e => setViaLocations(e.target.value)} placeholder="Evt. mellomlandinger" />
+            <Label htmlFor="viaLocations">{t("auto.via_stoppesteder")}</Label>
+            <Input id="viaLocations" value={viaLocations} onChange={e => setViaLocations(e.target.value)} placeholder={t("auto.evt_mellomlandinger")} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="odometerStart">Km-stand start</Label>
-              <Input id="odometerStart" type="number" step="0.1" value={odometerStart} onChange={e => setOdometerStart(e.target.value)} placeholder="Kan fylles inn senere" />
+              <Label htmlFor="odometerStart">{t("auto.km_stand_start")}</Label>
+              <Input id="odometerStart" type="number" step="0.1" value={odometerStart} onChange={e => setOdometerStart(e.target.value)} placeholder={t("auto.kan_fylles_inn_senere")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="odometerEnd">Km-stand slutt</Label>
-              <Input id="odometerEnd" type="number" step="0.1" value={odometerEnd} onChange={e => setOdometerEnd(e.target.value)} placeholder="Kan fylles inn senere" />
+              <Label htmlFor="odometerEnd">{t("auto.km_stand_slutt")}</Label>
+              <Input id="odometerEnd" type="number" step="0.1" value={odometerEnd} onChange={e => setOdometerEnd(e.target.value)} placeholder={t("auto.kan_fylles_inn_senere")} />
             </div>
           </div>
 
           {distance && (
             <div className="bg-muted rounded-md px-3 py-2 text-sm">
-              Beregnet kjørelengde: <strong>{distance} km</strong>
+              {t("auto.beregnet_kjoerelengde")} <strong>{distance} km</strong>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="vehicleType">Biltype *</Label>
+              <Label htmlFor="vehicleType">{t("auto.biltype")}</Label>
               <Select value={vehicleType} onValueChange={setVehicleType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="company">Firmabil</SelectItem>
-                  <SelectItem value="private">Privatbil</SelectItem>
+                  <SelectItem value="company">{t("auto.firmabil")}</SelectItem>
+                  <SelectItem value="private">{t("auto.privatbil")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="vehicleRegistration">Reg.nr</Label>
-              <Input id="vehicleRegistration" value={vehicleRegistration} onChange={e => setVehicleRegistration(e.target.value)} placeholder="F.eks. AB 12345" />
+              <Label htmlFor="vehicleRegistration">{t("auto.reg_nr")}</Label>
+              <Input id="vehicleRegistration" value={vehicleRegistration} onChange={e => setVehicleRegistration(e.target.value)} placeholder={t("auto.f_eks_ab_12345")} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="vehicleDescription">Bilbeskrivelse</Label>
-            <Input id="vehicleDescription" value={vehicleDescription} onChange={e => setVehicleDescription(e.target.value)} placeholder="F.eks. Toyota Hilux 2023" />
+            <Label htmlFor="vehicleDescription">{t("auto.bilbeskrivelse")}</Label>
+            <Input id="vehicleDescription" value={vehicleDescription} onChange={e => setVehicleDescription(e.target.value)} placeholder={t("auto.f_eks_toyota_hilux_2023")} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="passengerCount">Antall passasjerer</Label>
+              <Label htmlFor="passengerCount">{t("auto.antall_passasjerer")}</Label>
               <Input id="passengerCount" type="number" min="0" value={passengerCount} onChange={e => setPassengerCount(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="passengers">Passasjerer (navn)</Label>
-              <Input id="passengers" value={passengers} onChange={e => setPassengers(e.target.value)} placeholder="Navn på passasjerer" />
+              <Input id="passengers" value={passengers} onChange={e => setPassengers(e.target.value)} placeholder={t("auto.navn_paa_passasjerer")} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Merknader</Label>
-            <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Eventuelle merknader..." rows={2} />
+            <Label htmlFor="notes">{t("auto.merknader")}</Label>
+            <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder={t("auto.eventuelle_merknader")} rows={2} />
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("auto.avbryt")}</Button>
             <Button type="submit" disabled={isPending || !startLocation}>
               {isPending ? "Lagrer..." : "Registrer tur"}
             </Button>

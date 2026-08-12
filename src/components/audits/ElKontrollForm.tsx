@@ -11,6 +11,7 @@ import EditableChecklistSection, { ChecklistQuestion, ChecklistAnswer } from "./
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { t } from "@/i18n/t";
 
 interface SectionData {
   title: string;
@@ -84,22 +85,22 @@ const ElKontrollForm: React.FC = () => {
     controlledBy: profile ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() : "",
     sections: {
       sikringsskap: {
-        title: "Sikringsskap / Fordelingstavle",
+        title: t("auto.sikringsskap_fordelingstavle"),
         questions: createQuestions(sikringsskabItems),
         answers: {},
       },
       fastInstallasjon: {
-        title: "Fast installasjon / kabler",
+        title: t("auto.fast_installasjon_kabler"),
         questions: createQuestions(fastInstallasjonItems),
         answers: {},
       },
       elektriskUtstyr: {
-        title: "Elektrisk utstyr / stikk / skjøteledninger",
+        title: t("auto.elektrisk_utstyr_stikk_skjoeteledninger"),
         questions: createQuestions(elektriskUtstyrItems),
         answers: {},
       },
       dokumentasjon: {
-        title: "Dokumentasjon og ansvar",
+        title: t("auto.dokumentasjon_og_ansvar"),
         questions: createQuestions(dokumentasjonItems),
         answers: {},
       },
@@ -282,7 +283,7 @@ const ElKontrollForm: React.FC = () => {
         onSelect={handleSelectResponse}
         onCreateNew={handleCreateNew}
         isDeleting={isSaving}
-        title="El-Kontroll"
+        title={t("auto.el_kontroll")}
       />
     );
   }
@@ -305,7 +306,7 @@ const ElKontrollForm: React.FC = () => {
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="companyName">Virksomhet</Label>
+              <Label htmlFor="companyName">{t("auto.virksomhet")}</Label>
               <Input
                 id="companyName"
                 value={formData.companyName}
@@ -314,7 +315,7 @@ const ElKontrollForm: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="controlDate">Kontrolldato</Label>
+              <Label htmlFor="controlDate">{t("auto.kontrolldato")}</Label>
               <Input
                 id="controlDate"
                 type="date"
@@ -324,16 +325,16 @@ const ElKontrollForm: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="location">Sted / lokasjon</Label>
+              <Label htmlFor="location">{t("auto.sted_lokasjon")}</Label>
               <Input
                 id="location"
                 value={formData.location}
                 onChange={(e) => updateField("location", e.target.value)}
-                placeholder="f.eks. Hovedkontor, Lager A"
+                placeholder={t("auto.f_eks_hovedkontor_lager_a")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="controlledBy">Kontrollert av</Label>
+              <Label htmlFor="controlledBy">{t("auto.kontrollert_av")}</Label>
               <Input
                 id="controlledBy"
                 value={formData.controlledBy}
@@ -367,26 +368,26 @@ const ElKontrollForm: React.FC = () => {
         {/* Avvik og tiltak */}
         <Card>
           <CardHeader>
-            <CardTitle>5. Avvik og tiltak</CardTitle>
+            <CardTitle>{t("auto.5_avvik_og_tiltak")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="avvikKommentarer">Avvik / kommentarer</Label>
+              <Label htmlFor="avvikKommentarer">{t("auto.avvik_kommentarer")}</Label>
               <Textarea
                 id="avvikKommentarer"
                 value={formData.avvikKommentarer}
                 onChange={(e) => updateField("avvikKommentarer", e.target.value)}
-                placeholder="Beskriv eventuelle avvik som ble funnet..."
+                placeholder={t("auto.beskriv_eventuelle_avvik_som_ble_funnet")}
                 rows={4}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tiltakOgFrist">Tiltak og frist</Label>
+              <Label htmlFor="tiltakOgFrist">{t("auto.tiltak_og_frist")}</Label>
               <Textarea
                 id="tiltakOgFrist"
                 value={formData.tiltakOgFrist}
                 onChange={(e) => updateField("tiltakOgFrist", e.target.value)}
-                placeholder="Beskriv tiltak som skal gjennomføres og frist..."
+                placeholder={t("auto.beskriv_tiltak_som_skal_gjennomfoeres_og")}
                 rows={4}
               />
             </div>
@@ -396,16 +397,16 @@ const ElKontrollForm: React.FC = () => {
         {/* Signaturer */}
         <Card>
           <CardHeader>
-            <CardTitle>Signaturer</CardTitle>
+            <CardTitle>{t("auto.signaturer")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="signaturKontrollor">Signatur kontrollør</Label>
+              <Label htmlFor="signaturKontrollor">{t("auto.signatur_kontrolloer")}</Label>
               <Input
                 id="signaturKontrollor"
                 value={formData.signaturKontrollor}
                 onChange={(e) => updateField("signaturKontrollor", e.target.value)}
-                placeholder="Navn på kontrollør"
+                placeholder={t("auto.navn_paa_kontrolloer")}
               />
             </div>
             <div className="space-y-2">
@@ -414,7 +415,7 @@ const ElKontrollForm: React.FC = () => {
                 id="signaturAnsvarlig"
                 value={formData.signaturAnsvarlig}
                 onChange={(e) => updateField("signaturAnsvarlig", e.target.value)}
-                placeholder="Navn på ansvarlig"
+                placeholder={t("auto.navn_paa_ansvarlig")}
               />
             </div>
           </CardContent>

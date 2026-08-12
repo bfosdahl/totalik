@@ -4,6 +4,7 @@ import { Check, Info, Lightbulb, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CompanyGoal } from "@/hooks/useSetupWizard";
+import { t } from "@/i18n/t";
 
 export interface GoalsStepRef {
   save: () => Promise<void>;
@@ -14,28 +15,28 @@ export interface GoalsStepRef {
 const goalExamples = [
   {
     id: "example1",
-    title: "Forebygging og trivsel",
+    title: t("auto.forebygging_og_trivsel"),
     description: "Vi vil forebygge ulykker, miljø- og helseskader for å skape trivsel på arbeidsplassen. Driften skal gi minst mulig påvirkning på det ytre miljø. Våre produkter og tjenester skal være sikre for våre kunder. Dette skal skje ved at helse, miljø og sikkerhet planlegges og prioriteres på lik linje med produksjon, service og økonomi.",
   },
   {
     id: "example2",
-    title: "Trivsel og kontinuerlig forbedring",
+    title: t("auto.trivsel_og_kontinuerlig_forbedring"),
     description: "I vår virksomhet skal det skapes et trivelig og sikkert arbeidsmiljø for alle ansatte. Vi skal også ta vare på virksomhetens bygninger og materiell, forhindre belastning på det ytre miljø, og våre produkter skal ikke skade brukerne. Disse målene skal nås gjennom stadige forbedringer. Både ledelse og ansatte skal delta aktivt i forbedringsarbeidet.",
   },
   {
     id: "example3",
-    title: "Mennesket som ressurs",
+    title: t("auto.mennesket_som_ressurs"),
     description: "Mennesket er den viktigste ressurs i arbeidslivet, og god helse er viktig. Virksomheten vil derfor gjennom et HMS-system forebygge ulykker og helseskader, og skape trivsel på arbeidsplassen. Dette skal skje ved at sikkerhet og arbeidsmiljø planlegges og prioriteres på lik linje med produksjon, teknikk og økonomi.",
   },
   {
     id: "example4",
-    title: "Helsefremmende arbeidsplass",
+    title: t("auto.helsefremmende_arbeidsplass"),
     description: "Vårt mål er en helsefremmende arbeidsplass med faglig og personlig utvikling for de ansatte. Konkrete mål for helse, miljø og sikkerhetsarbeidet: Den overordnede målsettingen må nedfelles i konkrete mål som skal være mulige å oppnå. For at du skal se om virksomheten har nådd de oppsatte mål, er det viktig at målene er konkrete og målbare.",
   },
   {
     id: "example5",
-    title: "Konkrete målbare mål",
-    description: "I vår virksomhet skal vi i år redusere sykefraværet med en prosent. For å fremme faglig og personlig utvikling skal hver av de ansatte i år ha mulighet for å gå på et kurs på et selvvalgt tema for å bedre arbeidsutførelsen.",
+    title: t("auto.konkrete_maalbare_maal"),
+    description: t("auto.i_vaar_virksomhet_skal_vi_i_aar_redusere"),
   },
 ];
 
@@ -104,10 +105,9 @@ export const GoalsStep = forwardRef<GoalsStepRef, GoalsStepProps>(
       <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
         <Info className="w-5 h-5 text-info mt-0.5 flex-shrink-0" />
         <div className="text-sm">
-          <p className="font-medium text-info mb-1">Velg målsetting for din virksomhet</p>
+          <p className="font-medium text-info mb-1">{t("auto.velg_maalsetting_for_din_virksomhet")}</p>
           <p className="text-muted-foreground">
-            Velg en av eksemplene under eller skriv din egen målsetting. 
-            Målsettingen blir en del av din IK-handbok.
+            {t("auto.velg_en_av_eksemplene_under_eller_skriv_")}
           </p>
         </div>
       </div>
@@ -188,7 +188,7 @@ export const GoalsStep = forwardRef<GoalsStepRef, GoalsStepProps>(
                 <Check className="w-3 h-3 text-primary-foreground" />
               )}
             </div>
-            <span className="text-sm font-medium">Egen målsetting</span>
+            <span className="text-sm font-medium">{t("auto.egen_maalsetting")}</span>
           </div>
         </button>
 
@@ -201,7 +201,7 @@ export const GoalsStep = forwardRef<GoalsStepRef, GoalsStepProps>(
             <textarea
               value={customGoal}
               onChange={(e) => setCustomGoal(e.target.value)}
-              placeholder="Skriv inn din egen målsetting her..."
+              placeholder={t("auto.skriv_inn_din_egen_maalsetting_her")}
               className="w-full min-h-[120px] p-3 rounded-lg border border-border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </motion.div>

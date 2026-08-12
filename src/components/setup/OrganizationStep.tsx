@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { PREDEFINED_ORG_ROLES } from "@/hooks/useOrgChart";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 export interface OrganizationStepRef {
   save: () => Promise<void>;
@@ -308,7 +309,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
         })));
       } catch (error) {
         console.error("Error saving organization:", error);
-        toast.error("Kunne ikke lagre organisering");
+        toast.error(t("auto.kunne_ikke_lagre_organisering"));
       }
     };
 
@@ -333,11 +334,9 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
         <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
           <Info className="w-5 h-5 text-info mt-0.5 flex-shrink-0" />
           <div className="text-sm">
-            <p className="font-medium text-info mb-1">Dokumenter virksomhetens organisering</p>
+            <p className="font-medium text-info mb-1">{t("auto.dokumenter_virksomhetens_organisering")}</p>
             <p className="text-muted-foreground">
-              Velg forhåndsdefinerte roller med standardbeskrivelser, eller lag egne.
-              Rollene vises i hierarkisk rekkefølge fra øverst til nederst.
-              Endringer her synkroniseres med organisasjonskartet under IK/HMS → Organisering.
+              {t("auto.velg_forhaandsdefinerte_roller_med_stand_2")}
             </p>
           </div>
         </div>
@@ -345,8 +344,8 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
         {/* Quick add predefined roles */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Legg til rolle</CardTitle>
-            <CardDescription>Velg en forhåndsdefinert rolle eller lag en egendefinert</CardDescription>
+            <CardTitle className="text-base">{t("auto.legg_til_rolle")}</CardTitle>
+            <CardDescription>{t("auto.velg_en_forhaandsdefinert_rolle_eller_la")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -382,9 +381,9 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Ingen roller er definert ennå</p>
+              <p className="font-medium">{t("auto.ingen_roller_er_definert_ennaa")}</p>
               <p className="text-sm mt-2">
-                Velg forhåndsdefinerte roller ovenfor for å bygge organisasjonskartet.
+                {t("auto.velg_forhaandsdefinerte_roller_ovenfor_f")}
               </p>
             </CardContent>
           </Card>
@@ -393,7 +392,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
             {/* Visual org chart */}
             <Card className="bg-muted/30">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Organisasjonskart</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.organisasjonskart")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center gap-2">
@@ -416,7 +415,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
 
             {/* Role editing cards */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground">Rediger roller</h3>
+              <h3 className="font-semibold text-sm text-muted-foreground">{t("auto.rediger_roller")}</h3>
               {roles.map((role, index) => (
                 <motion.div
                   key={role.id}
@@ -470,7 +469,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Velg rolletype" />
+                              <SelectValue placeholder={t("auto.velg_rolletype")} />
                             </SelectTrigger>
                             <SelectContent>
                               {PREDEFINED_ORG_ROLES.map((predefined) => (
@@ -478,13 +477,13 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
                                   {predefined.title}
                                 </SelectItem>
                               ))}
-                              <SelectItem value="custom">Egendefinert tittel</SelectItem>
+                              <SelectItem value="custom">{t("auto.egendefinert_tittel")}</SelectItem>
                             </SelectContent>
                           </Select>
                           <UserSelect
                             value={role.personName}
                             onValueChange={(value) => handleUpdateRole(role.id, "personName", value)}
-                            placeholder="Velg ansatt"
+                            placeholder={t("auto.velg_ansatt")}
                           />
                         </div>
                       </div>
@@ -493,7 +492,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
                           <Input
                             value={role.title}
                             onChange={(e) => handleUpdateRole(role.id, "title", e.target.value)}
-                            placeholder="Skriv inn egendefinert rolletittel"
+                            placeholder={t("auto.skriv_inn_egendefinert_rolletittel")}
                           />
                         </div>
                       )}
@@ -502,7 +501,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
                       <Textarea
                         value={role.description}
                         onChange={(e) => handleUpdateRole(role.id, "description", e.target.value)}
-                        placeholder="Beskriv ansvarsområder og oppgaver for denne rollen..."
+                        placeholder={t("auto.beskriv_ansvarsomraader_og_oppgaver_for_")}
                         rows={3}
                         className="resize-none"
                       />

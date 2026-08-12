@@ -41,6 +41,7 @@ import {
   Ruler,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { t } from "@/i18n/t";
 
 // Floor plan element types
 type ElementType = 
@@ -83,18 +84,18 @@ const MIN_ELEMENT_SIZE = 10; // minimum px
 const GRID_SNAP = 10; // snap to 10px grid (0.2m at default scale)
 
 const ELEMENT_PRESETS: Record<ElementType, { label: string; icon: React.ReactNode; defaultWidth: number; defaultHeight: number; color: string }> = {
-  wall: { label: "Vegg", icon: <Minus className="h-4 w-4" />, defaultWidth: 200, defaultHeight: 10, color: "#1f2937" },
-  room: { label: "Rom", icon: <Square className="h-4 w-4" />, defaultWidth: 200, defaultHeight: 150, color: "#e5e7eb" },
-  door: { label: "Dør", icon: <DoorOpen className="h-4 w-4" />, defaultWidth: 50, defaultHeight: 10, color: "#3b82f6" },
-  emergency_exit: { label: "Nødutgang", icon: <ArrowRight className="h-4 w-4" />, defaultWidth: 50, defaultHeight: 30, color: "#22c55e" },
-  toilet: { label: "Toalett", icon: <span className="text-xs font-bold">WC</span>, defaultWidth: 100, defaultHeight: 100, color: "#60a5fa" },
-  office: { label: "Kontor", icon: <Square className="h-4 w-4" />, defaultWidth: 150, defaultHeight: 120, color: "#fef3c7" },
-  stairs: { label: "Trapp", icon: <Layers className="h-4 w-4" />, defaultWidth: 75, defaultHeight: 100, color: "#d1d5db" },
-  elevator: { label: "Heis", icon: <Square className="h-4 w-4" />, defaultWidth: 75, defaultHeight: 75, color: "#c4b5fd" },
-  fire_extinguisher: { label: "Brannslukker", icon: <Circle className="h-4 w-4" />, defaultWidth: 24, defaultHeight: 24, color: "#ef4444" },
-  fire_alarm: { label: "Brannalarm", icon: <Circle className="h-4 w-4" />, defaultWidth: 20, defaultHeight: 20, color: "#f97316" },
-  first_aid: { label: "Førstehjelp", icon: <span className="text-xs font-bold">+</span>, defaultWidth: 30, defaultHeight: 30, color: "#22c55e" },
-  text: { label: "Tekst", icon: <Type className="h-4 w-4" />, defaultWidth: 80, defaultHeight: 24, color: "#1f2937" },
+  wall: { label: t("auto.vegg"), icon: <Minus className="h-4 w-4" />, defaultWidth: 200, defaultHeight: 10, color: "#1f2937" },
+  room: { label: t("auto.rom"), icon: <Square className="h-4 w-4" />, defaultWidth: 200, defaultHeight: 150, color: "#e5e7eb" },
+  door: { label: t("auto.doer"), icon: <DoorOpen className="h-4 w-4" />, defaultWidth: 50, defaultHeight: 10, color: "#3b82f6" },
+  emergency_exit: { label: t("auto.noedutgang"), icon: <ArrowRight className="h-4 w-4" />, defaultWidth: 50, defaultHeight: 30, color: "#22c55e" },
+  toilet: { label: t("auto.toalett"), icon: <span className="text-xs font-bold">WC</span>, defaultWidth: 100, defaultHeight: 100, color: "#60a5fa" },
+  office: { label: t("auto.kontor"), icon: <Square className="h-4 w-4" />, defaultWidth: 150, defaultHeight: 120, color: "#fef3c7" },
+  stairs: { label: t("auto.trapp"), icon: <Layers className="h-4 w-4" />, defaultWidth: 75, defaultHeight: 100, color: "#d1d5db" },
+  elevator: { label: t("auto.heis"), icon: <Square className="h-4 w-4" />, defaultWidth: 75, defaultHeight: 75, color: "#c4b5fd" },
+  fire_extinguisher: { label: t("auto.brannslukker"), icon: <Circle className="h-4 w-4" />, defaultWidth: 24, defaultHeight: 24, color: "#ef4444" },
+  fire_alarm: { label: t("auto.brannalarm"), icon: <Circle className="h-4 w-4" />, defaultWidth: 20, defaultHeight: 20, color: "#f97316" },
+  first_aid: { label: t("auto.foerstehjelp"), icon: <span className="text-xs font-bold">+</span>, defaultWidth: 30, defaultHeight: 30, color: "#22c55e" },
+  text: { label: t("auto.tekst"), icon: <Type className="h-4 w-4" />, defaultWidth: 80, defaultHeight: 24, color: "#1f2937" },
 };
 
 type ResizeHandle = "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
@@ -1028,7 +1029,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           onClick={() => setMobileToolbarOpen(!mobileToolbarOpen)}
         >
           {mobileToolbarOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          <span className="text-xs">Elementer</span>
+          <span className="text-xs">{t("auto.elementer")}</span>
         </Button>
       </div>
 
@@ -1076,22 +1077,22 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           {mobileSection === "settings" && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Etasjenavn</Label>
+                <Label className="text-xs text-muted-foreground">{t("auto.etasjenavn")}</Label>
                 <Input 
                   value={floorName} 
                   onChange={(e) => setFloorName(e.target.value)}
-                  placeholder="1. etasje"
+                  placeholder={t("auto.1_etasje")}
                   className="h-10 text-sm"
                 />
               </div>
               {selectedElement && (
                 <>
                   <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">Etikett</Label>
+                    <Label className="text-xs text-muted-foreground">{t("auto.etikett")}</Label>
                     <Input 
                       value={selectedElement.label || ""} 
                       onChange={(e) => updateSelectedLabel(e.target.value)}
-                      placeholder="Romnavn..."
+                      placeholder={t("auto.romnavn")}
                       className="h-10 text-sm"
                     />
                   </div>
@@ -1123,11 +1124,11 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
               )}
               {activeTool === "text" && (
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Tekst</Label>
+                  <Label className="text-xs text-muted-foreground">{t("auto.tekst")}</Label>
                   <Input 
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
-                    placeholder="Skriv inn tekst..."
+                    placeholder={t("auto.skriv_inn_tekst")}
                     className="h-10 text-sm"
                   />
                 </div>
@@ -1143,11 +1144,11 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
   const renderDesktopSidebar = () => (
     <div className="w-60 border-r bg-muted/30 p-3 flex flex-col gap-4 overflow-y-auto">
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Etasjenavn</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.etasjenavn")}</Label>
         <Input 
           value={floorName} 
           onChange={(e) => setFloorName(e.target.value)}
-          placeholder="1. etasje"
+          placeholder={t("auto.1_etasje")}
           className="h-8 text-sm"
         />
       </div>
@@ -1155,7 +1156,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Verktøy</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.verktoey")}</Label>
         <div className="grid grid-cols-3 gap-1">
           <TooltipProvider>
             <Tooltip>
@@ -1169,7 +1170,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                   <MousePointer className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Velg</TooltipContent>
+              <TooltipContent>{t("auto.velg_2")}</TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -1183,7 +1184,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                   <Move className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Flytt visning</TooltipContent>
+              <TooltipContent>{t("auto.flytt_visning")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -1192,7 +1193,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Elementer</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.elementer")}</Label>
         <div className="grid grid-cols-2 gap-1">
           <TooltipProvider>
             {(Object.entries(ELEMENT_PRESETS) as [ElementType, typeof ELEMENT_PRESETS[ElementType]][]).map(([type, preset]) => (
@@ -1217,11 +1218,11 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
       {activeTool === "text" && (
         <div className="space-y-2">
-          <Label className="text-xs">Tekst</Label>
+          <Label className="text-xs">{t("auto.tekst")}</Label>
           <Input 
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            placeholder="Skriv inn tekst..."
+            placeholder={t("auto.skriv_inn_tekst")}
             className="h-8 text-sm"
           />
         </div>
@@ -1239,7 +1240,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
             </Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Bredde</Label>
+                <Label className="text-[10px] text-muted-foreground">{t("auto.bredde")}</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -1250,7 +1251,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Høyde</Label>
+                <Label className="text-[10px] text-muted-foreground">{t("auto.hoeyde")}</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -1268,7 +1269,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-muted-foreground">Vis mål</Label>
+          <Label className="text-xs text-muted-foreground">{t("auto.vis_maal")}</Label>
           <Button
             variant={showDimensions ? "default" : "outline"}
             size="sm"
@@ -1314,7 +1315,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
             {isMobile ? `Etasjeplan – ${buildingName}` : `Tegn etasjeplan – ${buildingName}`}
           </DialogTitle>
           <DialogDescription className={isMobile ? "text-xs" : ""}>
-            Lag en enkel skisse av bygget med rom, dører, nødutganger og utstyr. Dra i hjørnene for å endre størrelse.
+            {t("auto.lag_en_enkel_skisse_av_bygget_med_rom_do")}
           </DialogDescription>
         </DialogHeader>
 
@@ -1344,11 +1345,11 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                 
                 {selectedElement && (
                   <div className="flex items-center gap-2">
-                    <Label className="text-xs">Etikett:</Label>
+                    <Label className="text-xs">{t("auto.etikett_2")}</Label>
                     <Input 
                       value={selectedElement.label || ""} 
                       onChange={(e) => updateSelectedLabel(e.target.value)}
-                      placeholder="Romnavn..."
+                      placeholder={t("auto.romnavn")}
                       className="h-7 w-32 text-xs"
                     />
                     <Separator orientation="vertical" className="h-6" />
@@ -1361,7 +1362,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                 <div className="flex-1" />
                 
                 <Button variant="ghost" size="sm" onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1); }}>
-                  Tilbakestill visning
+                  {t("auto.tilbakestill_visning")}
                 </Button>
               </div>
             )}
@@ -1395,7 +1396,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
 
         <DialogFooter className={isMobile ? "px-4 py-3 border-t shrink-0 flex-row gap-2" : "px-6 py-4 border-t shrink-0"}>
           <Button variant="outline" onClick={() => onOpenChange(false)} className={isMobile ? "flex-1" : ""}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleSave} disabled={isSaving} className={isMobile ? "flex-1 gap-2" : "gap-2"}>
             <Download className="h-4 w-4" />

@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FdvControl, FdvBuilding, FDV_CONTROL_TYPE_LABELS, FdvControlType } from "@/types/fdv";
+import { t } from "@/i18n/t";
 
 const controlSchema = z.object({
   building_id: z.string().min(1, "Velg et bygg"),
@@ -119,11 +120,11 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
               name="building_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bygg *</FormLabel>
+                  <FormLabel>{t("auto.bygg")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg bygg" />
+                        <SelectValue placeholder={t("auto.velg_bygg")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -144,11 +145,11 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
               name="control_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kontrolltype *</FormLabel>
+                  <FormLabel>{t("auto.kontrolltype")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg type" />
+                        <SelectValue placeholder={t("auto.velg_type")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -167,9 +168,9 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Navn *</FormLabel>
+                  <FormLabel>{t("auto.navn_3")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="F.eks. Årlig brannalarmservice" {...field} />
+                    <Input placeholder={t("auto.f_eks_aarlig_brannalarmservice")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -181,9 +182,9 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beskrivelse</FormLabel>
+                  <FormLabel>{t("auto.beskrivelse")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Beskrivelse av kontrollen..." {...field} />
+                    <Textarea placeholder={t("auto.beskrivelse_av_kontrollen")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -210,7 +211,7 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
                 name="next_due_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Neste forfall</FormLabel>
+                    <FormLabel>{t("auto.neste_forfall")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -225,9 +226,9 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
               name="responsible_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ansvarlig</FormLabel>
+                  <FormLabel>{t("auto.ansvarlig_2")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Navn på ansvarlig" {...field} />
+                    <Input placeholder={t("auto.navn_paa_ansvarlig")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -236,8 +237,8 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
 
             <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
               <div>
-                <p className="font-medium">Påminnelse</p>
-                <p className="text-sm text-muted-foreground">Send varsling før forfall</p>
+                <p className="font-medium">{t("auto.paaminnelse")}</p>
+                <p className="text-sm text-muted-foreground">{t("auto.send_varsling_foer_forfall")}</p>
               </div>
               <FormField
                 control={form.control}
@@ -258,7 +259,7 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
                 name="reminder_days_before"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dager før forfall</FormLabel>
+                    <FormLabel>{t("auto.dager_foer_forfall")}</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} {...field} />
                     </FormControl>
@@ -273,9 +274,9 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notater</FormLabel>
+                  <FormLabel>{t("auto.notater")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Eventuelle notater..." {...field} />
+                    <Textarea placeholder={t("auto.eventuelle_notater")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -284,7 +285,7 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
 
             <DialogFooter className="flex-shrink-0 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button type="submit">
                 {control ? "Lagre endringer" : "Opprett kontroll"}

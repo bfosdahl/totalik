@@ -53,18 +53,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
+import { t } from "@/i18n/t";
 
 type AppRole = "system_admin" | "company_admin" | "user";
 
 const MODULE_OPTIONS = [
-  { type: "IK_HMS", name: "IK HMS", description: "Internkontroll for helse, miljø og sikkerhet" },
-  { type: "IK_MAT", name: "IK MAT", description: "Internkontroll for matsikkerhet" },
-  { type: "IK_ALKOHOL", name: "IK Alkohol", description: "Internkontroll for alkoholhåndtering" },
-  { type: "IK_BYGG", name: "KS Bygg", description: "Kvalitetssikring for byggprosjekter" },
-  { type: "IK_FDV", name: "IK FDV", description: "Forvaltning, drift og vedlikehold av bygg" },
-  { type: "PERSONALHANDBOK", name: "Personalhåndbok", description: "Digital personalhåndbok" },
-  { type: "GDPR", name: "GDPR", description: "Personvern og datahåndtering" },
-  { type: "APENHETSLOVEN", name: "Åpenhetsloven", description: "Aktsomhetsvurderinger" },
+  { type: "IK_HMS", name: "IK HMS", description: t("auto.internkontroll_for_helse_miljoe_og_sikke") },
+  { type: "IK_MAT", name: "IK MAT", description: t("auto.internkontroll_for_matsikkerhet") },
+  { type: "IK_ALKOHOL", name: "IK Alkohol", description: t("auto.internkontroll_for_alkoholhaandtering") },
+  { type: "IK_BYGG", name: "KS Bygg", description: t("auto.kvalitetssikring_for_byggprosjekter") },
+  { type: "IK_FDV", name: "IK FDV", description: t("auto.forvaltning_drift_og_vedlikehold_av_bygg") },
+  { type: "PERSONALHANDBOK", name: "Personalhåndbok", description: t("auto.digital_personalhaandbok") },
+  { type: "GDPR", name: "GDPR", description: t("auto.personvern_og_datahaandtering") },
+  { type: "APENHETSLOVEN", name: "Åpenhetsloven", description: t("auto.aktsomhetsvurderinger") },
 ];
 
 export default function AdminUsers() {
@@ -211,10 +212,10 @@ export default function AdminUsers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
-      toast({ title: "Rolle fjernet" });
+      toast({ title: t("auto.rolle_fjernet") });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -314,12 +315,12 @@ export default function AdminUsers() {
         ? ` + ${selectedModules.length} modul(er) lagt til` 
         : "";
       toast({ 
-        title: "Bruker opprettet", 
+        title: t("auto.bruker_opprettet_3"), 
         description: (data.emailSent ? "E-post med innloggingslenke er sendt" : "Bruker opprettet") + moduleMsg + " og synkronisert til kurssystem"
       });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -341,12 +342,12 @@ export default function AdminUsers() {
       setNewEmail("");
       setSelectedUser(null);
       toast({
-        title: "E-post endret",
+        title: t("auto.e_post_endret"),
         description: `Brukeren logger nå inn med ${data.email}`,
       });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -365,14 +366,14 @@ export default function AdminUsers() {
       setSelectedUser(null);
       setSendPasswordEmail(true);
       toast({ 
-        title: "Passord oppdatert", 
+        title: t("auto.passord_oppdatert_2"), 
         description: data.emailSent 
           ? "Brukerens passord er endret og sendt på e-post" 
           : "Brukerens passord er endret"
       });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -405,10 +406,10 @@ export default function AdminUsers() {
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
-      toast({ title: "Bruker slettet", description: "Brukeren er permanent slettet fra systemet" });
+      toast({ title: t("auto.bruker_slettet"), description: t("auto.brukeren_er_permanent_slettet_fra_system") });
     },
     onError: (error) => {
-      toast({ title: "Feil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -501,11 +502,11 @@ export default function AdminUsers() {
   const getRoleBadge = (role: AppRole) => {
     switch (role) {
       case "system_admin":
-        return <Badge variant="warning">System Admin</Badge>;
+        return <Badge variant="warning">{t("auto.system_admin")}</Badge>;
       case "company_admin":
-        return <Badge variant="default">Bedriftsadmin</Badge>;
+        return <Badge variant="default">{t("auto.bedriftsadmin")}</Badge>;
       case "user":
-        return <Badge variant="secondary">Bruker</Badge>;
+        return <Badge variant="secondary">{t("auto.bruker")}</Badge>;
       default:
         return <Badge variant="secondary">{role}</Badge>;
     }
@@ -524,7 +525,7 @@ export default function AdminUsers() {
 
   const exportUsersToCSV = useCallback(() => {
     if (!profiles || profiles.length === 0) {
-      toast({ title: "Ingen brukere", description: "Det er ingen brukere å eksportere", variant: "destructive" });
+      toast({ title: t("auto.ingen_brukere"), description: t("auto.det_er_ingen_brukere_aa_eksportere"), variant: "destructive" });
       return;
     }
 
@@ -560,14 +561,14 @@ export default function AdminUsers() {
     link.click();
     URL.revokeObjectURL(url);
     
-    toast({ title: "Eksport fullført", description: `${dataToExport.length} brukere eksportert til CSV` });
+    toast({ title: t("auto.eksport_fullfoert"), description: `${dataToExport.length} brukere eksportert til CSV` });
   }, [profiles, filteredProfiles, getUserRoles, toast]);
 
         {/* Pagination */}
         {filteredProfiles.length > 0 && (
           <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Vis</span>
+              <span>{t("auto.vis")}</span>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
@@ -577,7 +578,7 @@ export default function AdminUsers() {
                 <option value={50}>50</option>
                 <option value={100}>100</option>
               </select>
-              <span>per side</span>
+              <span>{t("auto.per_side")}</span>
               <span className="ml-2">
                 ({((safePage - 1) * pageSize) + 1}–{Math.min(safePage * pageSize, filteredProfiles.length)} av {filteredProfiles.length})
               </span>
@@ -611,9 +612,9 @@ export default function AdminUsers() {
     return (
       <AdminLayout>
         <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-4">
-          <h2 className="text-xl font-bold mb-2">Kunne ikke laste brukere</h2>
+          <h2 className="text-xl font-bold mb-2">{t("auto.kunne_ikke_laste_brukere")}</h2>
           <p className="text-muted-foreground mb-4">
-            Det oppstod en feil under lasting av brukerlisten. Prøv å oppdatere siden.
+            {t("auto.det_oppstod_en_feil_under_lasting_av_bru")}
           </p>
           <Button onClick={() => window.location.reload()}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -634,26 +635,26 @@ export default function AdminUsers() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Brukere</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.brukere")}</h1>
             <p className="text-muted-foreground">
-              Administrer brukere og roller
+              {t("auto.administrer_brukere_og_roller")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={exportUsersToCSV} className="flex-1 sm:flex-none min-w-[120px]">
               <Download className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Eksporter</span>
-              <span className="sm:hidden">Eksport</span>
+              <span className="hidden sm:inline">{t("auto.eksporter")}</span>
+              <span className="sm:hidden">{t("auto.eksport")}</span>
             </Button>
             <Button variant="outline" onClick={() => setIsBulkImportDialogOpen(true)} className="flex-1 sm:flex-none min-w-[120px]">
               <Upload className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Importer</span>
-              <span className="sm:hidden">Import</span>
+              <span className="hidden sm:inline">{t("auto.importer")}</span>
+              <span className="sm:hidden">{t("auto.import")}</span>
             </Button>
             <Button onClick={() => setIsCreateUserDialogOpen(true)} className="flex-1 sm:flex-none min-w-[120px]">
               <Plus className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Ny bruker</span>
-              <span className="sm:hidden">Ny</span>
+              <span className="hidden sm:inline">{t("auto.ny_bruker")}</span>
+              <span className="sm:hidden">{t("auto.ny")}</span>
             </Button>
           </div>
         </motion.div>
@@ -668,7 +669,7 @@ export default function AdminUsers() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Søk etter bruker..."
+              placeholder={t("auto.soek_etter_bruker")}
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
@@ -687,24 +688,24 @@ export default function AdminUsers() {
             <table className="w-full">
               <thead className="bg-secondary/50">
                 <tr>
-                  <th className="text-left p-4 font-medium text-sm">Bruker</th>
-                  <th className="text-left p-4 font-medium text-sm">Bedrift</th>
-                  <th className="text-left p-4 font-medium text-sm">Roller</th>
-                  <th className="text-left p-4 font-medium text-sm">Status</th>
-                  <th className="text-right p-4 font-medium text-sm">Handlinger</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.bruker")}</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.bedrift")}</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.roller")}</th>
+                  <th className="text-left p-4 font-medium text-sm">{t("auto.status_2")}</th>
+                  <th className="text-right p-4 font-medium text-sm">{t("auto.handlinger")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      Laster...
+                      {t("auto.laster")}
                     </td>
                   </tr>
                 ) : filteredProfiles.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      Ingen brukere funnet
+                      {t("auto.ingen_brukere_funnet")}
                     </td>
                   </tr>
                 ) : (
@@ -727,7 +728,7 @@ export default function AdminUsers() {
                       </td>
                       <td className="p-4">
                         <span className="text-sm">
-                          {(profile as any).companies?.name || <span className="text-muted-foreground">Ingen bedrift</span>}
+                          {(profile as any).companies?.name || <span className="text-muted-foreground">{t("auto.ingen_bedrift")}</span>}
                         </span>
                       </td>
                       <td className="p-4">
@@ -736,7 +737,7 @@ export default function AdminUsers() {
                             <span key={role}>{getRoleBadge(role)}</span>
                           ))}
                           {getUserRoles(profile.user_id).length === 0 && (
-                            <span className="text-muted-foreground text-sm">Ingen roller</span>
+                            <span className="text-muted-foreground text-sm">{t("auto.ingen_roller")}</span>
                           )}
                         </div>
                       </td>
@@ -835,11 +836,11 @@ export default function AdminUsers() {
         >
           {isLoading ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
-              Laster...
+              {t("auto.laster")}
             </div>
           ) : filteredProfiles.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
-              Ingen brukere funnet
+              {t("auto.ingen_brukere_funnet")}
             </div>
           ) : (
             paginatedProfiles.map((profile) => (
@@ -869,21 +870,21 @@ export default function AdminUsers() {
 
                 {/* Company select */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Bedrift</Label>
+                  <Label className="text-xs text-muted-foreground">{t("auto.bedrift")}</Label>
                   <p className="text-sm">
-                    {(profile as any).companies?.name || <span className="text-muted-foreground">Ingen bedrift</span>}
+                    {(profile as any).companies?.name || <span className="text-muted-foreground">{t("auto.ingen_bedrift")}</span>}
                   </p>
                 </div>
 
                 {/* Roles */}
                 <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Roller</Label>
+                  <Label className="text-xs text-muted-foreground">{t("auto.roller")}</Label>
                   <div className="flex flex-wrap gap-1">
                     {getUserRoles(profile.user_id).map((role) => (
                       <span key={role}>{getRoleBadge(role)}</span>
                     ))}
                     {getUserRoles(profile.user_id).length === 0 && (
-                      <span className="text-muted-foreground text-sm">Ingen roller</span>
+                      <span className="text-muted-foreground text-sm">{t("auto.ingen_roller")}</span>
                     )}
                   </div>
                 </div>
@@ -901,7 +902,7 @@ export default function AdminUsers() {
                       }}
                     >
                       <Shield className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Roller</span>
+                      <span className="hidden sm:inline">{t("auto.roller")}</span>
                     </Button>
                     <Button
                       variant="outline"
@@ -914,7 +915,7 @@ export default function AdminUsers() {
                       }}
                     >
                       <Key className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Passord</span>
+                      <span className="hidden sm:inline">{t("auto.passord")}</span>
                     </Button>
                   </div>
                   <div className="flex gap-2">
@@ -941,7 +942,7 @@ export default function AdminUsers() {
                       }}
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span className="hidden sm:inline ml-2">Slett</span>
+                      <span className="hidden sm:inline ml-2">{t("auto.slett")}</span>
                     </Button>
                   </div>
                 </div>
@@ -954,7 +955,7 @@ export default function AdminUsers() {
         <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Administrer roller</DialogTitle>
+              <DialogTitle>{t("auto.administrer_roller")}</DialogTitle>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-4 mt-4">
@@ -963,7 +964,7 @@ export default function AdminUsers() {
                 </p>
 
                 <div className="space-y-2">
-                  <Label>Nåværende roller:</Label>
+                  <Label>{t("auto.naavaerende_roller")}</Label>
                   <div className="flex flex-wrap gap-2">
                     {getUserRoles(selectedUser.user_id).map((role) => (
                       <div key={role} className="flex items-center gap-1">
@@ -981,22 +982,22 @@ export default function AdminUsers() {
                       </div>
                     ))}
                     {getUserRoles(selectedUser.user_id).length === 0 && (
-                      <span className="text-sm text-muted-foreground">Ingen roller tildelt</span>
+                      <span className="text-sm text-muted-foreground">{t("auto.ingen_roller_tildelt")}</span>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tildel ny rolle:</Label>
+                  <Label>{t("auto.tildel_ny_rolle")}</Label>
                   <div className="flex gap-2">
                     <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as AppRole)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">Bruker</SelectItem>
-                        <SelectItem value="company_admin">Bedriftsadmin</SelectItem>
-                        <SelectItem value="system_admin">System Admin</SelectItem>
+                        <SelectItem value="user">{t("auto.bruker")}</SelectItem>
+                        <SelectItem value="company_admin">{t("auto.bedriftsadmin")}</SelectItem>
+                        <SelectItem value="system_admin">{t("auto.system_admin")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <Button
@@ -1020,7 +1021,7 @@ export default function AdminUsers() {
         <Dialog open={isCompanyDialogOpen} onOpenChange={setIsCompanyDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Endre bedrift</DialogTitle>
+              <DialogTitle>{t("auto.endre_bedrift")}</DialogTitle>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-4 mt-4">
@@ -1028,16 +1029,16 @@ export default function AdminUsers() {
                   Bruker: {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.email})
                 </p>
                 <div className="space-y-2">
-                  <Label>Bedrift</Label>
+                  <Label>{t("auto.bedrift")}</Label>
                   <Select
                     value={selectedCompany}
                     onValueChange={setSelectedCompany}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg bedrift" />
+                      <SelectValue placeholder={t("auto.velg_bedrift")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Ingen bedrift</SelectItem>
+                      <SelectItem value="none">{t("auto.ingen_bedrift")}</SelectItem>
                       {companies?.map((company) => (
                         <SelectItem key={company.id} value={company.id}>
                           {company.name}
@@ -1069,11 +1070,11 @@ export default function AdminUsers() {
         }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Opprett ny bruker</DialogTitle>
+              <DialogTitle>{t("auto.opprett_ny_bruker")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="newUserEmail">E-post *</Label>
+                <Label htmlFor="newUserEmail">{t("auto.e_post")}</Label>
                 <Input
                   id="newUserEmail"
                   type="email"
@@ -1085,19 +1086,19 @@ export default function AdminUsers() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newUserFirstName">Fornavn</Label>
+                  <Label htmlFor="newUserFirstName">{t("auto.fornavn")}</Label>
                   <Input
                     id="newUserFirstName"
-                    placeholder="Ola"
+                    placeholder={t("auto.ola")}
                     value={newUserFirstName}
                     onChange={(e) => setNewUserFirstName(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="newUserLastName">Etternavn</Label>
+                  <Label htmlFor="newUserLastName">{t("auto.etternavn")}</Label>
                   <Input
                     id="newUserLastName"
-                    placeholder="Nordmann"
+                    placeholder={t("auto.nordmann")}
                     value={newUserLastName}
                     onChange={(e) => setNewUserLastName(e.target.value)}
                   />
@@ -1105,10 +1106,10 @@ export default function AdminUsers() {
               </div>
 
               <div className="space-y-2">
-                <Label>Bedrift *</Label>
+                <Label>{t("auto.bedrift_2")}</Label>
                 <Select value={newUserCompanyId} onValueChange={setNewUserCompanyId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg bedrift" />
+                    <SelectValue placeholder={t("auto.velg_bedrift")} />
                   </SelectTrigger>
                   <SelectContent>
                     {companies?.map((company) => (
@@ -1121,14 +1122,14 @@ export default function AdminUsers() {
               </div>
 
               <div className="space-y-2">
-                <Label>Rolle</Label>
+                <Label>{t("auto.rolle")}</Label>
                 <Select value={newUserRole} onValueChange={(v) => setNewUserRole(v as "user" | "company_admin")}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user">Bruker</SelectItem>
-                    <SelectItem value="company_admin">Bedriftsadmin</SelectItem>
+                    <SelectItem value="user">{t("auto.bruker")}</SelectItem>
+                    <SelectItem value="company_admin">{t("auto.bedriftsadmin")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1174,7 +1175,7 @@ export default function AdminUsers() {
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setIsCreateUserDialogOpen(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button
                   onClick={() => createUserMutation.mutate()}
@@ -1205,7 +1206,7 @@ export default function AdminUsers() {
                   Nåværende: {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.email})
                 </p>
                 <div className="space-y-2">
-                  <Label htmlFor="newEmail">Ny e-postadresse *</Label>
+                  <Label htmlFor="newEmail">{t("auto.ny_e_postadresse")}</Label>
                   <Input
                     id="newEmail"
                     type="email"
@@ -1214,12 +1215,12 @@ export default function AdminUsers() {
                     placeholder="ny@bedrift.no"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Brukeren logger inn med den nye adressen umiddelbart. Passordet er uendret.
+                    {t("auto.brukeren_logger_inn_med_den_nye_adressen")}
                   </p>
                 </div>
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button
                     onClick={() => changeEmailMutation.mutate({
@@ -1253,7 +1254,7 @@ export default function AdminUsers() {
         }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Endre passord</DialogTitle>
+              <DialogTitle>{t("auto.endre_passord")}</DialogTitle>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-4 mt-4">
@@ -1263,7 +1264,7 @@ export default function AdminUsers() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="newPassword">Nytt passord *</Label>
+                    <Label htmlFor="newPassword">{t("auto.nytt_passord_2")}</Label>
                     <Button
                       type="button"
                       variant="outline"
@@ -1279,7 +1280,7 @@ export default function AdminUsers() {
                     <Input
                       id="newPassword"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Minst 6 tegn"
+                      placeholder={t("auto.minst_6_tegn")}
                       value={newPassword}
                       onChange={(e) => {
                         setNewPassword(e.target.value);
@@ -1311,7 +1312,7 @@ export default function AdminUsers() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Passordet må være minst 6 tegn langt.
+                    {t("auto.passordet_maa_vaere_minst_6_tegn_langt")}
                   </p>
                 </div>
 
@@ -1331,7 +1332,7 @@ export default function AdminUsers() {
 
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button
                     onClick={() => resetPasswordMutation.mutate({
@@ -1353,16 +1354,16 @@ export default function AdminUsers() {
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-lg sm:text-xl">Slett bruker</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">{t("auto.slett_bruker")}</DialogTitle>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-4 mt-4">
                 <div className="p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                   <p className="text-xs sm:text-sm text-destructive font-medium">
-                    Advarsel: Denne handlingen kan ikke angres!
+                    {t("auto.advarsel_denne_handlingen_kan_ikke_angre")}
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-                    All data knyttet til brukeren vil bli slettet permanent, inkludert profil, roller og tilganger.
+                    {t("auto.all_data_knyttet_til_brukeren_vil_bli_sl")}
                   </p>
                 </div>
                 <p className="text-xs sm:text-sm leading-relaxed">

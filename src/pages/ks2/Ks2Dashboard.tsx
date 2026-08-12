@@ -11,6 +11,7 @@ import { NewProjectDialog } from "@/components/ks2/NewProjectDialog";
 import { ProjectCard } from "@/components/ks2/ProjectCard";
 import { CopyProjectDialog } from "@/components/ks2/CopyProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 type FilterType = "active" | "mine" | "with_deviations" | "archived" | "all";
 
@@ -31,9 +32,9 @@ export default function Ks2Dashboard() {
   );
 
   const filterButtons: { key: FilterType; label: string }[] = [
-    { key: "active", label: "Aktive" },
-    { key: "mine", label: "Mine" },
-    { key: "with_deviations", label: "Med åpne avvik" },
+    { key: "active", label: t("auto.aktive") },
+    { key: "mine", label: t("auto.mine") },
+    { key: "with_deviations", label: t("auto.med_aapne_avvik") },
     { key: "archived", label: archivedCount > 0 ? `Arkiv (${archivedCount})` : "Arkiv" },
     { key: "all", label: "Alle (inkl. fullførte)" },
   ];
@@ -146,20 +147,20 @@ export default function Ks2Dashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">KS Bygg – Mine prosjekter</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{t("auto.ks_bygg_mine_prosjekter")}</h1>
             <p className="text-muted-foreground mt-1">
-              Kvalitetssikring for bygg og anlegg
+              {t("auto.kvalitetssikring_for_bygg_og_anlegg")}
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate("/ks/statistikk")} className="shrink-0">
               <BarChart3 className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Statistikk</span>
+              <span className="hidden sm:inline">{t("auto.statistikk")}</span>
             </Button>
             {(isCompanyAdmin || isSystemAdmin) && (
               <Button variant="outline" onClick={() => navigate("/ks/admin")} className="shrink-0">
                 <Settings className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Admin</span>
+                <span className="hidden sm:inline">{t("auto.admin")}</span>
               </Button>
             )}
             <Button onClick={() => setIsNewProjectOpen(true)} className="shrink-0">
@@ -174,7 +175,7 @@ export default function Ks2Dashboard() {
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Søk i prosjektnavn, nummer eller adresse"
+              placeholder={t("auto.soek_i_prosjektnavn_nummer_eller_adresse")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"

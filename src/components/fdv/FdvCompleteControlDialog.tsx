@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FdvControl } from "@/types/fdv";
 import { CheckCircle, AlertTriangle, AlertCircle } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface FdvCompleteControlDialogProps {
   open: boolean;
@@ -46,7 +47,7 @@ export function FdvCompleteControlDialog({ open, onOpenChange, control, onComple
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Registrer kontroll</DialogTitle>
+          <DialogTitle>{t("auto.registrer_kontroll")}</DialogTitle>
           <DialogDescription>
             {control.name}
           </DialogDescription>
@@ -54,7 +55,7 @@ export function FdvCompleteControlDialog({ open, onOpenChange, control, onComple
 
         <div className="space-y-6">
           <div className="space-y-3">
-            <Label>Resultat</Label>
+            <Label>{t("auto.resultat")}</Label>
             <RadioGroup value={status} onValueChange={(v) => setStatus(v as typeof status)}>
               <div className="flex items-center space-x-3 p-3 rounded-lg border bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
                 <RadioGroupItem value="ok" id="ok" />
@@ -62,7 +63,7 @@ export function FdvCompleteControlDialog({ open, onOpenChange, control, onComple
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <div>
                     <p className="font-medium">OK</p>
-                    <p className="text-sm text-muted-foreground">Kontrollen ble godkjent</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.kontrollen_ble_godkjent")}</p>
                   </div>
                 </Label>
               </div>
@@ -72,8 +73,8 @@ export function FdvCompleteControlDialog({ open, onOpenChange, control, onComple
                 <Label htmlFor="delvis_ok" className="flex items-center gap-2 cursor-pointer flex-1">
                   <AlertCircle className="h-5 w-5 text-yellow-600" />
                   <div>
-                    <p className="font-medium">Delvis OK</p>
-                    <p className="text-sm text-muted-foreground">Mindre funn som må følges opp</p>
+                    <p className="font-medium">{t("auto.delvis_ok")}</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.mindre_funn_som_maa_foelges_opp")}</p>
                   </div>
                 </Label>
               </div>
@@ -83,8 +84,8 @@ export function FdvCompleteControlDialog({ open, onOpenChange, control, onComple
                 <Label htmlFor="avvik" className="flex items-center gap-2 cursor-pointer flex-1">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
                   <div>
-                    <p className="font-medium">Avvik</p>
-                    <p className="text-sm text-muted-foreground">Kritiske funn som krever handling</p>
+                    <p className="font-medium">{t("auto.avvik")}</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.kritiske_funn_som_krever_handling")}</p>
                   </div>
                 </Label>
               </div>
@@ -93,29 +94,29 @@ export function FdvCompleteControlDialog({ open, onOpenChange, control, onComple
 
           {(status === 'avvik' || status === 'delvis_ok') && (
             <div className="space-y-2">
-              <Label>Beskrivelse av funn *</Label>
+              <Label>{t("auto.beskrivelse_av_funn")}</Label>
               <Textarea
                 value={findings}
                 onChange={(e) => setFindings(e.target.value)}
-                placeholder="Beskriv hva som ble funnet..."
+                placeholder={t("auto.beskriv_hva_som_ble_funnet")}
                 className="min-h-[100px]"
               />
             </div>
           )}
 
           <div className="space-y-2">
-            <Label>Notater</Label>
+            <Label>{t("auto.notater")}</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Eventuelle notater fra kontrollen..."
+              placeholder={t("auto.eventuelle_notater_fra_kontrollen")}
             />
           </div>
         </div>
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button 
             onClick={handleSubmit}

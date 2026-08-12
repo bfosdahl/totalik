@@ -26,13 +26,14 @@ import { SimpleProjectPhotos } from "@/components/mineprosjekter/SimpleProjectPh
 import { SimpleProjectNotes } from "@/components/mineprosjekter/SimpleProjectNotes";
 import { SimpleProjectTimesheet } from "@/components/mineprosjekter/SimpleProjectTimesheet";
 import { SimpleProjectInspections } from "@/components/mineprosjekter/SimpleProjectInspections";
+import { t } from "@/i18n/t";
 
 const statusOptions = [
-  { value: "planned", label: "Planlagt" },
-  { value: "active", label: "Aktiv" },
-  { value: "handover", label: "Overlevering" },
-  { value: "warranty", label: "Garanti" },
-  { value: "completed", label: "Ferdig" },
+  { value: "planned", label: t("auto.planlagt") },
+  { value: "active", label: t("auto.aktiv") },
+  { value: "handover", label: t("auto.overlevering") },
+  { value: "warranty", label: t("auto.garanti") },
+  { value: "completed", label: t("auto.ferdig") },
 ];
 
 export default function SimpleProjectDetail() {
@@ -98,7 +99,7 @@ export default function SimpleProjectDetail() {
         }
       } catch (error) {
         console.error("Error fetching project:", error);
-        toast.error("Kunne ikke hente prosjekt");
+        toast.error(t("auto.kunne_ikke_hente_prosjekt"));
         navigate("/ks/smaaprosjekter");
       } finally {
         setIsLoading(false);
@@ -137,10 +138,10 @@ export default function SimpleProjectDetail() {
         .eq("id", projectId);
 
       if (error) throw error;
-      toast.success("Prosjekt lagret");
+      toast.success(t("auto.prosjekt_lagret"));
     } catch (error) {
       console.error("Error saving project:", error);
-      toast.error("Kunne ikke lagre prosjekt");
+      toast.error(t("auto.kunne_ikke_lagre_prosjekt"));
     } finally {
       setIsSaving(false);
     }
@@ -156,11 +157,11 @@ export default function SimpleProjectDetail() {
         .eq("id", projectId);
 
       if (error) throw error;
-      toast.success("Prosjekt slettet");
+      toast.success(t("auto.prosjekt_slettet"));
       navigate("/ks/smaaprosjekter");
     } catch (error) {
       console.error("Error deleting project:", error);
-      toast.error("Kunne ikke slette prosjekt");
+      toast.error(t("auto.kunne_ikke_slette_prosjekt"));
     }
   };
 
@@ -176,10 +177,10 @@ export default function SimpleProjectDetail() {
 
       if (error) throw error;
       setFormData((prev) => ({ ...prev, status: "completed" }));
-      toast.success("Prosjekt fullført! Det vil ikke lenger vises i timeregistrering.");
+      toast.success(t("auto.prosjekt_fullfoert_det_vil_ikke_lenger_v"));
     } catch (error) {
       console.error("Error completing project:", error);
-      toast.error("Kunne ikke fullføre prosjekt");
+      toast.error(t("auto.kunne_ikke_fullfoere_prosjekt"));
     } finally {
       setIsSaving(false);
     }
@@ -197,10 +198,10 @@ export default function SimpleProjectDetail() {
 
       if (error) throw error;
       setFormData((prev) => ({ ...prev, status: "active" }));
-      toast.success("Prosjekt gjenåpnet");
+      toast.success(t("auto.prosjekt_gjenaapnet"));
     } catch (error) {
       console.error("Error reopening project:", error);
-      toast.error("Kunne ikke gjenåpne prosjekt");
+      toast.error(t("auto.kunne_ikke_gjenaapne_prosjekt"));
     } finally {
       setIsSaving(false);
     }
@@ -259,15 +260,15 @@ export default function SimpleProjectDetail() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Gjenåpne prosjekt?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("auto.gjenaapne_prosjekt")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Prosjektet vil bli satt til aktiv status og vises igjen i timeregistrering.
+                      {t("auto.prosjektet_vil_bli_satt_til_aktiv_status")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                     <AlertDialogAction onClick={handleReopenProject}>
-                      Gjenåpne
+                      {t("auto.gjenaapne")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -282,15 +283,15 @@ export default function SimpleProjectDetail() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Fullfør prosjekt?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("auto.fullfoer_prosjekt")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Prosjektet vil bli markert som fullført og vil ikke lenger vises som valg i timeregistrering.
+                      {t("auto.prosjektet_vil_bli_markert_som_fullfoert")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                     <AlertDialogAction onClick={handleCompleteProject} className="bg-green-600 hover:bg-green-700">
-                      Fullfør prosjekt
+                      {t("auto.fullfoer_prosjekt_2")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -306,15 +307,15 @@ export default function SimpleProjectDetail() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Slett prosjekt?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("auto.slett_prosjekt")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Dette vil slette prosjektet og all tilhørende data. Denne handlingen kan ikke angres.
+                    {t("auto.dette_vil_slette_prosjektet_og_all_tilho")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                  <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Slett
+                    {t("auto.slett")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -335,35 +336,35 @@ export default function SimpleProjectDetail() {
           <TabsList className="flex flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="info" className="gap-2 py-2 px-3">
               <Building2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Info</span>
+              <span className="hidden sm:inline">{t("auto.info")}</span>
             </TabsTrigger>
             <TabsTrigger value="templates" className="gap-2 py-2 px-3">
               <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Malbank</span>
+              <span className="hidden sm:inline">{t("auto.malbank")}</span>
             </TabsTrigger>
             <TabsTrigger value="checklists" className="gap-2 py-2 px-3">
               <CheckSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">Sjekklister</span>
+              <span className="hidden sm:inline">{t("auto.sjekklister")}</span>
             </TabsTrigger>
             <TabsTrigger value="photos" className="gap-2 py-2 px-3">
               <Camera className="w-4 h-4" />
-              <span className="hidden sm:inline">Bilder</span>
+              <span className="hidden sm:inline">{t("auto.bilder")}</span>
             </TabsTrigger>
             <TabsTrigger value="notes" className="gap-2 py-2 px-3">
               <StickyNote className="w-4 h-4" />
-              <span className="hidden sm:inline">Notater</span>
+              <span className="hidden sm:inline">{t("auto.notater")}</span>
             </TabsTrigger>
             <TabsTrigger value="timesheet" className="gap-2 py-2 px-3">
               <Clock className="w-4 h-4" />
-              <span className="hidden sm:inline">Timer</span>
+              <span className="hidden sm:inline">{t("auto.timer")}</span>
             </TabsTrigger>
             <TabsTrigger value="inspections" className="gap-2 py-2 px-3">
               <ClipboardCheck className="w-4 h-4" />
-              <span className="hidden sm:inline">Befaringer</span>
+              <span className="hidden sm:inline">{t("auto.befaringer")}</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-2 py-2 px-3">
               <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Dokumenter</span>
+              <span className="hidden sm:inline">{t("auto.dokumenter")}</span>
             </TabsTrigger>
             <TabsTrigger value="subcontractors" className="gap-2 py-2 px-3">
               <Users className="w-4 h-4" />
@@ -371,7 +372,7 @@ export default function SimpleProjectDetail() {
             </TabsTrigger>
             <TabsTrigger value="finances" className="gap-2 py-2 px-3">
               <Receipt className="w-4 h-4" />
-              <span className="hidden sm:inline">Økonomi</span>
+              <span className="hidden sm:inline">{t("auto.oekonomi")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -388,28 +389,28 @@ export default function SimpleProjectDetail() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Prosjektnavn</Label>
+                    <Label>{t("auto.prosjektnavn")}</Label>
                     <Input
                       value={formData.project_name}
                       onChange={(e) => setFormData((prev) => ({ ...prev, project_name: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Prosjektnummer</Label>
+                    <Label>{t("auto.prosjektnummer")}</Label>
                     <Input
                       value={formData.project_number}
                       onChange={(e) => setFormData((prev) => ({ ...prev, project_number: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Adresse</Label>
+                    <Label>{t("auto.adresse")}</Label>
                     <Input
                       value={formData.address}
                       onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Status</Label>
+                    <Label>{t("auto.status_2")}</Label>
                     <Select
                       value={formData.status}
                       onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
@@ -439,28 +440,28 @@ export default function SimpleProjectDetail() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Kundenavn</Label>
+                    <Label>{t("auto.kundenavn")}</Label>
                     <Input
                       value={formData.client_name}
                       onChange={(e) => setFormData((prev) => ({ ...prev, client_name: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Kontaktperson</Label>
+                    <Label>{t("auto.kontaktperson_2")}</Label>
                     <Input
                       value={formData.client_contact_person}
                       onChange={(e) => setFormData((prev) => ({ ...prev, client_contact_person: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Telefon</Label>
+                    <Label>{t("auto.telefon")}</Label>
                     <Input
                       value={formData.client_phone}
                       onChange={(e) => setFormData((prev) => ({ ...prev, client_phone: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>E-post</Label>
+                    <Label>{t("auto.e_post_2")}</Label>
                     <Input
                       value={formData.client_email}
                       onChange={(e) => setFormData((prev) => ({ ...prev, client_email: e.target.value }))}
@@ -480,7 +481,7 @@ export default function SimpleProjectDetail() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label>Oppstart</Label>
+                      <Label>{t("auto.oppstart")}</Label>
                       <Input
                         type="date"
                         value={formData.planned_start_date}
@@ -488,7 +489,7 @@ export default function SimpleProjectDetail() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Ferdig</Label>
+                      <Label>{t("auto.ferdig")}</Label>
                       <Input
                         type="date"
                         value={formData.planned_end_date}
@@ -505,13 +506,13 @@ export default function SimpleProjectDetail() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Ansvarlig</Label>
+                    <Label>{t("auto.ansvarlig_2")}</Label>
                     <Select
                       value={formData.project_leader_id}
                       onValueChange={handleProjectLeaderChange}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg ansvarlig" />
+                        <SelectValue placeholder={t("auto.velg_ansvarlig")} />
                       </SelectTrigger>
                       <SelectContent>
                         {users.map((user) => (
@@ -528,13 +529,13 @@ export default function SimpleProjectDetail() {
               {/* Description */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Beskrivelse</CardTitle>
+                  <CardTitle className="text-lg">{t("auto.beskrivelse")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                    placeholder="Beskrivelse av prosjektet..."
+                    placeholder={t("auto.beskrivelse_av_prosjektet")}
                     rows={6}
                   />
                 </CardContent>

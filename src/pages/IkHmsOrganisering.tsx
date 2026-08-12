@@ -38,6 +38,7 @@ import {
   RoleDescriptionEditor
 } from "@/components/orgchart";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { t } from "@/i18n/t";
 
 const IkHmsOrganisering = () => {
   const { profile, isSystemAdmin, isCompanyAdmin } = useAuth();
@@ -287,10 +288,10 @@ const IkHmsOrganisering = () => {
       if (error) throw error;
 
       setOriginalDescription(description);
-      toast.success("Beskrivelse lagret");
+      toast.success(t("auto.beskrivelse_lagret"));
     } catch (error) {
       console.error("Error saving description:", error);
-      toast.error("Kunne ikke lagre beskrivelse");
+      toast.error(t("auto.kunne_ikke_lagre_beskrivelse"));
     } finally {
       setIsSavingDescription(false);
     }
@@ -350,7 +351,7 @@ const IkHmsOrganisering = () => {
     const generatedText = generateDescriptionText();
     if (generatedText) {
       setDescription(generatedText);
-      toast.success("Beskrivelse generert fra orgkart");
+      toast.success(t("auto.beskrivelse_generert_fra_orgkart"));
     }
   };
 
@@ -430,7 +431,7 @@ const IkHmsOrganisering = () => {
               Organisering
             </h1>
             <p className="text-muted-foreground mt-1">
-              HMS-organisasjon med hierarkisk struktur
+              {t("auto.hms_organisasjon_med_hierarkisk_struktur")}
             </p>
           </div>
           {canEdit && (
@@ -443,16 +444,15 @@ const IkHmsOrganisering = () => {
 
         <Tabs defaultValue="chart" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="chart">Organisasjonskart</TabsTrigger>
-            <TabsTrigger value="description">Beskrivelse</TabsTrigger>
+            <TabsTrigger value="chart">{t("auto.organisasjonskart")}</TabsTrigger>
+            <TabsTrigger value="description">{t("auto.beskrivelse")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chart" className="space-y-6">
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Bygg et hierarkisk organisasjonskart. Klikk på en node for å legge til underordnede, 
-                tilknytte personer eller flytte den i hierarkiet.
+                {t("auto.bygg_et_hierarkisk_organisasjonskart_kli")}
               </AlertDescription>
             </Alert>
 
@@ -460,8 +460,8 @@ const IkHmsOrganisering = () => {
             {canEdit && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Hurtiglegg til roller</CardTitle>
-                  <CardDescription>Velg forhåndsdefinerte roller med standardbeskrivelser</CardDescription>
+                  <CardTitle className="text-base">{t("auto.hurtiglegg_til_roller")}</CardTitle>
+                  <CardDescription>{t("auto.velg_forhaandsdefinerte_roller_med_stand_3")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
@@ -519,8 +519,8 @@ const IkHmsOrganisering = () => {
             {canEdit && nodes.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Rediger roller</CardTitle>
-                  <CardDescription>Rediger rollebeskrivelser direkte. Disse vises i HMS-håndboken.</CardDescription>
+                  <CardTitle className="text-base">{t("auto.rediger_roller")}</CardTitle>
+                  <CardDescription>{t("auto.rediger_rollebeskrivelser_direkte_disse_")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {nodes.map((node, index) => (
@@ -539,8 +539,8 @@ const IkHmsOrganisering = () => {
             {nodes.some(n => n.persons && n.persons.length > 0) && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Tilknyttede personer</CardTitle>
-                  <CardDescription>Oversikt over hvem som er tilknyttet hver rolle</CardDescription>
+                  <CardTitle className="text-base">{t("auto.tilknyttede_personer")}</CardTitle>
+                  <CardDescription>{t("auto.oversikt_over_hvem_som_er_tilknyttet_hve")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -577,8 +577,7 @@ const IkHmsOrganisering = () => {
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Her kan du skrive en generell beskrivelse av hvordan HMS-arbeidet er organisert i bedriften.
-                Denne teksten vises i HMS-håndboken.
+                {t("auto.her_kan_du_skrive_en_generell_beskrivels")}
               </AlertDescription>
             </Alert>
 
@@ -586,15 +585,15 @@ const IkHmsOrganisering = () => {
               <CardHeader>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <CardTitle>Organisasjonsbeskrivelse</CardTitle>
+                    <CardTitle>{t("auto.organisasjonsbeskrivelse")}</CardTitle>
                     <CardDescription>
-                      Beskriv bedriftens organisering av HMS-arbeidet
+                      {t("auto.beskriv_bedriftens_organisering_av_hms_a")}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
                     {nodes.length > 0 && (
                       <Button variant="outline" size="sm" onClick={generateDescriptionFromChart}>
-                        Generer fra orgkart
+                        {t("auto.generer_fra_orgkart")}
                       </Button>
                     )}
                     {hasDescriptionChanges && (
@@ -618,7 +617,7 @@ const IkHmsOrganisering = () => {
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Beskriv hvordan bedriften er organisert med hensyn til HMS-arbeid. Hvem har ansvar for hva? Hvordan er rapporteringslinjene?"
+                  placeholder={t("auto.beskriv_hvordan_bedriften_er_organisert_")}
                   rows={12}
                   className="resize-none"
                   disabled={!canEdit}
@@ -630,7 +629,7 @@ const IkHmsOrganisering = () => {
             {nodes.length > 0 && (
               <Card className="bg-muted/50">
                 <CardHeader>
-                  <CardTitle className="text-sm text-muted-foreground">Forhåndsvisning av orgkart</CardTitle>
+                  <CardTitle className="text-sm text-muted-foreground">{t("auto.forhaandsvisning_av_orgkart")}</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm space-y-2">
                   {nodes.map((node) => (
@@ -699,7 +698,7 @@ const IkHmsOrganisering = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmDeleteNode}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

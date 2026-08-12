@@ -31,6 +31,7 @@ import { nb } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { KsBygChecklistEditDialog } from "./KsBygChecklistEditDialog";
 import type { AdminChecklistTemplate } from "@/hooks/useAdminKsTemplates";
+import { t } from "@/i18n/t";
 
 export function KsBygChecklistOverview() {
   const { checklistTemplates, isLoading, deleteChecklistTemplate } = useAdminKsTemplates();
@@ -76,7 +77,7 @@ export function KsBygChecklistOverview() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ClipboardCheck className="h-5 w-5 text-blue-500" />
-          <h3 className="font-semibold text-sm">Sjekklistemaler</h3>
+          <h3 className="font-semibold text-sm">{t("auto.sjekklistemaler")}</h3>
           <Badge variant="secondary" className="text-xs">
             {checklistTemplates.length}
           </Badge>
@@ -84,7 +85,7 @@ export function KsBygChecklistOverview() {
         <div className="relative w-56">
           <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Søk i maler..."
+            placeholder={t("auto.soek_i_maler")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8 h-8 text-xs"
@@ -94,7 +95,7 @@ export function KsBygChecklistOverview() {
 
       {Object.keys(grouped).length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-4">
-          Ingen sjekklistemaler funnet
+          {t("auto.ingen_sjekklistemaler_funnet")}
         </p>
       ) : (
         <div className="space-y-1.5">
@@ -137,16 +138,16 @@ export function KsBygChecklistOverview() {
                           <div className="flex items-center gap-1">
                             {t.is_mandatory && (
                               <Badge variant="destructive" className="text-[10px] h-4 px-1.5">
-                                Obligatorisk
+                                {t("auto.obligatorisk")}
                               </Badge>
                             )}
                             {t.is_active ? (
                               <Badge className="bg-green-100 text-green-700 text-[10px] h-4 px-1.5">
-                                Aktiv
+                                {t("auto.aktiv")}
                               </Badge>
                             ) : (
                               <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
-                                Inaktiv
+                                {t("auto.inaktiv")}
                               </Badge>
                             )}
                           </div>
@@ -179,13 +180,13 @@ export function KsBygChecklistOverview() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett sjekklistemal?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_sjekklistemal")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Denne handlingen kan ikke angres. Malen vil bli fjernet fra biblioteket.
+              {t("auto.denne_handlingen_kan_ikke_angres_malen_v")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {

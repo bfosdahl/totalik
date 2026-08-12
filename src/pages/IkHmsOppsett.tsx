@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAiSetupValidation } from "@/hooks/useAiSetupValidation";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 const IkHmsOppsett = () => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const IkHmsOppsett = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Forbereder AI-oppsett...</p>
+            <p className="text-muted-foreground">{t("auto.forbereder_ai_oppsett")}</p>
           </div>
         </div>
       </AppLayout>
@@ -79,7 +80,7 @@ const IkHmsOppsett = () => {
             </AlertDescription>
           </Alert>
           <p className="text-sm text-muted-foreground">
-            Hvis problemet vedvarer, prøv å logge ut og inn igjen. Dette kan løse sesjonsproblemer.
+            {t("auto.hvis_problemet_vedvarer_proev_aa_logge_u")}
           </p>
         </div>
       </AppLayout>
@@ -98,9 +99,9 @@ const IkHmsOppsett = () => {
     <AppLayout>
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Oppsett-hjelperen</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{t("auto.oppsett_hjelperen")}</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Få hjelp til å sette opp HMS-systemet for bedriften din
+            {t("auto.faa_hjelp_til_aa_sette_opp_hms_systemet_")}
           </p>
         </div>
 
@@ -109,25 +110,23 @@ const IkHmsOppsett = () => {
             <Alert className="border-success bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <AlertDescription className="text-success text-sm sm:text-base">
-                IK/HMS oppsett er fullført! Ditt skreddersydde HMS-system er klar til bruk.
+                {t("auto.ik_hms_oppsett_er_fullfoert_ditt_skredde")}
               </AlertDescription>
             </Alert>
 
             <div className="bg-muted/50 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
-              <h3 className="font-semibold text-base sm:text-lg">Viktig informasjon</h3>
+              <h3 className="font-semibold text-base sm:text-lg">{t("auto.viktig_informasjon")}</h3>
               <div className="space-y-3 text-xs sm:text-sm">
                 <div>
-                  <p className="font-medium mb-1">✅ Dine data er trygge</p>
+                  <p className="font-medium mb-1">{t("auto.dine_data_er_trygge")}</p>
                   <p className="text-muted-foreground">
-                    Hvis du kjører oppsettet på nytt, beholdes alle revisjoner, avvik og 
-                    tilpassede data. Kun AI-generert grunnoppsett oppdateres.
+                    {t("auto.hvis_du_kjoerer_oppsettet_paa_nytt_behol_2")}
                   </p>
                 </div>
                 <div>
-                  <p className="font-medium mb-1">⏱️ Estimert tidsbruk</p>
+                  <p className="font-medium mb-1">{t("auto.estimert_tidsbruk")}</p>
                   <p className="text-muted-foreground">
-                    Et komplett AI-oppsett tar normalt 5-10 minutter, avhengig av hvor detaljert 
-                    du svarer på spørsmålene.
+                    {t("auto.et_komplett_ai_oppsett_tar_normalt_5_10_")}
                   </p>
                 </div>
               </div>
@@ -135,7 +134,7 @@ const IkHmsOppsett = () => {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button onClick={() => navigate('/handbook')} className="w-full sm:w-auto">
-                Se generert innhold
+                {t("auto.se_generert_innhold")}
               </Button>
               <Button 
                 variant="outline" 
@@ -147,9 +146,9 @@ const IkHmsOppsett = () => {
             </div>
 
             <div className="mt-8 pt-6 border-t">
-              <h3 className="text-lg font-semibold mb-2">Importer fra eksisterende håndbok</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("auto.importer_fra_eksisterende_haandbok")}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Har du en eksisterende HMS-håndbok? Last den opp for å importere mål, risikoer, rutiner og avvik automatisk.
+                {t("auto.har_du_en_eksisterende_hms_haandbok_last")}
               </p>
               <HandbookImportUploader
                 companyId={companyId!}
@@ -197,22 +196,21 @@ const IkHmsOppsett = () => {
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
                 <p>
-                  Du er i ferd med å starte et nytt AI-oppsett. Dette vil ta 5-10 minutter å fullføre.
+                  {t("auto.du_er_i_ferd_med_aa_starte_et_nytt_ai_op")}
                 </p>
                 <p className="font-medium text-foreground">
-                  ⚠️ Viktig: Ditt nåværende oppsett beholdes helt til det nye oppsettet er 100% fullført. 
-                  Hvis du avbryter underveis, beholdes det opprinnelige oppsettet.
+                  {t("auto.viktig_ditt_naavaerende_oppsett_beholdes")}
                 </p>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowRestartDialog(false);
                 setIsRestarting(true);
                 setSetupCompleted(false);
               }}>
-                Start nytt oppsett
+                {t("auto.start_nytt_oppsett")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

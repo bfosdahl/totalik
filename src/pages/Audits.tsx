@@ -38,34 +38,35 @@ import HmsEgenerklaeringSeksjon from "@/components/audits/HmsEgenerklaeringSeksj
 import VerneombudSeksjon from "@/components/audits/VerneombudSeksjon";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const typeConfig = {
-  internal: { label: "Intern", color: "bg-primary/10 text-primary" },
-  external: { label: "Ekstern", color: "bg-accent/10 text-accent" },
-  routine: { label: "Rutine", color: "bg-info/10 text-info" },
+  internal: { label: t("auto.intern"), color: "bg-primary/10 text-primary" },
+  external: { label: t("auto.ekstern"), color: "bg-accent/10 text-accent" },
+  routine: { label: t("auto.rutine"), color: "bg-info/10 text-info" },
 };
 
 const statusConfig = {
   scheduled: { 
-    label: "Planlagt", 
+    label: t("auto.planlagt"), 
     icon: Calendar, 
     color: "text-muted-foreground",
     bg: "bg-muted"
   },
   "in-progress": { 
-    label: "Pågår", 
+    label: t("auto.paagaar"), 
     icon: Clock, 
     color: "text-warning",
     bg: "bg-warning/10"
   },
   completed: { 
-    label: "Fullført", 
+    label: t("auto.fullfoert"), 
     icon: CheckCircle2, 
     color: "text-success",
     bg: "bg-success/10"
   },
   overdue: { 
-    label: "Forfalt", 
+    label: t("auto.forfalt"), 
     icon: AlertCircle, 
     color: "text-destructive",
     bg: "bg-destructive/10"
@@ -182,9 +183,9 @@ const Audits = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl font-bold tracking-tight">HMS aktiviteter</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("auto.hms_aktiviteter")}</h1>
           <p className="text-muted-foreground">
-            Planlegg og gjennomfør HMS-aktiviteter og revisjoner
+            {t("auto.planlegg_og_gjennomfoer_hms_aktiviteter_")}
           </p>
         </motion.div>
 
@@ -197,70 +198,70 @@ const Audits = () => {
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <ListChecks className="w-4 h-4" />
-                <span>Oversikt</span>
+                <span>{t("auto.oversikt")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="annual" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <ClipboardCheck className="w-4 h-4" />
-                <span>Årlig HMS-revisjon</span>
+                <span>{t("auto.aarlig_hms_revisjon")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="elkontroll" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <Zap className="w-4 h-4" />
-                <span>El-Kontroll</span>
+                <span>{t("auto.el_kontroll")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="fysiske" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <Building2 className="w-4 h-4" />
-                <span>Fysiske forhold</span>
+                <span>{t("auto.fysiske_forhold")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="drift" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <Settings className="w-4 h-4" />
-                <span>Daglig drift</span>
+                <span>{t("auto.daglig_drift")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="lover" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <Scale className="w-4 h-4" />
-                <span>Lover og forskrifter</span>
+                <span>{t("auto.lover_og_forskrifter")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="vernerunde" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <Shield className="w-4 h-4" />
-                <span>Vernerunde</span>
+                <span>{t("auto.vernerunde")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="aarshjul" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <CalendarDays className="w-4 h-4" />
-                <span>Årshjul</span>
+                <span>{t("auto.aarshjul")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="egenerklaring" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <FileSignature className="w-4 h-4" />
-                <span>Erklæringer</span>
+                <span>{t("auto.erklaeringer")}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="verneombud" 
                 className="flex-1 min-w-[140px] gap-2 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <UserCheck className="w-4 h-4" />
-                <span>Verneombud</span>
+                <span>{t("auto.verneombud")}</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -273,7 +274,7 @@ const Audits = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-card rounded-xl border border-border p-5 shadow-card"
             >
-              <h2 className="text-lg font-semibold mb-4">Gå direkte til aktivitetsskjema</h2>
+              <h2 className="text-lg font-semibold mb-4">{t("auto.gaa_direkte_til_aktivitetsskjema")}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                 <Button
                   variant="outline"
@@ -281,7 +282,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("annual")}
                 >
                   <ClipboardCheck className="w-6 h-6 text-primary" />
-                  <span className="text-xs text-center">Årlig HMS-revisjon</span>
+                  <span className="text-xs text-center">{t("auto.aarlig_hms_revisjon")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -289,7 +290,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("elkontroll")}
                 >
                   <Zap className="w-6 h-6 text-warning" />
-                  <span className="text-xs text-center">El-Kontroll</span>
+                  <span className="text-xs text-center">{t("auto.el_kontroll")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -297,7 +298,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("fysiske")}
                 >
                   <Building2 className="w-6 h-6 text-info" />
-                  <span className="text-xs text-center">Fysiske forhold</span>
+                  <span className="text-xs text-center">{t("auto.fysiske_forhold")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -305,7 +306,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("drift")}
                 >
                   <Settings className="w-6 h-6 text-accent" />
-                  <span className="text-xs text-center">Daglig drift</span>
+                  <span className="text-xs text-center">{t("auto.daglig_drift")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -313,7 +314,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("lover")}
                 >
                   <Scale className="w-6 h-6 text-success" />
-                  <span className="text-xs text-center">Lover og forskrifter</span>
+                  <span className="text-xs text-center">{t("auto.lover_og_forskrifter")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -321,7 +322,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("vernerunde")}
                 >
                   <Shield className="w-6 h-6 text-emerald-500" />
-                  <span className="text-xs text-center">Vernerunde</span>
+                  <span className="text-xs text-center">{t("auto.vernerunde")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -329,7 +330,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("aarshjul")}
                 >
                   <CalendarDays className="w-6 h-6 text-purple-500" />
-                  <span className="text-xs text-center">Årshjul</span>
+                  <span className="text-xs text-center">{t("auto.aarshjul")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -337,7 +338,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("egenerklaring")}
                 >
                   <FileSignature className="w-6 h-6 text-rose-500" />
-                  <span className="text-xs text-center">Erklæringer</span>
+                  <span className="text-xs text-center">{t("auto.erklaeringer")}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -345,7 +346,7 @@ const Audits = () => {
                   onClick={() => setActiveTab("verneombud")}
                 >
                   <UserCheck className="w-6 h-6 text-primary" />
-                  <span className="text-xs text-center">Verneombud</span>
+                  <span className="text-xs text-center">{t("auto.verneombud")}</span>
                 </Button>
               </div>
             </motion.div>
@@ -380,7 +381,7 @@ const Audits = () => {
             </motion.div>
 
             {/* Activities header */}
-            <h2 className="text-lg font-semibold">Aktiviteter</h2>
+            <h2 className="text-lg font-semibold">{t("auto.aktiviteter")}</h2>
 
             {/* Activities list (audits + completed forms) */}
             <motion.div
@@ -392,9 +393,9 @@ const Audits = () => {
               {allActivities.length === 0 ? (
                 <div className="bg-card rounded-xl border border-border p-8 text-center">
                   <FileCheck className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Ingen aktiviteter</h3>
+                  <h3 className="text-lg font-medium mb-2">{t("auto.ingen_aktiviteter")}</h3>
                   <p className="text-muted-foreground">
-                    Bruk knappene ovenfor for å gå direkte til et aktivitetsskjema.
+                    {t("auto.bruk_knappene_ovenfor_for_aa_gaa_direkte")}
                   </p>
                 </div>
               ) : (

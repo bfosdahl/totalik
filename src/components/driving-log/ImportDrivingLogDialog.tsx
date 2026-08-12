@@ -12,6 +12,7 @@ import { parseExcelFile, importedRowToInput, ImportedRow } from "@/utils/driving
 import { CreateDrivingLogInput } from "@/hooks/useDrivingLog";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { t } from "@/i18n/t";
 
 const tripTypeLabels: Record<string, string> = {
   business: "Yrkeskjøring",
@@ -39,14 +40,14 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
     try {
       const parsed = await parseExcelFile(file);
       if (parsed.length === 0) {
-        toast.error("Ingen gyldige rader funnet i filen");
+        toast.error(t("auto.ingen_gyldige_rader_funnet_i_filen"));
         return;
       }
       setRows(parsed);
       setFileName(file.name);
       setStep("preview");
     } catch {
-      toast.error("Kunne ikke lese Excel-filen. Sjekk at formatet er riktig.");
+      toast.error(t("auto.kunne_ikke_lese_excel_filen_sjekk_at_for"));
     }
     // Reset input
     if (fileRef.current) fileRef.current.value = "";
@@ -76,7 +77,7 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
             Importer kjørebok fra Excel
           </DialogTitle>
           <DialogDescription>
-            Last opp en Excel-fil med kjørebokdata. Filen bør ha samme format som den eksporterte kjøreboken.
+            {t("auto.last_opp_en_excel_fil_med_kjoerebokdata_")}
           </DialogDescription>
         </DialogHeader>
 
@@ -115,12 +116,12 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Dato</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Formål</TableHead>
-                    <TableHead>Fra → Til</TableHead>
-                    <TableHead className="text-right">Km</TableHead>
-                    <TableHead>Bil</TableHead>
+                    <TableHead>{t("auto.dato")}</TableHead>
+                    <TableHead>{t("auto.type")}</TableHead>
+                    <TableHead>{t("auto.formaal")}</TableHead>
+                    <TableHead>{t("auto.fra_til_3")}</TableHead>
+                    <TableHead className="text-right">{t("auto.km")}</TableHead>
+                    <TableHead>{t("auto.bil")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -144,12 +145,12 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
 
             <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md">
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>Sjekk at dataene ser riktige ut før du importerer. Duplikater blir ikke filtrert automatisk.</span>
+              <span>{t("auto.sjekk_at_dataene_ser_riktige_ut_foer_du_")}</span>
             </div>
 
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={() => { setStep("upload"); setRows([]); }}>
-                Velg annen fil
+                {t("auto.velg_annen_fil")}
               </Button>
               <Button onClick={handleImport} disabled={isPending} className="gap-2">
                 {isPending ? "Importerer..." : `Importer ${rows.length} turer`}
@@ -163,9 +164,9 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <p className="text-lg font-medium">Import fullført!</p>
+            <p className="text-lg font-medium">{t("auto.import_fullfoert_2")}</p>
             <p className="text-sm text-muted-foreground">{rows.length} turer ble importert til kjøreboken.</p>
-            <Button onClick={() => handleClose(false)}>Lukk</Button>
+            <Button onClick={() => handleClose(false)}>{t("auto.lukk")}</Button>
           </div>
         )}
       </DialogContent>

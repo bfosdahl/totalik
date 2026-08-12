@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { createSeedProjects } from "@/utils/ksModule2SeedProjects";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
+import { t } from "@/i18n/t";
 
 interface Module {
   id: string;
@@ -27,42 +28,42 @@ const MODULE_DEFINITIONS = [
   {
     type: "IK_HMS",
     name: "IK HMS",
-    description: "Internkontroll for helse, miljø og sikkerhet",
+    description: t("auto.internkontroll_for_helse_miljoe_og_sikke"),
   },
   {
     type: "IK_MAT",
     name: "IK MAT",
-    description: "Internkontroll for matsikkerhet",
+    description: t("auto.internkontroll_for_matsikkerhet"),
   },
   {
     type: "IK_ALKOHOL",
     name: "IK Alkohol",
-    description: "Internkontroll for alkoholhåndtering",
+    description: t("auto.internkontroll_for_alkoholhaandtering"),
   },
   {
     type: "IK_BYGG",
     name: "KS Bygg",
-    description: "Kvalitetssikring for byggprosjekter",
+    description: t("auto.kvalitetssikring_for_byggprosjekter"),
   },
   {
     type: "IK_FDV",
     name: "IK FDV",
-    description: "Forvaltning, drift og vedlikehold av bygg",
+    description: t("auto.forvaltning_drift_og_vedlikehold_av_bygg"),
   },
   {
     type: "PERSONALHANDBOK",
     name: "Personalhåndbok",
-    description: "Digital personalhåndbok for ansatte",
+    description: t("auto.digital_personalhaandbok_for_ansatte"),
   },
   {
     type: "GDPR",
     name: "GDPR",
-    description: "EUs personvernforordning - dokumentasjon og sjekklister",
+    description: t("auto.eus_personvernforordning_dokumentasjon_o"),
   },
   {
     type: "APENHETSLOVEN",
     name: "Åpenhetsloven",
-    description: "Aktsomhetsvurderinger og redegjørelse for menneskerettigheter",
+    description: t("auto.aktsomhetsvurderinger_og_redegjoerelse_f"),
   },
 ];
 
@@ -118,8 +119,8 @@ export function CompanyModulesDialog({
       } catch (error) {
         console.error("Error fetching modules:", error);
         toast({
-          title: "Feil",
-          description: "Kunne ikke hente moduler",
+          title: t("auto.feil"),
+          description: t("auto.kunne_ikke_hente_moduler"),
           variant: "destructive",
         });
       } finally {
@@ -176,14 +177,14 @@ export function CompanyModulesDialog({
       }
 
       toast({
-        title: "Moduler oppdatert",
+        title: t("auto.moduler_oppdatert"),
         description: `Moduler for ${company.name} er oppdatert`,
       });
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error saving modules:", error);
       toast({
-        title: "Feil",
+        title: t("auto.feil"),
         description: error.message || "Kunne ikke lagre moduler",
         variant: "destructive",
       });
@@ -208,7 +209,7 @@ export function CompanyModulesDialog({
           <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
             <div className="p-2.5 sm:p-3 bg-secondary/30 rounded-lg flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground">Bedrift</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.bedrift")}</p>
                 <p className="font-medium text-sm sm:text-base truncate">{company.name}</p>
               </div>
               <Badge variant="secondary" className="text-xs whitespace-nowrap">
@@ -218,7 +219,7 @@ export function CompanyModulesDialog({
 
             {isLoading ? (
               <div className="py-6 sm:py-8 text-center text-muted-foreground text-sm">
-                Laster moduler...
+                {t("auto.laster_moduler")}
               </div>
             ) : (
               <div className="space-y-2 sm:space-y-3">

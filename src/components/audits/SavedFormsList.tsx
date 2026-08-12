@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { FilePlus, FileText, Trash2, Edit, CheckCircle2, Clock } from "lucide-react";
 import type { AuditFormResponse } from "@/hooks/useAuditFormResponses";
+import { t } from "@/i18n/t";
 
 interface SavedFormsListProps {
   responses: AuditFormResponse[];
@@ -81,7 +82,7 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="secondary" className="bg-warning/10 text-warning">
-                            Utkast
+                            {t("auto.utkast")}
                           </Badge>
                           <span className="text-sm text-muted-foreground">
                             Opprettet: {formatDate(response.created_at)}
@@ -115,13 +116,13 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Slette utkast?</AlertDialogTitle>
+                              <AlertDialogTitle>{t("auto.slette_utkast")}</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Er du sikker på at du vil slette dette utkastet? Denne handlingen kan ikke angres.
+                                {t("auto.er_du_sikker_paa_at_du_vil_slette_dette__2")}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => onDelete(response.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -153,7 +154,7 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge variant="secondary" className="bg-success/10 text-success">
-                            Fullført
+                            {t("auto.fullfoert")}
                           </Badge>
                           <span className="text-sm text-muted-foreground">
                             {formatDate(response.completed_at)}
@@ -192,13 +193,13 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Slette skjema?</AlertDialogTitle>
+                              <AlertDialogTitle>{t("auto.slette_skjema")}</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Er du sikker på at du vil slette dette fullførte skjemaet? Det vil også fjernes fra IK-Handboken. Denne handlingen kan ikke angres.
+                                {t("auto.er_du_sikker_paa_at_du_vil_slette_dette__3")}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => onDelete(response.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

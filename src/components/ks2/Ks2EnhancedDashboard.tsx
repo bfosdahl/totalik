@@ -40,6 +40,7 @@ import {
 } from "recharts";
 import { Ks2PopulateExampleButton } from "./Ks2PopulateExampleButton";
 import { Ks2WelcomeCard } from "./Ks2WelcomeCard";
+import { t } from "@/i18n/t";
 
 interface Ks2EnhancedDashboardProps {
   contractorType?: string | null;
@@ -152,8 +153,8 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="font-semibold text-lg">Hurtighandlinger</h2>
-              <p className="text-sm text-muted-foreground">Kom raskt i gang med de viktigste oppgavene</p>
+              <h2 className="font-semibold text-lg">{t("auto.hurtighandlinger")}</h2>
+              <p className="text-sm text-muted-foreground">{t("auto.kom_raskt_i_gang_med_de_viktigste_oppgav")}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button
@@ -218,7 +219,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl font-bold text-foreground">{stats.progressPercent}%</span>
-                <span className="text-xs text-muted-foreground">fullført</span>
+                <span className="text-xs text-muted-foreground">{t("auto.fullfoert_2")}</span>
               </div>
             </div>
             <p className="mt-3 text-sm font-medium text-foreground text-center">
@@ -277,7 +278,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             </div>
             <div>
               <p className="text-lg md:text-xl font-bold">{stats.completed}</p>
-              <p className="text-xs text-muted-foreground">Fullført</p>
+              <p className="text-xs text-muted-foreground">{t("auto.fullfoert")}</p>
             </div>
           </CardContent>
         </Card>
@@ -288,7 +289,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             </div>
             <div>
               <p className="text-lg md:text-xl font-bold">{stats.planned + stats.inProgress}</p>
-              <p className="text-xs text-muted-foreground">Ufullført</p>
+              <p className="text-xs text-muted-foreground">{t("auto.ufullfoert")}</p>
             </div>
           </CardContent>
         </Card>
@@ -299,7 +300,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             </div>
             <div>
               <p className="text-lg md:text-xl font-bold">{stats.overdue}</p>
-              <p className="text-xs text-muted-foreground">Forfalt</p>
+              <p className="text-xs text-muted-foreground">{t("auto.forfalt")}</p>
             </div>
           </CardContent>
         </Card>
@@ -310,7 +311,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             </div>
             <div>
               <p className="text-lg md:text-xl font-bold">{enhancedStats.openAvvik}</p>
-              <p className="text-xs text-muted-foreground">Åpne avvik</p>
+              <p className="text-xs text-muted-foreground">{t("auto.aapne_avvik")}</p>
             </div>
           </CardContent>
         </Card>
@@ -332,7 +333,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             </div>
             <div>
               <p className="text-lg md:text-xl font-bold">{enhancedStats.thisWeekDue}</p>
-              <p className="text-xs text-muted-foreground">Frister denne uke</p>
+              <p className="text-xs text-muted-foreground">{t("auto.frister_denne_uke")}</p>
             </div>
           </CardContent>
         </Card>
@@ -372,7 +373,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
           </CardHeader>
           <CardContent>
             {enhancedStats.upcomingDeadlines.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Ingen kommende frister de neste 7 dagene</p>
+              <p className="text-sm text-muted-foreground">{t("auto.ingen_kommende_frister_de_neste_7_dagene")}</p>
             ) : (
               <div className="space-y-2">
                 {enhancedStats.upcomingDeadlines.slice(0, 5).map((checklist) => {
@@ -410,7 +411,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
           </CardHeader>
           <CardContent>
             {recentCompleted.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Ingen fullførte egenkontroller ennå</p>
+              <p className="text-sm text-muted-foreground">{t("auto.ingen_fullfoerte_egenkontroller_ennaa")}</p>
             ) : (
               <div className="space-y-2">
                 {recentCompleted.map((checklist) => (
@@ -457,15 +458,15 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
                 <div className="text-2xl font-bold text-green-600">{enhancedStats.approvedSubcontractors}</div>
-                <div className="text-sm text-muted-foreground">Godkjent</div>
+                <div className="text-sm text-muted-foreground">{t("auto.godkjent")}</div>
               </div>
               <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                 <div className="text-2xl font-bold text-yellow-600">{enhancedStats.pendingSubcontractors}</div>
-                <div className="text-sm text-muted-foreground">Venter godkjenning</div>
+                <div className="text-sm text-muted-foreground">{t("auto.venter_godkjenning")}</div>
               </div>
               <div className="p-4 rounded-lg bg-muted border border-border">
                 <div className="text-2xl font-bold">{enhancedStats.totalSubcontractors}</div>
-                <div className="text-sm text-muted-foreground">Totalt registrert</div>
+                <div className="text-sm text-muted-foreground">{t("auto.totalt_registrert")}</div>
               </div>
             </div>
             <Button
@@ -483,7 +484,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
       {/* Quick Actions */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Snarveier</CardTitle>
+          <CardTitle className="text-base">{t("auto.snarveier")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -492,7 +493,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               onClick={() => navigate(`/ks/project/${projectId}/egenkontroller?new=true`)}
             >
               <Plus className="h-6 w-6" />
-              <span className="text-xs">Ny egenkontroll</span>
+              <span className="text-xs">{t("auto.ny_egenkontroll")}</span>
             </Button>
             <Button
               variant="outline"
@@ -500,7 +501,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               onClick={() => navigate(`/ks/project/${projectId}/sjekklister`)}
             >
               <ClipboardCheck className="h-6 w-6" />
-              <span className="text-xs">Sjekklister</span>
+              <span className="text-xs">{t("auto.sjekklister")}</span>
             </Button>
             <Button
               variant="outline"
@@ -516,7 +517,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               onClick={() => navigate(`/ks/project/${projectId}/timeregistrering`)}
             >
               <Timer className="h-6 w-6" />
-              <span className="text-xs">Timeføring</span>
+              <span className="text-xs">{t("auto.timefoering")}</span>
             </Button>
             <Button
               variant="outline"
@@ -524,7 +525,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               onClick={() => navigate(`/ks/project/${projectId}/avvik`)}
             >
               <AlertTriangle className="h-6 w-6" />
-              <span className="text-xs">Registrer avvik</span>
+              <span className="text-xs">{t("auto.registrer_avvik")}</span>
             </Button>
             <Button
               variant="outline"
@@ -532,7 +533,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               onClick={() => navigate(`/ks/project/${projectId}/rapport`)}
             >
               <FileText className="h-6 w-6" />
-              <span className="text-xs">KS-rapport</span>
+              <span className="text-xs">{t("auto.ks_rapport")}</span>
             </Button>
           </div>
         </CardContent>

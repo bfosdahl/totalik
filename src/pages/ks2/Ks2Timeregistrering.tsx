@@ -23,6 +23,7 @@ import { TimeEntryList } from "@/components/timeregistration/TimeEntryList";
 import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
 import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
+import { t } from "@/i18n/t";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "payroll-21" | "custom" | "all";
 
@@ -152,7 +153,7 @@ export default function Ks2Timeregistrering() {
   if (!project) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Prosjekt ikke funnet</p>
+        <p className="text-muted-foreground">{t("auto.prosjekt_ikke_funnet")}</p>
       </div>
     );
   }
@@ -162,7 +163,7 @@ export default function Ks2Timeregistrering() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Timeregistrering</h1>
+          <h1 className="text-2xl font-bold">{t("auto.timeregistrering")}</h1>
           <p className="text-muted-foreground">
             Timer registrert på {projectName}
           </p>
@@ -172,17 +173,17 @@ export default function Ks2Timeregistrering() {
             <Button variant="outline" asChild>
               <Link to="/payroll">
                 <Wallet className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Lønnsgrunnlag</span>
+                <span className="hidden sm:inline">{t("auto.loennsgrunnlag")}</span>
               </Link>
             </Button>
           )}
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Eksporter</span>
+            <span className="hidden sm:inline">{t("auto.eksporter")}</span>
           </Button>
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Registrer timer</span>
+            <span className="hidden sm:inline">{t("auto.registrer_timer")}</span>
           </Button>
         </div>
       </div>
@@ -211,32 +212,32 @@ export default function Ks2Timeregistrering() {
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground hidden sm:inline">Periode:</span>
+            <span className="text-sm text-muted-foreground hidden sm:inline">{t("auto.periode_2")}</span>
           </div>
           <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="this-week">Denne uken</SelectItem>
-              <SelectItem value="last-week">Forrige uke</SelectItem>
-              <SelectItem value="this-month">Denne måneden</SelectItem>
-              <SelectItem value="last-month">Forrige måned</SelectItem>
+              <SelectItem value="this-week">{t("auto.denne_uken")}</SelectItem>
+              <SelectItem value="last-week">{t("auto.forrige_uke")}</SelectItem>
+              <SelectItem value="this-month">{t("auto.denne_maaneden")}</SelectItem>
+              <SelectItem value="last-month">{t("auto.forrige_maaned")}</SelectItem>
               <SelectItem value="payroll-21">Lønnsperiode (21–20)</SelectItem>
-              <SelectItem value="custom">Egendefinert periode</SelectItem>
-              <SelectItem value="all">Alle</SelectItem>
+              <SelectItem value="custom">{t("auto.egendefinert_periode")}</SelectItem>
+              <SelectItem value="all">{t("auto.alle")}</SelectItem>
             </SelectContent>
           </Select>
           {dateFilter === "custom" && (
             <div className="flex items-center gap-2">
-              <Label className="text-xs text-muted-foreground">Fra</Label>
+              <Label className="text-xs text-muted-foreground">{t("auto.fra")}</Label>
               <Input
                 type="date"
                 value={customFrom}
                 onChange={(e) => setCustomFrom(e.target.value)}
                 className="w-[150px]"
               />
-              <Label className="text-xs text-muted-foreground">Til</Label>
+              <Label className="text-xs text-muted-foreground">{t("auto.til")}</Label>
               <Input
                 type="date"
                 value={customTo}
@@ -257,27 +258,27 @@ export default function Ks2Timeregistrering() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Totalt timer</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auto.totalt_timer")}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalHours.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">i valgt periode</p>
+            <p className="text-xs text-muted-foreground">{t("auto.i_valgt_periode")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ansatte</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auto.ansatte")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{uniqueEmployees}</div>
-            <p className="text-xs text-muted-foreground">har registrert timer</p>
+            <p className="text-xs text-muted-foreground">{t("auto.har_registrert_timer")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Til godkjenning</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auto.til_godkjenning")}</CardTitle>
             <AlertCircle className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
@@ -287,7 +288,7 @@ export default function Ks2Timeregistrering() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Godkjent</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("auto.godkjent")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -301,7 +302,7 @@ export default function Ks2Timeregistrering() {
       {viewMode === "week" ? (
         <Card>
           <CardHeader>
-            <CardTitle>Ukevisning</CardTitle>
+            <CardTitle>{t("auto.ukevisning")}</CardTitle>
           </CardHeader>
           <CardContent>
             <WeeklyTimeView
@@ -332,21 +333,21 @@ export default function Ks2Timeregistrering() {
           <TabsContent value="by-employee">
             <Card>
               <CardHeader>
-                <CardTitle>Timer per ansatt på prosjektet</CardTitle>
+                <CardTitle>{t("auto.timer_per_ansatt_paa_prosjektet")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {byEmployee.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Ingen timer registrert i valgt periode
+                    {t("auto.ingen_timer_registrert_i_valgt_periode")}
                   </div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Ansatt</TableHead>
-                        <TableHead className="text-right">Godkjent</TableHead>
-                        <TableHead className="text-right">Til godkjenning</TableHead>
-                        <TableHead className="text-right">Totalt</TableHead>
+                        <TableHead>{t("auto.ansatt")}</TableHead>
+                        <TableHead className="text-right">{t("auto.godkjent")}</TableHead>
+                        <TableHead className="text-right">{t("auto.til_godkjenning")}</TableHead>
+                        <TableHead className="text-right">{t("auto.totalt")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -373,7 +374,7 @@ export default function Ks2Timeregistrering() {
                 )}
                 <div className="mt-4 text-xs text-muted-foreground">
                   For totalsum per ansatt på tvers av alle prosjekter, åpne{" "}
-                  <Link to="/payroll" className="underline text-primary">Lønnsgrunnlag</Link>.
+                  <Link to="/payroll" className="underline text-primary">{t("auto.loennsgrunnlag")}</Link>.
                 </div>
               </CardContent>
             </Card>
@@ -381,13 +382,13 @@ export default function Ks2Timeregistrering() {
           <TabsContent value="all">
             <Card>
               <CardHeader>
-                <CardTitle>Alle timeregistreringer</CardTitle>
+                <CardTitle>{t("auto.alle_timeregistreringer")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {filteredEntries.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Ingen timer registrert for dette prosjektet i valgt periode</p>
+                    <p>{t("auto.ingen_timer_registrert_for_dette_prosjek")}</p>
                     <Button
                       variant="outline"
                       className="mt-4"
@@ -412,7 +413,7 @@ export default function Ks2Timeregistrering() {
           <TabsContent value="pending">
             <Card>
               <CardHeader>
-                <CardTitle>Til godkjenning</CardTitle>
+                <CardTitle>{t("auto.til_godkjenning")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <TimeEntryList
@@ -427,7 +428,7 @@ export default function Ks2Timeregistrering() {
           <TabsContent value="mine">
             <Card>
               <CardHeader>
-                <CardTitle>Mine timeregistreringer</CardTitle>
+                <CardTitle>{t("auto.mine_timeregistreringer")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <TimeEntryList entries={myEntries} onDelete={deleteEntry} />
@@ -438,13 +439,13 @@ export default function Ks2Timeregistrering() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Mine timeregistreringer</CardTitle>
+            <CardTitle>{t("auto.mine_timeregistreringer")}</CardTitle>
           </CardHeader>
           <CardContent>
             {myEntries.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Du har ikke registrert timer på dette prosjektet ennå</p>
+                <p>{t("auto.du_har_ikke_registrert_timer_paa_dette_p")}</p>
                 <Button
                   variant="outline"
                   className="mt-4"

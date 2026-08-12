@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 export interface RiskAssessmentStepRef {
   save: () => Promise<void>;
@@ -37,35 +38,35 @@ export interface RiskAssessmentStepRef {
 const consequenceLevels = [
   {
     value: 1,
-    label: "1 - Ufarlig",
+    label: t("auto.1_ufarlig"),
     persons: "Ubetydelige personskader, Fravær < 3 dager",
     environment: "Ubetydelige miljøskader",
     material: "Ubetydelige skader på materiell: Skader under kr. 50.000",
   },
   {
     value: 2,
-    label: "2 - Farlig",
+    label: t("auto.2_farlig"),
     persons: "Mindre personskader, Fravær 3 – 16 dager",
     environment: "Mindre miljøskader",
     material: "Mindre materielle skader: kr. 50.000 - 250.000",
   },
   {
     value: 3,
-    label: "3 - Kritisk",
+    label: t("auto.3_kritisk"),
     persons: "Betydelige personskader, Fravær > 16 dager",
     environment: "Betydelige skader på miljøet",
     material: "Betydelige materielle skader: kr. 250.000 - 1.000.000",
   },
   {
     value: 4,
-    label: "4 - Meget kritisk",
+    label: t("auto.4_meget_kritisk"),
     persons: "Kan resultere i død",
     environment: "Alvorlige skader på miljøet",
     material: "Alvorlige materielle skader: kr. 1.000.000 - 5.000.000",
   },
   {
     value: 5,
-    label: "5 - Katastrofalt",
+    label: t("auto.5_katastrofalt"),
     persons: "Kan resultere i mange døde",
     environment: "Svært alvorlige skader på miljøet",
     material: "Fullstendig materiell ødeleggelse: over kr. 5.000.000",
@@ -74,11 +75,11 @@ const consequenceLevels = [
 
 // Probability levels
 const probabilityLevels = [
-  { value: 1, label: "1 - Lite sannsynlig", description: "Sjeldnere enn en gang pr. 10 år" },
-  { value: 2, label: "2 - Mindre sannsynlig", description: "1 gang hvert 5 - 10 år" },
-  { value: 3, label: "3 - Sannsynlig", description: "1 gang hvert 1 - 5 år" },
-  { value: 4, label: "4 - Meget sannsynlig", description: "1 - 10 ganger hvert år" },
-  { value: 5, label: "5 - Svært sannsynlig", description: "Mer enn 10 ganger i året" },
+  { value: 1, label: t("auto.1_lite_sannsynlig"), description: t("auto.sjeldnere_enn_en_gang_pr_10_aar") },
+  { value: 2, label: t("auto.2_mindre_sannsynlig"), description: t("auto.1_gang_hvert_5_10_aar") },
+  { value: 3, label: t("auto.3_sannsynlig"), description: t("auto.1_gang_hvert_1_5_aar") },
+  { value: 4, label: t("auto.4_meget_sannsynlig"), description: t("auto.1_10_ganger_hvert_aar") },
+  { value: 5, label: t("auto.5_svaert_sannsynlig"), description: t("auto.mer_enn_10_ganger_i_aaret") },
 ];
 
 export interface RiskItem {
@@ -119,10 +120,10 @@ function RiskMatrix() {
         <thead>
           <tr>
             <th className="border border-border p-2 bg-muted/50"></th>
-            <th colSpan={5} className="border border-border p-2 bg-muted/50 text-center">Konsekvens →</th>
+            <th colSpan={5} className="border border-border p-2 bg-muted/50 text-center">{t("auto.konsekvens_2")}</th>
           </tr>
           <tr>
-            <th className="border border-border p-2 bg-muted/50">Sannsynlighet ↓</th>
+            <th className="border border-border p-2 bg-muted/50">{t("auto.sannsynlighet_2")}</th>
             {[1, 2, 3, 4, 5].map((c) => (
               <th key={c} className="border border-border p-2 bg-muted/50 text-center w-12">{c}</th>
             ))}
@@ -145,10 +146,10 @@ function RiskMatrix() {
         </tbody>
       </table>
       <div className="flex flex-wrap gap-3 mt-3 text-xs">
-        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-success/20"></span> 1-4: Lav</div>
-        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-warning/20"></span> 5-9: Moderat</div>
-        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-500/20"></span> 10-15: Høy</div>
-        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-destructive/20"></span> 16-25: Svært høy</div>
+        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-success/20"></span> {t("auto.1_4_lav")}</div>
+        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-warning/20"></span> {t("auto.5_9_moderat")}</div>
+        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-500/20"></span> {t("auto.10_15_hoey")}</div>
+        <div className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-destructive/20"></span> {t("auto.16_25_svaert_hoey")}</div>
       </div>
     </div>
   );
@@ -180,15 +181,15 @@ function HelpSection() {
           >
             <div className="p-4 space-y-4 text-sm">
               <div>
-                <h4 className="font-medium mb-2">Beskrivelse av konsekvens</h4>
+                <h4 className="font-medium mb-2">{t("auto.beskrivelse_av_konsekvens")}</h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs border-collapse">
                     <thead>
                       <tr className="bg-muted/50">
-                        <th className="border border-border p-2 text-left">Nivå</th>
-                        <th className="border border-border p-2 text-left">Personer</th>
-                        <th className="border border-border p-2 text-left">Miljø</th>
-                        <th className="border border-border p-2 text-left">Materielle verdier</th>
+                        <th className="border border-border p-2 text-left">{t("auto.nivaa")}</th>
+                        <th className="border border-border p-2 text-left">{t("auto.personer")}</th>
+                        <th className="border border-border p-2 text-left">{t("auto.miljoe")}</th>
+                        <th className="border border-border p-2 text-left">{t("auto.materielle_verdier")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -206,13 +207,13 @@ function HelpSection() {
               </div>
 
               <div>
-                <h4 className="font-medium mb-2">Beskrivelse av sannsynlighet</h4>
+                <h4 className="font-medium mb-2">{t("auto.beskrivelse_av_sannsynlighet")}</h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs border-collapse">
                     <thead>
                       <tr className="bg-muted/50">
-                        <th className="border border-border p-2 text-left">Nivå</th>
-                        <th className="border border-border p-2 text-left">Forklaring</th>
+                        <th className="border border-border p-2 text-left">{t("auto.nivaa")}</th>
+                        <th className="border border-border p-2 text-left">{t("auto.forklaring")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -228,7 +229,7 @@ function HelpSection() {
               </div>
 
               <div>
-                <h4 className="font-medium mb-2">Risikomatrise</h4>
+                <h4 className="font-medium mb-2">{t("auto.risikomatrise")}</h4>
                 <p className="text-muted-foreground mb-2">
                   Risiko = Konsekvens × Sannsynlighet
                 </p>
@@ -348,7 +349,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
       <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
         <Info className="w-5 h-5 text-info mt-0.5 flex-shrink-0" />
         <div className="text-sm">
-          <p className="font-medium text-info mb-1">Kartlegg farer og vurder risiko</p>
+          <p className="font-medium text-info mb-1">{t("auto.kartlegg_farer_og_vurder_risiko")}</p>
           <p className="text-muted-foreground">
             Identifiser farer i virksomheten og vurder risiko basert på konsekvens og sannsynlighet.
             Bruk Arbeidstilsynets metodikk: Risiko = Konsekvens × Sannsynlighet.
@@ -369,12 +370,12 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
         <div className="space-y-3">
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">
-              Beskrivelse av fare/risiko *
+              {t("auto.beskrivelse_av_fare_risiko")}
             </label>
             <Textarea
               value={newRisk.description}
               onChange={(e) => setNewRisk((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Beskriv faren eller risikoen..."
+              placeholder={t("auto.beskriv_faren_eller_risikoen")}
               className="min-h-[60px] resize-none"
             />
           </div>
@@ -382,14 +383,14 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                Konsekvens *
+                {t("auto.konsekvens_3")}
               </label>
               <Select
                 value={newRisk.consequence?.toString() || ""}
                 onValueChange={(v) => setNewRisk((prev) => ({ ...prev, consequence: parseInt(v) }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg konsekvens" />
+                  <SelectValue placeholder={t("auto.velg_konsekvens")} />
                 </SelectTrigger>
                 <SelectContent>
                   {consequenceLevels.map((level) => (
@@ -403,14 +404,14 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
 
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                Sannsynlighet *
+                {t("auto.sannsynlighet_3")}
               </label>
               <Select
                 value={newRisk.probability?.toString() || ""}
                 onValueChange={(v) => setNewRisk((prev) => ({ ...prev, probability: parseInt(v) }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg sannsynlighet" />
+                  <SelectValue placeholder={t("auto.velg_sannsynlighet")} />
                 </SelectTrigger>
                 <SelectContent>
                   {probabilityLevels.map((level) => (
@@ -425,23 +426,23 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
 
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">
-              Eksisterende tiltak
+              {t("auto.eksisterende_tiltak")}
             </label>
             <Input
               value={newRisk.existing_measures}
               onChange={(e) => setNewRisk((prev) => ({ ...prev, existing_measures: e.target.value }))}
-              placeholder="Hvilke tiltak er allerede på plass?"
+              placeholder={t("auto.hvilke_tiltak_er_allerede_paa_plass")}
             />
           </div>
 
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">
-              Planlagte tiltak
+              {t("auto.planlagte_tiltak")}
             </label>
             <Input
               value={newRisk.planned_measures}
               onChange={(e) => setNewRisk((prev) => ({ ...prev, planned_measures: e.target.value }))}
-              placeholder="Hvilke tiltak skal iverksettes?"
+              placeholder={t("auto.hvilke_tiltak_skal_iverksettes")}
             />
           </div>
 
@@ -527,7 +528,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                           <div className="space-y-3 pt-3">
                             <div>
                               <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                Beskrivelse
+                                {t("auto.beskrivelse")}
                               </label>
                               <Textarea
                                 value={risk.description}
@@ -541,7 +542,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                             <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                  Konsekvens
+                                  {t("auto.konsekvens_4")}
                                 </label>
                                 <Select
                                   value={risk.consequence.toString()}
@@ -564,7 +565,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                               </div>
                               <div>
                                 <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                  Sannsynlighet
+                                  {t("auto.sannsynlighet_4")}
                                 </label>
                                 <Select
                                   value={risk.probability.toString()}
@@ -588,7 +589,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                             </div>
                             <div>
                               <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                Eksisterende tiltak
+                                {t("auto.eksisterende_tiltak")}
                               </label>
                               <Input
                                 value={risk.existing_measures}
@@ -600,7 +601,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                             </div>
                             <div>
                               <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                                Planlagte tiltak
+                                {t("auto.planlagte_tiltak")}
                               </label>
                               <Input
                                 value={risk.planned_measures}
@@ -624,16 +625,16 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                           <div className="pt-3 space-y-2 text-sm">
                             {risk.existing_measures && (
                               <p className="text-muted-foreground">
-                                <span className="font-medium text-foreground">Eksisterende tiltak:</span> {risk.existing_measures}
+                                <span className="font-medium text-foreground">{t("auto.eksisterende_tiltak_2")}</span> {risk.existing_measures}
                               </p>
                             )}
                             {risk.planned_measures && (
                               <p className="text-muted-foreground">
-                                <span className="font-medium text-foreground">Planlagte tiltak:</span> {risk.planned_measures}
+                                <span className="font-medium text-foreground">{t("auto.planlagte_tiltak_2")}</span> {risk.planned_measures}
                               </p>
                             )}
                             {!risk.existing_measures && !risk.planned_measures && (
-                              <p className="text-muted-foreground italic">Ingen tiltak registrert</p>
+                              <p className="text-muted-foreground italic">{t("auto.ingen_tiltak_registrert")}</p>
                             )}
                           </div>
                         )}

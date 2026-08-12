@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useKsModule2SubcontractorEvaluation, SubcontractorEvaluation } from "@/hooks/useKsModule2Subcontractors";
+import { t } from "@/i18n/t";
 
 const EVALUATION_ITEMS = [
   { key: 'has_valid_org_number', label: 'Gyldig organisasjonsnummer', commentKey: 'org_number_comment' },
@@ -79,7 +80,7 @@ export function Ks2SubcontractorEvaluation({ subcontractorId }: Ks2Subcontractor
     return (
       <Card>
         <CardContent className="p-6">
-          <p className="text-center text-muted-foreground">Laster gransking...</p>
+          <p className="text-center text-muted-foreground">{t("auto.laster_gransking")}</p>
         </CardContent>
       </Card>
     );
@@ -88,7 +89,7 @@ export function Ks2SubcontractorEvaluation({ subcontractorId }: Ks2Subcontractor
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Seriøsitetskontroll</CardTitle>
+        <CardTitle className="text-lg">{t("auto.serioesitetskontroll")}</CardTitle>
         <Button onClick={handleSave} disabled={isSaving}>
           <Save className="h-4 w-4 mr-2" />
           {isSaving ? "Lagrer..." : "Lagre"}
@@ -135,7 +136,7 @@ export function Ks2SubcontractorEvaluation({ subcontractorId }: Ks2Subcontractor
                 </div>
               </div>
               <Textarea
-                placeholder="Kommentar..."
+                placeholder={t("auto.kommentar")}
                 value={(formData[item.commentKey] as string) || ""}
                 onChange={(e) => handleCommentChange(item.commentKey, e.target.value)}
                 rows={2}
@@ -147,7 +148,7 @@ export function Ks2SubcontractorEvaluation({ subcontractorId }: Ks2Subcontractor
 
         {/* Conclusion */}
         <div className="border-t pt-6 space-y-4">
-          <h4 className="font-medium">Konklusjon</h4>
+          <h4 className="font-medium">{t("auto.konklusjon")}</h4>
           
           <RadioGroup value={conclusion} onValueChange={setConclusion}>
             <div className="flex items-center space-x-2">
@@ -174,9 +175,9 @@ export function Ks2SubcontractorEvaluation({ subcontractorId }: Ks2Subcontractor
           </RadioGroup>
 
           <div className="space-y-2">
-            <Label>Begrunnelse / merknader</Label>
+            <Label>{t("auto.begrunnelse_merknader")}</Label>
             <Textarea
-              placeholder="Skriv begrunnelse for konklusjonen..."
+              placeholder={t("auto.skriv_begrunnelse_for_konklusjonen")}
               value={conclusionNotes}
               onChange={(e) => setConclusionNotes(e.target.value)}
               rows={4}

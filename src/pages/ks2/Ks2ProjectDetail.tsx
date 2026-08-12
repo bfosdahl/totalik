@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 // Lazy-load sub-pages so they only load when the user navigates to them.
 // This keeps the initial Ks2ProjectDetail bundle small.
@@ -115,9 +116,9 @@ export default function Ks2ProjectDetail() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Prosjekt ikke funnet</h2>
+          <h2 className="text-xl font-semibold mb-2">{t("auto.prosjekt_ikke_funnet")}</h2>
           <p className="text-muted-foreground">
-            Prosjektet du leter etter finnes ikke eller du har ikke tilgang.
+            {t("auto.prosjektet_du_leter_etter_finnes_ikke_el")}
           </p>
         </div>
       </div>
@@ -231,7 +232,7 @@ export default function Ks2ProjectDetail() {
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-xs text-muted-foreground font-medium">{project.project_number}</p>
               {project.status === "completed" && (
-                <Badge className="bg-success/20 text-success text-[10px]">Avsluttet</Badge>
+                <Badge className="bg-success/20 text-success text-[10px]">{t("auto.avsluttet")}</Badge>
               )}
             </div>
             <h1 className="text-lg lg:text-xl font-semibold truncate">{project.project_name}</h1>
@@ -243,12 +244,12 @@ export default function Ks2ProjectDetail() {
                   {project.status === "completed" ? (
                     <>
                       <RotateCcw className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Gjenåpne</span>
+                      <span className="hidden sm:inline">{t("auto.gjenaapne")}</span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">Avslutt</span>
+                      <span className="hidden sm:inline">{t("auto.avslutt")}</span>
                     </>
                   )}
                 </Button>
@@ -265,7 +266,7 @@ export default function Ks2ProjectDetail() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                  <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={async () => {
                       const newStatus = project.status === "completed" ? "active" : "completed";
@@ -274,7 +275,7 @@ export default function Ks2ProjectDetail() {
                         .update({ status: newStatus })
                         .eq("id", project.id);
                       if (error) {
-                        toast.error("Kunne ikke oppdatere status");
+                        toast.error(t("auto.kunne_ikke_oppdatere_status"));
                         return;
                       }
                       toast.success(

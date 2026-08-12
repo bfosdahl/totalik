@@ -24,6 +24,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useFdvBuildings } from "@/hooks/useFdvBuildings";
 import { FdvBuildingDialog } from "@/components/fdv/FdvBuildingDialog";
 import { FdvBuilding, FDV_BUILDING_TYPE_LABELS, FDV_OWNER_TYPE_LABELS, FDV_USAGE_TYPE_LABELS } from "@/types/fdv";
+import { t } from "@/i18n/t";
 
 export default function FdvBuildings() {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ export default function FdvBuildings() {
               Byggoversikt
             </h1>
             <p className="text-muted-foreground mt-1">
-              Administrer bygg og lokasjoner
+              {t("auto.administrer_bygg_og_lokasjoner")}
             </p>
           </div>
           <Button onClick={handleCreate} className="gap-2">
@@ -87,13 +88,13 @@ export default function FdvBuildings() {
 
         {/* Buildings Grid */}
         {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Laster bygg...</div>
+          <div className="text-center py-12 text-muted-foreground">{t("auto.laster_bygg")}</div>
         ) : buildings.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Building2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ingen bygg registrert</h3>
-              <p className="text-muted-foreground mb-4">Kom i gang ved å legge til ditt første bygg</p>
+              <h3 className="text-lg font-medium mb-2">{t("auto.ingen_bygg_registrert")}</h3>
+              <p className="text-muted-foreground mb-4">{t("auto.kom_i_gang_ved_aa_legge_til_ditt_foerste")}</p>
               <Button onClick={handleCreate} className="gap-2">
                 <Plus className="h-4 w-4" />
                 Legg til bygg
@@ -146,7 +147,7 @@ export default function FdvBuildings() {
                       <Badge variant="outline">{FDV_BUILDING_TYPE_LABELS[building.building_type]}</Badge>
                       <Badge variant="secondary">{FDV_OWNER_TYPE_LABELS[building.owner_type]}</Badge>
                       {building.status === 'inaktiv' && (
-                        <Badge variant="destructive">Inaktiv</Badge>
+                        <Badge variant="destructive">{t("auto.inaktiv")}</Badge>
                       )}
                     </div>
                     
@@ -186,16 +187,16 @@ export default function FdvBuildings() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett bygg</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_bygg")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{buildingToDelete?.name}"? 
               Dette vil også slette alle tilknyttede kontroller, risikovurderinger og dokumenter.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

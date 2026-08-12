@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface Department {
   id: string;
@@ -79,7 +80,7 @@ export function CompanyDepartmentsDialog({
       setDepartments(data || []);
     } catch (error) {
       console.error("Error fetching departments:", error);
-      toast.error("Kunne ikke hente avdelinger");
+      toast.error(t("auto.kunne_ikke_hente_avdelinger"));
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +101,7 @@ export function CompanyDepartmentsDialog({
 
   const handleCreate = async () => {
     if (!company || !formData.name.trim()) {
-      toast.error("Navn er påkrevd");
+      toast.error(t("auto.navn_er_paakrevd"));
       return;
     }
 
@@ -117,18 +118,18 @@ export function CompanyDepartmentsDialog({
       });
 
       if (error) throw error;
-      toast.success("Avdeling opprettet");
+      toast.success(t("auto.avdeling_opprettet"));
       resetForm();
       fetchDepartments();
     } catch (error) {
       console.error("Error creating department:", error);
-      toast.error("Kunne ikke opprette avdeling");
+      toast.error(t("auto.kunne_ikke_opprette_avdeling"));
     }
   };
 
   const handleUpdate = async (id: string) => {
     if (!formData.name.trim()) {
-      toast.error("Navn er påkrevd");
+      toast.error(t("auto.navn_er_paakrevd"));
       return;
     }
 
@@ -146,12 +147,12 @@ export function CompanyDepartmentsDialog({
         .eq("id", id);
 
       if (error) throw error;
-      toast.success("Avdeling oppdatert");
+      toast.success(t("auto.avdeling_oppdatert"));
       resetForm();
       fetchDepartments();
     } catch (error) {
       console.error("Error updating department:", error);
-      toast.error("Kunne ikke oppdatere avdeling");
+      toast.error(t("auto.kunne_ikke_oppdatere_avdeling"));
     }
   };
 
@@ -165,11 +166,11 @@ export function CompanyDepartmentsDialog({
         .eq("id", id);
 
       if (error) throw error;
-      toast.success("Avdeling slettet");
+      toast.success(t("auto.avdeling_slettet"));
       fetchDepartments();
     } catch (error) {
       console.error("Error deleting department:", error);
-      toast.error("Kunne ikke slette avdeling");
+      toast.error(t("auto.kunne_ikke_slette_avdeling"));
     }
   };
 
@@ -185,7 +186,7 @@ export function CompanyDepartmentsDialog({
       fetchDepartments();
     } catch (error) {
       console.error("Error toggling department status:", error);
-      toast.error("Kunne ikke endre status");
+      toast.error(t("auto.kunne_ikke_endre_status"));
     }
   };
 
@@ -233,29 +234,29 @@ export function CompanyDepartmentsDialog({
             <div className="p-4 border border-border rounded-lg bg-secondary/30 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1.5">
-                  <Label htmlFor="name">Navn *</Label>
+                  <Label htmlFor="name">{t("auto.navn_3")}</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder="Avdelingsnavn"
+                    placeholder={t("auto.avdelingsnavn")}
                   />
                 </div>
                 <div className="col-span-2 space-y-1.5">
-                  <Label htmlFor="description">Beskrivelse</Label>
+                  <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
                   <Input
                     id="description"
                     value={formData.description}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    placeholder="Kort beskrivelse"
+                    placeholder={t("auto.kort_beskrivelse")}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="org_number">Org.nummer</Label>
+                  <Label htmlFor="org_number">{t("auto.org_nummer")}</Label>
                   <Input
                     id="org_number"
                     value={formData.org_number}
@@ -266,18 +267,18 @@ export function CompanyDepartmentsDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">{t("auto.adresse")}</Label>
                   <Input
                     id="address"
                     value={formData.address}
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
                     }
-                    placeholder="Gateadresse"
+                    placeholder={t("auto.gateadresse")}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="postal_code">Postnr</Label>
+                  <Label htmlFor="postal_code">{t("auto.postnr")}</Label>
                   <Input
                     id="postal_code"
                     value={formData.postal_code}
@@ -288,20 +289,20 @@ export function CompanyDepartmentsDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="city">Sted</Label>
+                  <Label htmlFor="city">{t("auto.sted")}</Label>
                   <Input
                     id="city"
                     value={formData.city}
                     onChange={(e) =>
                       setFormData({ ...formData, city: e.target.value })
                     }
-                    placeholder="Oslo"
+                    placeholder={t("auto.oslo")}
                   />
                 </div>
               </div>
               <div className="flex gap-2 justify-end pt-2">
                 <Button variant="ghost" size="sm" onClick={resetForm}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button
                   size="sm"
@@ -319,14 +320,14 @@ export function CompanyDepartmentsDialog({
           <ScrollArea className="flex-1">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">
-                Laster avdelinger...
+                {t("auto.laster_avdelinger")}
               </div>
             ) : departments.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Building className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>Ingen avdelinger</p>
+                <p>{t("auto.ingen_avdelinger")}</p>
                 <p className="text-sm">
-                  Denne bedriften har ikke opprettet avdelinger ennå.
+                  {t("auto.denne_bedriften_har_ikke_opprettet_avdel")}
                 </p>
               </div>
             ) : (

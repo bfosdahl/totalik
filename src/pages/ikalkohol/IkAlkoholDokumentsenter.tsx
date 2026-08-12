@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MyDocumentsTab } from "@/components/documents/MyDocumentsTab";
+import { t } from "@/i18n/t";
 
 interface AdminDocument {
   id: string;
@@ -95,7 +96,7 @@ export default function IkAlkoholDokumentsenter() {
       window.open(data.signedUrl, "_blank");
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Kunne ikke åpne dokument");
+      toast.error(t("auto.kunne_ikke_aapne_dokument"));
     }
   };
 
@@ -207,7 +208,7 @@ export default function IkAlkoholDokumentsenter() {
           <CollapsibleContent>
             <CardContent className="pt-0 pb-4">
               {filteredDocs.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-2">Ingen dokumenter i denne mappen</p>
+                <p className="text-sm text-muted-foreground py-2">{t("auto.ingen_dokumenter_i_denne_mappen")}</p>
               ) : (
                 <div className="grid gap-2">
                   {filteredDocs.map((doc) => (
@@ -232,7 +233,7 @@ export default function IkAlkoholDokumentsenter() {
                         className="shrink-0"
                       >
                         <Download className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Last ned</span>
+                        <span className="hidden sm:inline">{t("auto.last_ned")}</span>
                       </Button>
                     </div>
                   ))}
@@ -265,17 +266,17 @@ export default function IkAlkoholDokumentsenter() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Tilbake
           </Button>
-          <h1 className="text-2xl sm:text-3xl font-bold">Dokumentsenter</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.dokumentsenter")}</h1>
           <p className="text-muted-foreground mt-1">
-            Maler og egne dokumenter for IK-Alkohol
+            {t("auto.maler_og_egne_dokumenter_for_ik_alkohol")}
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full max-w-lg grid-cols-3">
-            <TabsTrigger value="maler">Maler</TabsTrigger>
-            <TabsTrigger value="mine">Mine dokumenter</TabsTrigger>
-            <TabsTrigger value="ressurser">Ressurser</TabsTrigger>
+            <TabsTrigger value="maler">{t("auto.maler")}</TabsTrigger>
+            <TabsTrigger value="mine">{t("auto.mine_dokumenter")}</TabsTrigger>
+            <TabsTrigger value="ressurser">{t("auto.ressurser")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="maler" className="mt-6">
@@ -283,7 +284,7 @@ export default function IkAlkoholDokumentsenter() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk i dokumenter..."
+                  placeholder={t("auto.soek_i_dokumenter")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -300,9 +301,9 @@ export default function IkAlkoholDokumentsenter() {
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                   <FolderOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-                  <h3 className="font-medium text-lg">Ingen maler tilgjengelig ennå</h3>
+                  <h3 className="font-medium text-lg">{t("auto.ingen_maler_tilgjengelig_ennaa")}</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Dokumentmaler vil bli lagt til av systemadministrator
+                    {t("auto.dokumentmaler_vil_bli_lagt_til_av_system")}
                   </p>
                 </CardContent>
               </Card>
@@ -327,10 +328,10 @@ export default function IkAlkoholDokumentsenter() {
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { title: "Alkoholloven", desc: "Lov om omsetning av alkoholholdig drikk m.v.", url: "https://lovdata.no/dokument/NL/lov/1989-06-02-27" },
-                    { title: "Alkoholforskriften", desc: "Forskrift om omsetning av alkoholholdig drikk mv.", url: "https://lovdata.no/dokument/SF/forskrift/2005-06-08-538" },
-                    { title: "Serveringsloven", desc: "Lov om serveringsvirksomhet", url: "https://lovdata.no/dokument/NL/lov/1997-06-13-55" },
-                    { title: "Internkontrollforskriften", desc: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid", url: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
+                    { title: t("auto.alkoholloven"), desc: "Lov om omsetning av alkoholholdig drikk m.v.", url: "https://lovdata.no/dokument/NL/lov/1989-06-02-27" },
+                    { title: t("auto.alkoholforskriften"), desc: "Forskrift om omsetning av alkoholholdig drikk mv.", url: "https://lovdata.no/dokument/SF/forskrift/2005-06-08-538" },
+                    { title: t("auto.serveringsloven"), desc: "Lov om serveringsvirksomhet", url: "https://lovdata.no/dokument/NL/lov/1997-06-13-55" },
+                    { title: t("auto.internkontrollforskriften"), desc: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid", url: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
                   ].map((item) => (
                     <Card key={item.title} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
@@ -360,10 +361,10 @@ export default function IkAlkoholDokumentsenter() {
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { title: "Helsedirektoratets veileder", desc: "Veileder til alkoholloven og tilhørende forskrifter", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
-                    { title: "Kommunens ansvar", desc: "Om kommunens kontroll med salgs- og skjenkebevillinger", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
-                    { title: "Ansvarlig vertskap", desc: "Kurs og opplæring for ansatte i serveringsbransjen", url: "https://www.helsedirektoratet.no/tema/alkohol" },
-                    { title: "AKAN - Arbeidslivets kompetansesenter", desc: "Forebygging av rus og avhengighet i arbeidslivet", url: "https://akan.no" },
+                    { title: t("auto.helsedirektoratets_veileder"), desc: "Veileder til alkoholloven og tilhørende forskrifter", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+                    { title: t("auto.kommunens_ansvar"), desc: "Om kommunens kontroll med salgs- og skjenkebevillinger", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+                    { title: t("auto.ansvarlig_vertskap"), desc: "Kurs og opplæring for ansatte i serveringsbransjen", url: "https://www.helsedirektoratet.no/tema/alkohol" },
+                    { title: t("auto.akan_arbeidslivets_kompetansesenter"), desc: "Forebygging av rus og avhengighet i arbeidslivet", url: "https://akan.no" },
                   ].map((item) => (
                     <Card key={item.title} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
@@ -393,8 +394,8 @@ export default function IkAlkoholDokumentsenter() {
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { title: "Kunnskapsprøven", desc: "Informasjon om kunnskapsprøve i alkoholloven", url: "https://www.helsedirektoratet.no/tema/alkohol/kunnskapsproven" },
-                    { title: "Etablererprøven", desc: "Prøve for serveringsbevillinger", url: "https://www.mattilsynet.no" },
+                    { title: t("auto.kunnskapsproeven"), desc: "Informasjon om kunnskapsprøve i alkoholloven", url: "https://www.helsedirektoratet.no/tema/alkohol/kunnskapsproven" },
+                    { title: t("auto.etablererproeven"), desc: "Prøve for serveringsbevillinger", url: "https://www.mattilsynet.no" },
                   ].map((item) => (
                     <Card key={item.title} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
@@ -424,8 +425,8 @@ export default function IkAlkoholDokumentsenter() {
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    { title: "Prikksystemet", desc: "Informasjon om prikktildeling ved brudd på alkoholloven", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
-                    { title: "Skjenkekontroll", desc: "Hva kommunen ser etter ved tilsyn", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+                    { title: t("auto.prikksystemet"), desc: "Informasjon om prikktildeling ved brudd på alkoholloven", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+                    { title: t("auto.skjenkekontroll"), desc: "Hva kommunen ser etter ved tilsyn", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
                   ].map((item) => (
                     <Card key={item.title} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">

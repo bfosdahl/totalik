@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface AuditItem {
   id: string;
@@ -99,7 +100,7 @@ function getItemName(data: any): string {
 }
 
 const ACTION_LABEL: Record<string, { label: string; variant: any }> = {
-  DELETE: { label: "Slettet", variant: "destructive" },
+  DELETE: { label: t("auto.slettet"), variant: "destructive" },
   SOFT_DELETE: { label: "Slettet (mykt)", variant: "destructive" },
 };
 
@@ -158,7 +159,7 @@ export default function AdminTrashBin() {
       }
     } catch (e: any) {
       console.error(e);
-      toast({ title: "Feil ved henting", description: e.message, variant: "destructive" });
+      toast({ title: t("auto.feil_ved_henting"), description: e.message, variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +202,7 @@ export default function AdminTrashBin() {
       }
     }
     setBusy(false);
-    toast({ title: "Gjenoppretting fullført", description: `${ok} OK · ${fail} feilet` });
+    toast({ title: t("auto.gjenoppretting_fullfoert"), description: `${ok} OK · ${fail} feilet` });
     setSelected(new Set());
     fetchData();
   };
@@ -244,7 +245,7 @@ export default function AdminTrashBin() {
       <div className="flex items-center gap-3">
         <Trash2 className="w-6 h-6 text-destructive" />
         <div>
-          <h1 className="text-2xl font-bold">Papirkurv</h1>
+          <h1 className="text-2xl font-bold">{t("auto.papirkurv")}</h1>
           <p className="text-sm text-muted-foreground">Gjenopprett slettet eller endret innhold fra alle bedrifter (siste 90 dager)</p>
         </div>
       </div>
@@ -259,31 +260,31 @@ export default function AdminTrashBin() {
         <div className="flex gap-3 flex-wrap mt-4">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Søk i innhold..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Input placeholder={t("auto.soek_i_innhold")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={tableFilter} onValueChange={setTableFilter}>
-            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Alle typer" /></SelectTrigger>
+            <SelectTrigger className="w-[200px]"><SelectValue placeholder={t("auto.alle_typer")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle typer</SelectItem>
+              <SelectItem value="all">{t("auto.alle_typer")}</SelectItem>
               {allTables.map(t => (
                 <SelectItem key={t} value={t}>{TABLE_LABELS[t] || t}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
-            <SelectTrigger className="w-[220px]"><SelectValue placeholder="Alle bedrifter" /></SelectTrigger>
+            <SelectTrigger className="w-[220px]"><SelectValue placeholder={t("auto.alle_bedrifter")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle bedrifter</SelectItem>
+              <SelectItem value="all">{t("auto.alle_bedrifter")}</SelectItem>
               {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={daysFilter} onValueChange={setDaysFilter}>
             <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="1">Siste døgn</SelectItem>
-              <SelectItem value="7">Siste 7 dager</SelectItem>
-              <SelectItem value="30">Siste 30 dager</SelectItem>
-              <SelectItem value="90">Siste 90 dager</SelectItem>
+              <SelectItem value="1">{t("auto.siste_doegn")}</SelectItem>
+              <SelectItem value="7">{t("auto.siste_7_dager")}</SelectItem>
+              <SelectItem value="30">{t("auto.siste_30_dager")}</SelectItem>
+              <SelectItem value="90">{t("auto.siste_90_dager")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -295,7 +296,7 @@ export default function AdminTrashBin() {
               <RotateCcw className="w-4 h-4 mr-1" />
               Gjenopprett valgte
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Avbryt</Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>{t("auto.avbryt")}</Button>
           </div>
         )}
 
@@ -310,7 +311,7 @@ export default function AdminTrashBin() {
             onToggle={toggleSelect}
             onToggleAll={toggleAll}
             onPreview={d => setPreview(d)}
-            onRestore={async id => { const it = items.find(x => x.id === id); if (it && await restoreOne(it)) { toast({ title: "Gjenopprettet" }); fetchData(); } }}
+            onRestore={async id => { const it = items.find(x => x.id === id); if (it && await restoreOne(it)) { toast({ title: t("auto.gjenopprettet") }); fetchData(); } }}
             companyName={companyName}
             busy={busy}
             emptyText="Ingen slettede rader"
@@ -328,7 +329,7 @@ export default function AdminTrashBin() {
             onToggle={toggleSelect}
             onToggleAll={toggleAll}
             onPreview={d => setPreview(d)}
-            onRestore={async id => { const s = snapshots.find(x => x.id === id); if (s && await restoreSnapshot(s)) { toast({ title: "Versjon gjenopprettet" }); fetchData(); } }}
+            onRestore={async id => { const s = snapshots.find(x => x.id === id); if (s && await restoreSnapshot(s)) { toast({ title: t("auto.versjon_gjenopprettet") }); fetchData(); } }}
             companyName={companyName}
             busy={busy}
             emptyText="Ingen tidligere versjoner"
@@ -336,8 +337,8 @@ export default function AdminTrashBin() {
         </TabsContent>
 
         <TabsContent value="history" className="mt-4">
-          {isLoading ? <p className="text-center py-8 text-muted-foreground">Laster...</p> :
-           restores.length === 0 ? <p className="text-center py-8 text-muted-foreground">Ingen gjenopprettinger ennå</p> : (
+          {isLoading ? <p className="text-center py-8 text-muted-foreground">{t("auto.laster")}</p> :
+           restores.length === 0 ? <p className="text-center py-8 text-muted-foreground">{t("auto.ingen_gjenopprettinger_ennaa")}</p> : (
             <div className="space-y-2">
               {restores.map(r => (
                 <div key={r.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
@@ -364,8 +365,8 @@ export default function AdminTrashBin() {
       <Dialog open={!!preview} onOpenChange={o => !o && setPreview(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
           <DialogHeader>
-            <DialogTitle>Forhåndsvisning</DialogTitle>
-            <DialogDescription>Innhold som ligger lagret</DialogDescription>
+            <DialogTitle>{t("auto.forhaandsvisning")}</DialogTitle>
+            <DialogDescription>{t("auto.innhold_som_ligger_lagret")}</DialogDescription>
           </DialogHeader>
           <pre className="text-xs bg-muted p-3 rounded overflow-auto">{JSON.stringify(preview, null, 2)}</pre>
         </DialogContent>
@@ -388,7 +389,7 @@ interface ListProps {
 }
 
 function ItemList({ isLoading, items, selected, onToggle, onToggleAll, onPreview, onRestore, companyName, busy, emptyText }: ListProps) {
-  if (isLoading) return <p className="text-center py-8 text-muted-foreground">Laster...</p>;
+  if (isLoading) return <p className="text-center py-8 text-muted-foreground">{t("auto.laster")}</p>;
   if (items.length === 0) return (
     <div className="text-center py-12 text-muted-foreground">
       <Trash2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -407,8 +408,8 @@ function ItemList({ isLoading, items, selected, onToggle, onToggleAll, onPreview
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="secondary" className="text-xs">{TABLE_LABELS[item.table_name] || item.table_name}</Badge>
-              {item.action === "DELETE" && <Badge variant="destructive" className="text-xs">Hard slettet</Badge>}
-              {item.action === "SOFT_DELETE" && <Badge variant="outline" className="text-xs">Mykt slettet</Badge>}
+              {item.action === "DELETE" && <Badge variant="destructive" className="text-xs">{t("auto.hard_slettet")}</Badge>}
+              {item.action === "SOFT_DELETE" && <Badge variant="outline" className="text-xs">{t("auto.mykt_slettet")}</Badge>}
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="w-3 h-3" />{format(new Date(item.created_at), "dd.MM.yyyy HH:mm", { locale: nb })}
               </span>

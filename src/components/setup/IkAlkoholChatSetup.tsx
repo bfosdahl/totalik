@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
+import { t } from "@/i18n/t";
 
 interface Message {
   role: "user" | "assistant";
@@ -288,12 +289,12 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
       queryClient.invalidateQueries({ queryKey: ["ik-alkohol"] });
       queryClient.invalidateQueries({ queryKey: ["company-modules"] });
 
-      toast.success("IK-Alkohol oppsett fullført!");
+      toast.success(t("auto.ik_alkohol_oppsett_fullfoert"));
       clearChatState(companyId);
       onComplete();
     } catch (error) {
       console.error("Error saving setup data:", error);
-      toast.error("Kunne ikke lagre oppsettet. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_lagre_oppsettet_proev_igjen"));
     } finally {
       setIsSaving(false);
     }
@@ -334,8 +335,8 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
         signal: abortControllerRef.current.signal,
       });
 
-      if (response.status === 429) { toast.error("For mange forespørsler."); setIsLoading(false); return; }
-      if (response.status === 402) { toast.error("Kreditter oppbrukt."); setIsLoading(false); return; }
+      if (response.status === 429) { toast.error(t("auto.for_mange_forespoersler")); setIsLoading(false); return; }
+      if (response.status === 402) { toast.error(t("auto.kreditter_oppbrukt")); setIsLoading(false); return; }
       if (!response.ok || !response.body) throw new Error("Failed to start stream");
 
       const reader = response.body.getReader();
@@ -394,7 +395,7 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
         setWasInterrupted(true);
       } else {
         console.error("Error:", error);
-        toast.error("Noe gikk galt. Prøv igjen.");
+        toast.error(t("auto.noe_gikk_galt_proev_igjen"));
       }
     } finally {
       setIsLoading(false);
@@ -428,7 +429,7 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
                 {message.content || (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Tenker...</span>
+                    <span>{t("auto.tenker")}</span>
                   </div>
                 )}
               </div>
@@ -453,8 +454,8 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
             <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
               <Loader2 className="h-5 w-5 animate-spin text-amber-600" />
               <div>
-                <p className="font-medium text-amber-800 dark:text-amber-200">Lagrer internkontrollsystem...</p>
-                <p className="text-sm text-amber-600 dark:text-amber-400">Mål, risikoer, rutiner og organisering settes opp.</p>
+                <p className="font-medium text-amber-800 dark:text-amber-200">{t("auto.lagrer_internkontrollsystem")}</p>
+                <p className="text-sm text-amber-600 dark:text-amber-400">{t("auto.maal_risikoer_rutiner_og_organisering_se")}</p>
               </div>
             </div>
           )}
@@ -469,7 +470,7 @@ export function IkAlkoholChatSetup({ companyId, onComplete }: IkAlkoholChatSetup
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Skriv her..."
+            placeholder={t("auto.skriv_her")}
             disabled={isLoading || isSaving}
             className="flex-1"
           />

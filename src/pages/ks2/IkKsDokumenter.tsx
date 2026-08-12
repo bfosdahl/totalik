@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n/t";
 
 export default function IkKsDokumenter() {
   const { 
@@ -143,9 +144,9 @@ export default function IkKsDokumenter() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">KS Dokumentsenter</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("auto.ks_dokumentsenter")}</h1>
             <p className="text-muted-foreground mt-1">
-              Bedriftens dokumenter og maler for kvalitetssikring
+              {t("auto.bedriftens_dokumenter_og_maler_for_kvali")}
             </p>
           </div>
           
@@ -159,23 +160,23 @@ export default function IkKsDokumenter() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Opprett mappe</DialogTitle>
+                  <DialogTitle>{t("auto.opprett_mappe")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
-                    <label className="text-sm font-medium">Mappenavn</label>
+                    <label className="text-sm font-medium">{t("auto.mappenavn")}</label>
                     <Input
                       value={newFolderName}
                       onChange={(e) => setNewFolderName(e.target.value)}
-                      placeholder="F.eks. Tegninger"
+                      placeholder={t("auto.f_eks_tegninger")}
                     />
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setShowFolderDialog(false)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button onClick={handleCreateFolder} disabled={isSaving || !newFolderName.trim()}>
-                      Opprett
+                      {t("auto.opprett")}
                     </Button>
                   </div>
                 </div>
@@ -191,7 +192,7 @@ export default function IkKsDokumenter() {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Last opp dokument</DialogTitle>
+                  <DialogTitle>{t("auto.last_opp_dokument")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
@@ -214,20 +215,20 @@ export default function IkKsDokumenter() {
                       ) : (
                         <div className="text-center">
                           <Upload className="w-6 h-6 mx-auto mb-1 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">Klikk for å velge fil</span>
+                          <span className="text-sm text-muted-foreground">{t("auto.klikk_for_aa_velge_fil")}</span>
                         </div>
                       )}
                     </Button>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Dokumentnavn</label>
+                    <label className="text-sm font-medium">{t("auto.dokumentnavn")}</label>
                     <Input
                       value={uploadData.documentName}
                       onChange={(e) => setUploadData({ ...uploadData, documentName: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Beskrivelse</label>
+                    <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
                     <Textarea
                       value={uploadData.description}
                       onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
@@ -241,10 +242,10 @@ export default function IkKsDokumenter() {
                       onValueChange={(value) => setUploadData({ ...uploadData, folderId: value })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg mappe" />
+                        <SelectValue placeholder={t("auto.velg_mappe")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__none__">Ingen mappe</SelectItem>
+                        <SelectItem value="__none__">{t("auto.ingen_mappe")}</SelectItem>
                         {folders.map(folder => (
                           <SelectItem key={folder.id} value={folder.id}>{folder.name}</SelectItem>
                         ))}
@@ -258,10 +259,10 @@ export default function IkKsDokumenter() {
                       onValueChange={(value) => setUploadData({ ...uploadData, projectId: value })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg prosjekt" />
+                        <SelectValue placeholder={t("auto.velg_prosjekt")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="__none__">Ingen prosjekt</SelectItem>
+                        <SelectItem value="__none__">{t("auto.ingen_prosjekt")}</SelectItem>
                         {projects?.map(project => (
                           <SelectItem key={project.id} value={project.id}>{project.project_name}</SelectItem>
                         ))}
@@ -270,7 +271,7 @@ export default function IkKsDokumenter() {
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button onClick={handleUpload} disabled={isSaving || !selectedFile}>
                       {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -289,7 +290,7 @@ export default function IkKsDokumenter() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Søk i dokumenter..."
+            placeholder={t("auto.soek_i_dokumenter")}
             className="pl-9"
           />
         </div>
@@ -340,9 +341,9 @@ export default function IkKsDokumenter() {
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium text-lg mb-2">Ingen dokumenter ennå</h3>
+                <h3 className="font-medium text-lg mb-2">{t("auto.ingen_dokumenter_ennaa")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Last opp dokumenter og maler for kvalitetssikring
+                  {t("auto.last_opp_dokumenter_og_maler_for_kvalite")}
                 </p>
                 <Button onClick={() => setShowUploadDialog(true)}>
                   <Upload className="w-4 h-4 mr-2" />
@@ -416,7 +417,7 @@ function FolderItem({
       {isExpanded && (
         <CardContent className="pt-0">
           {documents.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">Ingen dokumenter i denne mappen</p>
+            <p className="text-sm text-muted-foreground py-2">{t("auto.ingen_dokumenter_i_denne_mappen")}</p>
           ) : (
             <div className="space-y-2">
               {documents.map(doc => (

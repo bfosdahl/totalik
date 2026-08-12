@@ -2,6 +2,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Check, X, Minus, MessageSquare } from "lucide-react";
+import { t } from "@/i18n/t";
 
 type YesNoNa = "yes" | "no" | "na" | "";
 
@@ -41,7 +42,7 @@ const MobileChecklistItem: React.FC<MobileChecklistItemProps> = ({
           )}
         >
           <Check className={cn("h-6 w-6", answer === "yes" && "text-green-600 dark:text-green-400")} />
-          <span className="text-sm font-medium">Ja</span>
+          <span className="text-sm font-medium">{t("auto.ja")}</span>
         </button>
         
         <button
@@ -55,7 +56,7 @@ const MobileChecklistItem: React.FC<MobileChecklistItemProps> = ({
           )}
         >
           <X className={cn("h-6 w-6", answer === "no" && "text-red-600 dark:text-red-400")} />
-          <span className="text-sm font-medium">Nei</span>
+          <span className="text-sm font-medium">{t("auto.nei")}</span>
         </button>
         
         <button
@@ -81,15 +82,15 @@ const MobileChecklistItem: React.FC<MobileChecklistItemProps> = ({
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
         >
           <MessageSquare className="h-4 w-4" />
-          <span>Legg til kommentar</span>
+          <span>{t("auto.legg_til_kommentar")}</span>
         </button>
       ) : (
         <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Kommentar</label>
+          <label className="text-xs font-medium text-muted-foreground">{t("auto.kommentar_2")}</label>
           <Input
             value={comment}
             onChange={(e) => onCommentChange(e.target.value)}
-            placeholder="Skriv kommentar..."
+            placeholder={t("auto.skriv_kommentar")}
             className="h-12 text-base"
           />
         </div>

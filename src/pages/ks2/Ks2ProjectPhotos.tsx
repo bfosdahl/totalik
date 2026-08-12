@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface ProjectPhoto {
   id: string;
@@ -71,7 +72,7 @@ export default function Ks2ProjectPhotos() {
       toast.success(`${files.length} bilde(r) lastet opp`);
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Kunne ikke laste opp bilde");
+      toast.error(t("auto.kunne_ikke_laste_opp_bilde"));
     } finally {
       setUploading(false);
     }
@@ -85,7 +86,7 @@ export default function Ks2ProjectPhotos() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project-photos", projectId] });
-      toast.success("Bilde slettet");
+      toast.success(t("auto.bilde_slettet"));
     },
   });
 
@@ -136,8 +137,8 @@ export default function Ks2ProjectPhotos() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Image className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Ingen bilder ennå</p>
-            <p className="text-sm text-muted-foreground">Last opp bilder fra prosjektet</p>
+            <p className="text-muted-foreground">{t("auto.ingen_bilder_ennaa")}</p>
+            <p className="text-sm text-muted-foreground">{t("auto.last_opp_bilder_fra_prosjektet")}</p>
           </CardContent>
         </Card>
       ) : (

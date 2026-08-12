@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ParsedHandbookData, applyHandbookImport, HandbookImportResult } from "@/lib/applyHandbookImport";
+import { t } from "@/i18n/t";
 
 const STORAGE_KEY_PREFIX = "handbook-import-state:";
 
@@ -124,7 +125,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
 
     const maxSize = 20 * 1024 * 1024; // 20MB
     if (file.size > maxSize) {
-      toast.error("Filen er for stor. Maks 20MB.");
+      toast.error(t("auto.filen_er_for_stor_maks_20mb"));
       return;
     }
 
@@ -159,7 +160,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       console.error('Handbook parse error:', err);
       setError(err instanceof Error ? err.message : 'Ukjent feil');
       setStep('upload');
-      toast.error("Kunne ikke analysere håndboken. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_analysere_haandboken_proev_ig"));
     } finally {
       inFlightRef.current = false;
     }
@@ -176,7 +177,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       setStep('done');
 
       if (result.success) {
-        toast.success("Håndboken ble importert!");
+        toast.success(t("auto.haandboken_ble_importert"));
         sessionStorage.removeItem(storageKey);
         // År 1: opprett auto-revisjon-plan for 12 mnd fram i tid
         try {
@@ -219,7 +220,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
           Importer fra gammel håndbok
         </CardTitle>
         <CardDescription>
-          Last opp din eksisterende HMS-håndbok, så overfører vi alt automatisk — mål, rutiner, risikoanalyser, handlingsplaner og historiske avvik.
+          {t("auto.last_opp_din_eksisterende_hms_haandbok_s")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -259,7 +260,7 @@ function UploadStep({ onFileSelect, error }: { onFileSelect: (e: React.ChangeEve
         <div className="flex flex-col items-center justify-center pt-5 pb-6">
           <Upload className="h-10 w-10 text-muted-foreground mb-3" />
           <p className="mb-1 text-sm font-medium">
-            Klikk for å laste opp håndbok
+            {t("auto.klikk_for_aa_laste_opp_haandbok")}
           </p>
           <p className="text-xs text-muted-foreground">
             PDF, Word (.docx), eller bilder (JPG, PNG) — maks 20MB
@@ -273,7 +274,7 @@ function UploadStep({ onFileSelect, error }: { onFileSelect: (e: React.ChangeEve
         />
       </label>
       <div className="bg-muted/30 rounded-lg p-4 space-y-2">
-        <p className="text-sm font-medium">Hva blir importert?</p>
+        <p className="text-sm font-medium">{t("auto.hva_blir_importert")}</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Target className="h-3 w-3" /> HMS-mål</span>
           <span className="flex items-center gap-1"><Users className="h-3 w-3" /> Organisering</span>
@@ -292,16 +293,16 @@ function ParsingStep({ fileName }: { fileName: string }) {
     <div className="flex flex-col items-center justify-center py-12 space-y-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
       <div className="text-center">
-        <p className="font-medium">Analyserer håndboken...</p>
+        <p className="font-medium">{t("auto.analyserer_haandboken")}</p>
         <p className="text-sm text-muted-foreground mt-1">
           <FileText className="h-3 w-3 inline mr-1" />
           {fileName}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          AI-en leser dokumentet og trekker ut all HMS-informasjon. Dette kan ta opptil 60 sekunder.
+          {t("auto.ai_en_leser_dokumentet_og_trekker_ut_all")}
         </p>
         <p className="text-xs text-muted-foreground mt-2 italic">
-          Du kan trygt bytte fane — jobben fortsetter i bakgrunnen, og fremdriften lagres slik at du finner igjen der du var.
+          {t("auto.du_kan_trygt_bytte_fane_jobben_fortsette")}
         </p>
       </div>
     </div>
@@ -371,7 +372,7 @@ function PreviewStep({ data, onConfirm, onCancel }: { data: ParsedHandbookData; 
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={onCancel} className="flex-1">
-          Avbryt
+          {t("auto.avbryt")}
         </Button>
         <Button onClick={onConfirm} className="flex-1">
           <ArrowRight className="h-4 w-4 mr-2" />
@@ -387,12 +388,12 @@ function ImportingStep() {
     <div className="flex flex-col items-center justify-center py-12 space-y-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
       <div className="text-center">
-        <p className="font-medium">Importerer data...</p>
+        <p className="font-medium">{t("auto.importerer_data")}</p>
         <p className="text-xs text-muted-foreground mt-2">
-          Mål, rutiner, risikovurderinger, handlingsplaner og avvik overføres nå til systemet.
+          {t("auto.maal_rutiner_risikovurderinger_handlings")}
         </p>
         <p className="text-xs text-muted-foreground mt-2 italic">
-          Du kan trygt bytte fane — importen fortsetter, og hvis noe skulle bli avbrutt kan du fortsette der du var.
+          {t("auto.du_kan_trygt_bytte_fane_importen_fortset")}
         </p>
       </div>
     </div>
@@ -407,7 +408,7 @@ function DoneStep({ result, onReset }: { result: HandbookImportResult; onReset: 
       <Alert className="border-success bg-success/10">
         <CheckCircle2 className="h-4 w-4 text-success" />
         <AlertDescription className="text-success">
-          Håndboken ble importert!
+          {t("auto.haandboken_ble_importert")}
         </AlertDescription>
       </Alert>
 
@@ -434,7 +435,7 @@ function DoneStep({ result, onReset }: { result: HandbookImportResult; onReset: 
       )}
 
       <Button variant="outline" onClick={onReset} className="w-full">
-        Last opp en ny håndbok
+        {t("auto.last_opp_en_ny_haandbok")}
       </Button>
     </div>
   );

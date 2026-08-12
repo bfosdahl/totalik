@@ -64,6 +64,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { t } from "@/i18n/t";
 
 const getDangerClassColor = (dangerClass: string): string => {
   const classColors: Record<string, string> = {
@@ -113,7 +114,7 @@ export default function Ks2Stoffkartotek() {
   const handleDownloadSds = async (entry: CompanyChemicalEntry) => {
     const sdsPath = entry.current_sds?.sds_file_path;
     if (!sdsPath) {
-      toast.error("Ingen sikkerhetsdatablad tilgjengelig");
+      toast.error(t("auto.ingen_sikkerhetsdatablad_tilgjengelig"));
       return;
     }
 
@@ -121,7 +122,7 @@ export default function Ks2Stoffkartotek() {
     if (url) {
       window.open(url, "_blank");
     } else {
-      toast.error("Kunne ikke laste ned sikkerhetsdatablad");
+      toast.error(t("auto.kunne_ikke_laste_ned_sikkerhetsdatablad"));
     }
   };
 
@@ -139,7 +140,7 @@ export default function Ks2Stoffkartotek() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">Velg et prosjekt for å se stoffkartoteket</p>
+          <p className="text-muted-foreground">{t("auto.velg_et_prosjekt_for_aa_se_stoffkartotek")}</p>
         </CardContent>
       </Card>
     );
@@ -154,7 +155,7 @@ export default function Ks2Stoffkartotek() {
             <FlaskConical className="h-6 w-6 text-emerald-500" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Stoffkartotek</h2>
+            <h2 className="text-2xl font-bold">{t("auto.stoffkartotek")}</h2>
             <p className="text-muted-foreground">
               {chemicals.length} {chemicals.length === 1 ? "stoff" : "stoffer"} registrert
             </p>
@@ -176,11 +177,10 @@ export default function Ks2Stoffkartotek() {
             <Globe className="h-5 w-5 text-emerald-500 mt-0.5" />
             <div>
               <p className="font-medium text-emerald-700 dark:text-emerald-400">
-                Globalt stoffregister
+                {t("auto.globalt_stoffregister")}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Stoffer du legger til deles automatisk i et felles register. Andre bedrifter kan gjenbruke 
-                sikkerhetsdatablader, noe som sparer tid og sikrer oppdatert informasjon.
+                {t("auto.stoffer_du_legger_til_deles_automatisk_i")}
               </p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function Ks2Stoffkartotek() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk etter produktnavn, produsent, CAS-nummer..."
+            placeholder={t("auto.soek_etter_produktnavn_produsent_cas_num")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -221,9 +221,9 @@ export default function Ks2Stoffkartotek() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FlaskConical className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Ingen stoffer registrert</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_stoffer_registrert")}</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Legg til stoffer og kjemikalier som brukes i prosjektet
+              {t("auto.legg_til_stoffer_og_kjemikalier_som_bruk")}
             </p>
             <Button 
               className="bg-emerald-500 hover:bg-emerald-600"
@@ -238,7 +238,7 @@ export default function Ks2Stoffkartotek() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Search className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Ingen treff</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_treff_2")}</h3>
             <p className="text-muted-foreground text-center">
               Ingen stoffer matcher "{searchQuery}"
             </p>
@@ -391,14 +391,14 @@ export default function Ks2Stoffkartotek() {
       <AlertDialog open={!!deleteEntry} onOpenChange={(open) => !open && setDeleteEntry(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Fjern stoff fra kartoteket?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.fjern_stoff_fra_kartoteket")}</AlertDialogTitle>
             <AlertDialogDescription>
               Dette fjerner "{deleteEntry?.global_chemical?.product_name}" fra prosjektets stoffkartotek.
               Stoffet forblir i det globale registeret og kan legges til igjen senere.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteConfirm}
               disabled={isRemoving}

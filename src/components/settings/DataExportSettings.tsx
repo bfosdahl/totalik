@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Download, ArrowLeft, FileJson, Loader2, ShieldCheck } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface Props {
   onBack: () => void;
@@ -117,7 +118,7 @@ export function DataExportSettings({ onBack }: Props) {
     URL.revokeObjectURL(url);
 
     toast({
-      title: "Eksport fullført",
+      title: t("auto.eksport_fullfoert"),
       description: `${EXPORT_TABLES.length} tabeller eksportert`,
     });
     setIsExporting(false);
@@ -133,9 +134,9 @@ export function DataExportSettings({ onBack }: Props) {
       <div className="flex items-center gap-3">
         <FileJson className="w-6 h-6 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Data og eksport</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("auto.data_og_eksport")}</h1>
           <p className="text-muted-foreground text-sm">
-            Last ned en full kopi av bedriftens data
+            {t("auto.last_ned_en_full_kopi_av_bedriftens_data")}
           </p>
         </div>
       </div>
@@ -144,15 +145,12 @@ export function DataExportSettings({ onBack }: Props) {
         <div className="flex items-start gap-3">
           <ShieldCheck className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
           <div className="space-y-2 text-sm">
-            <p className="font-medium">GDPR-vennlig datakopi</p>
+            <p className="font-medium">{t("auto.gdpr_vennlig_datakopi")}</p>
             <p className="text-muted-foreground">
-              Eksporten inneholder alle bedriftens hoveddata som rutiner, dokumenter,
-              avvik, prosjekter, ansatte, kurs, timer og kjørebok i ett JSON-format.
-              Du kan bruke filen som sikkerhetskopi eller for å oppfylle GDPR-krav om
-              dataportabilitet.
+              {t("auto.eksporten_inneholder_alle_bedriftens_hov")}
             </p>
             <p className="text-muted-foreground">
-              <strong>Merk:</strong> Filer (PDF-er, bilder, vedlegg) er ikke inkludert,
+              <strong>{t("auto.merk")}</strong> Filer (PDF-er, bilder, vedlegg) er ikke inkludert,
               kun metadata. Database-backup tas automatisk i bakgrunnen daglig.
             </p>
           </div>

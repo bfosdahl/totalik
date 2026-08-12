@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Loader2, ShieldCheck, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
+import { t } from "@/i18n/t";
 
 interface ModulePricing {
   module_type: string;
@@ -103,11 +104,11 @@ export function OrderModuleDialog({
       }
 
       setOrderComplete(true);
-      toast.success("Modulen er aktivert!");
+      toast.success(t("auto.modulen_er_aktivert"));
       onOrderComplete?.();
     } catch (error: any) {
       console.error("Error ordering module:", error);
-      toast.error("Kunne ikke fullføre bestillingen. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_fullfoere_bestillingen_proev_"));
     } finally {
       setIsSubmitting(false);
     }
@@ -128,14 +129,14 @@ export function OrderModuleDialog({
               <Check className="w-8 h-8 text-green-600" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold">Bestilling bekreftet!</h3>
+              <h3 className="text-xl font-semibold">{t("auto.bestilling_bekreftet")}</h3>
               <p className="text-muted-foreground mt-2">
                 {pricing?.module_name} er nå aktivert for {company?.name}.
                 Du vil motta en ordrebekreftelse på e-post.
               </p>
             </div>
             <Button onClick={handleClose} className="mt-4">
-              Lukk
+              {t("auto.lukk")}
             </Button>
           </div>
         ) : (
@@ -155,19 +156,19 @@ export function OrderModuleDialog({
 
             {/* Terms */}
             <div className="space-y-4">
-              <h4 className="font-medium">Avtalevilkår</h4>
+              <h4 className="font-medium">{t("auto.avtalevilkaar")}</h4>
               <div className="text-sm text-muted-foreground space-y-2 bg-muted/30 rounded-lg p-4 max-h-48 overflow-y-auto">
-                <p><strong>1. Abonnement og fakturering</strong></p>
+                <p><strong>{t("auto.1_abonnement_og_fakturering")}</strong></p>
                 <p>Ved å aktivere denne modulen godtar du et løpende månedsabonnement på {pricing?.price_monthly} kr/mnd ekskl. mva. Fakturering skjer månedlig forskuddsvis.</p>
                 
-                <p><strong>2. Oppsigelse</strong></p>
-                <p>Abonnementet kan sies opp når som helst med 30 dagers varsel. Ved oppsigelse har du tilgang til modulen ut inneværende faktureringsperiode.</p>
+                <p><strong>{t("auto.2_oppsigelse")}</strong></p>
+                <p>{t("auto.abonnementet_kan_sies_opp_naar_som_helst")}</p>
                 
-                <p><strong>3. Databehandling</strong></p>
-                <p>Vi behandler personopplysninger i henhold til vår personvernerklæring og gjeldende GDPR-regelverk.</p>
+                <p><strong>{t("auto.3_databehandling")}</strong></p>
+                <p>{t("auto.vi_behandler_personopplysninger_i_henhol")}</p>
                 
-                <p><strong>4. Tilgjengelighet</strong></p>
-                <p>Vi tilstreber 99,9% oppetid. Planlagt vedlikehold varsles minimum 24 timer i forveien.</p>
+                <p><strong>{t("auto.4_tilgjengelighet")}</strong></p>
+                <p>{t("auto.vi_tilstreber_99_9_oppetid_planlagt_vedl")}</p>
               </div>
 
               <div className="flex items-start gap-3">
@@ -186,7 +187,7 @@ export function OrderModuleDialog({
             <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
               <ShieldCheck className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium">Ordrebekreftelse sendes til:</p>
+                <p className="font-medium">{t("auto.ordrebekreftelse_sendes_til")}</p>
                 <p className="text-muted-foreground">{profile?.email}</p>
               </div>
             </div>
@@ -199,7 +200,7 @@ export function OrderModuleDialog({
   const actionButtons = !orderComplete && (
     <div className="flex gap-3 pt-4 border-t mt-4">
       <Button variant="outline" onClick={handleClose} className="flex-1">
-        Avbryt
+        {t("auto.avbryt")}
       </Button>
       <Button
         onClick={handleSubmitOrder}
@@ -225,7 +226,7 @@ export function OrderModuleDialog({
           <DrawerHeader>
             <DrawerTitle>Bestill {pricing?.module_name}</DrawerTitle>
             <DrawerDescription>
-              Aktiver modulen for din bedrift
+              {t("auto.aktiver_modulen_for_din_bedrift")}
             </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-6">
@@ -243,7 +244,7 @@ export function OrderModuleDialog({
         <DialogHeader>
           <DialogTitle>Bestill {pricing?.module_name}</DialogTitle>
           <DialogDescription>
-            Aktiver modulen for din bedrift
+            {t("auto.aktiver_modulen_for_din_bedrift")}
           </DialogDescription>
         </DialogHeader>
         {scrollContent}

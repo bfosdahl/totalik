@@ -30,6 +30,7 @@ import {
 import { Plus, UserCheck, Loader2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 interface Seller {
   id: string;
@@ -74,7 +75,7 @@ export default function AdminSellers() {
 
   const handleSave = async () => {
     if (!name.trim() || !email.trim()) {
-      toast.error("Navn og e-post er påkrevd");
+      toast.error(t("auto.navn_og_e_post_er_paakrevd"));
       return;
     }
     setSaving(true);
@@ -85,13 +86,13 @@ export default function AdminSellers() {
           .update({ name: name.trim(), email: email.trim(), phone: phone.trim() || null })
           .eq("id", editingSeller.id);
         if (error) throw error;
-        toast.success("Selger oppdatert");
+        toast.success(t("auto.selger_oppdatert"));
       } else {
         const { error } = await supabase
           .from("sellers")
           .insert({ name: name.trim(), email: email.trim(), phone: phone.trim() || null });
         if (error) throw error;
-        toast.success("Selger opprettet");
+        toast.success(t("auto.selger_opprettet"));
       }
       setDialogOpen(false);
       resetForm();
@@ -107,9 +108,9 @@ export default function AdminSellers() {
     if (!confirm("Er du sikker på at du vil slette denne selgeren?")) return;
     const { error } = await supabase.from("sellers").delete().eq("id", id);
     if (error) {
-      toast.error("Kunne ikke slette selger");
+      toast.error(t("auto.kunne_ikke_slette_selger"));
     } else {
-      toast.success("Selger slettet");
+      toast.success(t("auto.selger_slettet"));
       fetchData();
     }
   };
@@ -120,9 +121,9 @@ export default function AdminSellers() {
       .update({ seller_id: sellerId === "none" ? null : sellerId })
       .eq("id", companyId);
     if (error) {
-      toast.error("Kunne ikke tilknytte selger");
+      toast.error(t("auto.kunne_ikke_tilknytte_selger"));
     } else {
-      toast.success("Selger tilknyttet");
+      toast.success(t("auto.selger_tilknyttet"));
       fetchData();
     }
   };
@@ -164,7 +165,7 @@ export default function AdminSellers() {
               <UserCheck className="h-6 w-6 text-primary" />
               Selgere
             </h1>
-            <p className="text-muted-foreground">Administrer selgere og tilknytt dem til bedrifter</p>
+            <p className="text-muted-foreground">{t("auto.administrer_selgere_og_tilknytt_dem_til_")}</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
             <DialogTrigger asChild>
@@ -179,11 +180,11 @@ export default function AdminSellers() {
               </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label>Navn</Label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Fullt navn" />
+                  <Label>{t("auto.navn_2")}</Label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("auto.fullt_navn")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>E-post</Label>
+                  <Label>{t("auto.e_post_2")}</Label>
                   <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="epost@firma.no" type="email" />
                 </div>
                 <div className="space-y-2">
@@ -202,19 +203,19 @@ export default function AdminSellers() {
         {/* Sellers list */}
         <Card>
           <CardHeader>
-            <CardTitle>Selgeroversikt</CardTitle>
+            <CardTitle>{t("auto.selgeroversikt")}</CardTitle>
           </CardHeader>
           <CardContent>
             {sellers.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Ingen selgere opprettet ennå</p>
+              <p className="text-muted-foreground text-center py-8">{t("auto.ingen_selgere_opprettet_ennaa")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Navn</TableHead>
-                    <TableHead>E-post</TableHead>
-                    <TableHead>Telefon</TableHead>
-                    <TableHead>Kunder</TableHead>
+                    <TableHead>{t("auto.navn_2")}</TableHead>
+                    <TableHead>{t("auto.e_post_2")}</TableHead>
+                    <TableHead>{t("auto.telefon")}</TableHead>
+                    <TableHead>{t("auto.kunder")}</TableHead>
                     <TableHead className="w-[100px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -248,14 +249,14 @@ export default function AdminSellers() {
         {/* Company-seller mapping */}
         <Card>
           <CardHeader>
-            <CardTitle>Bedrift-selger tilknytning</CardTitle>
+            <CardTitle>{t("auto.bedrift_selger_tilknytning")}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Bedrift</TableHead>
-                  <TableHead>Selger</TableHead>
+                  <TableHead>{t("auto.bedrift")}</TableHead>
+                  <TableHead>{t("auto.selger")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -268,10 +269,10 @@ export default function AdminSellers() {
                         onValueChange={(val) => handleAssignSeller(c.id, val)}
                       >
                         <SelectTrigger className="w-[200px]">
-                          <SelectValue placeholder="Velg selger" />
+                          <SelectValue placeholder={t("auto.velg_selger")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">Ingen selger</SelectItem>
+                          <SelectItem value="none">{t("auto.ingen_selger")}</SelectItem>
                           {sellers.map((s) => (
                             <SelectItem key={s.id} value={s.id}>
                               {s.name}

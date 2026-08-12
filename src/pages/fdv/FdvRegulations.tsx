@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { t } from "@/i18n/t";
 
 const regulations = [
   {
@@ -10,13 +11,13 @@ const regulations = [
     items: [
       {
         name: "Arbeidsmiljøloven",
-        description: "Lov om arbeidsmiljø, arbeidstid og stillingsvern mv.",
+        description: t("auto.lov_om_arbeidsmiljoe_arbeidstid_og_still_2"),
         link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62",
         relevance: "Krav til forsvarlig arbeidsmiljø i bygninger",
       },
       {
         name: "Internkontrollforskriften",
-        description: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid i virksomheter",
+        description: t("auto.forskrift_om_systematisk_helse_miljoe_og"),
         link: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127",
         relevance: "Krav til systematisk HMS-arbeid, inkludert bygningsrelaterte forhold",
       },
@@ -27,13 +28,13 @@ const regulations = [
     items: [
       {
         name: "Brann- og eksplosjonsvernloven",
-        description: "Lov om vern mot brann, eksplosjon og ulykker med farlig stoff",
+        description: t("auto.lov_om_vern_mot_brann_eksplosjon_og_ulyk"),
         link: "https://lovdata.no/dokument/NL/lov/2002-06-14-20",
         relevance: "Overordnet lov for brannvern i bygninger",
       },
       {
         name: "Forskrift om brannforebygging",
-        description: "Forskrift om brannforebygging",
+        description: t("auto.forskrift_om_brannforebygging"),
         link: "https://lovdata.no/dokument/SF/forskrift/2015-12-17-1710",
         relevance: "Spesifikke krav til brannforebygging, kontroller og dokumentasjon",
       },
@@ -44,13 +45,13 @@ const regulations = [
     items: [
       {
         name: "El-tilsynsloven",
-        description: "Lov om tilsyn med elektriske anlegg og elektrisk utstyr",
+        description: t("auto.lov_om_tilsyn_med_elektriske_anlegg_og_e"),
         link: "https://lovdata.no/dokument/NL/lov/1929-05-24-4",
         relevance: "Krav til elektriske installasjoner og kontroller",
       },
       {
         name: "Forskrift om elektriske lavspenningsanlegg (FEL)",
-        description: "Krav til prosjektering, utførelse og vedlikehold av elektriske anlegg",
+        description: t("auto.krav_til_prosjektering_utfoerelse_og_ved"),
         link: "https://lovdata.no/dokument/SF/forskrift/1998-11-06-1060",
         relevance: "Spesifikke krav til el-kontroll og dokumentasjon",
       },
@@ -61,13 +62,13 @@ const regulations = [
     items: [
       {
         name: "Plan- og bygningsloven",
-        description: "Lov om planlegging og byggesaksbehandling",
+        description: t("auto.lov_om_planlegging_og_byggesaksbehandlin"),
         link: "https://lovdata.no/dokument/NL/lov/2008-06-27-71",
         relevance: "Overordnede krav til bygg og endringer",
       },
       {
         name: "TEK17 (Byggteknisk forskrift)",
-        description: "Forskrift om tekniske krav til byggverk",
+        description: t("auto.forskrift_om_tekniske_krav_til_byggverk"),
         link: "https://lovdata.no/dokument/SF/forskrift/2017-06-19-840",
         relevance: "Tekniske krav ved bygging og endring av byggverk",
       },
@@ -78,7 +79,7 @@ const regulations = [
     items: [
       {
         name: "Forskrift om miljørettet helsevern",
-        description: "Krav til inneklima i offentlige bygg og arbeidsplasser",
+        description: t("auto.krav_til_inneklima_i_offentlige_bygg_og_"),
         link: "https://lovdata.no/dokument/SF/forskrift/2003-04-25-486",
         relevance: "Krav til luftkvalitet, temperatur og ventilasjon",
       },
@@ -97,7 +98,7 @@ export default function FdvRegulations() {
             Lov- og forskriftsoversikt
           </h1>
           <p className="text-muted-foreground mt-1">
-            Relevant regelverk for forvaltning, drift og vedlikehold av bygg
+            {t("auto.relevant_regelverk_for_forvaltning_drift")}
           </p>
         </div>
 
@@ -107,11 +108,9 @@ export default function FdvRegulations() {
             <div className="flex items-start gap-4">
               <BookOpen className="h-8 w-8 text-primary flex-shrink-0" />
               <div>
-                <h3 className="font-medium mb-1">Om denne oversikten</h3>
+                <h3 className="font-medium mb-1">{t("auto.om_denne_oversikten")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Denne siden gir en oversikt over de viktigste lovene og forskriftene som gjelder for 
-                  forvaltning, drift og vedlikehold av næringsbygg. Oversikten er kun informativ og 
-                  kan ikke redigeres. Ved tvil om lovtolkning, kontakt relevant tilsynsmyndighet.
+                  {t("auto.denne_siden_gir_en_oversikt_over_de_vikt")}
                 </p>
               </div>
             </div>
@@ -156,10 +155,7 @@ export default function FdvRegulations() {
         <Card className="bg-muted/50">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
-              <strong>Ansvarsfraskrivelse:</strong> Denne oversikten er kun ment som en veiledning og 
-              erstatter ikke juridisk rådgivning. Regelverket endres jevnlig, og det er virksomhetens 
-              ansvar å holde seg oppdatert på gjeldende krav. Lovdata.no inneholder alltid den 
-              oppdaterte versjonen av regelverket.
+              <strong>{t("auto.ansvarsfraskrivelse")}</strong> {t("auto.denne_oversikten_er_kun_ment_som_en_veil")}
             </p>
           </CardContent>
         </Card>

@@ -34,11 +34,12 @@ import { useIkAlkoholLovverk, AlkoholLovverk } from "@/hooks/useIkAlkoholLovverk
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const CATEGORY_CONFIG = {
-  nasjonal: { label: "Nasjonal lov/forskrift", icon: Scale, color: "text-red-600", bgColor: "bg-red-50 border-red-200" },
-  kommunal: { label: "Kommunal retningslinje", icon: Building2, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-200" },
-  veileder: { label: "Veileder/Ressurs", icon: BookOpen, color: "text-emerald-600", bgColor: "bg-emerald-50 border-emerald-200" },
+  nasjonal: { label: t("auto.nasjonal_lov_forskrift"), icon: Scale, color: "text-red-600", bgColor: "bg-red-50 border-red-200" },
+  kommunal: { label: t("auto.kommunal_retningslinje"), icon: Building2, color: "text-blue-600", bgColor: "bg-blue-50 border-blue-200" },
+  veileder: { label: t("auto.veileder_ressurs"), icon: BookOpen, color: "text-emerald-600", bgColor: "bg-emerald-50 border-emerald-200" },
 };
 
 const COMPLIANCE_CATEGORY_LABELS: Record<string, string> = {
@@ -143,7 +144,7 @@ export default function IkAlkoholLovverk() {
 
   const handleSave = () => {
     if (!form.title.trim()) {
-      toast.error("Tittel er påkrevd");
+      toast.error(t("auto.tittel_er_paakrevd"));
       return;
     }
     if (editingItem) {
@@ -242,7 +243,7 @@ export default function IkAlkoholLovverk() {
             Lovverk & Etterlevelse
           </h1>
           <p className="text-muted-foreground mt-1">
-            Nasjonale lover, kommunale retningslinjer og dokumentasjonskrav for alkoholhåndtering
+            {t("auto.nasjonale_lover_kommunale_retningslinjer")}
           </p>
         </div>
 
@@ -270,7 +271,7 @@ export default function IkAlkoholLovverk() {
 
         <Tabs defaultValue="lovverk">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="lovverk">Lovverk & Retningslinjer</TabsTrigger>
+            <TabsTrigger value="lovverk">{t("auto.lovverk_retningslinjer")}</TabsTrigger>
             <TabsTrigger value="krav">Dokumentasjonskrav ({fulfilledCount}/{totalCount})</TabsTrigger>
           </TabsList>
 
@@ -328,10 +329,9 @@ export default function IkAlkoholLovverk() {
           <TabsContent value="krav" className="space-y-6 mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Krav til internkontroll etter alkoholloven</CardTitle>
+                <CardTitle className="text-lg">{t("auto.krav_til_internkontroll_etter_alkohollov")}</CardTitle>
                 <CardDescription>
-                  Huk av krav etter hvert som de er dokumentert i systemet. 
-                  Klikk på lenken for å gå direkte til hvor kravet dokumenteres.
+                  {t("auto.huk_av_krav_etter_hvert_som_de_er_dokume")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -399,33 +399,33 @@ export default function IkAlkoholLovverk() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Kategori</Label>
+                <Label>{t("auto.kategori")}</Label>
                 <Select
                   value={form.category}
                   onValueChange={(v) => setForm(f => ({ ...f, category: v as any }))}
                 >
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="nasjonal">Nasjonal lov/forskrift</SelectItem>
-                    <SelectItem value="kommunal">Kommunal retningslinje</SelectItem>
-                    <SelectItem value="veileder">Veileder/Ressurs</SelectItem>
+                    <SelectItem value="nasjonal">{t("auto.nasjonal_lov_forskrift")}</SelectItem>
+                    <SelectItem value="kommunal">{t("auto.kommunal_retningslinje")}</SelectItem>
+                    <SelectItem value="veileder">{t("auto.veileder_ressurs")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Tittel *</Label>
+                <Label>{t("auto.tittel_2")}</Label>
                 <Input
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                  placeholder="F.eks. Alkoholpolitiske retningslinjer for Lillestrøm kommune"
+                  placeholder={t("auto.f_eks_alkoholpolitiske_retningslinjer_fo")}
                 />
               </div>
               <div>
-                <Label>Beskrivelse</Label>
+                <Label>{t("auto.beskrivelse")}</Label>
                 <Textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="Kort beskrivelse av innholdet"
+                  placeholder={t("auto.kort_beskrivelse_av_innholdet")}
                   rows={2}
                 />
               </div>
@@ -438,26 +438,26 @@ export default function IkAlkoholLovverk() {
                 />
               </div>
               <div>
-                <Label>Kilde</Label>
+                <Label>{t("auto.kilde")}</Label>
                 <Input
                   value={form.source}
                   onChange={e => setForm(f => ({ ...f, source: e.target.value }))}
-                  placeholder="F.eks. Lillestrøm kommune, Lovdata"
+                  placeholder={t("auto.f_eks_lillestroem_kommune_lovdata")}
                 />
               </div>
               {form.category === "kommunal" && (
                 <div>
-                  <Label>Kommune</Label>
+                  <Label>{t("auto.kommune")}</Label>
                   <Input
                     value={form.municipality}
                     onChange={e => setForm(f => ({ ...f, municipality: e.target.value }))}
-                    placeholder="F.eks. Lillestrøm"
+                    placeholder={t("auto.f_eks_lillestroem")}
                   />
                 </div>
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Avbryt</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>{t("auto.avbryt")}</Button>
               <Button onClick={handleSave}>
                 {editingItem ? "Lagre endringer" : "Legg til"}
               </Button>

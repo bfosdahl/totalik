@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface Ks2AccessQrCodeDialogProps {
   open: boolean;
@@ -32,7 +33,7 @@ export function Ks2AccessQrCodeDialog({
   const copyLink = () => {
     navigator.clipboard.writeText(loginUrl);
     setCopied(true);
-    toast.success("Lenke kopiert!");
+    toast.success(t("auto.lenke_kopiert"));
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -45,7 +46,7 @@ export function Ks2AccessQrCodeDialog({
             QR-kode for innlogging
           </DialogTitle>
           <DialogDescription>
-            Underleverandører kan skanne denne koden for rask innlogging
+            {t("auto.underleverandoerer_kan_skanne_denne_kode")}
           </DialogDescription>
         </DialogHeader>
 
@@ -68,7 +69,7 @@ export function Ks2AccessQrCodeDialog({
           </div>
 
           <p className="text-xs text-center text-muted-foreground">
-            Skann med mobilen for å gå direkte til innloggingssiden
+            {t("auto.skann_med_mobilen_for_aa_gaa_direkte_til")}
           </p>
 
           <div className="flex gap-2">

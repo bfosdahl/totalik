@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useKsModule2SubcontractorDocuments } from "@/hooks/useKsModule2Subcontractors";
+import { t } from "@/i18n/t";
 
 const DOCUMENT_TYPES = [
   { value: 'contract', label: 'Kontrakt' },
@@ -88,10 +89,10 @@ export function Ks2SubcontractorDocumentUpload({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Dokumenttype *</Label>
+            <Label>{t("auto.dokumenttype")}</Label>
             <Select value={documentType} onValueChange={setDocumentType}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg type" />
+                <SelectValue placeholder={t("auto.velg_type")} />
               </SelectTrigger>
               <SelectContent>
                 {DOCUMENT_TYPES.map((type) => (
@@ -104,17 +105,17 @@ export function Ks2SubcontractorDocumentUpload({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="documentName">Dokumentnavn *</Label>
+            <Label htmlFor="documentName">{t("auto.dokumentnavn_2")}</Label>
             <Input
               id="documentName"
               value={documentName}
               onChange={(e) => setDocumentName(e.target.value)}
-              placeholder="F.eks. Skatteattest 2024"
+              placeholder={t("auto.f_eks_skatteattest_2024")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="expiryDate">Utløpsdato</Label>
+            <Label htmlFor="expiryDate">{t("auto.utloepsdato")}</Label>
             <Input
               id="expiryDate"
               type="date"
@@ -124,7 +125,7 @@ export function Ks2SubcontractorDocumentUpload({
           </div>
 
           <div className="space-y-2">
-            <Label>Fil *</Label>
+            <Label>{t("auto.fil_2")}</Label>
             <div className="border-2 border-dashed rounded-lg p-6 text-center">
               {file ? (
                 <div className="flex items-center justify-center gap-2">
@@ -135,7 +136,7 @@ export function Ks2SubcontractorDocumentUpload({
                 <div className="space-y-2">
                   <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    Klikk for å velge fil
+                    {t("auto.klikk_for_aa_velge_fil")}
                   </p>
                 </div>
               )}
@@ -151,7 +152,7 @@ export function Ks2SubcontractorDocumentUpload({
 
           <div className="flex justify-end gap-2 pt-4">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleUpload} 

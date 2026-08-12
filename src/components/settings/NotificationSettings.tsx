@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationSettingsCard } from "@/components/notifications/NotificationSettingsCard";
+import { t } from "@/i18n/t";
 
 interface NotificationSettingsProps {
   onBack: () => void;
@@ -28,21 +29,21 @@ interface NotificationSettings {
 }
 
 const DEVIATION_DEADLINE_OPTIONS = [
-  { value: 7, label: "7 dager før" },
-  { value: 3, label: "3 dager før" },
-  { value: 1, label: "1 dag før" },
+  { value: 7, label: t("auto.7_dager_foer") },
+  { value: 3, label: t("auto.3_dager_foer") },
+  { value: 1, label: t("auto.1_dag_foer") },
 ];
 
 const COURSE_EXPIRY_OPTIONS = [
-  { value: 30, label: "30 dager før" },
-  { value: 7, label: "7 dager før" },
+  { value: 30, label: t("auto.30_dager_foer") },
+  { value: 7, label: t("auto.7_dager_foer") },
 ];
 
 const HMS_CARD_EXPIRY_OPTIONS = [
-  { value: 90, label: "90 dager før" },
-  { value: 60, label: "60 dager før" },
-  { value: 30, label: "30 dager før" },
-  { value: 7, label: "7 dager før" },
+  { value: 90, label: t("auto.90_dager_foer") },
+  { value: 60, label: t("auto.60_dager_foer") },
+  { value: 30, label: t("auto.30_dager_foer") },
+  { value: 7, label: t("auto.7_dager_foer") },
 ];
 
 export function NotificationSettings({ onBack }: NotificationSettingsProps) {
@@ -101,7 +102,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       }
     } catch (error: any) {
       console.error("Error loading notification settings:", error);
-      toast.error("Kunne ikke laste varslingsinnstillinger");
+      toast.error(t("auto.kunne_ikke_laste_varslingsinnstillinger"));
     } finally {
       setLoading(false);
     }
@@ -121,13 +122,13 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       if (error) throw error;
     } catch (error: any) {
       console.error("Error creating default settings:", error);
-      toast.error("Kunne ikke opprette standardinnstillinger");
+      toast.error(t("auto.kunne_ikke_opprette_standardinnstillinge"));
     }
   };
 
   const handleSave = async () => {
     if (!company?.id) {
-      toast.error("Ingen bedrift funnet");
+      toast.error(t("auto.ingen_bedrift_funnet"));
       return;
     }
 
@@ -142,7 +143,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
       if (error) throw error;
 
-      toast.success("Varslingsinnstillinger oppdatert!");
+      toast.success(t("auto.varslingsinnstillinger_oppdatert"));
     } catch (error: any) {
       console.error("Error updating notification settings:", error);
       toast.error(error.message || "Kunne ikke oppdatere varslingsinnstillinger");
@@ -153,7 +154,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
   const handleSendTestNotification = async () => {
     if (!company?.id || !profile?.email) {
-      toast.error("Kunne ikke finne mottaker for test-e-post");
+      toast.error(t("auto.kunne_ikke_finne_mottaker_for_test_e_pos"));
       return;
     }
 
@@ -180,7 +181,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       if (result.success) {
         toast.success(`Test-e-post sendt til ${profile.email}`);
       } else {
-        toast.error("Kunne ikke sende test-e-post");
+        toast.error(t("auto.kunne_ikke_sende_test_e_post"));
       }
     } catch (error: any) {
       console.error("Error sending test notification:", error);
@@ -227,9 +228,9 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             <Bell className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Varsler</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.varsler")}</h1>
             <p className="text-muted-foreground">
-              Konfigurer e-postvarsler og påminnelser
+              {t("auto.konfigurer_e_postvarsler_og_paaminnelser")}
             </p>
           </div>
         </div>
@@ -253,13 +254,13 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
       >
         {/* Deviation Notifications */}
         <div className="bg-card rounded-xl border border-border shadow-card p-6">
-          <h3 className="text-lg font-semibold mb-4">Avviksvarsler</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("auto.avviksvarsler")}</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Varsle ved tildeling av avvik</Label>
+                <Label>{t("auto.varsle_ved_tildeling_av_avvik")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Send e-post når et avvik tildeles en ansatt
+                  {t("auto.send_e_post_naar_et_avvik_tildeles_en_an")}
                 </p>
               </div>
               <Switch
@@ -273,9 +274,9 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             <div className="space-y-3 pt-4 border-t border-border">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>Påminnelser om frister</Label>
+                  <Label>{t("auto.paaminnelser_om_frister")}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Send automatiske påminnelser når avvik nærmer seg forfallsdato
+                    {t("auto.send_automatiske_paaminnelser_naar_avvik")}
                   </p>
                 </div>
                 <Switch
@@ -288,7 +289,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
               {settings.deviation_deadline_reminder_enabled && (
                 <div className="space-y-2 ml-6">
-                  <Label className="text-sm">Send påminnelse:</Label>
+                  <Label className="text-sm">{t("auto.send_paaminnelse")}</Label>
                   <div className="space-y-2">
                     {DEVIATION_DEADLINE_OPTIONS.map((option) => (
                       <div key={option.value} className="flex items-center space-x-2">
@@ -316,13 +317,13 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
         {/* Course Expiry Notifications */}
         <div className="bg-card rounded-xl border border-border shadow-card p-6">
-          <h3 className="text-lg font-semibold mb-4">Kursvarsler</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("auto.kursvarsler")}</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Varsle ved kursets utløp</Label>
+                <Label>{t("auto.varsle_ved_kursets_utloep")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Send e-post når kurs nærmer seg utløpsdato
+                  {t("auto.send_e_post_naar_kurs_naermer_seg_utloep")}
                 </p>
               </div>
               <Switch
@@ -335,7 +336,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
             {settings.course_expiry_enabled && (
               <div className="space-y-2 ml-6 pt-2">
-                <Label className="text-sm">Send varsel:</Label>
+                <Label className="text-sm">{t("auto.send_varsel")}</Label>
                 <div className="space-y-2">
                   {COURSE_EXPIRY_OPTIONS.map((option) => (
                     <div key={option.value} className="flex items-center space-x-2">
@@ -360,13 +361,13 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
         {/* HMS Card Expiry Notifications */}
         <div className="bg-card rounded-xl border border-border shadow-card p-6">
-          <h3 className="text-lg font-semibold mb-4">HMS-kort varsler</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("auto.hms_kort_varsler")}</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Varsle ved HMS-kort utløp</Label>
+                <Label>{t("auto.varsle_ved_hms_kort_utloep")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Send e-post når HMS-kort nærmer seg utløpsdato
+                  {t("auto.send_e_post_naar_hms_kort_naermer_seg_ut")}
                 </p>
               </div>
               <Switch
@@ -379,7 +380,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
             {settings.hms_card_expiry_enabled && (
               <div className="space-y-2 ml-6 pt-2">
-                <Label className="text-sm">Send varsel:</Label>
+                <Label className="text-sm">{t("auto.send_varsel")}</Label>
                 <div className="space-y-2">
                   {HMS_CARD_EXPIRY_OPTIONS.map((option) => (
                     <div key={option.value} className="flex items-center space-x-2">
@@ -406,13 +407,13 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
         {/* Recipients */}
         <div className="bg-card rounded-xl border border-border shadow-card p-6">
-          <h3 className="text-lg font-semibold mb-4">Varsle følgende personer</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("auto.varsle_foelgende_personer")}</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Bedriftsadministrator</Label>
+                <Label>{t("auto.bedriftsadministrator")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Send varsler til alle bedriftsadministratorer
+                  {t("auto.send_varsler_til_alle_bedriftsadministra")}
                 </p>
               </div>
               <Switch
@@ -425,9 +426,9 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>HMS-ansvarlig</Label>
+                <Label>{t("auto.hms_ansvarlig")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Send varsler til HMS-ansvarlig
+                  {t("auto.send_varsler_til_hms_ansvarlig")}
                 </p>
               </div>
               <Switch
@@ -440,9 +441,9 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Den ansatte</Label>
+                <Label>{t("auto.den_ansatte")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Send varsler direkte til den berørte ansatte
+                  {t("auto.send_varsler_direkte_til_den_beroerte_an")}
                 </p>
               </div>
               <Switch

@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewSimpleProjectInput } from "@/hooks/useSimpleProjects";
+import { t } from "@/i18n/t";
 
 interface NewSimpleProjectDialogProps {
   open: boolean;
@@ -61,7 +62,7 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Nytt enkeltprosjekt</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">{t("auto.nytt_enkeltprosjekt")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col">
@@ -69,42 +70,42 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
             <div className="space-y-4 pb-4">
               {/* Project name */}
               <div className="space-y-2">
-                <Label htmlFor="project_name">Prosjektnavn *</Label>
+                <Label htmlFor="project_name">{t("auto.prosjektnavn_2")}</Label>
                 <Input
                   id="project_name"
                   value={formData.project_name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, project_name: e.target.value }))}
-                  placeholder="F.eks. Oppussing hos Hansen"
+                  placeholder={t("auto.f_eks_oppussing_hos_hansen")}
                   required
                 />
               </div>
 
               {/* Address */}
               <div className="space-y-2">
-                <Label htmlFor="address">Adresse</Label>
+                <Label htmlFor="address">{t("auto.adresse")}</Label>
                 <Input
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
-                  placeholder="Gateadresse"
+                  placeholder={t("auto.gateadresse")}
                 />
               </div>
 
               {/* Client name */}
               <div className="space-y-2">
-                <Label htmlFor="client_name">Kunde/byggherre</Label>
+                <Label htmlFor="client_name">{t("auto.kunde_byggherre")}</Label>
                 <Input
                   id="client_name"
                   value={formData.client_name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, client_name: e.target.value }))}
-                  placeholder="Kundens navn"
+                  placeholder={t("auto.kundens_navn")}
                 />
               </div>
 
               {/* Client contact */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="client_phone">Telefon</Label>
+                  <Label htmlFor="client_phone">{t("auto.telefon")}</Label>
                   <Input
                     id="client_phone"
                     value={formData.client_phone}
@@ -113,7 +114,7 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="client_email">E-post</Label>
+                  <Label htmlFor="client_email">{t("auto.e_post_2")}</Label>
                   <Input
                     id="client_email"
                     type="email"
@@ -126,13 +127,13 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
 
               {/* Project leader */}
               <div className="space-y-2">
-                <Label>Ansvarlig</Label>
+                <Label>{t("auto.ansvarlig_2")}</Label>
                 <Select
                   value={formData.project_leader_id || ""}
                   onValueChange={handleProjectLeaderChange}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg ansvarlig" />
+                    <SelectValue placeholder={t("auto.velg_ansvarlig")} />
                   </SelectTrigger>
                   <SelectContent>
                     {users.map((user) => (
@@ -147,7 +148,7 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
               {/* Dates */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="planned_start_date">Oppstart</Label>
+                  <Label htmlFor="planned_start_date">{t("auto.oppstart")}</Label>
                   <Input
                     id="planned_start_date"
                     type="date"
@@ -156,7 +157,7 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="planned_end_date">Ferdig</Label>
+                  <Label htmlFor="planned_end_date">{t("auto.ferdig")}</Label>
                   <Input
                     id="planned_end_date"
                     type="date"
@@ -185,12 +186,12 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description">Beskrivelse</Label>
+                <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Kort beskrivelse av arbeidet..."
+                  placeholder={t("auto.kort_beskrivelse_av_arbeidet")}
                   rows={3}
                 />
               </div>
@@ -200,7 +201,7 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
           {/* Submit */}
           <div className="flex justify-end gap-3 pt-4 mt-4 border-t">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isSaving || !formData.project_name.trim()}>
               {isSaving ? (

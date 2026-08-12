@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 export default function AdminDashboard() {
   const { data: stats } = useQuery({
@@ -31,28 +32,28 @@ export default function AdminDashboard() {
   const statCards = [
     {
       icon: Building2,
-      label: "Bedrifter",
+      label: t("auto.bedrifter"),
       value: stats?.totalCompanies ?? 0,
       subtext: `${stats?.activeCompanies ?? 0} aktive`,
       color: "bg-primary/10 text-primary",
     },
     {
       icon: Users,
-      label: "Brukere",
+      label: t("auto.brukere"),
       value: stats?.totalUsers ?? 0,
       subtext: `${stats?.activeUsers ?? 0} aktive`,
       color: "bg-accent/10 text-accent",
     },
     {
       icon: Shield,
-      label: "Systemadmins",
+      label: t("auto.systemadmins"),
       value: 1,
       subtext: "Med full tilgang",
       color: "bg-warning/10 text-warning",
     },
     {
       icon: Activity,
-      label: "Systemstatus",
+      label: t("auto.systemstatus"),
       value: "OK",
       subtext: "Alle systemer opererer normalt",
       color: "bg-success/10 text-success",
@@ -68,9 +69,9 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-1"
         >
-          <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("auto.admin_dashboard")}</h1>
           <p className="text-muted-foreground">
-            Systemadministrasjon og oversikt
+            {t("auto.systemadministrasjon_og_oversikt")}
           </p>
         </motion.div>
 
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
           transition={{ delay: 0.4 }}
           className="bg-card rounded-xl border border-border p-6 shadow-card"
         >
-          <h2 className="font-semibold mb-4">Hurtighandlinger</h2>
+          <h2 className="font-semibold mb-4">{t("auto.hurtighandlinger")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <Link
               to="/admin/companies"
@@ -117,8 +118,8 @@ export default function AdminDashboard() {
             >
               <Building2 className="w-5 h-5 text-primary" />
               <div>
-                <p className="font-medium">Opprett ny bedrift</p>
-                <p className="text-xs text-muted-foreground">Legg til ny kunde</p>
+                <p className="font-medium">{t("auto.opprett_ny_bedrift")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.legg_til_ny_kunde")}</p>
               </div>
             </Link>
             <Link
@@ -127,8 +128,8 @@ export default function AdminDashboard() {
             >
               <Users className="w-5 h-5 text-accent" />
               <div>
-                <p className="font-medium">Administrer brukere</p>
-                <p className="text-xs text-muted-foreground">Se alle brukere</p>
+                <p className="font-medium">{t("auto.administrer_brukere")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.se_alle_brukere")}</p>
               </div>
             </Link>
             <Link
@@ -137,8 +138,8 @@ export default function AdminDashboard() {
             >
               <Shield className="w-5 h-5 text-warning" />
               <div>
-                <p className="font-medium">Administrer bedrifter</p>
-                <p className="text-xs text-muted-foreground">Status og lisenser</p>
+                <p className="font-medium">{t("auto.administrer_bedrifter")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.status_og_lisenser")}</p>
               </div>
             </Link>
           </div>

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface Note {
   id: string;
@@ -70,14 +71,14 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
 
       if (error) throw error;
 
-      toast.success("Notat lagret");
+      toast.success(t("auto.notat_lagret"));
       setShowNewNote(false);
       setNewTitle("");
       setNewContent("");
       fetchNotes();
     } catch (error) {
       console.error("Error saving note:", error);
-      toast.error("Kunne ikke lagre notat");
+      toast.error(t("auto.kunne_ikke_lagre_notat"));
     } finally {
       setIsSaving(false);
     }
@@ -93,12 +94,12 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
 
       if (error) throw error;
 
-      toast.success("Notat oppdatert");
+      toast.success(t("auto.notat_oppdatert"));
       setEditingId(null);
       fetchNotes();
     } catch (error) {
       console.error("Error updating note:", error);
-      toast.error("Kunne ikke oppdatere notat");
+      toast.error(t("auto.kunne_ikke_oppdatere_notat"));
     } finally {
       setIsSaving(false);
     }
@@ -111,10 +112,10 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
       if (error) throw error;
 
       setNotes((prev) => prev.filter((n) => n.id !== id));
-      toast.success("Notat slettet");
+      toast.success(t("auto.notat_slettet"));
     } catch (error) {
       console.error("Error deleting note:", error);
-      toast.error("Kunne ikke slette notat");
+      toast.error(t("auto.kunne_ikke_slette_notat"));
     }
   };
 
@@ -146,7 +147,7 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
               onChange={(e) => setNewTitle(e.target.value)}
             />
             <Textarea
-              placeholder="Skriv notat..."
+              placeholder={t("auto.skriv_notat")}
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
               rows={4}
@@ -180,8 +181,8 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
         ) : notes.length === 0 && !showNewNote ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <StickyNote className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Ingen notater ennå</p>
-            <p className="text-sm text-muted-foreground">Opprett notater for å logge hendelser</p>
+            <p className="text-muted-foreground">{t("auto.ingen_notater_ennaa")}</p>
+            <p className="text-sm text-muted-foreground">{t("auto.opprett_notater_for_aa_logge_hendelser")}</p>
           </div>
         ) : (
           <div className="space-y-3">

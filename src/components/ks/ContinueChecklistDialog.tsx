@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, X, Minus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface ChecklistItem {
   id?: string;
@@ -104,7 +105,7 @@ export function ContinueChecklistDialog({ open, onOpenChange, checklist, onSaved
       onSaved?.();
     } catch (error) {
       console.error("Error updating checklist:", error);
-      toast.error("Kunne ikke lagre endringer");
+      toast.error(t("auto.kunne_ikke_lagre_endringer"));
     } finally {
       setIsSaving(false);
     }
@@ -174,7 +175,7 @@ export function ContinueChecklistDialog({ open, onOpenChange, checklist, onSaved
 
           <div className="flex gap-2 justify-end pt-4 border-t sticky bottom-0 bg-background pb-1">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button variant="outline" onClick={() => handleSave("in_progress")} disabled={isSaving}>
               {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

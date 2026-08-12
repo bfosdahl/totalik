@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -118,10 +119,10 @@ export default function AdminMonitoring() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["system-alerts"] });
-      toast.success("Alert markert som løst");
+      toast.success(t("auto.alert_markert_som_loest"));
     },
     onError: () => {
-      toast.error("Kunne ikke oppdatere alert");
+      toast.error(t("auto.kunne_ikke_oppdatere_alert"));
     },
   });
 
@@ -140,9 +141,9 @@ export default function AdminMonitoring() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
         >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Monitoring</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.monitoring")}</h1>
             <p className="text-muted-foreground">
-              Produksjonsovervåking — nøkkeltall i sanntid
+              {t("auto.produksjonsovervaaking_noekkeltall_i_san")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -232,7 +233,7 @@ export default function AdminMonitoring() {
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatsCard
-            title="Aktive bedrifter"
+            title={t("auto.aktive_bedrifter")}
             value={isLoading ? "..." : stats?.activeCompanies ?? 0}
             description={`${stats?.totalCompanies ?? 0} totalt`}
             icon={Building2}
@@ -240,7 +241,7 @@ export default function AdminMonitoring() {
             delay={0}
           />
           <StatsCard
-            title="Aktive brukere"
+            title={t("auto.aktive_brukere")}
             value={isLoading ? "..." : stats?.activeUsers ?? 0}
             description={`${stats?.totalUsers ?? 0} totalt`}
             icon={Users}
@@ -248,7 +249,7 @@ export default function AdminMonitoring() {
             delay={0.05}
           />
           <StatsCard
-            title="Feil siste 24t"
+            title={t("auto.feil_siste_24t")}
             value={isLoading ? "..." : stats?.errors24h ?? 0}
             description={`${stats?.errors7d ?? 0} siste 7 dager`}
             icon={AlertTriangle}
@@ -262,7 +263,7 @@ export default function AdminMonitoring() {
             delay={0.1}
           />
           <StatsCard
-            title="E-post bounce-rate"
+            title={t("auto.e_post_bounce_rate")}
             value={isLoading ? "..." : `${stats?.bounceRate ?? 0}%`}
             description={`${stats?.bouncedEmails ?? 0} av ${stats?.totalEmails ?? 0}`}
             icon={Mail}
@@ -274,9 +275,9 @@ export default function AdminMonitoring() {
         {/* Second row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatsCard
-            title="E-post levert"
+            title={t("auto.e_post_levert")}
             value={isLoading ? "..." : stats?.deliveredEmails ?? 0}
-            description="Totalt levert"
+            description={t("auto.totalt_levert")}
             icon={Mail}
             variant="success"
             delay={0.2}
@@ -290,9 +291,9 @@ export default function AdminMonitoring() {
             delay={0.25}
           />
           <StatsCard
-            title="Systemstatus"
+            title={t("auto.systemstatus")}
             value={isLoading ? "..." : "OK"}
-            description="Alle tjenester operative"
+            description={t("auto.alle_tjenester_operative")}
             icon={Activity}
             variant="success"
             delay={0.3}
@@ -306,10 +307,10 @@ export default function AdminMonitoring() {
           transition={{ delay: 0.35 }}
           className="bg-card rounded-xl border border-border p-6 shadow-card"
         >
-          <h2 className="font-semibold mb-4">Klientfeil siste 7 dager</h2>
+          <h2 className="font-semibold mb-4">{t("auto.klientfeil_siste_7_dager")}</h2>
           {isLoading ? (
             <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-              Laster...
+              {t("auto.laster")}
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
@@ -365,7 +366,7 @@ export default function AdminMonitoring() {
           className="bg-card rounded-xl border border-border p-6 shadow-card"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Alert-historikk</h2>
+            <h2 className="font-semibold">{t("auto.alert_historikk")}</h2>
             <Button
               variant="ghost"
               size="sm"
@@ -376,7 +377,7 @@ export default function AdminMonitoring() {
             </Button>
           </div>
           {alertsLoading ? (
-            <p className="text-sm text-muted-foreground">Laster...</p>
+            <p className="text-sm text-muted-foreground">{t("auto.laster")}</p>
           ) : alerts.length === 0 ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
               <CheckCircle2 className="w-4 h-4 text-success" />

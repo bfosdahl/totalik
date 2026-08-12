@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Target, Save, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface CompanyGoal {
   id: string;
@@ -44,7 +45,7 @@ const IkHmsMaal = () => {
         setGoals(data || []);
       } catch (error) {
         console.error("Error fetching goals:", error);
-        toast.error("Kunne ikke laste målsettinger");
+        toast.error(t("auto.kunne_ikke_laste_maalsettinger"));
       } finally {
         setIsLoading(false);
       }
@@ -73,11 +74,11 @@ const IkHmsMaal = () => {
         if (error) throw error;
       }
 
-      toast.success("Målsettinger lagret");
+      toast.success(t("auto.maalsettinger_lagret"));
       setHasChanges(false);
     } catch (error) {
       console.error("Error saving goals:", error);
-      toast.error("Kunne ikke lagre målsettinger");
+      toast.error(t("auto.kunne_ikke_lagre_maalsettinger"));
     } finally {
       setIsSaving(false);
     }
@@ -103,7 +104,7 @@ const IkHmsMaal = () => {
               Målsetting
             </h1>
             <p className="text-muted-foreground mt-1">
-              Bedriftens HMS-målsetting
+              {t("auto.bedriftens_hms_maalsetting")}
             </p>
           </div>
           <Button 
@@ -122,8 +123,7 @@ const IkHmsMaal = () => {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Målsettingen beskriver bedriftens overordnede mål for helse, miljø og sikkerhet. 
-            Den bør være konkret og målbar, og gjenspeile bedriftens verdier og ambisjoner.
+            {t("auto.maalsettingen_beskriver_bedriftens_overo")}
           </AlertDescription>
         </Alert>
 
@@ -131,9 +131,9 @@ const IkHmsMaal = () => {
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
               <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Ingen målsettinger er definert ennå.</p>
+              <p>{t("auto.ingen_maalsettinger_er_definert_ennaa")}</p>
               <p className="text-sm mt-2">
-                Gå til <a href="/setup" className="text-primary hover:underline">Oppsett</a> for å sette opp målsettinger.
+                {t("auto.gaa_til")} <a href="/setup" className="text-primary hover:underline">{t("auto.oppsett")}</a> {t("auto.for_aa_sette_opp_maalsettinger")}
               </p>
             </CardContent>
           </Card>
@@ -146,14 +146,14 @@ const IkHmsMaal = () => {
                     {goals.length > 1 ? `Mål ${index + 1}` : "Bedriftens målsetting"}
                   </CardTitle>
                   <CardDescription>
-                    Rediger målsettingen under
+                    {t("auto.rediger_maalsettingen_under")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Textarea
                     value={goal.goal_text}
                     onChange={(e) => handleUpdateGoal(goal.id, e.target.value)}
-                    placeholder="Beskriv bedriftens HMS-målsetting..."
+                    placeholder={t("auto.beskriv_bedriftens_hms_maalsetting")}
                     rows={6}
                     className="resize-none"
                   />
@@ -166,15 +166,14 @@ const IkHmsMaal = () => {
         {/* Example text for reference */}
         <Card className="bg-muted/50">
           <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Eksempel på HMS-målsetting</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t("auto.eksempel_paa_hms_maalsetting")}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>
-              <strong>Eksempel 1:</strong> Vårt mål er å skape en trygg og helsefremmende arbeidsplass 
-              der alle ansatte trives og kan utføre sitt arbeid uten risiko for skader eller sykdom.
+              <strong>{t("auto.eksempel_1")}</strong> {t("auto.vaart_maal_er_aa_skape_en_trygg_og_helse")}
             </p>
             <p>
-              <strong>Eksempel 2:</strong> Vi skal ha null arbeidsulykker og arbeidsrelatert sykefravær. 
+              <strong>{t("auto.eksempel_2")}</strong> Vi skal ha null arbeidsulykker og arbeidsrelatert sykefravær. 
               Alle ansatte skal ha nødvendig opplæring og utstyr for å utføre arbeidet sikkert.
             </p>
           </CardContent>

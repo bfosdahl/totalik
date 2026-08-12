@@ -33,6 +33,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { AdminDocumentFolder } from "@/hooks/useAdminDocumentFolders";
+import { t } from "@/i18n/t";
 
 interface DocumentBulkActionsProps {
   selectedCount: number;
@@ -114,15 +115,15 @@ export function DocumentBulkActions({
           <DialogHeader>
             <DialogTitle>Flytt {selectedCount} dokument{selectedCount > 1 ? "er" : ""}</DialogTitle>
             <DialogDescription>
-              Velg mappen du vil flytte dokumentene til
+              {t("auto.velg_mappen_du_vil_flytte_dokumentene_ti")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Velg mappe</Label>
+              <Label>{t("auto.velg_mappe")}</Label>
               <Select value={selectedFolder} onValueChange={setSelectedFolder}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg mappe" />
+                  <SelectValue placeholder={t("auto.velg_mappe")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Ingen mappe (rot)</SelectItem>
@@ -137,7 +138,7 @@ export function DocumentBulkActions({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsMoveDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={() => {
@@ -159,12 +160,12 @@ export function DocumentBulkActions({
           <DialogHeader>
             <DialogTitle>Slett {selectedCount} dokument{selectedCount > 1 ? "er" : ""}?</DialogTitle>
             <DialogDescription>
-              Denne handlingen kan ikke angres. Dokumentene vil bli permanent slettet.
+              {t("auto.denne_handlingen_kan_ikke_angres_dokumen")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               variant="destructive"

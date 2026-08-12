@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 export function SupportTicketDialog() {
   const [open, setOpen] = useState(false);
@@ -23,11 +24,11 @@ export function SupportTicketDialog() {
 
   const handleSubmit = async () => {
     if (subject.trim().length < 2) {
-      toast.error("Skriv inn et emne");
+      toast.error(t("auto.skriv_inn_et_emne"));
       return;
     }
     if (message.trim().length < 5) {
-      toast.error("Skriv inn en melding");
+      toast.error(t("auto.skriv_inn_en_melding"));
       return;
     }
 
@@ -40,7 +41,7 @@ export function SupportTicketDialog() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast.success("Henvendelsen er sendt! Vi svarer så snart vi kan.");
+      toast.success(t("auto.henvendelsen_er_sendt_vi_svarer_saa_snar"));
       setSubject("");
       setMessage("");
       setOpen(false);
@@ -60,7 +61,7 @@ export function SupportTicketDialog() {
           className="gap-2 text-muted-foreground hover:text-primary"
         >
           <MessageCircleQuestion className="h-4 w-4" />
-          <span className="hidden sm:inline">Support</span>
+          <span className="hidden sm:inline">{t("auto.support")}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -70,22 +71,22 @@ export function SupportTicketDialog() {
             Kontakt support
           </DialogTitle>
           <DialogDescription>
-            Send oss en melding så svarer vi så snart vi kan.
+            {t("auto.send_oss_en_melding_saa_svarer_vi_saa_sn")}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="support-subject">Emne</Label>
+            <Label htmlFor="support-subject">{t("auto.emne_2")}</Label>
             <Input
               id="support-subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Hva gjelder henvendelsen?"
+              placeholder={t("auto.hva_gjelder_henvendelsen")}
               disabled={isSending}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="support-message">Melding</Label>
+            <Label htmlFor="support-message">{t("auto.melding")}</Label>
             <Textarea
               id="support-message"
               value={message}

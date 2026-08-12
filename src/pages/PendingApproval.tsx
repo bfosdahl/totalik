@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 export default function PendingApproval() {
   const { user, signOut, refreshProfile, refreshCompany, profile } = useAuth();
@@ -27,7 +28,7 @@ export default function PendingApproval() {
     if (profile?.status === "active") {
       window.location.reload();
     } else {
-      toast.info("Kontoen venter fortsatt på godkjenning");
+      toast.info(t("auto.kontoen_venter_fortsatt_paa_godkjenning"));
     }
   };
 
@@ -38,12 +39,12 @@ export default function PendingApproval() {
     const trimmedOrg = orgNumber.trim();
     
     if (trimmed.length < 2) {
-      toast.error("Skriv inn et gyldig bedriftsnavn");
+      toast.error(t("auto.skriv_inn_et_gyldig_bedriftsnavn"));
       return;
     }
     
     if (!/^\d{9}$/.test(trimmedOrg)) {
-      toast.error("Organisasjonsnummer må være 9 siffer");
+      toast.error(t("auto.organisasjonsnummer_maa_vaere_9_siffer"));
       return;
     }
 
@@ -59,7 +60,7 @@ export default function PendingApproval() {
       }
 
       await Promise.all([refreshProfile(), refreshCompany()]);
-      toast.success("Bedrift opprettet og konto aktivert");
+      toast.success(t("auto.bedrift_opprettet_og_konto_aktivert"));
       window.location.href = "/";
     } catch (err: any) {
       toast.error(err?.message || "En feil oppstod");
@@ -91,7 +92,7 @@ export default function PendingApproval() {
             <div className="flex items-center gap-3 text-sm">
               <Mail className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <div className="text-left">
-                <p className="text-muted-foreground">Logget inn som</p>
+                <p className="text-muted-foreground">{t("auto.logget_inn_som")}</p>
                 <p className="font-medium">{user?.email}</p>
               </div>
             </div>
@@ -100,7 +101,7 @@ export default function PendingApproval() {
           {needsCompanySetup ? (
             <div className="space-y-4">
               <div className="space-y-2 text-left">
-                <Label htmlFor="companyName">Bedriftsnavn</Label>
+                <Label htmlFor="companyName">{t("auto.bedriftsnavn")}</Label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -108,14 +109,14 @@ export default function PendingApproval() {
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     className="pl-10"
-                    placeholder="Din bedrift AS"
+                    placeholder={t("auto.din_bedrift_as")}
                     autoComplete="organization"
                   />
                 </div>
               </div>
 
               <div className="space-y-2 text-left">
-                <Label htmlFor="orgNumber">Organisasjonsnummer</Label>
+                <Label htmlFor="orgNumber">{t("auto.organisasjonsnummer")}</Label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input

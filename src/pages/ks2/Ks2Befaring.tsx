@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface Inspection {
   id: string;
@@ -104,12 +105,12 @@ export default function Ks2Befaring() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ks-standalone-inspections"] });
-      toast.success("Befaring opprettet");
+      toast.success(t("auto.befaring_opprettet"));
       resetForm();
       setIsNewDialogOpen(false);
     },
     onError: (error) => {
-      toast.error("Kunne ikke opprette befaring");
+      toast.error(t("auto.kunne_ikke_opprette_befaring"));
       console.error(error);
     },
   });
@@ -129,7 +130,7 @@ export default function Ks2Befaring() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ks-standalone-inspections"] });
-      toast.success("Befaring fullført");
+      toast.success(t("auto.befaring_fullfoert"));
       setIsViewDialogOpen(false);
     },
   });
@@ -146,7 +147,7 @@ export default function Ks2Befaring() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ks-standalone-inspections"] });
-      toast.success("Befaring slettet");
+      toast.success(t("auto.befaring_slettet"));
     },
   });
   
@@ -194,8 +195,8 @@ export default function Ks2Befaring() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Befaringer</h1>
-            <p className="text-muted-foreground">Utfør og dokumenter befaringer</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("auto.befaringer")}</h1>
+            <p className="text-muted-foreground">{t("auto.utfoer_og_dokumenter_befaringer")}</p>
           </div>
           
           <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
@@ -207,31 +208,31 @@ export default function Ks2Befaring() {
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Ny befaring</DialogTitle>
-                <DialogDescription>Opprett en ny befaring for dokumentasjon</DialogDescription>
+                <DialogTitle>{t("auto.ny_befaring")}</DialogTitle>
+                <DialogDescription>{t("auto.opprett_en_ny_befaring_for_dokumentasjon")}</DialogDescription>
               </DialogHeader>
               
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label>Tittel *</Label>
+                  <Label>{t("auto.tittel_2")}</Label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="F.eks. Befaring byggeplass Storgata 1"
+                    placeholder={t("auto.f_eks_befaring_byggeplass_storgata_1")}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Lokasjon</Label>
+                  <Label>{t("auto.lokasjon")}</Label>
                   <Input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Adresse eller beskrivelse"
+                    placeholder={t("auto.adresse_eller_beskrivelse")}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Dato</Label>
+                  <Label>{t("auto.dato")}</Label>
                   <Input
                     type="date"
                     value={inspectionDate}
@@ -240,11 +241,11 @@ export default function Ks2Befaring() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Notater</Label>
+                  <Label>{t("auto.notater")}</Label>
                   <Textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Generelle observasjoner..."
+                    placeholder={t("auto.generelle_observasjoner")}
                     rows={3}
                   />
                 </div>
@@ -252,7 +253,7 @@ export default function Ks2Befaring() {
                 {/* Findings */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label>Funn / Avvik</Label>
+                    <Label>{t("auto.funn_avvik")}</Label>
                     <Button type="button" variant="outline" size="sm" onClick={addFinding}>
                       <Plus className="w-3 h-3 mr-1" />
                       Legg til
@@ -265,7 +266,7 @@ export default function Ks2Befaring() {
                         <Input
                           value={finding.description}
                           onChange={(e) => updateFinding(index, "description", e.target.value)}
-                          placeholder="Beskriv funnet..."
+                          placeholder={t("auto.beskriv_funnet")}
                         />
                         <Select
                           value={finding.severity}
@@ -275,9 +276,9 @@ export default function Ks2Befaring() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="lav">Lav</SelectItem>
-                            <SelectItem value="middels">Middels</SelectItem>
-                            <SelectItem value="høy">Høy</SelectItem>
+                            <SelectItem value="lav">{t("auto.lav")}</SelectItem>
+                            <SelectItem value="middels">{t("auto.middels")}</SelectItem>
+                            <SelectItem value="høy">{t("auto.hoey")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -297,7 +298,7 @@ export default function Ks2Befaring() {
               
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsNewDialogOpen(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button
                   onClick={() => createMutation.mutate()}
@@ -320,7 +321,7 @@ export default function Ks2Befaring() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{plannedInspections.length}</p>
-                  <p className="text-sm text-muted-foreground">Planlagte</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.planlagte")}</p>
                 </div>
               </div>
             </CardContent>
@@ -334,7 +335,7 @@ export default function Ks2Befaring() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{completedInspections.length}</p>
-                  <p className="text-sm text-muted-foreground">Fullførte</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.fullfoerte")}</p>
                 </div>
               </div>
             </CardContent>
@@ -348,7 +349,7 @@ export default function Ks2Befaring() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{inspections.length}</p>
-                  <p className="text-sm text-muted-foreground">Totalt</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.totalt")}</p>
                 </div>
               </div>
             </CardContent>
@@ -358,17 +359,17 @@ export default function Ks2Befaring() {
         {/* Inspections List */}
         <Card>
           <CardHeader>
-            <CardTitle>Befaringer</CardTitle>
-            <CardDescription>Oversikt over alle befaringer</CardDescription>
+            <CardTitle>{t("auto.befaringer")}</CardTitle>
+            <CardDescription>{t("auto.oversikt_over_alle_befaringer")}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Laster...</div>
+              <div className="text-center py-8 text-muted-foreground">{t("auto.laster")}</div>
             ) : inspections.length === 0 ? (
               <div className="text-center py-12">
                 <ClipboardCheck className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen befaringer ennå</h3>
-                <p className="text-muted-foreground mb-4">Opprett din første befaring for å komme i gang</p>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_befaringer_ennaa")}</h3>
+                <p className="text-muted-foreground mb-4">{t("auto.opprett_din_foerste_befaring_for_aa_komm")}</p>
                 <Button onClick={() => setIsNewDialogOpen(true)}>
                   <Plus className="w-4 h-4 mr-2" />
                   Ny befaring
@@ -458,33 +459,33 @@ export default function Ks2Befaring() {
             {selectedInspection && (
               <div className="space-y-4 py-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Status</span>
+                  <span className="text-sm text-muted-foreground">{t("auto.status_2")}</span>
                   {getStatusBadge(selectedInspection.status)}
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Dato</span>
+                    <span className="text-muted-foreground">{t("auto.dato")}</span>
                     <p className="font-medium">
                       {format(new Date(selectedInspection.inspection_date), "d. MMMM yyyy", { locale: nb })}
                     </p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Inspektør</span>
+                    <span className="text-muted-foreground">{t("auto.inspektoer")}</span>
                     <p className="font-medium">{selectedInspection.created_by_name}</p>
                   </div>
                 </div>
                 
                 {selectedInspection.location && (
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Lokasjon</span>
+                    <span className="text-muted-foreground">{t("auto.lokasjon")}</span>
                     <p className="font-medium">{selectedInspection.location}</p>
                   </div>
                 )}
                 
                 {selectedInspection.notes && (
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Notater</span>
+                    <span className="text-muted-foreground">{t("auto.notater")}</span>
                     <p className="mt-1">{selectedInspection.notes}</p>
                   </div>
                 )}
@@ -529,7 +530,7 @@ export default function Ks2Befaring() {
                 </Button>
               )}
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
-                Lukk
+                {t("auto.lukk")}
               </Button>
             </DialogFooter>
           </DialogContent>

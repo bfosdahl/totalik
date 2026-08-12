@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 import * as XLSX from "xlsx";
+import { t } from "@/i18n/t";
 
 interface ParsedCompany {
   orgNumber: string;
@@ -269,21 +270,21 @@ export function BulkCompanyImportDialog({
     try {
       const companies = await parseExcelFile(file);
       if (companies.length === 0) {
-        toast.error("Ingen gyldige bedrifter funnet i filen");
+        toast.error(t("auto.ingen_gyldige_bedrifter_funnet_i_filen"));
         return;
       }
       setParsedCompanies(companies);
       setStep("preview");
     } catch (error) {
       console.error("Error parsing file:", error);
-      toast.error("Kunne ikke lese filen. Sjekk at det er en gyldig Excel-fil.");
+      toast.error(t("auto.kunne_ikke_lese_filen_sjekk_at_det_er_en"));
     }
   };
 
   const handleImport = async () => {
     const validCompanies = parsedCompanies.filter((c) => c.isValid);
     if (validCompanies.length === 0) {
-      toast.error("Ingen gyldige bedrifter å importere");
+      toast.error(t("auto.ingen_gyldige_bedrifter_aa_importere"));
       return;
     }
 
@@ -473,7 +474,7 @@ export function BulkCompanyImportDialog({
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
               <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
               <p className="text-sm text-muted-foreground mb-4">
-                Last opp Excel-fil fra Nextcom eller lignende system
+                {t("auto.last_opp_excel_fil_fra_nextcom_eller_lig")}
               </p>
               <Label htmlFor="file-upload" className="cursor-pointer">
                 <Button asChild>
@@ -493,14 +494,14 @@ export function BulkCompanyImportDialog({
             </div>
 
             <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium">Forventede kolonner:</p>
+              <p className="text-sm font-medium">{t("auto.forventede_kolonner")}</p>
               <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• Customer_OrgNumber - Organisasjonsnummer</li>
-                <li>• Customer_Company - Bedriftsnavn</li>
-                <li>• Customer_Adress, Customer_HouseNumber - Adresse</li>
-                <li>• Customer_ZipCode, Customer_PostalArea - Postnr/Sted</li>
-                <li>• Customer_Email - E-post</li>
-                <li>• Customer_Phone/Customer_CellPhone - Telefon</li>
+                <li>{t("auto.customer_orgnumber_organisasjonsnummer")}</li>
+                <li>{t("auto.customer_company_bedriftsnavn")}</li>
+                <li>{t("auto.customer_adress_customer_housenumber_adr")}</li>
+                <li>{t("auto.customer_zipcode_customer_postalarea_pos")}</li>
+                <li>{t("auto.customer_email_e_post")}</li>
+                <li>{t("auto.customer_phone_customer_cellphone_telefo")}</li>
               </ul>
             </div>
           </div>
@@ -536,7 +537,7 @@ export function BulkCompanyImportDialog({
 
             {/* Module selection */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Moduler for nye bedrifter</Label>
+              <Label className="text-sm font-medium">{t("auto.moduler_for_nye_bedrifter")}</Label>
               <div className="flex gap-4 flex-wrap">
                 {MODULE_OPTIONS.map((module) => (
                   <div key={module.type} className="flex items-center gap-2">
@@ -558,10 +559,10 @@ export function BulkCompanyImportDialog({
               <User className="w-4 h-4 text-muted-foreground shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-medium">
-                  Bedriftsadmin opprettes automatisk
+                  {t("auto.bedriftsadmin_opprettes_automatisk")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Alle bedrifter med e-post får en admin-bruker og innloggingslenke. Bedrifter uten e-post importeres uten bruker.
+                  {t("auto.alle_bedrifter_med_e_post_faar_en_admin_")}
                 </p>
               </div>
             </div>
@@ -575,7 +576,7 @@ export function BulkCompanyImportDialog({
                   {kurslisensCount} kunder har kun kurslisens og vil IKKE bli importert
                 </p>
                 <p className="text-xs text-orange-600 dark:text-orange-500 mt-1">
-                  Kurslisens-kunder skal ikke ha tilgang til Total-IK. Disse er automatisk blokkert.
+                  {t("auto.kurslisens_kunder_skal_ikke_ha_tilgang_t")}
                 </p>
               </div>
             )}
@@ -585,11 +586,11 @@ export function BulkCompanyImportDialog({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px]">Status</TableHead>
-                    <TableHead>Org.nr</TableHead>
-                    <TableHead>Bedrift</TableHead>
-                    <TableHead className="hidden md:table-cell">Produkt</TableHead>
-                    <TableHead className="hidden lg:table-cell">E-post</TableHead>
+                    <TableHead className="w-[80px]">{t("auto.status_2")}</TableHead>
+                    <TableHead>{t("auto.org_nr")}</TableHead>
+                    <TableHead>{t("auto.bedrift")}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t("auto.produkt")}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{t("auto.e_post_2")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -611,7 +612,7 @@ export function BulkCompanyImportDialog({
                           </Badge>
                         ) : company.isKurslisensOnly ? (
                           <Badge variant="outline" className="text-xs border-orange-500 text-orange-600">
-                            Kurslisens
+                            {t("auto.kurslisens")}
                           </Badge>
                         ) : (
                           <Badge variant="destructive" className="text-xs">
@@ -629,7 +630,7 @@ export function BulkCompanyImportDialog({
                         {company.productName || "-"}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-sm text-muted-foreground max-w-[180px] truncate">
-                        {company.email || <span className="text-amber-500 text-xs">Mangler</span>}
+                        {company.email || <span className="text-amber-500 text-xs">{t("auto.mangler")}</span>}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -640,7 +641,7 @@ export function BulkCompanyImportDialog({
             {/* Actions */}
             <div className="flex justify-between gap-4 pt-2">
               <Button variant="outline" onClick={resetDialog}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={handleImport} disabled={validCount === 0}>
                 Importer {validCount} bedrifter
@@ -652,7 +653,7 @@ export function BulkCompanyImportDialog({
         {step === "importing" && (
           <div className="py-8 space-y-6">
             <div className="text-center space-y-2">
-              <p className="text-lg font-medium">Importerer bedrifter...</p>
+              <p className="text-lg font-medium">{t("auto.importerer_bedrifter")}</p>
               <p className="text-sm text-muted-foreground">
                 {importProgress}% ferdig
               </p>
@@ -682,10 +683,10 @@ export function BulkCompanyImportDialog({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[80px]">Status</TableHead>
-                    <TableHead>Org.nr</TableHead>
-                    <TableHead>Bedrift</TableHead>
-                    <TableHead>Melding</TableHead>
+                    <TableHead className="w-[80px]">{t("auto.status_2")}</TableHead>
+                    <TableHead>{t("auto.org_nr")}</TableHead>
+                    <TableHead>{t("auto.bedrift")}</TableHead>
+                    <TableHead>{t("auto.melding")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -714,7 +715,7 @@ export function BulkCompanyImportDialog({
             </ScrollArea>
 
             <div className="flex justify-end pt-2">
-              <Button onClick={handleClose}>Lukk</Button>
+              <Button onClick={handleClose}>{t("auto.lukk")}</Button>
             </div>
           </div>
         )}

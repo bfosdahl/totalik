@@ -28,6 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 interface Company {
   id: string;
@@ -196,7 +197,7 @@ export function BulkUserImportDialog({
     if (!file) return;
 
     if (!file.name.endsWith(".csv")) {
-      toast({ title: "Feil", description: "Vennligst last opp en CSV-fil", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.vennligst_last_opp_en_csv_fil"), variant: "destructive" });
       return;
     }
 
@@ -209,7 +210,7 @@ export function BulkUserImportDialog({
         setStep("preview");
       } else {
         toast({ 
-          title: "Feil i CSV-fil", 
+          title: t("auto.feil_i_csv_fil"), 
           description: users[0]?.error || "Kunne ikke parse CSV-filen", 
           variant: "destructive" 
         });
@@ -221,13 +222,13 @@ export function BulkUserImportDialog({
 
   const handleImport = useCallback(async () => {
     if (!selectedCompanyId) {
-      toast({ title: "Velg bedrift", description: "Du må velge en bedrift for brukerne", variant: "destructive" });
+      toast({ title: t("auto.velg_bedrift"), description: t("auto.du_maa_velge_en_bedrift_for_brukerne"), variant: "destructive" });
       return;
     }
 
     const validUsers = parsedUsers.filter(u => u.valid);
     if (validUsers.length === 0) {
-      toast({ title: "Ingen gyldige brukere", description: "Det er ingen gyldige brukere å importere", variant: "destructive" });
+      toast({ title: t("auto.ingen_gyldige_brukere"), description: t("auto.det_er_ingen_gyldige_brukere_aa_importer"), variant: "destructive" });
       return;
     }
 
@@ -260,7 +261,7 @@ export function BulkUserImportDialog({
 
       if (data.summary) {
         toast({
-          title: "Import fullført",
+          title: t("auto.import_fullfoert"),
           description: `${data.summary.success} av ${data.summary.total} brukere ble opprettet`,
         });
       }
@@ -268,7 +269,7 @@ export function BulkUserImportDialog({
       onSuccess();
     } catch (error: any) {
       console.error("Import error:", error);
-      toast({ title: "Importfeil", description: error.message, variant: "destructive" });
+      toast({ title: t("auto.importfeil"), description: error.message, variant: "destructive" });
       setStep("preview");
     }
   }, [selectedCompanyId, parsedUsers, defaultRole, toast, onSuccess]);
@@ -295,7 +296,7 @@ export function BulkUserImportDialog({
             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
               <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-sm text-muted-foreground mb-4">
-                Last opp en CSV-fil med brukere. Filen må inneholde minst en e-post-kolonne.
+                {t("auto.last_opp_en_csv_fil_med_brukere_filen_ma")}
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Button asChild>
@@ -318,9 +319,9 @@ export function BulkUserImportDialog({
             </div>
 
             <div className="bg-muted/50 rounded-lg p-4">
-              <h4 className="font-medium mb-2">CSV-format</h4>
+              <h4 className="font-medium mb-2">{t("auto.csv_format")}</h4>
               <p className="text-sm text-muted-foreground mb-2">
-                Filen må ha en header-rad med kolonnenavn. Støttede kolonner:
+                {t("auto.filen_maa_ha_en_header_rad_med_kolonnena")}
               </p>
               <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                 <li><code className="bg-muted px-1 rounded">email</code> eller <code className="bg-muted px-1 rounded">e-post</code> (påkrevd)</li>
@@ -341,10 +342,10 @@ export function BulkUserImportDialog({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Bedrift *</Label>
+                <Label>{t("auto.bedrift_2")}</Label>
                 <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg bedrift" />
+                    <SelectValue placeholder={t("auto.velg_bedrift")} />
                   </SelectTrigger>
                   <SelectContent>
                     {companies.map((company) => (
@@ -356,14 +357,14 @@ export function BulkUserImportDialog({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Standard rolle</Label>
+                <Label>{t("auto.standard_rolle")}</Label>
                 <Select value={defaultRole} onValueChange={(v) => setDefaultRole(v as "user" | "company_admin")}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user">Bruker</SelectItem>
-                    <SelectItem value="company_admin">Bedriftsadmin</SelectItem>
+                    <SelectItem value="user">{t("auto.bruker")}</SelectItem>
+                    <SelectItem value="company_admin">{t("auto.bedriftsadmin")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -373,9 +374,9 @@ export function BulkUserImportDialog({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Status</TableHead>
-                    <TableHead>E-post</TableHead>
-                    <TableHead>Navn</TableHead>
+                    <TableHead>{t("auto.status_2")}</TableHead>
+                    <TableHead>{t("auto.e_post_2")}</TableHead>
+                    <TableHead>{t("auto.navn_2")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -406,7 +407,7 @@ export function BulkUserImportDialog({
 
             <div className="flex justify-between pt-2">
               <Button variant="outline" onClick={() => setStep("upload")}>
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button 
                 onClick={handleImport} 
@@ -422,7 +423,7 @@ export function BulkUserImportDialog({
           <div className="py-8 space-y-4">
             <Progress value={importProgress} className="w-full" />
             <p className="text-center text-muted-foreground">
-              Oppretter brukere... Vennligst vent.
+              {t("auto.oppretter_brukere_vennligst_vent")}
             </p>
           </div>
         )}
@@ -438,9 +439,9 @@ export function BulkUserImportDialog({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Status</TableHead>
-                    <TableHead>E-post</TableHead>
-                    <TableHead>Melding</TableHead>
+                    <TableHead>{t("auto.status_2")}</TableHead>
+                    <TableHead>{t("auto.e_post_2")}</TableHead>
+                    <TableHead>{t("auto.melding")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -456,7 +457,7 @@ export function BulkUserImportDialog({
                       <TableCell className="font-mono text-sm">{result.email}</TableCell>
                       <TableCell>
                         {result.success ? (
-                          <span className="text-green-600">Opprettet</span>
+                          <span className="text-green-600">{t("auto.opprettet_2")}</span>
                         ) : (
                           <span className="text-destructive">{result.error}</span>
                         )}
@@ -468,7 +469,7 @@ export function BulkUserImportDialog({
             </ScrollArea>
 
             <div className="flex justify-end pt-2">
-              <Button onClick={handleClose}>Lukk</Button>
+              <Button onClick={handleClose}>{t("auto.lukk")}</Button>
             </div>
           </div>
         )}

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 interface HmsGoal {
   id: string;
@@ -120,12 +121,12 @@ export default function Ks2HmsPlan() {
     if (!newGoal.trim()) return;
     setGoals([...goals, { id: Date.now().toString(), text: newGoal, isPredefined: false }]);
     setNewGoal("");
-    toast.success("Mål lagt til");
+    toast.success(t("auto.maal_lagt_til"));
   };
 
   const removeGoal = (id: string) => {
     setGoals(goals.filter(g => g.id !== id));
-    toast.success("Mål fjernet");
+    toast.success(t("auto.maal_fjernet"));
   };
 
   const updateResponsible = (index: number, name: string) => {
@@ -166,10 +167,10 @@ export default function Ks2HmsPlan() {
         setExistingId(data.id);
       }
 
-      toast.success("HMS-plan lagret");
+      toast.success(t("auto.hms_plan_lagret"));
     } catch (error: any) {
       console.error("Error saving HMS plan:", error);
-      toast.error("Kunne ikke lagre HMS-plan: " + (error.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_lagre_hms_plan") + (error.message || "Ukjent feil"));
     } finally {
       setIsSaving(false);
     }
@@ -192,8 +193,8 @@ export default function Ks2HmsPlan() {
             <FileText className="h-6 w-6 text-emerald-500" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">HMS-plan</h2>
-            <p className="text-muted-foreground">Helse, miljø og sikkerhet for prosjektet</p>
+            <h2 className="text-2xl font-bold">{t("auto.hms_plan")}</h2>
+            <p className="text-muted-foreground">{t("auto.helse_miljoe_og_sikkerhet_for_prosjektet")}</p>
           </div>
         </div>
         <Button 
@@ -210,7 +211,7 @@ export default function Ks2HmsPlan() {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Fremdrift</CardTitle>
+            <CardTitle className="text-lg">{t("auto.fremdrift")}</CardTitle>
             <Badge className={totalProgress === 100 ? "bg-emerald-500" : "bg-amber-500"}>
               {totalProgress}% fullført
             </Badge>
@@ -221,15 +222,15 @@ export default function Ks2HmsPlan() {
           <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
             <div className="flex items-center gap-2">
               <div className={`h-2 w-2 rounded-full ${progress.goals === 100 ? 'bg-emerald-500' : 'bg-muted'}`} />
-              <span>Mål</span>
+              <span>{t("auto.maal")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className={`h-2 w-2 rounded-full ${progress.organization === 100 ? 'bg-emerald-500' : 'bg-muted'}`} />
-              <span>Organisering</span>
+              <span>{t("auto.organisering")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className={`h-2 w-2 rounded-full ${progress.measures === 100 ? 'bg-emerald-500' : 'bg-muted'}`} />
-              <span>Tiltak</span>
+              <span>{t("auto.tiltak")}</span>
             </div>
           </div>
         </CardContent>
@@ -240,15 +241,15 @@ export default function Ks2HmsPlan() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="goals" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
-            <span className="hidden sm:inline">Mål</span>
+            <span className="hidden sm:inline">{t("auto.maal")}</span>
           </TabsTrigger>
           <TabsTrigger value="organization" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Organisering</span>
+            <span className="hidden sm:inline">{t("auto.organisering")}</span>
           </TabsTrigger>
           <TabsTrigger value="measures" className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4" />
-            <span className="hidden sm:inline">Tiltak</span>
+            <span className="hidden sm:inline">{t("auto.tiltak")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -261,7 +262,7 @@ export default function Ks2HmsPlan() {
                 HMS-mål for prosjektet
               </CardTitle>
               <CardDescription>
-                Definer konkrete mål for helse, miljø og sikkerhet i prosjektet
+                {t("auto.definer_konkrete_maal_for_helse_miljoe_o")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -276,7 +277,7 @@ export default function Ks2HmsPlan() {
                       <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                       <span>{goal.text}</span>
                       {goal.isPredefined && (
-                        <Badge variant="outline" className="text-xs">Standard</Badge>
+                        <Badge variant="outline" className="text-xs">{t("auto.standard")}</Badge>
                       )}
                     </div>
                     {!goal.isPredefined && (
@@ -296,7 +297,7 @@ export default function Ks2HmsPlan() {
               {/* Add New Goal */}
               <div className="flex gap-2">
                 <Input
-                  placeholder="Legg til nytt HMS-mål..."
+                  placeholder={t("auto.legg_til_nytt_hms_maal")}
                   value={newGoal}
                   onChange={(e) => setNewGoal(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addGoal()}
@@ -318,7 +319,7 @@ export default function Ks2HmsPlan() {
                 HMS-organisering
               </CardTitle>
               <CardDescription>
-                Definer roller og ansvar for HMS i prosjektet
+                {t("auto.definer_roller_og_ansvar_for_hms_i_prosj")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -330,9 +331,9 @@ export default function Ks2HmsPlan() {
                       <p className="text-sm text-muted-foreground">{resp.responsibilities}</p>
                     </div>
                     <div className="sm:w-64">
-                      <Label className="text-sm">Navn</Label>
+                      <Label className="text-sm">{t("auto.navn_2")}</Label>
                       <UserSelect
-                        placeholder="Velg person..."
+                        placeholder={t("auto.velg_person_2")}
                         value={resp.name}
                         onValueChange={(val) => updateResponsible(index, val)}
                         className="mt-1"
@@ -354,14 +355,14 @@ export default function Ks2HmsPlan() {
                 Generelle HMS-tiltak
               </CardTitle>
               <CardDescription>
-                Beskriv generelle tiltak for å ivareta HMS i prosjektet
+                {t("auto.beskriv_generelle_tiltak_for_aa_ivareta_")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Textarea
                 value={generalMeasures}
                 onChange={(e) => setGeneralMeasures(e.target.value)}
-                placeholder="Beskriv HMS-tiltak..."
+                placeholder={t("auto.beskriv_hms_tiltak")}
                 className="min-h-[300px]"
               />
             </CardContent>

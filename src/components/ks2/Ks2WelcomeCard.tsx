@@ -12,6 +12,7 @@ import {
   Lightbulb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface Step {
   id: string;
@@ -25,24 +26,24 @@ interface Step {
 const allOnboardingSteps: Step[] = [
   {
     id: "maler",
-    title: "Velg maler",
-    description: "Velg sjekklister og rutiner for prosjektet",
+    title: t("auto.velg_maler"),
+    description: t("auto.velg_sjekklister_og_rutiner_for_prosjekt"),
     icon: FileText,
     path: "/maler",
     color: "text-purple-500 bg-purple-500/10"
   },
   {
     id: "prosjektinfo",
-    title: "Fyll ut prosjektinfo",
-    description: "Legg inn adresse, kontaktpersoner og detaljer",
+    title: t("auto.fyll_ut_prosjektinfo"),
+    description: t("auto.legg_inn_adresse_kontaktpersoner_og_deta"),
     icon: ClipboardCheck,
     path: "/prosjektinfo",
     color: "text-blue-500 bg-blue-500/10"
   },
   {
     id: "underleverandorer",
-    title: "Legg til underleverandører",
-    description: "Registrer UE med dokumentasjon",
+    title: t("auto.legg_til_underleverandoerer"),
+    description: t("auto.registrer_ue_med_dokumentasjon"),
     icon: Users,
     path: "/underleverandorer",
     color: "text-emerald-500 bg-emerald-500/10"
@@ -118,7 +119,7 @@ export function Ks2WelcomeCard({
       <button
         onClick={handleDismiss}
         className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="Lukk"
+        aria-label={t("auto.lukk")}
       >
         <X className="h-4 w-4" />
       </button>
@@ -180,7 +181,7 @@ export function Ks2WelcomeCard({
                   </p>
                 </div>
                 {isCompleted ? (
-                  <span className="text-xs text-green-500 font-medium">✓ Ferdig</span>
+                  <span className="text-xs text-green-500 font-medium">{t("auto.ferdig_2")}</span>
                 ) : (
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 )}
@@ -193,7 +194,7 @@ export function Ks2WelcomeCard({
         <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
           <Lightbulb className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">Tips:</span> På mobil kan du trykke på <span className="font-medium text-primary">+</span>-knappen nederst til høyre for raske handlinger.
+            <span className="font-medium text-foreground">{t("auto.tips_2")}</span> {t("auto.paa_mobil_kan_du_trykke_paa")} <span className="font-medium text-primary">+</span>{t("auto.knappen_nederst_til_hoeyre_for_raske_han")}
           </p>
         </div>
       </CardContent>

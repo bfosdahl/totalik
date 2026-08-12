@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import type { Json } from "@/integrations/supabase/types";
+import { t } from "@/i18n/t";
 
 interface Finding {
   id: string;
@@ -49,17 +50,17 @@ interface SimpleProjectInspectionsProps {
 }
 
 const WEATHER_OPTIONS = [
-  { value: "sol", label: "☀️ Sol" },
-  { value: "skyet", label: "☁️ Skyet" },
-  { value: "regn", label: "🌧️ Regn" },
-  { value: "sno", label: "❄️ Snø" },
-  { value: "vind", label: "💨 Vind" },
+  { value: "sol", label: t("auto.sol") },
+  { value: "skyet", label: t("auto.skyet") },
+  { value: "regn", label: t("auto.regn") },
+  { value: "sno", label: t("auto.snoe") },
+  { value: "vind", label: t("auto.vind") },
 ];
 
 const SEVERITY_CONFIG = {
   ok: { label: "OK", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle2 },
-  minor: { label: "Mindre", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Clock },
-  major: { label: "Viktig", color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400", icon: AlertTriangle },
+  minor: { label: t("auto.mindre"), color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Clock },
+  major: { label: t("auto.viktig_2"), color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400", icon: AlertTriangle },
 };
 
 export function SimpleProjectInspections({ projectId }: SimpleProjectInspectionsProps) {
@@ -125,12 +126,12 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["simple-project-inspections", projectId] });
-      toast.success("Befaring opprettet");
+      toast.success(t("auto.befaring_opprettet"));
       resetForm();
       setIsDialogOpen(false);
     },
     onError: () => {
-      toast.error("Kunne ikke opprette befaring");
+      toast.error(t("auto.kunne_ikke_opprette_befaring"));
     },
   });
 
@@ -153,13 +154,13 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["simple-project-inspections", projectId] });
-      toast.success("Befaring oppdatert");
+      toast.success(t("auto.befaring_oppdatert"));
       resetForm();
       setIsDialogOpen(false);
       setEditingId(null);
     },
     onError: () => {
-      toast.error("Kunne ikke oppdatere befaring");
+      toast.error(t("auto.kunne_ikke_oppdatere_befaring"));
     },
   });
 
@@ -177,7 +178,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["simple-project-inspections", projectId] });
-      toast.success("Befaring fullført");
+      toast.success(t("auto.befaring_fullfoert"));
     },
   });
 
@@ -192,7 +193,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["simple-project-inspections", projectId] });
-      toast.success("Befaring slettet");
+      toast.success(t("auto.befaring_slettet"));
     },
   });
 
@@ -224,7 +225,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
 
   const handleSubmit = () => {
     if (!formData.title.trim()) {
-      toast.error("Tittel er påkrevd");
+      toast.error(t("auto.tittel_er_paakrevd"));
       return;
     }
 
@@ -296,11 +297,11 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
             <div className="space-y-4 py-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2 space-y-2">
-                  <Label>Tittel *</Label>
+                  <Label>{t("auto.tittel_2")}</Label>
                   <Input
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="F.eks. Oppstartsbefaring, Statusbefaring..."
+                    placeholder={t("auto.f_eks_oppstartsbefaring_statusbefaring")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -324,7 +325,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                     onValueChange={(value) => setFormData(prev => ({ ...prev, weather: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg vær..." />
+                      <SelectValue placeholder={t("auto.velg_vaer")} />
                     </SelectTrigger>
                     <SelectContent>
                       {WEATHER_OPTIONS.map(opt => (
@@ -343,7 +344,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                   <Input
                     value={formData.location}
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="Byggeplass, adresse..."
+                    placeholder={t("auto.byggeplass_adresse")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -354,17 +355,17 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                   <Input
                     value={formData.participants}
                     onChange={(e) => setFormData(prev => ({ ...prev, participants: e.target.value }))}
-                    placeholder="Navn, kommaseparert"
+                    placeholder={t("auto.navn_kommaseparert")}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Generelle notater</Label>
+                <Label>{t("auto.generelle_notater")}</Label>
                 <Textarea
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Generelle observasjoner fra befaringen..."
+                  placeholder={t("auto.generelle_observasjoner_fra_befaringen")}
                   rows={3}
                 />
               </div>
@@ -372,7 +373,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
               {/* Findings */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>Observasjoner / Funn</Label>
+                  <Label>{t("auto.observasjoner_funn")}</Label>
                   <Button type="button" variant="outline" size="sm" onClick={addFinding}>
                     <Plus className="w-4 h-4 mr-1" />
                     Legg til
@@ -396,7 +397,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                               <Input
                                 value={finding.description}
                                 onChange={(e) => updateFinding(finding.id, "description", e.target.value)}
-                                placeholder="Beskriv observasjonen..."
+                                placeholder={t("auto.beskriv_observasjonen")}
                               />
                               <div className="grid gap-2 sm:grid-cols-2">
                                 <Select
@@ -407,9 +408,9 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="ok">✅ OK</SelectItem>
-                                    <SelectItem value="minor">⚠️ Mindre merknad</SelectItem>
-                                    <SelectItem value="major">🚨 Viktig å følge opp</SelectItem>
+                                    <SelectItem value="ok">{t("auto.ok_2")}</SelectItem>
+                                    <SelectItem value="minor">{t("auto.mindre_merknad")}</SelectItem>
+                                    <SelectItem value="major">{t("auto.viktig_aa_foelge_opp")}</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <Input
@@ -438,7 +439,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button 
                   onClick={handleSubmit}
@@ -459,9 +460,9 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
         <Card>
           <CardContent className="py-12 text-center">
             <ClipboardCheck className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h4 className="font-medium mb-2">Ingen befaringer ennå</h4>
+            <h4 className="font-medium mb-2">{t("auto.ingen_befaringer_ennaa")}</h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Opprett din første befaring for å dokumentere observasjoner på byggeplassen.
+              {t("auto.opprett_din_foerste_befaring_for_aa_doku")}
             </p>
             <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
               <Plus className="w-4 h-4" />

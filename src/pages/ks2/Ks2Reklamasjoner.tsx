@@ -43,30 +43,31 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Claims, Claim } from "@/hooks/useKsModule2Claims";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const CATEGORIES = [
-  { value: "construction", label: "Byggteknisk" },
-  { value: "electrical", label: "Elektrisk" },
-  { value: "plumbing", label: "Rørlegger" },
-  { value: "surface", label: "Overflate/maling" },
-  { value: "doors_windows", label: "Dører/vinduer" },
-  { value: "roofing", label: "Tak" },
-  { value: "outdoor", label: "Utomhus" },
-  { value: "other", label: "Annet" },
+  { value: "construction", label: t("auto.byggteknisk") },
+  { value: "electrical", label: t("auto.elektrisk") },
+  { value: "plumbing", label: t("auto.roerlegger") },
+  { value: "surface", label: t("auto.overflate_maling") },
+  { value: "doors_windows", label: t("auto.doerer_vinduer") },
+  { value: "roofing", label: t("auto.tak") },
+  { value: "outdoor", label: t("auto.utomhus") },
+  { value: "other", label: t("auto.annet") },
 ];
 
 const PRIORITIES = [
-  { value: "low", label: "Lav", color: "bg-muted text-muted-foreground" },
-  { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
-  { value: "high", label: "Høy", color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
-  { value: "critical", label: "Kritisk", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
+  { value: "low", label: t("auto.lav"), color: "bg-muted text-muted-foreground" },
+  { value: "medium", label: t("auto.medium"), color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
+  { value: "high", label: t("auto.hoey"), color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
+  { value: "critical", label: t("auto.kritisk"), color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
 ];
 
 const STATUSES = [
-  { value: "open", label: "Åpen", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  { value: "in_progress", label: "Under arbeid", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
-  { value: "resolved", label: "Løst", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-  { value: "rejected", label: "Avvist", color: "bg-muted text-muted-foreground" },
+  { value: "open", label: t("auto.aapen"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+  { value: "in_progress", label: t("auto.under_arbeid"), color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
+  { value: "resolved", label: t("auto.loest"), color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  { value: "rejected", label: t("auto.avvist"), color: "bg-muted text-muted-foreground" },
 ];
 
 export default function Ks2Reklamasjoner() {
@@ -250,8 +251,8 @@ export default function Ks2Reklamasjoner() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Reklamasjoner</h1>
-          <p className="text-muted-foreground">Håndter reklamasjoner etter overlevering</p>
+          <h1 className="text-2xl font-bold">{t("auto.reklamasjoner")}</h1>
+          <p className="text-muted-foreground">{t("auto.haandter_reklamasjoner_etter_overleverin")}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -268,25 +269,25 @@ export default function Ks2Reklamasjoner() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Tittel *</Label>
+                <Label>{t("auto.tittel_2")}</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Kort beskrivelse av reklamasjonen"
+                  placeholder={t("auto.kort_beskrivelse_av_reklamasjonen")}
                 />
               </div>
               <div>
-                <Label>Beskrivelse</Label>
+                <Label>{t("auto.beskrivelse")}</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Detaljert beskrivelse..."
+                  placeholder={t("auto.detaljert_beskrivelse")}
                   rows={3}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Kategori</Label>
+                  <Label>{t("auto.kategori")}</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(v) => setFormData({ ...formData, category: v })}
@@ -304,7 +305,7 @@ export default function Ks2Reklamasjoner() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Prioritet</Label>
+                  <Label>{t("auto.prioritet")}</Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(v) => setFormData({ ...formData, priority: v })}
@@ -324,15 +325,15 @@ export default function Ks2Reklamasjoner() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Rapportert av</Label>
+                  <Label>{t("auto.rapportert_av_2")}</Label>
                   <Input
                     value={formData.reported_by}
                     onChange={(e) => setFormData({ ...formData, reported_by: e.target.value })}
-                    placeholder="Kundens navn"
+                    placeholder={t("auto.kundens_navn")}
                   />
                 </div>
                 <div>
-                  <Label>Rapportert dato</Label>
+                  <Label>{t("auto.rapportert_dato")}</Label>
                   <Input
                     type="date"
                     value={formData.reported_date}
@@ -342,7 +343,7 @@ export default function Ks2Reklamasjoner() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Frist</Label>
+                  <Label>{t("auto.frist_2")}</Label>
                   <Input
                     type="date"
                     value={formData.deadline}
@@ -360,16 +361,16 @@ export default function Ks2Reklamasjoner() {
                 </div>
               </div>
               <div>
-                <Label>Ansvarlig</Label>
+                <Label>{t("auto.ansvarlig_2")}</Label>
                 <Input
                   value={formData.responsible_name}
                   onChange={(e) => setFormData({ ...formData, responsible_name: e.target.value })}
-                  placeholder="Hvem skal utbedre"
+                  placeholder={t("auto.hvem_skal_utbedre")}
                 />
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button
                   onClick={handleSubmit}
@@ -393,7 +394,7 @@ export default function Ks2Reklamasjoner() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.open}</p>
-                <p className="text-xs text-muted-foreground">Åpne</p>
+                <p className="text-xs text-muted-foreground">{t("auto.aapne")}</p>
               </div>
             </div>
           </CardContent>
@@ -406,7 +407,7 @@ export default function Ks2Reklamasjoner() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.inProgress}</p>
-                <p className="text-xs text-muted-foreground">Under arbeid</p>
+                <p className="text-xs text-muted-foreground">{t("auto.under_arbeid")}</p>
               </div>
             </div>
           </CardContent>
@@ -419,7 +420,7 @@ export default function Ks2Reklamasjoner() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.resolved}</p>
-                <p className="text-xs text-muted-foreground">Løst</p>
+                <p className="text-xs text-muted-foreground">{t("auto.loest")}</p>
               </div>
             </div>
           </CardContent>
@@ -444,7 +445,7 @@ export default function Ks2Reklamasjoner() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk i reklamasjoner..."
+            placeholder={t("auto.soek_i_reklamasjoner")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -452,10 +453,10 @@ export default function Ks2Reklamasjoner() {
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Filtrer status" />
+            <SelectValue placeholder={t("auto.filtrer_status")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle statuser</SelectItem>
+            <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
             {STATUSES.map((status) => (
               <SelectItem key={status.value} value={status.value}>
                 {status.label}
@@ -473,13 +474,13 @@ export default function Ks2Reklamasjoner() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nr</TableHead>
-                  <TableHead>Tittel</TableHead>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead>Prioritet</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Frist</TableHead>
-                  <TableHead className="text-right">Handlinger</TableHead>
+                  <TableHead>{t("auto.nr")}</TableHead>
+                  <TableHead>{t("auto.tittel")}</TableHead>
+                  <TableHead>{t("auto.kategori")}</TableHead>
+                  <TableHead>{t("auto.prioritet")}</TableHead>
+                  <TableHead>{t("auto.status_2")}</TableHead>
+                  <TableHead>{t("auto.frist_2")}</TableHead>
+                  <TableHead className="text-right">{t("auto.handlinger")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -587,7 +588,7 @@ export default function Ks2Reklamasjoner() {
         <Card>
           <CardContent className="py-12 text-center">
             <FileWarning className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Ingen reklamasjoner</h3>
+            <h3 className="text-lg font-medium mb-2">{t("auto.ingen_reklamasjoner")}</h3>
             <p className="text-muted-foreground mb-4">
               {searchQuery || statusFilter !== "all"
                 ? "Ingen reklamasjoner matcher søket"
@@ -607,15 +608,15 @@ export default function Ks2Reklamasjoner() {
       <Dialog open={resolveDialogOpen} onOpenChange={setResolveDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Lukk reklamasjon</DialogTitle>
+            <DialogTitle>{t("auto.lukk_reklamasjon")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Løsning / tiltak utført *</Label>
+              <Label>{t("auto.loesning_tiltak_utfoert")}</Label>
               <Textarea
                 value={resolveData.resolution}
                 onChange={(e) => setResolveData({ ...resolveData, resolution: e.target.value })}
-                placeholder="Beskriv hva som ble gjort for å løse reklamasjonen..."
+                placeholder={t("auto.beskriv_hva_som_ble_gjort_for_aa_loese_r")}
                 rows={4}
               />
             </div>
@@ -630,7 +631,7 @@ export default function Ks2Reklamasjoner() {
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setResolveDialogOpen(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button
                 onClick={handleResolve}
@@ -647,15 +648,15 @@ export default function Ks2Reklamasjoner() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett reklamasjon?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_reklamasjon")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne reklamasjonen? Handlingen kan ikke angres.
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne__9")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

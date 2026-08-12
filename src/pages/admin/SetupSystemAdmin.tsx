@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { t } from "@/i18n/t";
 
 const signupSchema = z.object({
   email: z.string().email("Ugyldig e-postadresse"),
@@ -99,13 +100,13 @@ export default function SetupSystemAdmin() {
       } else {
         setSuccess(true);
         toast({
-          title: "System Admin opprettet!",
-          description: "Du kan nå logge inn med denne kontoen.",
+          title: t("auto.system_admin_opprettet"),
+          description: t("auto.du_kan_naa_logge_inn_med_denne_kontoen"),
         });
       }
     } catch (error: any) {
       toast({
-        title: "Feil",
+        title: t("auto.feil"),
         description: error.message,
         variant: "destructive",
       });
@@ -133,12 +134,12 @@ export default function SetupSystemAdmin() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-success/20 mb-4">
             <Check className="w-8 h-8 text-success" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">System Admin finnes</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">{t("auto.system_admin_finnes")}</h1>
           <p className="text-white/60 mb-6">
-            En systemadministrator er allerede konfigurert.
+            {t("auto.en_systemadministrator_er_allerede_konfi")}
           </p>
           <Button onClick={() => navigate("/auth")} variant="secondary">
-            Gå til innlogging
+            {t("auto.gaa_til_innlogging")}
           </Button>
         </motion.div>
       </div>
@@ -156,12 +157,12 @@ export default function SetupSystemAdmin() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-success/20 mb-4">
             <Check className="w-8 h-8 text-success" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">System Admin opprettet!</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">{t("auto.system_admin_opprettet")}</h1>
           <p className="text-white/60 mb-6">
-            Du kan nå logge inn med din nye konto.
+            {t("auto.du_kan_naa_logge_inn_med_din_nye_konto")}
           </p>
           <Button onClick={() => navigate("/auth")} variant="secondary">
-            Gå til innlogging
+            {t("auto.gaa_til_innlogging")}
           </Button>
         </motion.div>
       </div>
@@ -180,8 +181,8 @@ export default function SetupSystemAdmin() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-warning/20 mb-4">
             <Shield className="w-8 h-8 text-warning" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Første oppstart</h1>
-          <p className="text-white/60 text-sm mt-1">Opprett din første System Admin</p>
+          <h1 className="text-2xl font-bold text-white">{t("auto.foerste_oppstart")}</h1>
+          <p className="text-white/60 text-sm mt-1">{t("auto.opprett_din_foerste_system_admin")}</p>
         </div>
 
         {/* Form card */}
@@ -189,7 +190,7 @@ export default function SetupSystemAdmin() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">Fornavn</Label>
+                <Label htmlFor="firstName">{t("auto.fornavn")}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
@@ -197,7 +198,7 @@ export default function SetupSystemAdmin() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     className="pl-10"
-                    placeholder="Ola"
+                    placeholder={t("auto.ola")}
                   />
                 </div>
                 {errors.firstName && (
@@ -205,12 +206,12 @@ export default function SetupSystemAdmin() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Etternavn</Label>
+                <Label htmlFor="lastName">{t("auto.etternavn")}</Label>
                 <Input
                   id="lastName"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Nordmann"
+                  placeholder={t("auto.nordmann")}
                 />
                 {errors.lastName && (
                   <p className="text-xs text-destructive">{errors.lastName}</p>
@@ -219,7 +220,7 @@ export default function SetupSystemAdmin() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-post</Label>
+              <Label htmlFor="email">{t("auto.e_post_2")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -237,7 +238,7 @@ export default function SetupSystemAdmin() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Passord</Label>
+              <Label htmlFor="password">{t("auto.passord")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -267,7 +268,7 @@ export default function SetupSystemAdmin() {
           </form>
 
           <p className="mt-4 text-xs text-muted-foreground text-center">
-            Denne siden vises kun når ingen System Admin finnes i systemet.
+            {t("auto.denne_siden_vises_kun_naar_ingen_system_")}
           </p>
         </div>
       </motion.div>

@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FdvRiskAssessment, FdvBuilding, FDV_RISK_CATEGORY_LABELS, FdvRiskCategory } from "@/types/fdv";
+import { t } from "@/i18n/t";
 
 const riskSchema = z.object({
   building_id: z.string().min(1, "Velg et bygg"),
@@ -99,9 +100,9 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
   const riskScore = probability * consequence;
 
   const getRiskLevel = (score: number) => {
-    if (score >= 15) return { label: "Høy risiko", color: "text-red-600" };
-    if (score >= 8) return { label: "Middels risiko", color: "text-yellow-600" };
-    return { label: "Lav risiko", color: "text-green-600" };
+    if (score >= 15) return { label: t("auto.hoey_risiko"), color: "text-red-600" };
+    if (score >= 8) return { label: t("auto.middels_risiko"), color: "text-yellow-600" };
+    return { label: t("auto.lav_risiko"), color: "text-green-600" };
   };
 
   const riskLevel = getRiskLevel(riskScore);
@@ -135,11 +136,11 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
               name="building_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bygg *</FormLabel>
+                  <FormLabel>{t("auto.bygg")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg bygg" />
+                        <SelectValue placeholder={t("auto.velg_bygg")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -160,11 +161,11 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Risikokategori *</FormLabel>
+                  <FormLabel>{t("auto.risikokategori")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg kategori" />
+                        <SelectValue placeholder={t("auto.velg_kategori")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -183,10 +184,10 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
               name="hazard_description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beskrivelse av fare *</FormLabel>
+                  <FormLabel>{t("auto.beskrivelse_av_fare")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Beskriv faren/risikoen..."
+                      placeholder={t("auto.beskriv_faren_risikoen")}
                       className="min-h-[80px]"
                       {...field} 
                     />
@@ -201,10 +202,10 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
               name="existing_measures"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Eksisterende tiltak</FormLabel>
+                  <FormLabel>{t("auto.eksisterende_tiltak")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Beskriv tiltak som allerede er på plass..."
+                      placeholder={t("auto.beskriv_tiltak_som_allerede_er_paa_plass")}
                       {...field} 
                     />
                   </FormControl>
@@ -216,7 +217,7 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
             {/* Risk Matrix */}
             <div className="p-4 bg-muted/50 rounded-lg space-y-4">
               <div className="text-center">
-                <span className="text-sm text-muted-foreground">Risikoscore: </span>
+                <span className="text-sm text-muted-foreground">{t("auto.risikoscore")} </span>
                 <span className={`text-2xl font-bold ${riskLevel.color}`}>{riskScore}</span>
                 <span className={`ml-2 text-sm ${riskLevel.color}`}>({riskLevel.label})</span>
               </div>
@@ -266,9 +267,9 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
                 name="responsible_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ansvarlig</FormLabel>
+                    <FormLabel>{t("auto.ansvarlig_2")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Navn" {...field} />
+                      <Input placeholder={t("auto.navn_2")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -280,7 +281,7 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
                 name="revision_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Revisjonsdato</FormLabel>
+                    <FormLabel>{t("auto.revisjonsdato")}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -295,17 +296,17 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>{t("auto.status_2")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg status" />
+                        <SelectValue placeholder={t("auto.velg_status")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="aktiv">Aktiv</SelectItem>
-                      <SelectItem value="under_behandling">Under behandling</SelectItem>
-                      <SelectItem value="lukket">Lukket</SelectItem>
+                      <SelectItem value="aktiv">{t("auto.aktiv")}</SelectItem>
+                      <SelectItem value="under_behandling">{t("auto.under_behandling")}</SelectItem>
+                      <SelectItem value="lukket">{t("auto.lukket")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -318,9 +319,9 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notater</FormLabel>
+                  <FormLabel>{t("auto.notater")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Eventuelle notater..." {...field} />
+                    <Textarea placeholder={t("auto.eventuelle_notater")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -329,7 +330,7 @@ export function FdvRiskDialog({ open, onOpenChange, risk, buildings, onSave }: F
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button type="submit">
                 {risk ? "Lagre endringer" : "Opprett risikovurdering"}

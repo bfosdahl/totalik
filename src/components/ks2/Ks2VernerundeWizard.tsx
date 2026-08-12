@@ -31,6 +31,7 @@ import { VernerundeTemplate, VernerundeCheckpoint } from "@/hooks/useKsModule2Ve
 import { KsModule2Vernerunde, Finding, CheckpointResponse } from "@/hooks/useKsModule2Vernerunder";
 import { SignaturePad } from "./SignaturePad";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { t } from "@/i18n/t";
 
 interface Props {
   open: boolean;
@@ -136,7 +137,7 @@ export default function Ks2VernerundeWizard({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm text-muted-foreground">Fremgang</p>
+          <p className="text-sm text-muted-foreground">{t("auto.fremgang")}</p>
           <p className="text-2xl font-bold">{progress}%</p>
         </div>
         <div className="flex gap-4 text-sm">
@@ -207,7 +208,7 @@ export default function Ks2VernerundeWizard({
                               }`}
                             >
                               <XCircle className="h-5 w-5 sm:h-4 sm:w-4" />
-                              <span className="text-xs font-medium">Avvik</span>
+                              <span className="text-xs font-medium">{t("auto.avvik")}</span>
                             </button>
                             <button
                               type="button"
@@ -225,7 +226,7 @@ export default function Ks2VernerundeWizard({
 
                           {response?.status === "avvik" && (
                             <Textarea
-                              placeholder="Beskriv avviket..."
+                              placeholder={t("auto.beskriv_avviket")}
                               value={response.comment}
                               onChange={(e) => handleCommentChange(checkpoint.id, e.target.value)}
                               className="mt-2"
@@ -257,7 +258,7 @@ export default function Ks2VernerundeWizard({
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-green-600" />
             <div>
-              <p className="font-medium text-green-800 dark:text-green-200">Ingen funn registrert</p>
+              <p className="font-medium text-green-800 dark:text-green-200">{t("auto.ingen_funn_registrert")}</p>
               <p className="text-sm text-green-600 dark:text-green-400">
                 Vernerunden kan fullføres uten funn. Klikk "Neste" for å gå til signatur.
               </p>
@@ -270,24 +271,24 @@ export default function Ks2VernerundeWizard({
         <h4 className="font-medium mb-3">Legg til nytt funn (valgfritt)</h4>
         <div className="space-y-3">
           <div>
-            <Label>Beskrivelse *</Label>
+            <Label>{t("auto.beskrivelse_2")}</Label>
             <Textarea
-              placeholder="Beskriv funnet..."
+              placeholder={t("auto.beskriv_funnet")}
               value={newFinding.description}
               onChange={(e) => setNewFinding(prev => ({ ...prev, description: e.target.value }))}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Ansvarlig</Label>
+              <Label>{t("auto.ansvarlig_2")}</Label>
               <Input
-                placeholder="Hvem skal følge opp?"
+                placeholder={t("auto.hvem_skal_foelge_opp")}
                 value={newFinding.responsible}
                 onChange={(e) => setNewFinding(prev => ({ ...prev, responsible: e.target.value }))}
               />
             </div>
             <div>
-              <Label>Frist</Label>
+              <Label>{t("auto.frist_2")}</Label>
               <Input
                 type="date"
                 value={newFinding.deadline}
@@ -304,7 +305,7 @@ export default function Ks2VernerundeWizard({
               }
             />
             <Label htmlFor="escalate" className="cursor-pointer">
-              Opprett som HMS-avvik
+              {t("auto.opprett_som_hms_avvik")}
             </Label>
           </div>
           <Button onClick={handleAddFinding} disabled={!newFinding.description}>
@@ -353,49 +354,49 @@ export default function Ks2VernerundeWizard({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4">
-          <h4 className="font-medium mb-2">Sammendrag</h4>
+          <h4 className="font-medium mb-2">{t("auto.sammendrag")}</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span>Sjekkpunkter gjennomgått:</span>
+              <span>{t("auto.sjekkpunkter_gjennomgaatt")}</span>
               <span className="font-medium">{completedCount} / {checkpoints.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-green-600">OK:</span>
+              <span className="text-green-600">{t("auto.ok")}</span>
               <span className="font-medium">{responses.filter(r => r.status === "ok").length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-red-600">Avvik:</span>
+              <span className="text-red-600">{t("auto.avvik_2")}</span>
               <span className="font-medium">{avvikCount}</span>
             </div>
             <div className="flex justify-between">
-              <span>Ikke aktuelt:</span>
+              <span>{t("auto.ikke_aktuelt_2")}</span>
               <span className="font-medium">{responses.filter(r => r.status === "na").length}</span>
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between">
-              <span>Funn registrert:</span>
+              <span>{t("auto.funn_registrert")}</span>
               <span className="font-medium">{findings.length}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-red-600">Eskalert til HMS-avvik:</span>
+              <span className="text-red-600">{t("auto.eskalert_til_hms_avvik")}</span>
               <span className="font-medium">{findings.filter(f => f.escalate_to_avvik).length}</span>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
-          <h4 className="font-medium mb-2">Vernerunde info</h4>
+          <h4 className="font-medium mb-2">{t("auto.vernerunde_info")}</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span>Nummer:</span>
+              <span>{t("auto.nummer_2")}</span>
               <span className="font-medium">{vernerunde.vernerunde_number}</span>
             </div>
             <div className="flex justify-between">
-              <span>Planlagt dato:</span>
+              <span>{t("auto.planlagt_dato")}</span>
               <span className="font-medium">{vernerunde.scheduled_date}</span>
             </div>
             <div className="flex justify-between">
-              <span>Mal:</span>
+              <span>{t("auto.mal_2")}</span>
               <span className="font-medium">{template?.template_name || "Ingen mal"}</span>
             </div>
           </div>
@@ -403,16 +404,16 @@ export default function Ks2VernerundeWizard({
       </div>
 
       <div>
-        <Label>Inspektør navn *</Label>
+        <Label>{t("auto.inspektoer_navn")}</Label>
         <Input
           value={inspectorName}
           onChange={(e) => setInspectorName(e.target.value)}
-          placeholder="Ditt navn"
+          placeholder={t("auto.ditt_navn")}
         />
       </div>
 
       <div>
-        <Label>Signatur *</Label>
+        <Label>{t("auto.signatur_3")}</Label>
         <SignaturePad
           onSave={(sig) => setSignature(sig)}
           existingSignature={signature}
@@ -438,9 +439,9 @@ export default function Ks2VernerundeWizard({
         ))}
       </div>
       <div className="flex justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-muted-foreground mb-4">
-        <span className={step === 1 ? "text-foreground font-medium" : ""}>Sjekkliste</span>
-        <span className={step === 2 ? "text-foreground font-medium" : ""}>Funn</span>
-        <span className={step === 3 ? "text-foreground font-medium" : ""}>Signatur</span>
+        <span className={step === 1 ? "text-foreground font-medium" : ""}>{t("auto.sjekkliste")}</span>
+        <span className={step === 2 ? "text-foreground font-medium" : ""}>{t("auto.funn")}</span>
+        <span className={step === 3 ? "text-foreground font-medium" : ""}>{t("auto.signatur")}</span>
       </div>
 
       <ScrollArea className="h-[350px] sm:h-[450px] pr-2">
@@ -459,13 +460,13 @@ export default function Ks2VernerundeWizard({
           className="flex-1 sm:flex-none h-12 sm:h-10"
         >
           <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Tilbake</span>
-          <span className="sm:hidden">Tilbake</span>
+          <span className="hidden sm:inline">{t("auto.tilbake")}</span>
+          <span className="sm:hidden">{t("auto.tilbake")}</span>
         </Button>
         
         {step < 3 ? (
           <Button onClick={() => setStep(s => s + 1)} className="flex-1 sm:flex-none h-12 sm:h-10">
-            Neste
+            {t("auto.neste")}
             <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
           </Button>
         ) : (
@@ -479,8 +480,8 @@ export default function Ks2VernerundeWizard({
             ) : (
               <CheckCircle2 className="h-4 w-4 mr-2" />
             )}
-            <span className="hidden sm:inline">Fullfør vernerunde</span>
-            <span className="sm:hidden">Fullfør</span>
+            <span className="hidden sm:inline">{t("auto.fullfoer_vernerunde")}</span>
+            <span className="sm:hidden">{t("auto.fullfoer")}</span>
           </Button>
         )}
       </div>

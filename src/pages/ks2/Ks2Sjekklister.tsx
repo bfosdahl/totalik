@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ImportCompanyChecklistsDialog } from "@/components/ks2/ImportCompanyChecklistsDialog";
 import type { CompanyKsChecklistTemplate } from "@/hooks/useCompanyKsChecklistTemplates";
 import { FolderInput } from "lucide-react";
+import { t } from "@/i18n/t";
 
 export default function Ks2Sjekklister() {
   const { projectId } = useParams();
@@ -110,10 +111,10 @@ export default function Ks2Sjekklister() {
         project: projectRes.data as any,
         company: companyRes.data as any,
       });
-      toast({ title: "PDF lastet ned" });
+      toast({ title: t("auto.pdf_lastet_ned") });
     } catch (error) {
       console.error("Error downloading checklist PDF:", error);
-      toast({ title: "Feil", description: "Kunne ikke laste ned PDF", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_laste_ned_pdf"), variant: "destructive" });
     } finally {
       setIsDownloading(false);
     }
@@ -122,13 +123,13 @@ export default function Ks2Sjekklister() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500/10 text-green-600 border-green-500/20">Fullført</Badge>;
+        return <Badge className="bg-green-500/10 text-green-600 border-green-500/20">{t("auto.fullfoert")}</Badge>;
       case "in_progress":
-        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Pågår</Badge>;
+        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">{t("auto.paagaar")}</Badge>;
       case "rejected":
-        return <Badge className="bg-red-500/10 text-red-600 border-red-500/20">Avvist</Badge>;
+        return <Badge className="bg-red-500/10 text-red-600 border-red-500/20">{t("auto.avvist")}</Badge>;
       default:
-        return <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">Planlagt</Badge>;
+        return <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">{t("auto.planlagt")}</Badge>;
     }
   };
 
@@ -227,7 +228,7 @@ export default function Ks2Sjekklister() {
                   onCheckedChange={() => handleToggleIncludeInReport(checklist)}
                 />
                 <Label htmlFor={`include-report-${checklist.id}`} className="text-xs cursor-pointer whitespace-nowrap">
-                  I rapport
+                  {t("auto.i_rapport")}
                 </Label>
               </div>
               <div className="flex gap-1">
@@ -235,7 +236,7 @@ export default function Ks2Sjekklister() {
                   <Eye className="h-4 w-4 mr-1" />
                   Se
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title="Rediger fullført sjekkliste">
+                <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title={t("auto.rediger_fullfoert_sjekkliste")}>
                   <Pencil className="h-4 w-4 mr-1" />
                   Rediger
                 </Button>
@@ -267,8 +268,8 @@ export default function Ks2Sjekklister() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Sjekklister & egenkontroller</h1>
-          <p className="text-muted-foreground">Maler, pågående og fullførte kontroller for prosjektet</p>
+          <h1 className="text-2xl font-bold">{t("auto.sjekklister_egenkontroller")}</h1>
+          <p className="text-muted-foreground">{t("auto.maler_paagaaende_og_fullfoerte_kontrolle")}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={() => setShowImport(true)}>
@@ -298,7 +299,7 @@ export default function Ks2Sjekklister() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{checklistTemplates.length}</p>
-                <p className="text-sm text-muted-foreground">Aktive maler</p>
+                <p className="text-sm text-muted-foreground">{t("auto.aktive_maler")}</p>
               </div>
             </div>
           </CardContent>
@@ -311,7 +312,7 @@ export default function Ks2Sjekklister() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{checklists.filter(c => c.status === 'in_progress' || c.status === 'planned').length}</p>
-                <p className="text-sm text-muted-foreground">Pågående</p>
+                <p className="text-sm text-muted-foreground">{t("auto.paagaaende")}</p>
               </div>
             </div>
           </CardContent>
@@ -324,7 +325,7 @@ export default function Ks2Sjekklister() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{checklists.filter(c => c.status === 'completed').length}</p>
-                <p className="text-sm text-muted-foreground">Fullførte</p>
+                <p className="text-sm text-muted-foreground">{t("auto.fullfoerte")}</p>
               </div>
             </div>
           </CardContent>
@@ -335,7 +336,7 @@ export default function Ks2Sjekklister() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Søk i sjekklister og maler..."
+          placeholder={t("auto.soek_i_sjekklister_og_maler")}
           className="pl-9"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -355,9 +356,9 @@ export default function Ks2Sjekklister() {
             <Card className="border-dashed">
               <CardContent className="py-12 text-center">
                 <Library className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">Ingen sjekkliste-maler valgt</h3>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_sjekkliste_maler_valgt")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Gå til Malbibliotek for å velge hvilke sjekklister som skal brukes i dette prosjektet
+                  {t("auto.gaa_til_malbibliotek_for_aa_velge_hvilke")}
                 </p>
                 <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
                   <Library className="h-4 w-4 mr-2" />
@@ -419,7 +420,7 @@ export default function Ks2Sjekklister() {
             <Card className="border-dashed">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen pågående sjekklister</p>
+                <p>{t("auto.ingen_paagaaende_sjekklister")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -433,7 +434,7 @@ export default function Ks2Sjekklister() {
             <Card className="border-dashed">
               <CardContent className="py-12 text-center text-muted-foreground">
                 <CheckCircle2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen fullførte sjekklister ennå</p>
+                <p>{t("auto.ingen_fullfoerte_sjekklister_ennaa")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -459,7 +460,7 @@ export default function Ks2Sjekklister() {
               )}
             </div>
             <div>
-              <h4 className="font-medium mb-2">Kontrollpunkter</h4>
+              <h4 className="font-medium mb-2">{t("auto.kontrollpunkter_2")}</h4>
               <div className="space-y-2">
                 {Array.isArray(previewTemplate?.checklist_template?.checkpoints) &&
                   previewTemplate.checklist_template.checkpoints.map((cp: any, idx: number) => (
@@ -511,7 +512,7 @@ export default function Ks2Sjekklister() {
               )}
 
               <div>
-                <h4 className="font-medium mb-2">Kontrollpunkter</h4>
+                <h4 className="font-medium mb-2">{t("auto.kontrollpunkter_2")}</h4>
                 <div className="space-y-2">
                   {Array.isArray(viewingChecklist.checklist_items) &&
                     viewingChecklist.checklist_items.map((item: any, idx: number) => (

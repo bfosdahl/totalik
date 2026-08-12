@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchGlobalChemicals, GlobalChemicalWithSds } from "@/hooks/useGlobalChemicalRegistry";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface GlobalChemicalSearchProps {
   onSelectChemical: (chemical: GlobalChemicalWithSds) => void;
@@ -68,7 +69,7 @@ export const GlobalChemicalSearch = ({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk etter produktnavn, CAS-nummer eller produsent..."
+            placeholder={t("auto.soek_etter_produktnavn_cas_nummer_eller_")}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -81,7 +82,7 @@ export const GlobalChemicalSearch = ({
           />
         </div>
         <Button onClick={handleSearch} disabled={searchQuery.length < 2}>
-          Søk
+          {t("auto.soek_2")}
         </Button>
       </div>
 
@@ -206,14 +207,14 @@ export const GlobalChemicalSearch = ({
                 <Plus className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="font-medium">Opprett nytt stoff</p>
+                <p className="font-medium">{t("auto.opprett_nytt_stoff")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Legg til et stoff som ikke finnes i registeret
+                  {t("auto.legg_til_et_stoff_som_ikke_finnes_i_regi")}
                 </p>
               </div>
             </div>
             <Button variant="outline" onClick={() => onCreateNew(searchQuery)}>
-              Opprett
+              {t("auto.opprett")}
             </Button>
           </CardContent>
         </Card>
@@ -224,10 +225,10 @@ export const GlobalChemicalSearch = ({
         <div className="text-center py-8 text-muted-foreground">
           <Search className="h-10 w-10 mx-auto mb-3 opacity-50" />
           <p className="text-sm">
-            Skriv minst 2 tegn for å søke i det globale stoffregisteret
+            {t("auto.skriv_minst_2_tegn_for_aa_soeke_i_det_gl")}
           </p>
           <p className="text-xs mt-1">
-            Du kan søke på produktnavn, CAS-nummer eller produsent
+            {t("auto.du_kan_soeke_paa_produktnavn_cas_nummer_")}
           </p>
         </div>
       )}

@@ -13,6 +13,7 @@ import { LANGUAGE_CONFIG, SupportedLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 import type { 
   CompanyGoal, 
   OrganizationData, 
@@ -87,7 +88,7 @@ export function TranslateHandbookDialog({
       setCurrentLanguage("no");
       setSelectedLanguage(null);
       setIsOpen(false);
-      toast.success("Tilbakestilt til norsk");
+      toast.success(t("auto.tilbakestilt_til_norsk"));
       return;
     }
 
@@ -178,8 +179,7 @@ export function TranslateHandbookDialog({
             Oversett hele håndboken
           </DialogTitle>
           <DialogDescription>
-            Velg språk for å oversette alt innhold i håndboken. Oversettelsen bruker AI 
-            og inkluderer mål, organisering, risikoer, tiltak og rutiner.
+            {t("auto.velg_spraak_for_aa_oversette_alt_innhold")}
           </DialogDescription>
         </DialogHeader>
 
@@ -198,7 +198,7 @@ export function TranslateHandbookDialog({
               <span className="text-xl">{LANGUAGE_CONFIG.no.flag}</span>
               <div className="text-left">
                 <p className="font-medium">{LANGUAGE_CONFIG.no.nativeName}</p>
-                <p className="text-xs text-muted-foreground">Original</p>
+                <p className="text-xs text-muted-foreground">{t("auto.original")}</p>
               </div>
             </div>
             {currentLanguage === "no" && <Check className="h-5 w-5 text-primary" />}
@@ -209,7 +209,7 @@ export function TranslateHandbookDialog({
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Oversett til</span>
+              <span className="bg-background px-2 text-muted-foreground">{t("auto.oversett_til")}</span>
             </div>
           </div>
 
@@ -250,15 +250,14 @@ export function TranslateHandbookDialog({
         {isTranslating && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Oversetter innhold med AI... Dette kan ta noen sekunder.</span>
+            <span>{t("auto.oversetter_innhold_med_ai_dette_kan_ta_n")}</span>
           </div>
         )}
 
         <div className="flex items-start gap-2 text-xs text-muted-foreground bg-warning/10 rounded-lg p-3">
           <AlertCircle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
           <span>
-            Oversettelsen vises kun i denne økten. Originalinnholdet på norsk forblir 
-            lagret i systemet.
+            {t("auto.oversettelsen_vises_kun_i_denne_oekten_o")}
           </span>
         </div>
       </DialogContent>

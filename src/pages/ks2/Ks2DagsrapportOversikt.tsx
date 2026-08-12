@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "custom";
 
@@ -192,7 +193,7 @@ export default function Ks2DagsrapportOversikt() {
     a.download = `dagsrapporter_${start}_${end}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("CSV lastet ned");
+    toast.success(t("auto.csv_lastet_ned"));
   };
 
   if (!canSee) {
@@ -200,7 +201,7 @@ export default function Ks2DagsrapportOversikt() {
       <AppLayout>
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            Du har ikke tilgang til dagsrapport-oversikten.
+            {t("auto.du_har_ikke_tilgang_til_dagsrapport_over")}
           </CardContent>
         </Card>
       </AppLayout>
@@ -217,7 +218,7 @@ export default function Ks2DagsrapportOversikt() {
               Dagsrapporter — oversikt
             </h1>
             <p className="text-muted-foreground mt-1">
-              Alle dagsrapporter på tvers av prosjekter. Følg opp hvem som har skrevet — og hvem som mangler.
+              {t("auto.alle_dagsrapporter_paa_tvers_av_prosjekt")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -244,19 +245,19 @@ export default function Ks2DagsrapportOversikt() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               <div>
-                <Label className="text-xs">Fra</Label>
+                <Label className="text-xs">{t("auto.fra")}</Label>
                 <Input type="date" value={start} onChange={(e) => { setPreset("custom"); setRange((r) => ({ ...r, start: e.target.value })); }} />
               </div>
               <div>
-                <Label className="text-xs">Til</Label>
+                <Label className="text-xs">{t("auto.til")}</Label>
                 <Input type="date" value={end} onChange={(e) => { setPreset("custom"); setRange((r) => ({ ...r, end: e.target.value })); }} />
               </div>
               <div>
-                <Label className="text-xs">Prosjekt</Label>
+                <Label className="text-xs">{t("auto.prosjekt")}</Label>
                 <Select value={projectFilter} onValueChange={setProjectFilter}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle prosjekter</SelectItem>
+                    <SelectItem value="all">{t("auto.alle_prosjekter")}</SelectItem>
                     {projects.map(([id, name]) => (
                       <SelectItem key={id} value={id}>{name}</SelectItem>
                     ))}
@@ -264,11 +265,11 @@ export default function Ks2DagsrapportOversikt() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">Person</Label>
+                <Label className="text-xs">{t("auto.person")}</Label>
                 <Select value={userFilter} onValueChange={setUserFilter}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle personer</SelectItem>
+                    <SelectItem value="all">{t("auto.alle_personer")}</SelectItem>
                     {users.map(([id, name]) => (
                       <SelectItem key={id} value={id}>{name}</SelectItem>
                     ))}
@@ -278,19 +279,19 @@ export default function Ks2DagsrapportOversikt() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Status</Label>
+                <Label className="text-xs">{t("auto.status_2")}</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle statuser</SelectItem>
-                    <SelectItem value="submitted">Innsendt</SelectItem>
-                    <SelectItem value="draft">Utkast</SelectItem>
+                    <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+                    <SelectItem value="submitted">{t("auto.innsendt")}</SelectItem>
+                    <SelectItem value="draft">{t("auto.utkast")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">Søk</Label>
-                <Input placeholder="Prosjekt, person, rapportnr..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                <Label className="text-xs">{t("auto.soek_2")}</Label>
+                <Input placeholder={t("auto.prosjekt_person_rapportnr")} value={search} onChange={(e) => setSearch(e.target.value)} />
               </div>
             </div>
           </CardContent>
@@ -298,9 +299,9 @@ export default function Ks2DagsrapportOversikt() {
 
         {/* Totals */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <SummaryCard label="Rapporter totalt" value={totals.total} loading={isLoading} icon={<FileText className="h-4 w-4" />} />
-          <SummaryCard label="Innsendt" value={totals.submitted} loading={isLoading} tone="success" icon={<CheckCircle2 className="h-4 w-4" />} />
-          <SummaryCard label="Utkast" value={totals.draft} loading={isLoading} tone="warning" icon={<Clock className="h-4 w-4" />} />
+          <SummaryCard label={t("auto.rapporter_totalt")} value={totals.total} loading={isLoading} icon={<FileText className="h-4 w-4" />} />
+          <SummaryCard label={t("auto.innsendt")} value={totals.submitted} loading={isLoading} tone="success" icon={<CheckCircle2 className="h-4 w-4" />} />
+          <SummaryCard label={t("auto.utkast")} value={totals.draft} loading={isLoading} tone="warning" icon={<Clock className="h-4 w-4" />} />
         </div>
 
         {/* Per person */}
@@ -314,17 +315,17 @@ export default function Ks2DagsrapportOversikt() {
             {isLoading ? (
               <div className="space-y-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div>
             ) : perUser.length === 0 ? (
-              <div className="py-6 text-center text-muted-foreground text-sm">Ingen rapporter i perioden</div>
+              <div className="py-6 text-center text-muted-foreground text-sm">{t("auto.ingen_rapporter_i_perioden")}</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                      <th className="py-2 px-2">Person</th>
-                      <th className="py-2 px-2 text-right">Totalt</th>
-                      <th className="py-2 px-2 text-right">Innsendt</th>
-                      <th className="py-2 px-2 text-right">Utkast</th>
-                      <th className="py-2 px-2">Siste rapport</th>
+                      <th className="py-2 px-2">{t("auto.person")}</th>
+                      <th className="py-2 px-2 text-right">{t("auto.totalt")}</th>
+                      <th className="py-2 px-2 text-right">{t("auto.innsendt")}</th>
+                      <th className="py-2 px-2 text-right">{t("auto.utkast")}</th>
+                      <th className="py-2 px-2">{t("auto.siste_rapport")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -357,16 +358,16 @@ export default function Ks2DagsrapportOversikt() {
             {isLoading ? (
               <div className="space-y-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div>
             ) : perProject.length === 0 ? (
-              <div className="py-6 text-center text-muted-foreground text-sm">Ingen rapporter i perioden</div>
+              <div className="py-6 text-center text-muted-foreground text-sm">{t("auto.ingen_rapporter_i_perioden")}</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                      <th className="py-2 px-2">Prosjekt</th>
-                      <th className="py-2 px-2 text-right">Totalt</th>
-                      <th className="py-2 px-2 text-right">Innsendt</th>
-                      <th className="py-2 px-2 text-right">Utkast</th>
+                      <th className="py-2 px-2">{t("auto.prosjekt")}</th>
+                      <th className="py-2 px-2 text-right">{t("auto.totalt")}</th>
+                      <th className="py-2 px-2 text-right">{t("auto.innsendt")}</th>
+                      <th className="py-2 px-2 text-right">{t("auto.utkast")}</th>
                       <th className="py-2 px-2 w-8"></th>
                     </tr>
                   </thead>
@@ -413,11 +414,11 @@ export default function Ks2DagsrapportOversikt() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                      <th className="py-2 px-2">Dato</th>
-                      <th className="py-2 px-2">Rapport</th>
-                      <th className="py-2 px-2">Prosjekt</th>
-                      <th className="py-2 px-2">Person</th>
-                      <th className="py-2 px-2">Status</th>
+                      <th className="py-2 px-2">{t("auto.dato")}</th>
+                      <th className="py-2 px-2">{t("auto.rapport")}</th>
+                      <th className="py-2 px-2">{t("auto.prosjekt")}</th>
+                      <th className="py-2 px-2">{t("auto.person")}</th>
+                      <th className="py-2 px-2">{t("auto.status_2")}</th>
                       <th className="py-2 px-2 w-8"></th>
                     </tr>
                   </thead>

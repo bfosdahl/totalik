@@ -31,6 +31,7 @@ import { useGlobalChemicalRegistry, GlobalChemicalWithSds } from "@/hooks/useGlo
 import { EditIkHmsChemicalDialog } from "@/components/stoffkartotek/EditIkHmsChemicalDialog";
 import { ChemicalRiskBadge } from "@/components/stoffkartotek/ChemicalRiskBadge";
 import { IkHmsChemicalRiskDialog } from "@/components/stoffkartotek/IkHmsChemicalRiskDialog";
+import { t } from "@/i18n/t";
 
 interface IkHmsStoffkartotek {
   id: string;
@@ -139,7 +140,7 @@ export default function IkHmsStoffkartotek() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
-      toast.success("Stoff lagt til i stoffkartoteket");
+      toast.success(t("auto.stoff_lagt_til_i_stoffkartoteket"));
       setIsCreateOpen(false);
       
       // If AI risk suggestion exists, auto-open risk assessment dialog
@@ -157,13 +158,13 @@ export default function IkHmsStoffkartotek() {
           created_at: data.created_at,
         };
         setRiskAssessmentProduct(newProduct);
-        toast.info("AI-risikovurdering er forhåndsutfylt. Gjennomgå og juster etter behov.");
+        toast.info(t("auto.ai_risikovurdering_er_forhaandsutfylt_gj"));
       }
       
       resetForm();
     },
     onError: () => {
-      toast.error("Kunne ikke legge til stoff");
+      toast.error(t("auto.kunne_ikke_legge_til_stoff"));
     },
   });
 
@@ -182,10 +183,10 @@ export default function IkHmsStoffkartotek() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
-      toast.success("Stoff oppdatert");
+      toast.success(t("auto.stoff_oppdatert"));
     },
     onError: () => {
-      toast.error("Kunne ikke oppdatere stoff");
+      toast.error(t("auto.kunne_ikke_oppdatere_stoff"));
     },
   });
 
@@ -201,12 +202,12 @@ export default function IkHmsStoffkartotek() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", company?.id, filterDepartmentId] });
-      toast.success("Stoff slettet");
+      toast.success(t("auto.stoff_slettet"));
       setIsDetailOpen(false);
       setSelectedProduct(null);
     },
     onError: () => {
-      toast.error("Kunne ikke slette stoff");
+      toast.error(t("auto.kunne_ikke_slette_stoff"));
     },
   });
 
@@ -225,7 +226,7 @@ export default function IkHmsStoffkartotek() {
   // Parse PDF using AI
   const handleParsePdf = async (file: File) => {
     if (!file || !file.name.toLowerCase().endsWith('.pdf')) {
-      toast.error("Velg en PDF-fil");
+      toast.error(t("auto.velg_en_pdf_fil"));
       return;
     }
 
@@ -257,13 +258,13 @@ export default function IkHmsStoffkartotek() {
       );
 
       if (response.status === 429) {
-        toast.error("For mange forespørsler. Vennligst vent litt og prøv igjen.");
+        toast.error(t("auto.for_mange_forespoersler_vennligst_vent_l"));
         setIsParsing(false);
         return;
       }
 
       if (response.status === 402) {
-        toast.error("AI-kreditter oppbrukt. Kontakt administrator.");
+        toast.error(t("auto.ai_kreditter_oppbrukt_kontakt_administra"));
         setIsParsing(false);
         return;
       }
@@ -292,10 +293,10 @@ export default function IkHmsStoffkartotek() {
         setAiRiskSuggestion(result.data.risk_assessment);
       }
 
-      toast.success("PDF analysert! Sjekk og juster informasjonen før du lagrer. AI-risikovurdering er også klar.");
+      toast.success(t("auto.pdf_analysert_sjekk_og_juster_informasjo"));
     } catch (error) {
       console.error("Error parsing PDF:", error);
-      toast.error("Kunne ikke lese PDF. Fyll ut manuelt.");
+      toast.error(t("auto.kunne_ikke_lese_pdf_fyll_ut_manuelt"));
     } finally {
       setIsParsing(false);
     }
@@ -315,7 +316,7 @@ export default function IkHmsStoffkartotek() {
 
   const handleCreate = async () => {
     if (!formData.product_name.trim()) {
-      toast.error("Produktnavn er påkrevd");
+      toast.error(t("auto.produktnavn_er_paakrevd"));
       return;
     }
 
@@ -334,7 +335,7 @@ export default function IkHmsStoffkartotek() {
 
       if (uploadError) {
         console.error("Upload error:", uploadError);
-        toast.error("Kunne ikke laste opp SDS-fil");
+        toast.error(t("auto.kunne_ikke_laste_opp_sds_fil"));
         return;
       }
 
@@ -350,7 +351,7 @@ export default function IkHmsStoffkartotek() {
       .createSignedUrl(filePath, 3600);
 
     if (error || !data?.signedUrl) {
-      toast.error("Kunne ikke åpne SDS-fil");
+      toast.error(t("auto.kunne_ikke_aapne_sds_fil"));
       return;
     }
 
@@ -363,7 +364,7 @@ export default function IkHmsStoffkartotek() {
       .createSignedUrl(filePath, 3600);
 
     if (error || !data?.signedUrl) {
-      toast.error("Kunne ikke laste ned SDS-fil");
+      toast.error(t("auto.kunne_ikke_laste_ned_sds_fil"));
       return;
     }
 
@@ -388,7 +389,7 @@ export default function IkHmsStoffkartotek() {
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      toast.error("Kunne ikke laste opp SDS-fil");
+      toast.error(t("auto.kunne_ikke_laste_opp_sds_fil"));
       return;
     }
 
@@ -420,9 +421,9 @@ export default function IkHmsStoffkartotek() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Stoffkartotek</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("auto.stoffkartotek")}</h1>
             <p className="text-muted-foreground mt-1">
-              Oversikt over kjemikalier og farlige stoffer
+              {t("auto.oversikt_over_kjemikalier_og_farlige_sto")}
             </p>
           </div>
           <Dialog open={isCreateOpen} onOpenChange={(open) => {
@@ -437,7 +438,7 @@ export default function IkHmsStoffkartotek() {
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Legg til nytt stoff</DialogTitle>
+                <DialogTitle>{t("auto.legg_til_nytt_stoff")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 {/* AI PDF parsing info box - prominent at top */}
@@ -451,9 +452,7 @@ export default function IkHmsStoffkartotek() {
                         Har du sikkerhetsdatablad (SDS)?
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Last opp PDF-en først! Vår AI leser automatisk produktnavn, 
-                        produsent, fareklasser og annen informasjon fra dokumentet. 
-                        Du slipper å fylle ut manuelt.
+                        {t("auto.last_opp_pdf_en_foerst_vaar_ai_leser_aut")}
                       </p>
                     </div>
                   </div>
@@ -497,29 +496,29 @@ export default function IkHmsStoffkartotek() {
                 </div>
 
                 <div>
-                  <Label htmlFor="product_name">Produktnavn *</Label>
+                  <Label htmlFor="product_name">{t("auto.produktnavn")}</Label>
                   <Input
                     id="product_name"
                     value={formData.product_name}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, product_name: e.target.value }))
                     }
-                    placeholder="F.eks. Aceton"
+                    placeholder={t("auto.f_eks_aceton")}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="manufacturer">Produsent/leverandør</Label>
+                  <Label htmlFor="manufacturer">{t("auto.produsent_leverandoer_2")}</Label>
                   <Input
                     id="manufacturer"
                     value={formData.manufacturer}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, manufacturer: e.target.value }))
                     }
-                    placeholder="F.eks. Jotun"
+                    placeholder={t("auto.f_eks_jotun")}
                   />
                 </div>
                 <div>
-                  <Label>Fareklasser</Label>
+                  <Label>{t("auto.fareklasser")}</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {DANGER_CLASSES.map((dc) => (
                       <Badge
@@ -534,25 +533,25 @@ export default function IkHmsStoffkartotek() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="location">Lagringssted</Label>
+                  <Label htmlFor="location">{t("auto.lagringssted")}</Label>
                   <Input
                     id="location"
                     value={formData.location}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, location: e.target.value }))
                     }
-                    placeholder="F.eks. Kjemikalieskap A"
+                    placeholder={t("auto.f_eks_kjemikalieskap_a")}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="notes">Notater</Label>
+                  <Label htmlFor="notes">{t("auto.notater")}</Label>
                   <Textarea
                     id="notes"
                     value={formData.notes}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, notes: e.target.value }))
                     }
-                    placeholder="Tilleggsinformasjon..."
+                    placeholder={t("auto.tilleggsinformasjon")}
                     rows={3}
                   />
                 </div>
@@ -585,7 +584,7 @@ export default function IkHmsStoffkartotek() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Søk etter stoff..."
+              placeholder={t("auto.soek_etter_stoff")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -610,7 +609,7 @@ export default function IkHmsStoffkartotek() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <FlaskConical className="w-12 h-12 text-muted-foreground/50 mb-4" />
-              <h3 className="font-medium text-lg">Ingen stoffer registrert</h3>
+              <h3 className="font-medium text-lg">{t("auto.ingen_stoffer_registrert")}</h3>
               <p className="text-muted-foreground text-center mt-1">
                 {searchQuery
                   ? "Ingen stoffer matcher søket ditt"
@@ -690,13 +689,13 @@ export default function IkHmsStoffkartotek() {
               <div className="space-y-4 pt-4">
                 {selectedProduct.manufacturer && (
                   <div>
-                    <Label className="text-muted-foreground">Produsent/leverandør</Label>
+                    <Label className="text-muted-foreground">{t("auto.produsent_leverandoer_2")}</Label>
                     <p className="font-medium">{selectedProduct.manufacturer}</p>
                   </div>
                 )}
                 {selectedProduct.danger_classes.length > 0 && (
                   <div>
-                    <Label className="text-muted-foreground">Fareklasser</Label>
+                    <Label className="text-muted-foreground">{t("auto.fareklasser")}</Label>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {selectedProduct.danger_classes.map((dc) => (
                         <Badge key={dc} className={getDangerClassColor(dc)} variant="secondary">
@@ -708,13 +707,13 @@ export default function IkHmsStoffkartotek() {
                 )}
                 {selectedProduct.location && (
                   <div>
-                    <Label className="text-muted-foreground">Lagringssted</Label>
+                    <Label className="text-muted-foreground">{t("auto.lagringssted")}</Label>
                     <p className="font-medium">{selectedProduct.location}</p>
                   </div>
                 )}
                 {selectedProduct.notes && (
                   <div>
-                    <Label className="text-muted-foreground">Notater</Label>
+                    <Label className="text-muted-foreground">{t("auto.notater")}</Label>
                     <p className="whitespace-pre-wrap">{selectedProduct.notes}</p>
                   </div>
                 )}
@@ -748,7 +747,7 @@ export default function IkHmsStoffkartotek() {
                     </div>
                   ) : (
                     <div className="mt-2">
-                      <p className="text-sm text-muted-foreground mb-2">Ingen SDS lastet opp</p>
+                      <p className="text-sm text-muted-foreground mb-2">{t("auto.ingen_sds_lastet_opp")}</p>
                       <Label htmlFor="upload-sds" className="cursor-pointer">
                         <div className="flex items-center gap-2 text-sm text-primary hover:underline">
                           <Upload className="w-4 h-4" />
@@ -805,7 +804,7 @@ export default function IkHmsStoffkartotek() {
                       {deleteMutation.isPending ? "Sletter..." : "Slett"}
                     </Button>
                     <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
-                      Lukk
+                      {t("auto.lukk")}
                     </Button>
                   </div>
                 </div>
@@ -907,7 +906,7 @@ function GlobalChemicalSearchDialog({
       setLocation("");
     } catch (error) {
       console.error("Import error:", error);
-      toast.error("Kunne ikke importere stoffet");
+      toast.error(t("auto.kunne_ikke_importere_stoffet"));
     } finally {
       setIsImporting(false);
     }
@@ -928,7 +927,7 @@ function GlobalChemicalSearchDialog({
             Søk i felles stoffregister
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Her kan du finne stoffer som andre bedrifter har registrert og legge dem til i ditt eget kartotek
+            {t("auto.her_kan_du_finne_stoffer_som_andre_bedri")}
           </p>
         </DialogHeader>
 
@@ -973,7 +972,7 @@ function GlobalChemicalSearchDialog({
               <Label htmlFor="import-location">Lagringssted (valgfritt)</Label>
               <Input
                 id="import-location"
-                placeholder="F.eks. Kjemikalskap A, Lager 2"
+                placeholder={t("auto.f_eks_kjemikalskap_a_lager_2")}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               />
@@ -981,7 +980,7 @@ function GlobalChemicalSearchDialog({
 
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={handleImport} disabled={isImporting}>
                 {isImporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

@@ -27,6 +27,7 @@ import { RoutineLibraryDialog } from "@/components/routines/RoutineLibraryDialog
 import { AiRoutineDialog } from "@/components/routines/AiRoutineDialog";
 import type { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
+import { t } from "@/i18n/t";
 import {
   Dialog,
   DialogContent,
@@ -48,12 +49,12 @@ import {
 } from "@/components/ui/collapsible";
 
 const CATEGORIES = [
-  { value: "general", label: "Generelt" },
-  { value: "quality", label: "Kvalitetssikring" },
-  { value: "documentation", label: "Dokumentasjon" },
-  { value: "control", label: "Kontroll" },
-  { value: "subcontractor", label: "Underleverandør" },
-  { value: "deviation", label: "Avvikshåndtering" },
+  { value: "general", label: t("auto.generelt") },
+  { value: "quality", label: t("auto.kvalitetssikring") },
+  { value: "documentation", label: t("auto.dokumentasjon") },
+  { value: "control", label: t("auto.kontroll") },
+  { value: "subcontractor", label: t("auto.underleverandoer") },
+  { value: "deviation", label: t("auto.avvikshaandtering") },
 ];
 
 export default function IkKsRutiner() {
@@ -134,9 +135,9 @@ export default function IkKsRutiner() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">KS-Rutiner</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("auto.ks_rutiner")}</h1>
             <p className="text-muted-foreground mt-1">
-              Bedriftens kvalitetssikringsrutiner som brukes i prosjekter
+              {t("auto.bedriftens_kvalitetssikringsrutiner_som_")}
             </p>
           </div>
           
@@ -161,19 +162,19 @@ export default function IkKsRutiner() {
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle>Opprett ny rutine</DialogTitle>
+                  <DialogTitle>{t("auto.opprett_ny_rutine")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
-                    <label className="text-sm font-medium">Navn</label>
+                    <label className="text-sm font-medium">{t("auto.navn_2")}</label>
                     <Input
                       value={newRoutine.routine_name}
                       onChange={(e) => setNewRoutine({ ...newRoutine, routine_name: e.target.value })}
-                      placeholder="F.eks. Rutine for egenkontroll"
+                      placeholder={t("auto.f_eks_rutine_for_egenkontroll")}
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Kategori</label>
+                    <label className="text-sm font-medium">{t("auto.kategori")}</label>
                     <Select
                       value={newRoutine.category}
                       onValueChange={(value) => setNewRoutine({ ...newRoutine, category: value })}
@@ -189,26 +190,26 @@ export default function IkKsRutiner() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Beskrivelse</label>
+                    <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
                     <Textarea
                       value={newRoutine.description}
                       onChange={(e) => setNewRoutine({ ...newRoutine, description: e.target.value })}
-                      placeholder="Kort beskrivelse av rutinen"
+                      placeholder={t("auto.kort_beskrivelse_av_rutinen_2")}
                       rows={2}
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Innhold</label>
+                    <label className="text-sm font-medium">{t("auto.innhold")}</label>
                     <Textarea
                       value={newRoutine.content}
                       onChange={(e) => setNewRoutine({ ...newRoutine, content: e.target.value })}
-                      placeholder="Detaljert rutinebeskrivelse..."
+                      placeholder={t("auto.detaljert_rutinebeskrivelse")}
                       rows={6}
                     />
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setShowNewDialog(false)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button onClick={handleCreate} disabled={isSaving || !newRoutine.routine_name.trim()}>
                       {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -227,9 +228,9 @@ export default function IkKsRutiner() {
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium text-lg mb-2">Ingen rutiner ennå</h3>
+                <h3 className="font-medium text-lg mb-2">{t("auto.ingen_rutiner_ennaa")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Opprett din første KS-rutine eller importer fra maler
+                  {t("auto.opprett_din_foerste_ks_rutine_eller_impo")}
                 </p>
                 <Button onClick={() => setShowNewDialog(true)}>
                   <Plus className="w-4 h-4 mr-2" />
@@ -328,10 +329,10 @@ function RoutineCard({
                 </span>
                 <Badge variant="outline">{getCategoryLabel(routine.category)}</Badge>
                 {routine.admin_template_id && (
-                  <Badge variant="secondary">Fra mal</Badge>
+                  <Badge variant="secondary">{t("auto.fra_mal")}</Badge>
                 )}
                 {routine.is_hidden && (
-                  <Badge variant="outline" className="bg-muted">Skjult</Badge>
+                  <Badge variant="outline" className="bg-muted">{t("auto.skjult")}</Badge>
                 )}
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                   <Button
@@ -353,14 +354,14 @@ function RoutineCard({
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Navn</label>
+                  <label className="text-sm font-medium">{t("auto.navn_2")}</label>
                   <Input
                     value={editData.routine_name}
                     onChange={(e) => setEditData({ ...editData, routine_name: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Beskrivelse</label>
+                  <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
                   <Textarea
                     value={editData.description}
                     onChange={(e) => setEditData({ ...editData, description: e.target.value })}
@@ -368,7 +369,7 @@ function RoutineCard({
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Innhold</label>
+                  <label className="text-sm font-medium">{t("auto.innhold")}</label>
                   <Textarea
                     value={editData.content}
                     onChange={(e) => setEditData({ ...editData, content: e.target.value })}
@@ -392,7 +393,7 @@ function RoutineCard({
                   <p className="text-sm text-muted-foreground mb-4 italic">{routine.description}</p>
                 )}
                 <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
-                  {routine.content || <span className="text-muted-foreground italic">Ingen innhold</span>}
+                  {routine.content || <span className="text-muted-foreground italic">{t("auto.ingen_innhold")}</span>}
                 </div>
                 <div className="flex justify-end gap-2 mt-4 pt-4 border-t flex-wrap">
                   <Button variant="outline" size="sm" onClick={onEdit}>

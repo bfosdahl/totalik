@@ -16,26 +16,27 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyProjectTemplates } from "@/hooks/useCompanyProjectTemplates";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 const PROJECT_TYPE_OPTIONS: { id: ProjectType; name: string; description: string; icon: typeof Building2; features: string[] }[] = [
   {
     id: "standard",
     name: "Standard prosjekt",
-    description: "Komplett prosjektstyring med alle moduler",
+    description: t("auto.komplett_prosjektstyring_med_alle_module"),
     icon: Building2,
     features: ["KS, HMS, SHA", "Byggesak & blanketter", "Økonomi & fremdrift", "Underleverandører", "Alle moduler"]
   },
   {
     id: "small",
     name: "Lite prosjekt",
-    description: "For mindre prosjekter med enklere behov",
+    description: t("auto.for_mindre_prosjekter_med_enklere_behov"),
     icon: Briefcase,
     features: ["Sjekklister", "Bilder & dokumenter", "Timer & befaringer", "UE & økonomi"]
   },
   {
     id: "mini",
     name: "Mini prosjekt",
-    description: "For enkle jobber og små oppdrag",
+    description: t("auto.for_enkle_jobber_og_smaa_oppdrag"),
     icon: Hammer,
     features: ["Sjekklister", "Avvik", "Dokumenter"]
   }
@@ -46,105 +47,105 @@ const PROJECT_TEMPLATES = [
   {
     id: "blank",
     name: "Tomt prosjekt",
-    description: "Start fra bunnen uten forhåndsutfylling",
+    description: t("auto.start_fra_bunnen_uten_forhaandsutfylling"),
     defaults: {}
   },
   {
     id: "enebolig",
     name: "Enebolig",
-    description: "Nybygg eller renovering av enebolig",
+    description: t("auto.nybygg_eller_renovering_av_enebolig"),
     defaults: {
-      description: "Oppføring/renovering av enebolig. Prosjektet omfatter komplett byggearbeid fra grunn til ferdig bygg.",
+      description: t("auto.oppfoering_renovering_av_enebolig_prosje"),
       contractor_type: "total" as const
     }
   },
   {
     id: "leilighet",
     name: "Leilighetsbygg",
-    description: "Flerboligbygg med leiligheter",
+    description: t("auto.flerboligbygg_med_leiligheter"),
     defaults: {
-      description: "Oppføring av leilighetsbygg. Prosjektet omfatter komplett byggearbeid inkludert fellesarealer.",
+      description: t("auto.oppfoering_av_leilighetsbygg_prosjektet_"),
       contractor_type: "total" as const
     }
   },
   {
     id: "naeringsbygg",
     name: "Næringsbygg",
-    description: "Kontor, butikk eller industribygg",
+    description: t("auto.kontor_butikk_eller_industribygg"),
     defaults: {
-      description: "Oppføring av næringsbygg. Prosjektet omfatter byggearbeid tilpasset næringsdrift.",
+      description: t("auto.oppfoering_av_naeringsbygg_prosjektet_om"),
       contractor_type: "hoved" as const
     }
   },
   {
     id: "renovering",
     name: "Totalrenovering",
-    description: "Større renovering av eksisterende bygg",
+    description: t("auto.stoerre_renovering_av_eksisterende_bygg"),
     defaults: {
-      description: "Totalrenovering av eksisterende bygg. Prosjektet omfatter omfattende oppgradering og modernisering.",
+      description: t("auto.totalrenovering_av_eksisterende_bygg_pro"),
       contractor_type: "hoved" as const
     }
   },
   {
     id: "tilbygg",
     name: "Tilbygg/påbygg",
-    description: "Utvidelse av eksisterende bygg",
+    description: t("auto.utvidelse_av_eksisterende_bygg"),
     defaults: {
-      description: "Tilbygg/påbygg til eksisterende bygg. Prosjektet omfatter utvidelse med tilkobling til eksisterende konstruksjon.",
+      description: t("auto.tilbygg_paabygg_til_eksisterende_bygg_pr"),
       contractor_type: "hoved" as const
     }
   },
   {
     id: "betong",
     name: "Betongarbeid",
-    description: "Spesialisert betongentreprise",
+    description: t("auto.spesialisert_betongentreprise"),
     defaults: {
-      description: "Betongarbeider. Prosjektet omfatter forskaling, armering og støping iht. tegninger og beskrivelse.",
+      description: t("auto.betongarbeider_prosjektet_omfatter_forsk"),
       contractor_type: "under" as const
     }
   },
   {
     id: "tomrer",
     name: "Tømrerarbeid",
-    description: "Tømrer- og snekkerarbeid",
+    description: t("auto.toemrer_og_snekkerarbeid"),
     defaults: {
-      description: "Tømrer- og snekkerarbeid. Prosjektet omfatter trearbeider iht. tegninger og beskrivelse.",
+      description: t("auto.toemrer_og_snekkerarbeid_prosjektet_omfa"),
       contractor_type: "under" as const
     }
   },
   {
     id: "rorlegger",
     name: "Rørleggerarbeid",
-    description: "VVS og sanitærinstallasjon",
+    description: t("auto.vvs_og_sanitaerinstallasjon"),
     defaults: {
-      description: "VVS og sanitærarbeid. Prosjektet omfatter rørinstallasjon, sanitærutstyr og evt. varmeanlegg.",
+      description: t("auto.vvs_og_sanitaerarbeid_prosjektet_omfatte"),
       contractor_type: "under" as const
     }
   },
   {
     id: "elektro",
     name: "Elektroarbeid",
-    description: "Elektrisk installasjon",
+    description: t("auto.elektrisk_installasjon"),
     defaults: {
-      description: "Elektroarbeider. Prosjektet omfatter elektrisk installasjon iht. tegninger og beskrivelse.",
+      description: t("auto.elektroarbeider_prosjektet_omfatter_elek"),
       contractor_type: "under" as const
     }
   },
   {
     id: "maler",
     name: "Malerarbeid",
-    description: "Maling og overflatebehandling",
+    description: t("auto.maling_og_overflatebehandling"),
     defaults: {
-      description: "Maler- og tapetserarbeid. Prosjektet omfatter overflatebehandling av vegger, tak og treverk.",
+      description: t("auto.maler_og_tapetserarbeid_prosjektet_omfat"),
       contractor_type: "under" as const
     }
   },
   {
     id: "flislegger",
     name: "Flislegging",
-    description: "Flis og våtromsarbeid",
+    description: t("auto.flis_og_vaatromsarbeid"),
     defaults: {
-      description: "Flislegging og våtromsarbeid. Prosjektet omfatter membran, flislegging og fuging i våtrom.",
+      description: t("auto.flislegging_og_vaatromsarbeid_prosjektet"),
       contractor_type: "under" as const
     }
   }
@@ -321,7 +322,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     };
 
     if (!projectData.project_name.trim()) {
-      toast.error("AI-en genererte ikke et prosjektnavn. Prøv igjen.");
+      toast.error(t("auto.ai_en_genererte_ikke_et_prosjektnavn_pro"));
       return;
     }
 
@@ -352,7 +353,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
       console.error("Error creating project from AI:", error);
       setFormData(projectData);
       setActiveTab("manual");
-      toast.error("Kunne ikke opprette prosjektet automatisk. Sjekk skjemaet og prøv igjen.");
+      toast.error(t("auto.kunne_ikke_opprette_prosjektet_automatis"));
     }
   };
 
@@ -372,7 +373,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         {!selectedProjectType ? (
           <div className="px-6 pb-6 flex-1 overflow-y-auto">
             <p className="text-sm text-muted-foreground mb-6">
-              Velg hvilken type prosjekt du vil opprette. Dette bestemmer hvilke moduler som er tilgjengelige.
+              {t("auto.velg_hvilken_type_prosjekt_du_vil_oppret")}
             </p>
             <div className="grid gap-4">
               {PROJECT_TYPE_OPTIONS.map((option) => {
@@ -441,28 +442,28 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             {/* Project Name - First and prominent */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Prosjektnavn
+                {t("auto.prosjektnavn")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="project_name">Prosjektnavn *</Label>
+                  <Label htmlFor="project_name">{t("auto.prosjektnavn_2")}</Label>
                   <Input
                     id="project_name"
                     value={formData.project_name}
                     onChange={(e) => setFormData((prev) => ({ ...prev, project_name: e.target.value }))}
-                    placeholder="Skriv inn prosjektnavn, f.eks. Tilbygg Storgata 5"
+                    placeholder={t("auto.skriv_inn_prosjektnavn_f_eks_tilbygg_sto")}
                     required
                     autoFocus
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="project_number">Prosjektnummer</Label>
+                  <Label htmlFor="project_number">{t("auto.prosjektnummer")}</Label>
                   <Input
                     id="project_number"
                     value={formData.project_number}
                     onChange={(e) => setFormData((prev) => ({ ...prev, project_number: e.target.value }))}
-                    placeholder="Auto-genereres hvis tom"
+                    placeholder={t("auto.auto_genereres_hvis_tom")}
                   />
                 </div>
               </div>
@@ -477,10 +478,10 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               </h3>
               
               <div className="space-y-2">
-                <Label>Forhåndsutfyll med mal</Label>
+                <Label>{t("auto.forhaandsutfyll_med_mal")}</Label>
                 <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg en mal" />
+                    <SelectValue placeholder={t("auto.velg_en_mal")} />
                   </SelectTrigger>
                   <SelectContent>
                     {PROJECT_TEMPLATES.map((template) => (
@@ -495,7 +496,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                       <>
                         <Separator className="my-1" />
                         <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                          Egne maler
+                          {t("auto.egne_maler")}
                         </div>
                         {customTemplates.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
@@ -514,7 +515,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-muted-foreground flex-1">
-                    Malen forhåndsutfyller entreprenørform og beskrivelse.
+                    {t("auto.malen_forhaandsutfyller_entreprenoerform")}
                   </p>
                   {isCompanyAdmin && (
                     <Button
@@ -533,12 +534,12 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 {/* Save as template inline form */}
                 {showSaveTemplateDialog && (
                   <div className="border rounded-lg p-3 space-y-2 bg-muted/30">
-                    <Label className="text-xs">Navn på ny mal</Label>
+                    <Label className="text-xs">{t("auto.navn_paa_ny_mal")}</Label>
                     <div className="flex gap-2">
                       <Input
                         value={newTemplateName}
                         onChange={(e) => setNewTemplateName(e.target.value)}
-                        placeholder="F.eks. Tilbygg garasje"
+                        placeholder={t("auto.f_eks_tilbygg_garasje")}
                         className="text-sm"
                       />
                       <Button
@@ -559,7 +560,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Lagrer nåværende entreprenørform og beskrivelse som gjenbrukbar mal.
+                      {t("auto.lagrer_naavaerende_entreprenoerform_og_b")}
                     </p>
                   </div>
                 )}
@@ -587,27 +588,27 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             {/* Address */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Grunnleggende informasjon
+                {t("auto.grunnleggende_informasjon")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">{t("auto.adresse")}</Label>
                   <Input
                     id="address"
                     value={formData.address}
                     onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
-                    placeholder="Gateadresse"
+                    placeholder={t("auto.gateadresse")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="gnr_bnr">Gårds-/bruksnummer</Label>
+                  <Label htmlFor="gnr_bnr">{t("auto.gaards_bruksnummer")}</Label>
                   <Input
                     id="gnr_bnr"
                     value={formData.gnr_bnr}
                     onChange={(e) => setFormData((prev) => ({ ...prev, gnr_bnr: e.target.value }))}
-                    placeholder="F.eks. 123/45"
+                    placeholder={t("auto.f_eks_123_45")}
                   />
                 </div>
               </div>
@@ -617,22 +618,22 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             {selectedProjectType !== "mini" && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Byggherre
+                {t("auto.byggherre")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="client_name">Navn</Label>
+                  <Label htmlFor="client_name">{t("auto.navn_2")}</Label>
                   <Input
                     id="client_name"
                     value={formData.client_name}
                     onChange={(e) => setFormData((prev) => ({ ...prev, client_name: e.target.value }))}
-                    placeholder="Byggherrens navn"
+                    placeholder={t("auto.byggherrens_navn")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="client_org_number">Org.nr</Label>
+                  <Label htmlFor="client_org_number">{t("auto.org_nr")}</Label>
                   <Input
                     id="client_org_number"
                     value={formData.client_org_number}
@@ -644,17 +645,17 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="client_contact_person">Kontaktperson</Label>
+                  <Label htmlFor="client_contact_person">{t("auto.kontaktperson_2")}</Label>
                   <Input
                     id="client_contact_person"
                     value={formData.client_contact_person}
                     onChange={(e) => setFormData((prev) => ({ ...prev, client_contact_person: e.target.value }))}
-                    placeholder="Navn"
+                    placeholder={t("auto.navn_2")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="client_phone">Telefon</Label>
+                  <Label htmlFor="client_phone">{t("auto.telefon")}</Label>
                   <Input
                     id="client_phone"
                     value={formData.client_phone}
@@ -664,7 +665,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="client_email">E-post</Label>
+                  <Label htmlFor="client_email">{t("auto.e_post_2")}</Label>
                   <Input
                     id="client_email"
                     type="email"
@@ -681,12 +682,12 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             {selectedProjectType !== "mini" && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Prosjektdetaljer
+                {t("auto.prosjektdetaljer")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Entreprenørform</Label>
+                  <Label>{t("auto.entreprenoerform")}</Label>
                   <Select
                     value={formData.contractor_type || ""}
                     onValueChange={(value) =>
@@ -697,24 +698,24 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg type" />
+                      <SelectValue placeholder={t("auto.velg_type")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="total">Totalentreprenør</SelectItem>
-                      <SelectItem value="hoved">Hovedentreprenør</SelectItem>
-                      <SelectItem value="under">Underentreprenør</SelectItem>
+                      <SelectItem value="total">{t("auto.totalentreprenoer")}</SelectItem>
+                      <SelectItem value="hoved">{t("auto.hovedentreprenoer")}</SelectItem>
+                      <SelectItem value="under">{t("auto.underentreprenoer")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Prosjektleder</Label>
+                  <Label>{t("auto.prosjektleder")}</Label>
                   <Select
                     value={formData.project_leader_id || ""}
                     onValueChange={handleProjectLeaderChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg prosjektleder" />
+                      <SelectValue placeholder={t("auto.velg_prosjektleder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {users.map((user) => (
@@ -729,22 +730,22 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="sha_coordinator_kp">SHA-koordinator KP</Label>
+                  <Label htmlFor="sha_coordinator_kp">{t("auto.sha_koordinator_kp")}</Label>
                   <Input
                     id="sha_coordinator_kp"
                     value={formData.sha_coordinator_kp}
                     onChange={(e) => setFormData((prev) => ({ ...prev, sha_coordinator_kp: e.target.value }))}
-                    placeholder="Navn på KP-koordinator"
+                    placeholder={t("auto.navn_paa_kp_koordinator")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="sha_coordinator_ku">SHA-koordinator KU</Label>
+                  <Label htmlFor="sha_coordinator_ku">{t("auto.sha_koordinator_ku")}</Label>
                   <Input
                     id="sha_coordinator_ku"
                     value={formData.sha_coordinator_ku}
                     onChange={(e) => setFormData((prev) => ({ ...prev, sha_coordinator_ku: e.target.value }))}
-                    placeholder="Navn på KU-koordinator"
+                    placeholder={t("auto.navn_paa_ku_koordinator")}
                   />
                 </div>
               </div>
@@ -754,12 +755,12 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             {/* Dates and Contract */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Datoer og økonomi
+                {t("auto.datoer_og_oekonomi")}
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="planned_start_date">Planlagt oppstart</Label>
+                  <Label htmlFor="planned_start_date">{t("auto.planlagt_oppstart")}</Label>
                   <Input
                     id="planned_start_date"
                     type="date"
@@ -769,7 +770,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="planned_end_date">Planlagt ferdig</Label>
+                  <Label htmlFor="planned_end_date">{t("auto.planlagt_ferdig")}</Label>
                   <Input
                     id="planned_end_date"
                     type="date"
@@ -798,12 +799,12 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
                 {/* Description */}
                 <div className="space-y-2">
-                  <Label htmlFor="description">Hva skal gjøres?</Label>
+                  <Label htmlFor="description">{t("auto.hva_skal_gjoeres")}</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                    placeholder="Beskriv oppdraget og hva som skal utføres..."
+                    placeholder={t("auto.beskriv_oppdraget_og_hva_som_skal_utfoer")}
                     rows={4}
                   />
                 </div>
@@ -813,7 +814,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               {/* Submit - Outside scroll area for visibility */}
               <div className="flex justify-end gap-3 pt-4 mt-4 border-t flex-shrink-0 pb-6">
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button type="submit" disabled={isSaving || !formData.project_name.trim()}>
                   {isSaving ? (

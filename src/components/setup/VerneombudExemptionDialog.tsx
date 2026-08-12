@@ -15,6 +15,7 @@ import { generateVerneombudExemptionPdf } from "@/utils/generateVerneombudExempt
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface VerneombudExemptionDialogProps {
   open: boolean;
@@ -172,7 +173,7 @@ export function VerneombudExemptionDialog({
 
   const handleEmployerNext = () => {
     if (employerSigRef.current?.isEmpty()) {
-      toast.error("Vennligst signer før du går videre");
+      toast.error(t("auto.vennligst_signer_foer_du_gaar_videre"));
       return;
     }
     const sig = employerSigRef.current?.toDataURL() || "";
@@ -182,11 +183,11 @@ export function VerneombudExemptionDialog({
 
   const handleAddEmployeeSignature = () => {
     if (!currentEmployeeName.trim()) {
-      toast.error("Velg eller skriv inn ansattens navn");
+      toast.error(t("auto.velg_eller_skriv_inn_ansattens_navn"));
       return;
     }
     if (!employeeSigRef.current || employeeSigRef.current.isEmpty()) {
-      toast.error("Den ansatte må signere før den kan legges til");
+      toast.error(t("auto.den_ansatte_maa_signere_foer_den_kan_leg"));
       return;
     }
 
@@ -214,12 +215,12 @@ export function VerneombudExemptionDialog({
 
   const handleSubmit = async () => {
     if (!isExemptionAllowed) {
-      toast.error("Virksomheter med 5 eller flere ansatte må ha verneombud og kan ikke inngå fritaksavtale.");
+      toast.error(t("auto.virksomheter_med_5_eller_flere_ansatte_m"));
       return;
     }
 
     if (employeeSignatures.length === 0) {
-      toast.error("Minst én ansatt må signere avtalen");
+      toast.error(t("auto.minst_n_ansatt_maa_signere_avtalen"));
       return;
     }
 
@@ -257,11 +258,11 @@ export function VerneombudExemptionDialog({
 
       if (error) throw error;
 
-      toast.success("Avtale om fritak fra verneombud er signert av alle og lagret!");
+      toast.success(t("auto.avtale_om_fritak_fra_verneombud_er_signe"));
       setStep("complete");
     } catch (error) {
       console.error("Error saving exemption agreement:", error);
-      toast.error("Kunne ikke lagre avtalen. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_lagre_avtalen_proev_igjen"));
     } finally {
       setIsSaving(false);
     }
@@ -342,7 +343,7 @@ export function VerneombudExemptionDialog({
             <div className="space-y-4">
               {!isExemptionAllowed && (
                 <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-                  <p className="font-medium text-destructive mb-1">Fritak kan ikke brukes</p>
+                  <p className="font-medium text-destructive mb-1">{t("auto.fritak_kan_ikke_brukes")}</p>
                   <p className="text-sm text-muted-foreground">
                     Virksomheten har {totalEmployees} ansatte. Ved 5 eller flere ansatte skal det velges verneombud.
                   </p>
@@ -350,46 +351,44 @@ export function VerneombudExemptionDialog({
               )}
 
               <Card className="p-4 bg-muted/50">
-                <h3 className="font-semibold mb-3">Avtale om fritak fra verneombud</h3>
+                <h3 className="font-semibold mb-3">{t("auto.avtale_om_fritak_fra_verneombud")}</h3>
                 
                 <div className="space-y-2 text-sm">
                   <div className="grid grid-cols-2 gap-2">
-                    <span className="text-muted-foreground">Mellom arbeidsgiver:</span>
+                    <span className="text-muted-foreground">{t("auto.mellom_arbeidsgiver")}</span>
                     <span className="font-medium">{companyName}</span>
                   </div>
                   {orgNumber && (
                     <div className="grid grid-cols-2 gap-2">
-                      <span className="text-muted-foreground">Organisasjonsnummer:</span>
+                      <span className="text-muted-foreground">{t("auto.organisasjonsnummer_2")}</span>
                       <span className="font-mono">{orgNumber}</span>
                     </div>
                   )}
                   {companyAddress && (
                     <div className="grid grid-cols-2 gap-2">
-                      <span className="text-muted-foreground">Adresse:</span>
+                      <span className="text-muted-foreground">{t("auto.adresse_2")}</span>
                       <span>{companyAddress}</span>
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-2">
-                    <span className="text-muted-foreground">Antall ansatte:</span>
+                    <span className="text-muted-foreground">{t("auto.antall_ansatte_2")}</span>
                     <Badge variant="secondary">{totalEmployees} ansatte</Badge>
                   </div>
                 </div>
               </Card>
 
               <div className="space-y-3 text-sm">
-                <p className="font-medium">Og: De ansatte ved virksomheten.</p>
+                <p className="font-medium">{t("auto.og_de_ansatte_ved_virksomheten")}</p>
                 
                 <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-                  <p className="font-medium text-primary mb-1">Bakgrunn:</p>
+                  <p className="font-medium text-primary mb-1">{t("auto.bakgrunn")}</p>
                   <p className="text-muted-foreground">
-                    Denne avtalen inngås i henhold til arbeidsmiljøloven § 6-1, som åpner for fritak 
-                    fra kravet om verneombud i virksomheter med færre enn 5 ansatte dersom arbeidsgiver 
-                    og ansatte er enige om dette.
+                    {t("auto.denne_avtalen_inngaas_i_henhold_til_arbe")}
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-medium mb-2">1. Avtalens formål</p>
+                  <p className="font-medium mb-2">{t("auto.1_avtalens_formaal")}</p>
                   <p className="text-muted-foreground">
                     Formålet med denne avtalen er å formalisere enighet mellom arbeidsgiver og ansatte 
                     om at det ikke er nødvendig å velge verneombud i virksomheten, grunnet virksomhetens 
@@ -398,7 +397,7 @@ export function VerneombudExemptionDialog({
                 </div>
 
                 <div>
-                  <p className="font-medium mb-2">2. Grunnlag for fritak</p>
+                  <p className="font-medium mb-2">{t("auto.2_grunnlag_for_fritak")}</p>
                   <p className="text-muted-foreground">
                     Virksomheten har totalt {totalEmployees} ansatte, og partene er enige om at det ikke er 
                     behov for verneombud i henhold til gjeldende regelverk. Arbeidsgiver forplikter seg til 
@@ -407,27 +406,23 @@ export function VerneombudExemptionDialog({
                 </div>
 
                 <div>
-                  <p className="font-medium mb-2">3. Ansvar og oppfølging</p>
+                  <p className="font-medium mb-2">{t("auto.3_ansvar_og_oppfoelging")}</p>
                   <p className="text-muted-foreground">
-                    Selv om verneombud ikke velges, forplikter arbeidsgiver seg til å sørge for et fullt 
-                    forsvarlig arbeidsmiljø og følge opp HMS-arbeidet i tråd med lovens krav. Arbeidstakerne 
-                    forplikter seg til å delta aktivt i HMS-arbeidet.
+                    {t("auto.selv_om_verneombud_ikke_velges_forplikte")}
                   </p>
                 </div>
 
                 <div>
-                  <p className="font-medium mb-2">4. Avtalens varighet og revisjon</p>
+                  <p className="font-medium mb-2">{t("auto.4_avtalens_varighet_og_revisjon")}</p>
                   <p className="text-muted-foreground">
-                    Denne avtalen gjelder inntil videre, men skal revurderes dersom antall ansatte økes til 
-                    5 eller flere, eller ved vesentlige endringer i arbeidsforholdene.
+                    {t("auto.denne_avtalen_gjelder_inntil_videre_men_")}
                   </p>
                 </div>
 
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-                  <p className="font-medium text-amber-800 dark:text-amber-200 mb-1">⚠️ Krav til signering:</p>
+                  <p className="font-medium text-amber-800 dark:text-amber-200 mb-1">{t("auto.krav_til_signering")}</p>
                   <p className="text-amber-700 dark:text-amber-300 text-xs">
-                    Denne avtalen krever signatur fra både arbeidsgiver og alle ansatte i virksomheten 
-                    for å være gyldig i henhold til arbeidsmiljøloven § 6-1.
+                    {t("auto.denne_avtalen_krever_signatur_fra_baade_")}
                   </p>
                 </div>
 
@@ -442,13 +437,12 @@ export function VerneombudExemptionDialog({
             <div className="space-y-4">
               <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
                 <p className="text-sm text-muted-foreground">
-                  Daglig leder eller den som representerer bedriften signerer først. 
-                  Deretter må alle ansatte signere i neste steg.
+                  {t("auto.daglig_leder_eller_den_som_representerer")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="employerSelect">Velg person eller skriv inn navn</Label>
+                <Label htmlFor="employerSelect">{t("auto.velg_person_eller_skriv_inn_navn")}</Label>
                 <Select 
                   value={selectedUserId} 
                   onValueChange={(value) => {
@@ -459,7 +453,7 @@ export function VerneombudExemptionDialog({
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                    <SelectValue placeholder={t("auto.velg_fra_ansatte_eller_skriv_inn_manuelt")} />
                   </SelectTrigger>
                   <SelectContent>
                     {!isLoadingUsers && users.map((user) => (
@@ -467,19 +461,19 @@ export function VerneombudExemptionDialog({
                         {getUserDisplayName(user)}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                    <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {(selectedUserId === "custom" || !selectedUserId) && (
                 <div>
-                  <Label htmlFor="employerName">Arbeidsgivers navn</Label>
+                  <Label htmlFor="employerName">{t("auto.arbeidsgivers_navn_2")}</Label>
                   <Input
                     id="employerName"
                     value={employerName}
                     onChange={(e) => setEmployerName(e.target.value)}
-                    placeholder="Skriv inn fullt navn"
+                    placeholder={t("auto.skriv_inn_fullt_navn")}
                     className="mt-1"
                   />
                 </div>
@@ -487,13 +481,13 @@ export function VerneombudExemptionDialog({
 
               {selectedUserId && selectedUserId !== "custom" && (
                 <div className="p-3 bg-muted/50 rounded-lg">
-                  <p className="text-sm"><strong>Valgt person:</strong> {employerName}</p>
+                  <p className="text-sm"><strong>{t("auto.valgt_person")}</strong> {employerName}</p>
                 </div>
               )}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Arbeidsgivers signatur</Label>
+                  <Label>{t("auto.arbeidsgivers_signatur_2")}</Label>
                   {savedSignature && !usingSavedSignature && (
                     <Button
                       type="button"
@@ -525,7 +519,7 @@ export function VerneombudExemptionDialog({
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleClearEmployerSig}>
-                    Tøm signatur
+                    {t("auto.toem_signatur")}
                   </Button>
                   {usingSavedSignature && (
                     <span className="text-xs text-green-600 flex items-center gap-1">
@@ -546,8 +540,7 @@ export function VerneombudExemptionDialog({
             <div className="space-y-4">
               <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
                 <p className="text-sm text-muted-foreground">
-                  Alle ansatte i virksomheten må signere avtalen. La hver ansatt velge sitt navn og 
-                  tegne sin signatur nedenfor.
+                  {t("auto.alle_ansatte_i_virksomheten_maa_signere_")}
                 </p>
               </div>
 
@@ -596,7 +589,7 @@ export function VerneombudExemptionDialog({
                 </Label>
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Velg ansatt</Label>
+                  <Label className="text-xs">{t("auto.velg_ansatt")}</Label>
                   <Select 
                     value={selectedEmployeeUserId} 
                     onValueChange={(value) => {
@@ -607,7 +600,7 @@ export function VerneombudExemptionDialog({
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg ansatt fra listen eller skriv inn manuelt" />
+                      <SelectValue placeholder={t("auto.velg_ansatt_fra_listen_eller_skriv_inn_m")} />
                     </SelectTrigger>
                     <SelectContent>
                       {unsignedEmployees.map((user) => (
@@ -615,18 +608,18 @@ export function VerneombudExemptionDialog({
                           {getUserDisplayName(user)}
                         </SelectItem>
                       ))}
-                      <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                      <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {(selectedEmployeeUserId === "custom") && (
                   <div>
-                    <Label className="text-xs">Ansattens navn</Label>
+                    <Label className="text-xs">{t("auto.ansattens_navn")}</Label>
                     <Input
                       value={currentEmployeeName}
                       onChange={(e) => setCurrentEmployeeName(e.target.value)}
-                      placeholder="Skriv inn fullt navn"
+                      placeholder={t("auto.skriv_inn_fullt_navn")}
                       className="mt-1"
                     />
                   </div>
@@ -634,12 +627,12 @@ export function VerneombudExemptionDialog({
 
                 {selectedEmployeeUserId && selectedEmployeeUserId !== "custom" && (
                   <div className="p-2 bg-muted/50 rounded text-sm">
-                    <strong>Ansatt:</strong> {currentEmployeeName}
+                    <strong>{t("auto.ansatt_3")}</strong> {currentEmployeeName}
                   </div>
                 )}
 
                 <div className="space-y-1">
-                  <Label className="text-xs">Ansattens signatur</Label>
+                  <Label className="text-xs">{t("auto.ansattens_signatur")}</Label>
                   <div className="border rounded-lg bg-white relative">
                     <SignatureCanvas
                       ref={employeeSigRef}
@@ -651,13 +644,13 @@ export function VerneombudExemptionDialog({
                     />
                     {employeeSigEmpty && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <p className="text-muted-foreground text-sm">Tegn signaturen her</p>
+                        <p className="text-muted-foreground text-sm">{t("auto.tegn_signaturen_her")}</p>
                       </div>
                     )}
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => { employeeSigRef.current?.clear(); setEmployeeSigEmpty(true); }}>
-                      Tøm
+                      {t("auto.toem")}
                     </Button>
                   </div>
                 </div>
@@ -675,7 +668,7 @@ export function VerneombudExemptionDialog({
 
               {employeeSignatures.length === 0 && (
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-300">
-                  ⚠️ Minst én ansatt må signere for å fullføre avtalen.
+                  {t("auto.minst_n_ansatt_maa_signere_for_aa_fullfo")}
                 </div>
               )}
             </div>
@@ -684,13 +677,13 @@ export function VerneombudExemptionDialog({
           {step === "complete" && (
             <div className="text-center py-8">
               <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Avtalen er signert!</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("auto.avtalen_er_signert")}</h3>
               <p className="text-muted-foreground mb-4">
                 Avtale om fritak fra verneombud er nå signert av arbeidsgiver og {employeeSignatures.length} ansatt{employeeSignatures.length !== 1 ? "e" : ""}, og lagret i systemet. 
                 Husk at avtalen må revurderes dersom dere får 5 eller flere ansatte.
               </p>
               <div className="text-left max-w-sm mx-auto space-y-1 mb-6">
-                <p className="text-sm font-medium">Signaturer:</p>
+                <p className="text-sm font-medium">{t("auto.signaturer_2")}</p>
                 <p className="text-sm text-muted-foreground">✅ {employerName} (arbeidsgiver)</p>
                 {employeeSignatures.map((es, i) => (
                   <p key={i} className="text-sm text-muted-foreground">✅ {es.name} (ansatt)</p>
@@ -723,10 +716,10 @@ export function VerneombudExemptionDialog({
           {step === "info" && (
             <>
               <Button variant="outline" onClick={handleCancel}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={() => setStep("employer")} disabled={!isExemptionAllowed}>
-                Start signering
+                {t("auto.start_signering")}
               </Button>
             </>
           )}
@@ -734,7 +727,7 @@ export function VerneombudExemptionDialog({
           {step === "employer" && (
             <>
               <Button variant="outline" onClick={() => setStep("info")}>
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button
                 variant="ghost"
@@ -747,7 +740,7 @@ export function VerneombudExemptionDialog({
                 Hopp over (signer senere)
               </Button>
               <Button onClick={handleEmployerNext} disabled={!employerName.trim()}>
-                Neste: Ansatt-signaturer
+                {t("auto.neste_ansatt_signaturer")}
               </Button>
             </>
           )}
@@ -755,7 +748,7 @@ export function VerneombudExemptionDialog({
           {step === "employees" && (
             <>
               <Button variant="outline" onClick={() => setStep("employer")}>
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button
                 variant="ghost"
@@ -779,7 +772,7 @@ export function VerneombudExemptionDialog({
 
           {step === "complete" && (
             <Button onClick={() => handleClose(true)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
           )}
         </DialogFooter>

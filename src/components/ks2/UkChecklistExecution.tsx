@@ -13,6 +13,7 @@ import { KsModule2Uk } from "@/hooks/useKsModule2Uk";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface Props {
   uk: KsModule2Uk;
@@ -72,7 +73,7 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
     }
 
     updateItem({ id: item.id, photo_paths: newPaths });
-    toast.success("Bilde lastet opp");
+    toast.success(t("auto.bilde_lastet_opp"));
   };
 
   const handleDeletePhoto = async (item: UkChecklistItem, photoPath: string) => {
@@ -90,7 +91,7 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
   const checkedCount = items.filter(i => i.status === "ok").length;
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Laster sjekkliste...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">{t("auto.laster_sjekkliste")}</div>;
   }
 
   return (
@@ -127,7 +128,7 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
         <CardContent className="pt-4">
           <div className="flex gap-2">
             <Input
-              placeholder="Legg til nytt kontrollpunkt..."
+              placeholder={t("auto.legg_til_nytt_kontrollpunkt")}
               value={newPointText}
               onChange={(e) => setNewPointText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPoint()}
@@ -144,8 +145,8 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
       {items.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            <p className="font-medium">Tom sjekkliste</p>
-            <p className="text-sm">Legg til kontrollpunkter ovenfor for å starte kontrollen</p>
+            <p className="font-medium">{t("auto.tom_sjekkliste")}</p>
+            <p className="text-sm">{t("auto.legg_til_kontrollpunkter_ovenfor_for_aa_")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -169,7 +170,7 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
                       {index + 1}. {item.checkpoint_text}
                     </p>
                     <Textarea
-                      placeholder="Kommentar / anmerkning..."
+                      placeholder={t("auto.kommentar_anmerkning")}
                       value={item.notes || ""}
                       onChange={(e) => handleUpdateNotes(item, e.target.value)}
                       className="mt-2 text-sm min-h-[60px]"
@@ -212,7 +213,7 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => fileInputRefs.current[item.id]?.click()}
-                      title="Last opp bilde"
+                      title={t("auto.last_opp_bilde")}
                     >
                       <Camera className="h-4 w-4" />
                     </Button>
@@ -221,7 +222,7 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
                       size="icon"
                       className="h-8 w-8 text-destructive"
                       onClick={() => deleteItem(item.id)}
-                      title="Slett punkt"
+                      title={t("auto.slett_punkt")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -236,7 +237,7 @@ export default function UkChecklistExecution({ uk, onBack, onApprove }: Props) {
       {/* Approve button */}
       {items.length > 0 && (
         <div className="flex justify-end gap-3 pt-4">
-          <Button variant="outline" onClick={onBack}>Tilbake</Button>
+          <Button variant="outline" onClick={onBack}>{t("auto.tilbake")}</Button>
           <Button
             onClick={() => onApprove(uk)}
             disabled={!allChecked}

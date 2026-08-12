@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { TreeNode } from '@/hooks/useOrgChart';
+import { t } from "@/i18n/t";
 
 interface OrgChartTreeProps {
   tree: TreeNode[];
@@ -50,8 +51,8 @@ const OrgChartTree: React.FC<OrgChartTreeProps> = ({
     return (
       <div className="text-center py-12 text-muted-foreground">
         <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p className="font-medium">Ingen noder i orgkartet ennå</p>
-        <p className="text-sm mt-2">Legg til roller for å bygge organisasjonskartet</p>
+        <p className="font-medium">{t("auto.ingen_noder_i_orgkartet_ennaa")}</p>
+        <p className="text-sm mt-2">{t("auto.legg_til_roller_for_aa_bygge_organisasjo")}</p>
       </div>
     );
   }

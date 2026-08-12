@@ -22,21 +22,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const MODULES = [
-  { value: "ks_ik_bygg", label: "KS/IK Bygg" },
+  { value: "ks_ik_bygg", label: t("auto.ks_ik_bygg") },
   { value: "ik_hms", label: "HMS" },
-  { value: "ik_mat", label: "IK Mat" },
-  { value: "ik_alkohol", label: "IK Alkohol" },
-  { value: "felles", label: "Felles" },
+  { value: "ik_mat", label: t("auto.ik_mat_3") },
+  { value: "ik_alkohol", label: t("auto.ik_alkohol_3") },
+  { value: "felles", label: t("auto.felles") },
 ];
 
 const FREQUENCIES = [
-  { value: "daglig", label: "Daglig" },
-  { value: "ukentlig", label: "Ukentlig" },
-  { value: "maanedlig", label: "Månedlig" },
-  { value: "aarlig", label: "Årlig" },
-  { value: "ved_behov", label: "Ved behov" },
+  { value: "daglig", label: t("auto.daglig") },
+  { value: "ukentlig", label: t("auto.ukentlig") },
+  { value: "maanedlig", label: t("auto.maanedlig") },
+  { value: "aarlig", label: t("auto.aarlig") },
+  { value: "ved_behov", label: t("auto.ved_behov") },
 ];
 
 const ROLES = [
@@ -156,7 +157,7 @@ export default function AdminRoutineMaker() {
       // Auto-generate matching checklist when creating a new routine (not updating)
       if (!isUpdate && form.module === "ks_ik_bygg" && form.steps.length > 0) {
         try {
-          toast.info("Genererer tilhørende sjekkliste...");
+          toast.info(t("auto.genererer_tilhoerende_sjekkliste"));
           const { data: checklistData, error: checklistError } = await supabase.functions.invoke("generate-checklist-template", {
             body: {
               tema: form.title,
@@ -178,18 +179,18 @@ export default function AdminRoutineMaker() {
               is_active: true,
             });
             if (saveErr) throw saveErr;
-            toast.success("Tilhørende sjekkliste opprettet automatisk!");
+            toast.success(t("auto.tilhoerende_sjekkliste_opprettet_automat"));
             queryClient.invalidateQueries({ queryKey: ["admin-checklist-templates"] });
           }
         } catch (e) {
           console.error("Auto-checklist generation failed:", e);
-          toast.warning("Rutinen ble lagret, men sjekklisten kunne ikke genereres automatisk");
+          toast.warning(t("auto.rutinen_ble_lagret_men_sjekklisten_kunne"));
         }
       }
       
       resetEditor();
     },
-    onError: () => toast.error("Kunne ikke lagre rutinemal"),
+    onError: () => toast.error(t("auto.kunne_ikke_lagre_rutinemal")),
   });
 
   const deleteMutation = useMutation({
@@ -201,7 +202,7 @@ export default function AdminRoutineMaker() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Rutinemal slettet");
+      toast.success(t("auto.rutinemal_slettet"));
       queryClient.invalidateQueries({ queryKey: ["admin-routine-templates-v2"] });
     },
   });
@@ -223,7 +224,7 @@ export default function AdminRoutineMaker() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Status oppdatert");
+      toast.success(t("auto.status_oppdatert"));
       queryClient.invalidateQueries({ queryKey: ["admin-routine-templates-v2"] });
     },
   });
@@ -252,7 +253,7 @@ export default function AdminRoutineMaker() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Rutinemal kopiert");
+      toast.success(t("auto.rutinemal_kopiert"));
       queryClient.invalidateQueries({ queryKey: ["admin-routine-templates-v2"] });
     },
   });
@@ -328,7 +329,7 @@ export default function AdminRoutineMaker() {
   // AI generation
   const handleAiGenerate = async () => {
     if (!aiTema.trim()) {
-      toast.error("Skriv inn et tema");
+      toast.error(t("auto.skriv_inn_et_tema"));
       return;
     }
     const includeChecklist = aiNivaa === "detaljert_sjekkliste";
@@ -361,7 +362,7 @@ export default function AdminRoutineMaker() {
         });
         setShowAiDialog(false);
         setShowEditor(true);
-        toast.success("AI-forslag generert – rediger og lagre!");
+        toast.success(t("auto.ai_forslag_generert_rediger_og_lagre"));
 
         // Generate matching checklist if requested
         if (includeChecklist) {
@@ -370,7 +371,7 @@ export default function AdminRoutineMaker() {
       }
     } catch (e) {
       console.error(e);
-      toast.error("Kunne ikke generere rutine med AI");
+      toast.error(t("auto.kunne_ikke_generere_rutine_med_ai"));
     } finally {
       setAiLoading(false);
     }
@@ -378,7 +379,7 @@ export default function AdminRoutineMaker() {
 
   const generateMatchingChecklist = async (routine: any) => {
     try {
-      toast.info("Genererer tilhørende sjekkliste...", { duration: 5000 });
+      toast.info(t("auto.genererer_tilhoerende_sjekkliste"), { duration: 5000 });
       const { data, error } = await supabase.functions.invoke("generate-checklist-template", {
         body: {
           tema: `Sjekkliste for: ${routine.title}`,
@@ -408,22 +409,22 @@ export default function AdminRoutineMaker() {
           });
 
         if (insertError) throw insertError;
-        toast.success("Tilhørende sjekkliste opprettet i Dokumentsenter!", {
+        toast.success(t("auto.tilhoerende_sjekkliste_opprettet_i_dokum"), {
           icon: <ClipboardList className="w-4 h-4" />,
           duration: 6000,
         });
       }
     } catch (e) {
       console.error("Checklist generation error:", e);
-      toast.error("Rutinen ble opprettet, men sjekkliste-generering feilet");
+      toast.error(t("auto.rutinen_ble_opprettet_men_sjekkliste_gen"));
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "draft": return <Badge variant="secondary">Utkast</Badge>;
-      case "published": return <Badge className="bg-primary text-primary-foreground">Publisert</Badge>;
-      case "archived": return <Badge variant="outline">Arkivert</Badge>;
+      case "draft": return <Badge variant="secondary">{t("auto.utkast")}</Badge>;
+      case "published": return <Badge className="bg-primary text-primary-foreground">{t("auto.publisert")}</Badge>;
+      case "archived": return <Badge variant="outline">{t("auto.arkivert")}</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
     }
   };
@@ -435,8 +436,8 @@ export default function AdminRoutineMaker() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Admin Rutine Maker</h1>
-            <p className="text-muted-foreground">Opprett og administrer rutinemaler for alle moduler</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.admin_rutine_maker")}</h1>
+            <p className="text-muted-foreground">{t("auto.opprett_og_administrer_rutinemaler_for_a")}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowAiDialog(true)}>
@@ -453,7 +454,7 @@ export default function AdminRoutineMaker() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Søk i rutinemaler..."
+              placeholder={t("auto.soek_i_rutinemaler")}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -462,17 +463,17 @@ export default function AdminRoutineMaker() {
           <Select value={filterModule} onValueChange={setFilterModule}>
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle moduler</SelectItem>
+              <SelectItem value="all">{t("auto.alle_moduler")}</SelectItem>
               {MODULES.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle statuser</SelectItem>
-              <SelectItem value="draft">Utkast</SelectItem>
-              <SelectItem value="published">Publisert</SelectItem>
-              <SelectItem value="archived">Arkivert</SelectItem>
+              <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+              <SelectItem value="draft">{t("auto.utkast")}</SelectItem>
+              <SelectItem value="published">{t("auto.publisert")}</SelectItem>
+              <SelectItem value="archived">{t("auto.arkivert")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -486,8 +487,8 @@ export default function AdminRoutineMaker() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="w-12 h-12 text-muted-foreground/40 mb-4" />
-              <p className="text-muted-foreground">Ingen rutinemaler funnet</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">Opprett din første rutinemal manuelt eller med AI</p>
+              <p className="text-muted-foreground">{t("auto.ingen_rutinemaler_funnet")}</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">{t("auto.opprett_din_foerste_rutinemal_manuelt_el")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -503,7 +504,7 @@ export default function AdminRoutineMaker() {
                       <h3 className="font-semibold truncate max-w-[300px] sm:max-w-[400px] lg:max-w-none">{t.title}</h3>
                       {getStatusBadge(t.status)}
                       <Badge variant="outline">{getModuleLabel(t.module)}</Badge>
-                      {t.is_global_default && <Badge variant="default" className="text-xs">Standard</Badge>}
+                      {t.is_global_default && <Badge variant="default" className="text-xs">{t("auto.standard")}</Badge>}
                       <span className="text-xs text-muted-foreground">v{t.version}</span>
                     </div>
                     {t.description && (
@@ -560,21 +561,21 @@ export default function AdminRoutineMaker() {
               {/* Basic info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <Label>Tittel *</Label>
+                  <Label>{t("auto.tittel_2")}</Label>
                   <Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-                    placeholder="F.eks. Rutine for vernerunde" />
+                    placeholder={t("auto.f_eks_rutine_for_vernerunde")} />
                 </div>
                 <div className="md:col-span-2">
-                  <Label>Kort beskrivelse</Label>
+                  <Label>{t("auto.kort_beskrivelse")}</Label>
                   <Textarea value={form.description}
                     onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                    placeholder="Hva handler denne rutinen om?" rows={2} />
+                    placeholder={t("auto.hva_handler_denne_rutinen_om")} rows={2} />
                 </div>
                 <div className="md:col-span-2">
-                  <Label>Formål</Label>
+                  <Label>{t("auto.formaal")}</Label>
                   <Textarea value={form.purpose}
                     onChange={e => setForm(p => ({ ...p, purpose: e.target.value }))}
-                    placeholder="Hvorfor er denne rutinen viktig?" rows={2} />
+                    placeholder={t("auto.hvorfor_er_denne_rutinen_viktig")} rows={2} />
                 </div>
               </div>
 
@@ -583,7 +584,7 @@ export default function AdminRoutineMaker() {
               {/* Module & category */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Modul *</Label>
+                  <Label>{t("auto.modul")}</Label>
                   <Select value={form.module} onValueChange={v => setForm(p => ({ ...p, module: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -595,10 +596,10 @@ export default function AdminRoutineMaker() {
                   <Label>Underkategori (valgfritt)</Label>
                   <Input value={form.subcategory}
                     onChange={e => setForm(p => ({ ...p, subcategory: e.target.value }))}
-                    placeholder="F.eks. Vernerunde, Renhold" />
+                    placeholder={t("auto.f_eks_vernerunde_renhold")} />
                 </div>
                 <div>
-                  <Label>Frekvens</Label>
+                  <Label>{t("auto.frekvens_2")}</Label>
                   <Select value={form.frequency} onValueChange={v => setForm(p => ({ ...p, frequency: v }))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -610,7 +611,7 @@ export default function AdminRoutineMaker() {
                   <Label>Tagger (kommaseparert)</Label>
                   <Input value={form.tags_text}
                     onChange={e => setForm(p => ({ ...p, tags_text: e.target.value }))}
-                    placeholder="hms, kvalitet, bygg" />
+                    placeholder={t("auto.hms_kvalitet_bygg")} />
                 </div>
               </div>
 
@@ -618,7 +619,7 @@ export default function AdminRoutineMaker() {
 
               {/* Roles */}
               <div>
-                <Label>Målgruppe / roller</Label>
+                <Label>{t("auto.maalgruppe_roller")}</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {ROLES.map(role => (
                     <Badge key={role}
@@ -636,7 +637,7 @@ export default function AdminRoutineMaker() {
               {/* Steps */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label>Steg / sjekkliste</Label>
+                  <Label>{t("auto.steg_sjekkliste")}</Label>
                   <Button variant="outline" size="sm" onClick={addStep}>
                     <Plus className="w-3 h-3 mr-1" /> Legg til punkt
                   </Button>
@@ -649,7 +650,7 @@ export default function AdminRoutineMaker() {
                       <Input
                         value={step.text}
                         onChange={e => updateStep(step.id, { text: e.target.value })}
-                        placeholder="Beskriv steg..."
+                        placeholder={t("auto.beskriv_steg")}
                         className="flex-1"
                       />
                       <label className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
@@ -664,7 +665,7 @@ export default function AdminRoutineMaker() {
                   ))}
                   {form.steps.length === 0 && (
                     <p className="text-sm text-muted-foreground py-4 text-center">
-                      Ingen steg lagt til ennå
+                      {t("auto.ingen_steg_lagt_til_ennaa")}
                     </p>
                   )}
                 </div>
@@ -690,7 +691,7 @@ export default function AdminRoutineMaker() {
             </div>
           </ScrollArea>
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={resetEditor}>Avbryt</Button>
+            <Button variant="outline" onClick={resetEditor}>{t("auto.avbryt")}</Button>
             <Button onClick={() => saveMutation.mutate(!!editingId)} disabled={!form.title || saveMutation.isPending}>
               {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {editingId ? "Oppdater" : "Opprett som utkast"}
@@ -709,24 +710,24 @@ export default function AdminRoutineMaker() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Tema / hva skal rutinen handle om? *</Label>
+              <Label>{t("auto.tema_hva_skal_rutinen_handle_om")}</Label>
               <Textarea value={aiTema} onChange={e => setAiTema(e.target.value)}
-                placeholder="F.eks. Vernerunde på byggeplass, Temperaturkontroll i matbutikk, Skjenkekontroll..."
+                placeholder={t("auto.f_eks_vernerunde_paa_byggeplass_temperat")}
                 rows={3} />
             </div>
             <div>
               <Label>Bransje (valgfritt)</Label>
               <Input value={aiBransje} onChange={e => setAiBransje(e.target.value)}
-                placeholder="F.eks. Bygg og anlegg, Restaurant, Dagligvare" />
+                placeholder={t("auto.f_eks_bygg_og_anlegg_restaurant_dagligva")} />
             </div>
             <div>
-              <Label>Detaljnivå</Label>
+              <Label>{t("auto.detaljnivaa")}</Label>
               <Select value={aiNivaa} onValueChange={setAiNivaa}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="kort">Kort – få punkter</SelectItem>
-                  <SelectItem value="standard">Standard – balansert</SelectItem>
-                  <SelectItem value="detaljert">Detaljert – grundig</SelectItem>
+                  <SelectItem value="kort">{t("auto.kort_faa_punkter")}</SelectItem>
+                  <SelectItem value="standard">{t("auto.standard_balansert")}</SelectItem>
+                  <SelectItem value="detaljert">{t("auto.detaljert_grundig")}</SelectItem>
                   <SelectItem value="detaljert_sjekkliste">
                     <span className="flex items-center gap-1.5">
                       <ClipboardList className="w-3.5 h-3.5 text-primary" />
@@ -737,7 +738,7 @@ export default function AdminRoutineMaker() {
               </Select>
               {aiNivaa === "detaljert_sjekkliste" && (
                 <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                  Genererer en detaljert rutine <strong>pluss</strong> en tilhørende sjekklistemal som lagres automatisk i Dokumentsenter (Sjekklistemaler).
+                  {t("auto.genererer_en_detaljert_rutine")} <strong>pluss</strong> en tilhørende sjekklistemal som lagres automatisk i Dokumentsenter (Sjekklistemaler).
                 </p>
               )}
             </div>
@@ -753,7 +754,7 @@ export default function AdminRoutineMaker() {
       <Dialog open={!!showPreview} onOpenChange={() => setShowPreview(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Forhåndsvisning</DialogTitle>
+            <DialogTitle>{t("auto.forhaandsvisning")}</DialogTitle>
           </DialogHeader>
           {showPreview && (
             <ScrollArea className="flex-1 min-h-0 overflow-y-auto pr-4" style={{ maxHeight: "calc(90vh - 120px)" }}>
@@ -775,19 +776,19 @@ export default function AdminRoutineMaker() {
 
                 {showPreview.purpose && (
                   <div>
-                    <h4 className="font-semibold text-sm mb-1">Formål</h4>
+                    <h4 className="font-semibold text-sm mb-1">{t("auto.formaal")}</h4>
                     <p className="text-sm">{showPreview.purpose}</p>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-semibold text-sm mb-1">Frekvens</h4>
+                    <h4 className="font-semibold text-sm mb-1">{t("auto.frekvens_2")}</h4>
                     <p className="text-sm">{FREQUENCIES.find(f => f.value === showPreview.frequency)?.label}</p>
                   </div>
                   {showPreview.target_roles?.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-sm mb-1">Målgruppe</h4>
+                      <h4 className="font-semibold text-sm mb-1">{t("auto.maalgruppe")}</h4>
                       <div className="flex flex-wrap gap-1">
                         {showPreview.target_roles.map(r => <Badge key={r} variant="secondary" className="text-xs">{r}</Badge>)}
                       </div>
@@ -797,7 +798,7 @@ export default function AdminRoutineMaker() {
 
                 {(showPreview.steps as RoutineStep[])?.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-sm mb-2">Sjekkliste / steg</h4>
+                    <h4 className="font-semibold text-sm mb-2">{t("auto.sjekkliste_steg")}</h4>
                     <div className="space-y-2">
                       {(showPreview.steps as RoutineStep[]).map((step, idx) => (
                         <div key={step.id || idx} className="flex items-start gap-2">
@@ -815,7 +816,7 @@ export default function AdminRoutineMaker() {
 
                 {(showPreview.legal_refs as any[])?.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-sm mb-1">Lover/forskrifter</h4>
+                    <h4 className="font-semibold text-sm mb-1">{t("auto.lover_forskrifter")}</h4>
                     <ul className="list-disc list-inside text-sm space-y-1">
                       {(showPreview.legal_refs as any[]).map((ref, i) => (
                         <li key={i}>{typeof ref === "string" ? ref : ref.text}</li>
@@ -826,7 +827,7 @@ export default function AdminRoutineMaker() {
 
                 {showPreview.tags?.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-sm mb-1">Tagger</h4>
+                    <h4 className="font-semibold text-sm mb-1">{t("auto.tagger")}</h4>
                     <div className="flex flex-wrap gap-1">
                       {showPreview.tags.map(tag => <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>)}
                     </div>

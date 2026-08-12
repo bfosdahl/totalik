@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Loader2, ShieldCheck, Check, CalendarCheck, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
+import { t } from "@/i18n/t";
 
 export interface ModuleOrderConfig {
   moduleType: string;
@@ -143,7 +144,7 @@ export function UniversalOrderDialog({
       onOrderComplete?.();
     } catch (error: any) {
       console.error("Error ordering module:", error);
-      toast.error("Kunne ikke fullføre bestillingen. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_fullfoere_bestillingen_proev_"));
     } finally {
       setIsSubmitting(false);
     }
@@ -234,14 +235,14 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
               <Check className="w-8 h-8 text-success" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold">Bestilling bekreftet!</h3>
+              <h3 className="text-xl font-semibold">{t("auto.bestilling_bekreftet")}</h3>
               <p className="text-muted-foreground mt-2">
                 {moduleName} er nå aktivert for {company?.name}.
                 Du vil motta en ordrebekreftelse på e-post.
               </p>
             </div>
             <Button onClick={handleClose} className="mt-4">
-              Lukk
+              {t("auto.lukk")}
             </Button>
           </div>
         ) : (
@@ -253,7 +254,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
                 <span className="text-4xl font-bold text-primary">{price.toLocaleString('nb-NO')},-</span>
                 <span className="text-muted-foreground">{priceLabel}</span>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">ekskl. mva</p>
+              <p className="text-sm text-muted-foreground mt-2">{t("auto.ekskl_mva")}</p>
               {description && (
                 <p className="text-sm text-muted-foreground mt-3">{description}</p>
               )}
@@ -266,14 +267,14 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
                   <div className="bg-muted/50 rounded-lg p-4 text-center">
                     <CalendarCheck className="w-6 h-6 text-primary mx-auto mb-2" />
                     <p className="text-sm font-medium">{bindingPeriodMonths} mnd</p>
-                    <p className="text-xs text-muted-foreground">Bindingstid</p>
+                    <p className="text-xs text-muted-foreground">{t("auto.bindingstid")}</p>
                   </div>
                 )}
                 {hasCancellationNotice && (
                   <div className="bg-muted/50 rounded-lg p-4 text-center">
                     <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
                     <p className="text-sm font-medium">{cancellationNoticeMonths} mnd</p>
-                    <p className="text-xs text-muted-foreground">Oppsigelsesfrist</p>
+                    <p className="text-xs text-muted-foreground">{t("auto.oppsigelsesfrist")}</p>
                   </div>
                 )}
               </div>
@@ -282,7 +283,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
             {/* Included features */}
             {features && features.length > 0 && (
               <div className="space-y-2">
-                <h4 className="font-medium text-sm">Inkludert i abonnementet:</h4>
+                <h4 className="font-medium text-sm">{t("auto.inkludert_i_abonnementet")}</h4>
                 <div className="space-y-1.5 text-sm">
                   {features.map((feature, i) => (
                     <div key={i} className="flex items-center gap-2">
@@ -296,7 +297,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
 
             {/* Terms */}
             <div className="space-y-3">
-              <h4 className="font-medium text-sm">Avtalevilkår</h4>
+              <h4 className="font-medium text-sm">{t("auto.avtalevilkaar")}</h4>
               <div className="text-xs text-muted-foreground space-y-2 bg-muted/30 rounded-lg p-4 max-h-40 overflow-y-auto whitespace-pre-line">
                 {config.customTerms || defaultTerms}
               </div>
@@ -320,7 +321,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
             <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
               <ShieldCheck className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="text-xs">
-                <p className="font-medium">Ordrebekreftelse sendes til:</p>
+                <p className="font-medium">{t("auto.ordrebekreftelse_sendes_til")}</p>
                 <p className="text-muted-foreground">{profile?.email}</p>
               </div>
             </div>
@@ -333,7 +334,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
   const actionButtons = !orderComplete && (
     <div className="flex gap-3 pt-4 border-t mt-4">
       <Button variant="outline" onClick={handleClose} className="flex-1">
-        Avbryt
+        {t("auto.avbryt")}
       </Button>
       <Button
         onClick={handleSubmitOrder}
@@ -359,7 +360,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
           <DrawerHeader>
             <DrawerTitle>Bestill {moduleName}</DrawerTitle>
             <DrawerDescription>
-              Godkjenn vilkårene for å aktivere
+              {t("auto.godkjenn_vilkaarene_for_aa_aktivere")}
             </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-6">
@@ -377,7 +378,7 @@ Prisene økes årlig med 5 %. Andre prisjusteringer kan forekomme, men dersom ku
         <DialogHeader>
           <DialogTitle>Bestill {moduleName}</DialogTitle>
           <DialogDescription>
-            Godkjenn vilkårene for å aktivere
+            {t("auto.godkjenn_vilkaarene_for_aa_aktivere")}
           </DialogDescription>
         </DialogHeader>
         {content}

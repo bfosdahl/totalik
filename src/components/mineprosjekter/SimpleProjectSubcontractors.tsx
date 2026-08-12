@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 interface SimpleProjectSubcontractorsProps {
   projectId: string;
@@ -22,8 +23,8 @@ export function SimpleProjectSubcontractors({ projectId }: SimpleProjectSubcontr
       <CardContent>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Users className="w-12 h-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Underleverandører kommer snart</p>
-          <p className="text-sm text-muted-foreground">Legg til underleverandører som jobber på prosjektet</p>
+          <p className="text-muted-foreground">{t("auto.underleverandoerer_kommer_snart")}</p>
+          <p className="text-sm text-muted-foreground">{t("auto.legg_til_underleverandoerer_som_jobber_p")}</p>
         </div>
       </CardContent>
     </Card>

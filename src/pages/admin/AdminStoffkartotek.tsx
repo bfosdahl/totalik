@@ -48,33 +48,34 @@ import {
 import { useAllGlobalChemicals, useAdminGlobalChemicals, type GlobalChemicalWithStats } from "@/hooks/useAdminGlobalChemicals";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const DANGER_CLASS_OPTIONS = [
-  { value: "H200", label: "H200 - Ustabil eksplosiv" },
-  { value: "H220", label: "H220 - Ekstremt brannfarlig gass" },
-  { value: "H225", label: "H225 - Meget brannfarlig væske og damp" },
-  { value: "H226", label: "H226 - Brannfarlig væske og damp" },
-  { value: "H300", label: "H300 - Dødelig ved svelging" },
-  { value: "H301", label: "H301 - Giftig ved svelging" },
-  { value: "H302", label: "H302 - Skadelig ved svelging" },
-  { value: "H310", label: "H310 - Dødelig ved hudkontakt" },
-  { value: "H311", label: "H311 - Giftig ved hudkontakt" },
-  { value: "H312", label: "H312 - Skadelig ved hudkontakt" },
-  { value: "H314", label: "H314 - Gir alvorlige etseskader" },
-  { value: "H315", label: "H315 - Irriterer huden" },
-  { value: "H317", label: "H317 - Kan utløse allergisk hudreaksjon" },
-  { value: "H318", label: "H318 - Gir alvorlig øyeskade" },
-  { value: "H319", label: "H319 - Gir alvorlig øyeirritasjon" },
-  { value: "H330", label: "H330 - Dødelig ved innånding" },
-  { value: "H331", label: "H331 - Giftig ved innånding" },
-  { value: "H332", label: "H332 - Skadelig ved innånding" },
-  { value: "H334", label: "H334 - Kan gi allergi/astma ved innånding" },
-  { value: "H335", label: "H335 - Kan forårsake irritasjon av luftveiene" },
-  { value: "H340", label: "H340 - Kan forårsake genetiske skader" },
-  { value: "H350", label: "H350 - Kan forårsake kreft" },
-  { value: "H360", label: "H360 - Kan skade fruktbarheten" },
-  { value: "H400", label: "H400 - Meget giftig for liv i vann" },
-  { value: "H410", label: "H410 - Langtidsvirkning for vannlevende org." },
+  { value: "H200", label: t("auto.h200_ustabil_eksplosiv") },
+  { value: "H220", label: t("auto.h220_ekstremt_brannfarlig_gass") },
+  { value: "H225", label: t("auto.h225_meget_brannfarlig_vaeske_og_damp") },
+  { value: "H226", label: t("auto.h226_brannfarlig_vaeske_og_damp") },
+  { value: "H300", label: t("auto.h300_doedelig_ved_svelging") },
+  { value: "H301", label: t("auto.h301_giftig_ved_svelging") },
+  { value: "H302", label: t("auto.h302_skadelig_ved_svelging") },
+  { value: "H310", label: t("auto.h310_doedelig_ved_hudkontakt") },
+  { value: "H311", label: t("auto.h311_giftig_ved_hudkontakt") },
+  { value: "H312", label: t("auto.h312_skadelig_ved_hudkontakt") },
+  { value: "H314", label: t("auto.h314_gir_alvorlige_etseskader") },
+  { value: "H315", label: t("auto.h315_irriterer_huden") },
+  { value: "H317", label: t("auto.h317_kan_utloese_allergisk_hudreaksjon") },
+  { value: "H318", label: t("auto.h318_gir_alvorlig_oeyeskade") },
+  { value: "H319", label: t("auto.h319_gir_alvorlig_oeyeirritasjon") },
+  { value: "H330", label: t("auto.h330_doedelig_ved_innaanding") },
+  { value: "H331", label: t("auto.h331_giftig_ved_innaanding") },
+  { value: "H332", label: t("auto.h332_skadelig_ved_innaanding") },
+  { value: "H334", label: t("auto.h334_kan_gi_allergi_astma_ved_innaanding") },
+  { value: "H335", label: t("auto.h335_kan_foraarsake_irritasjon_av_luftve") },
+  { value: "H340", label: t("auto.h340_kan_foraarsake_genetiske_skader") },
+  { value: "H350", label: t("auto.h350_kan_foraarsake_kreft") },
+  { value: "H360", label: t("auto.h360_kan_skade_fruktbarheten") },
+  { value: "H400", label: t("auto.h400_meget_giftig_for_liv_i_vann") },
+  { value: "H410", label: t("auto.h410_langtidsvirkning_for_vannlevende_or") },
 ];
 
 export default function AdminStoffkartotek() {
@@ -249,9 +250,9 @@ export default function AdminStoffkartotek() {
               <FlaskConical className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Globalt Stoffkartotek</h1>
+              <h1 className="text-2xl font-bold">{t("auto.globalt_stoffkartotek")}</h1>
               <p className="text-muted-foreground">
-                Administrer det felles kjemikalieregisteret
+                {t("auto.administrer_det_felles_kjemikalieregiste")}
               </p>
             </div>
           </div>
@@ -270,7 +271,7 @@ export default function AdminStoffkartotek() {
                   <FlaskConical className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Totalt stoffer</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.totalt_stoffer")}</p>
                   <p className="text-2xl font-bold">{totalChemicals}</p>
                 </div>
               </div>
@@ -283,7 +284,7 @@ export default function AdminStoffkartotek() {
                   <FileText className="w-5 h-5 text-success" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Med SDS</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.med_sds")}</p>
                   <p className="text-2xl font-bold">{withSds}</p>
                 </div>
               </div>
@@ -296,7 +297,7 @@ export default function AdminStoffkartotek() {
                   <AlertTriangle className="w-5 h-5 text-warning" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Uten SDS</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.uten_sds")}</p>
                   <p className="text-2xl font-bold">{withoutSds}</p>
                 </div>
               </div>
@@ -309,7 +310,7 @@ export default function AdminStoffkartotek() {
                   <Building2 className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Bedriftsbruk</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.bedriftsbruk")}</p>
                   <p className="text-2xl font-bold">{totalUsage}</p>
                 </div>
               </div>
@@ -324,7 +325,7 @@ export default function AdminStoffkartotek() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk etter produktnavn, produsent eller CAS-nr..."
+                  placeholder={t("auto.soek_etter_produktnavn_produsent_eller_c")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -346,13 +347,13 @@ export default function AdminStoffkartotek() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Produktnavn</TableHead>
-                      <TableHead>Produsent</TableHead>
-                      <TableHead>CAS-nr</TableHead>
-                      <TableHead>Fareklasser</TableHead>
+                      <TableHead>{t("auto.produktnavn_2")}</TableHead>
+                      <TableHead>{t("auto.produsent")}</TableHead>
+                      <TableHead>{t("auto.cas_nr")}</TableHead>
+                      <TableHead>{t("auto.fareklasser")}</TableHead>
                       <TableHead>SDS</TableHead>
-                      <TableHead className="text-center">Bedrifter</TableHead>
-                      <TableHead className="text-right">Handlinger</TableHead>
+                      <TableHead className="text-center">{t("auto.bedrifter")}</TableHead>
+                      <TableHead className="text-right">{t("auto.handlinger")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -400,7 +401,7 @@ export default function AdminStoffkartotek() {
                             </Button>
                           ) : (
                             <Badge variant="outline" className="text-warning">
-                              Mangler
+                              {t("auto.mangler")}
                             </Badge>
                           )}
                         </TableCell>
@@ -416,7 +417,7 @@ export default function AdminStoffkartotek() {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() => handleOpenUpload(chemical)}
-                              title="Last opp ny SDS"
+                              title={t("auto.last_opp_ny_sds")}
                             >
                               <Upload className="w-4 h-4" />
                             </Button>
@@ -425,7 +426,7 @@ export default function AdminStoffkartotek() {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() => handleOpenEdit(chemical)}
-                              title="Rediger"
+                              title={t("auto.rediger")}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -434,7 +435,7 @@ export default function AdminStoffkartotek() {
                               size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive"
                               onClick={() => handleOpenDelete(chemical)}
-                              title="Slett"
+                              title={t("auto.slett")}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -454,42 +455,42 @@ export default function AdminStoffkartotek() {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Legg til nytt kjemikalie</DialogTitle>
+            <DialogTitle>{t("auto.legg_til_nytt_kjemikalie")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="productName">Produktnavn *</Label>
+                <Label htmlFor="productName">{t("auto.produktnavn")}</Label>
                 <Input
                   id="productName"
                   value={formData.productName}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, productName: e.target.value }))
                   }
-                  placeholder="F.eks. Acetone"
+                  placeholder={t("auto.f_eks_acetone")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="manufacturer">Produsent</Label>
+                <Label htmlFor="manufacturer">{t("auto.produsent")}</Label>
                 <Input
                   id="manufacturer"
                   value={formData.manufacturer}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, manufacturer: e.target.value }))
                   }
-                  placeholder="F.eks. BASF"
+                  placeholder={t("auto.f_eks_basf")}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="casNumber">CAS-nummer</Label>
+              <Label htmlFor="casNumber">{t("auto.cas_nummer")}</Label>
               <Input
                 id="casNumber"
                 value={formData.casNumber}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, casNumber: e.target.value }))
                 }
-                placeholder="F.eks. 67-64-1"
+                placeholder={t("auto.f_eks_67_64_1")}
               />
             </div>
             <div className="space-y-2">
@@ -512,14 +513,14 @@ export default function AdminStoffkartotek() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notater</Label>
+              <Label htmlFor="notes">{t("auto.notater")}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, notes: e.target.value }))
                 }
-                placeholder="Eventuelle merknader..."
+                placeholder={t("auto.eventuelle_merknader")}
                 rows={2}
               />
             </div>
@@ -540,7 +541,7 @@ export default function AdminStoffkartotek() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={handleCreate}
@@ -557,12 +558,12 @@ export default function AdminStoffkartotek() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Rediger kjemikalie</DialogTitle>
+            <DialogTitle>{t("auto.rediger_kjemikalie")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="editProductName">Produktnavn *</Label>
+                <Label htmlFor="editProductName">{t("auto.produktnavn")}</Label>
                 <Input
                   id="editProductName"
                   value={formData.productName}
@@ -572,7 +573,7 @@ export default function AdminStoffkartotek() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="editManufacturer">Produsent</Label>
+                <Label htmlFor="editManufacturer">{t("auto.produsent")}</Label>
                 <Input
                   id="editManufacturer"
                   value={formData.manufacturer}
@@ -583,7 +584,7 @@ export default function AdminStoffkartotek() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editCasNumber">CAS-nummer</Label>
+              <Label htmlFor="editCasNumber">{t("auto.cas_nummer")}</Label>
               <Input
                 id="editCasNumber"
                 value={formData.casNumber}
@@ -612,7 +613,7 @@ export default function AdminStoffkartotek() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editNotes">Notater</Label>
+              <Label htmlFor="editNotes">{t("auto.notater")}</Label>
               <Textarea
                 id="editNotes"
                 value={formData.notes}
@@ -625,7 +626,7 @@ export default function AdminStoffkartotek() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={handleUpdate}
@@ -642,11 +643,11 @@ export default function AdminStoffkartotek() {
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Last opp ny SDS-versjon</DialogTitle>
+            <DialogTitle>{t("auto.last_opp_ny_sds_versjon")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              Laster opp ny SDS for: <strong>{selectedChemical?.product_name}</strong>
+              {t("auto.laster_opp_ny_sds_for")} <strong>{selectedChemical?.product_name}</strong>
             </p>
             <div className="space-y-2">
               <Label htmlFor="uploadSdsFile">Sikkerhetsdatablad (PDF)</Label>
@@ -665,7 +666,7 @@ export default function AdminStoffkartotek() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleUploadSds} disabled={!sdsFile || isUploading}>
               {isUploading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -679,7 +680,7 @@ export default function AdminStoffkartotek() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett kjemikalie?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_kjemikalie")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette{" "}
               <strong>{selectedChemical?.product_name}</strong>? Dette vil også fjerne
@@ -693,7 +694,7 @@ export default function AdminStoffkartotek() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

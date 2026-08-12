@@ -9,6 +9,7 @@ import { Mail, Plus, X, Loader2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface User {
   id: string;
@@ -83,12 +84,12 @@ export function EmailSendDialog({
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error("Ugyldig e-postadresse");
+      toast.error(t("auto.ugyldig_e_postadresse"));
       return;
     }
 
     if (customEmails.includes(email)) {
-      toast.error("E-postadressen er allerede lagt til");
+      toast.error(t("auto.e_postadressen_er_allerede_lagt_til"));
       return;
     }
 
@@ -109,7 +110,7 @@ export function EmailSendDialog({
     const allRecipients = [...selectedUserEmails, ...customEmails];
 
     if (allRecipients.length === 0) {
-      toast.error("Velg minst én mottaker");
+      toast.error(t("auto.velg_minst_n_mottaker"));
       return;
     }
 
@@ -197,7 +198,7 @@ export function EmailSendDialog({
 
           {/* Custom emails */}
           <div className="space-y-2">
-            <Label>Andre mottakere</Label>
+            <Label>{t("auto.andre_mottakere")}</Label>
             <div className="flex gap-2">
               <Input
                 type="email"
@@ -245,7 +246,7 @@ export function EmailSendDialog({
             </p>
             <div className="flex gap-2 w-full sm:w-auto">
               <Button variant="outline" onClick={() => handleOpenChange(false)} className="flex-1 sm:flex-none">
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={handleSend} disabled={isSending || totalRecipients === 0} className="flex-1 sm:flex-none">
                 {isSending ? (

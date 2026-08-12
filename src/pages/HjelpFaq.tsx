@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Search, HelpCircle } from "lucide-react";
+import { t } from "@/i18n/t";
 
 export default function HjelpFaq() {
   const [query, setQuery] = useState("");
@@ -20,19 +21,17 @@ export default function HjelpFaq() {
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-primary">
           <HelpCircle className="w-6 h-6" />
-          <h1 className="text-2xl md:text-3xl font-bold">Hjelp og FAQ</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{t("auto.hjelp_og_faq")}</h1>
         </div>
         <p className="text-muted-foreground">
-          Svar på de vanligste spørsmålene om HMS Proffen. Finner du ikke det du
-          leter etter? Spør HMS Proffen, MAT Proffen eller Bygg Proffen i
-          chatten – de kjenner innholdet her.
+          {t("auto.svar_paa_de_vanligste_spoersmaalene_om_h")}
         </p>
       </div>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Søk i spørsmål og svar..."
+          placeholder={t("auto.soek_i_spoersmaal_og_svar")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-9"

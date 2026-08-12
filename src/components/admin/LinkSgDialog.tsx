@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface SGEnterprise {
   name: string;
@@ -64,7 +65,7 @@ export function LinkSgDialog({
       onOpenChange(false);
     } catch (error) {
       toast({
-        title: "Feil ved kobling",
+        title: t("auto.feil_ved_kobling"),
         description: error instanceof Error ? error.message : "Ukjent feil",
         variant: "destructive",
       });
@@ -77,7 +78,7 @@ export function LinkSgDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Koble SG-godkjenning</DialogTitle>
+          <DialogTitle>{t("auto.koble_sg_godkjenning")}</DialogTitle>
           <DialogDescription>
             Koble {companyName} til Sentral Godkjenning registeret
           </DialogDescription>
@@ -114,7 +115,7 @@ export function LinkSgDialog({
                 <div className="mt-3 pt-3 border-t">
                   <div className="flex items-center gap-2 mb-2">
                     <Award className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Godkjenningsområder:</span>
+                    <span className="font-medium">{t("auto.godkjenningsomraader")}</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {sgEnterprise.valid_approval_areas.map((area, idx) => (
@@ -130,15 +131,14 @@ export function LinkSgDialog({
 
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
             <p className="text-sm">
-              Dette vil oppdatere bedriftens profil med SG-godkjenningsinformasjon. 
-              Informasjonen vil være synlig i prosjektrapporter og dokumentasjon.
+              {t("auto.dette_vil_oppdatere_bedriftens_profil_me")}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleLink} disabled={isLinking}>
             {isLinking ? "Kobler..." : "Koble til bedrift"}

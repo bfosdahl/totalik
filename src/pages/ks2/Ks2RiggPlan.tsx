@@ -20,6 +20,7 @@ import { syncRiggPlansToSha } from "@/utils/riggToShaSync";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function Ks2RiggPlan() {
   const { projectId } = useParams();
@@ -96,7 +97,7 @@ export default function Ks2RiggPlan() {
             <MapPin className="h-6 w-6 text-primary" /> Riggplan
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Visuell organisering av byggeplassen — brakkerigg, kran, lager, adkomst, rømning og mer.
+            {t("auto.visuell_organisering_av_byggeplassen_bra")}
           </p>
         </div>
         <Button onClick={() => setNewOpen(true)}>
@@ -132,7 +133,7 @@ export default function Ks2RiggPlan() {
               </>
             ) : (
               <>
-                Opprett SHA-plan <ArrowRight className="h-4 w-4 ml-1" />
+                {t("auto.opprett_sha_plan")} <ArrowRight className="h-4 w-4 ml-1" />
               </>
             )}
           </Button>
@@ -143,9 +144,9 @@ export default function Ks2RiggPlan() {
         <Card>
           <CardContent className="py-12 text-center">
             <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-            <h3 className="font-semibold mb-1">Ingen riggplaner enda</h3>
+            <h3 className="font-semibold mb-1">{t("auto.ingen_riggplaner_enda")}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Lag en visuell oversikt over byggeplassen med drag-and-drop symboler.
+              {t("auto.lag_en_visuell_oversikt_over_byggeplasse")}
             </p>
             <Button onClick={() => setNewOpen(true)}>
               <Plus className="h-4 w-4 mr-1" /> Opprett første riggplan
@@ -192,19 +193,19 @@ export default function Ks2RiggPlan() {
       <Dialog open={newOpen} onOpenChange={setNewOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ny riggplan</DialogTitle>
+            <DialogTitle>{t("auto.ny_riggplan")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Label>Navn</Label>
+            <Label>{t("auto.navn_2")}</Label>
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="F.eks. Hovedriggplan, Fase 1, etc."
+              placeholder={t("auto.f_eks_hovedriggplan_fase_1_etc")}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNewOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={async () => {
@@ -225,12 +226,12 @@ export default function Ks2RiggPlan() {
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Slette riggplan?</DialogTitle>
+            <DialogTitle>{t("auto.slette_riggplan")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">Handlingen kan ikke angres.</p>
+          <p className="text-sm text-muted-foreground">{t("auto.handlingen_kan_ikke_angres")}</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               variant="destructive"

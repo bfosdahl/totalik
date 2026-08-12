@@ -39,6 +39,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useQueryClient } from "@tanstack/react-query";
+import { t } from "@/i18n/t";
 
 // All DIBK forms with direct download links - simplified list
 // Forms with localUrl have PDF stored locally, others link to DIBK
@@ -90,12 +91,12 @@ const DIBK_FORMS = [
 ];
 
 const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
-  nabovarsel: { label: "Nabovarsel", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
-  soknad: { label: "Søknader", color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400" },
-  plan: { label: "Planer", color: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400" },
-  ansvarsrett: { label: "Ansvarsrett", color: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400" },
-  kontroll: { label: "Kontroll", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" },
-  ferdigattest: { label: "Ferdigattest", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
+  nabovarsel: { label: t("auto.nabovarsel"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+  soknad: { label: t("auto.soeknader"), color: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400" },
+  plan: { label: t("auto.planer"), color: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400" },
+  ansvarsrett: { label: t("auto.ansvarsrett"), color: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400" },
+  kontroll: { label: t("auto.kontroll"), color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" },
+  ferdigattest: { label: t("auto.ferdigattest"), color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" },
 };
 
 export default function Ks2ByggesakBlanketter() {
@@ -187,7 +188,7 @@ export default function Ks2ByggesakBlanketter() {
       toast.success(`${formNumber} lastet opp!`);
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Kunne ikke laste opp fil");
+      toast.error(t("auto.kunne_ikke_laste_opp_fil"));
     } finally {
       setUploadingFormNumber(null);
     }
@@ -215,10 +216,10 @@ export default function Ks2ByggesakBlanketter() {
         status: "not_started",
       });
       
-      toast.success("Fil slettet");
+      toast.success(t("auto.fil_slettet"));
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Kunne ikke slette fil");
+      toast.error(t("auto.kunne_ikke_slette_fil"));
     }
   };
 
@@ -237,10 +238,10 @@ export default function Ks2ByggesakBlanketter() {
     return (
       <div className="text-center py-12">
         <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold mb-2">Byggesak ikke startet</h2>
-        <p className="text-muted-foreground mb-4">Gå til Byggesak-oversikt for å starte</p>
+        <h2 className="text-xl font-semibold mb-2">{t("auto.byggesak_ikke_startet")}</h2>
+        <p className="text-muted-foreground mb-4">{t("auto.gaa_til_byggesak_oversikt_for_aa_starte")}</p>
         <Button asChild>
-          <Link to={`/ks/project/${projectId}/byggesak`}>Gå til byggesak-oversikt</Link>
+          <Link to={`/ks/project/${projectId}/byggesak`}>{t("auto.gaa_til_byggesak_oversikt")}</Link>
         </Button>
       </div>
     );
@@ -253,9 +254,9 @@ export default function Ks2ByggesakBlanketter() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Blanketter</h1>
+          <h1 className="text-2xl font-bold">{t("auto.blanketter")}</h1>
           <p className="text-muted-foreground">
-            Last ned skjemaer fra DIBK, fyll ut manuelt, og last opp signerte versjoner
+            {t("auto.last_ned_skjemaer_fra_dibk_fyll_ut_manue")}
           </p>
         </div>
         <Badge variant="secondary" className="text-sm w-fit">
@@ -269,7 +270,7 @@ export default function Ks2ByggesakBlanketter() {
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">1</div>
-              <span className="text-sm">Last ned skjema fra DIBK</span>
+              <span className="text-sm">{t("auto.last_ned_skjema_fra_dibk")}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">2</div>
@@ -277,7 +278,7 @@ export default function Ks2ByggesakBlanketter() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm shrink-0">3</div>
-              <span className="text-sm">Last opp ferdig signert dokument</span>
+              <span className="text-sm">{t("auto.last_opp_ferdig_signert_dokument")}</span>
             </div>
           </div>
         </CardContent>
@@ -288,7 +289,7 @@ export default function Ks2ByggesakBlanketter() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk på skjemanummer eller navn..."
+            placeholder={t("auto.soek_paa_skjemanummer_eller_navn")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -307,10 +308,10 @@ export default function Ks2ByggesakBlanketter() {
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-full sm:w-48">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Alle kategorier" />
+            <SelectValue placeholder={t("auto.alle_kategorier")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle kategorier</SelectItem>
+            <SelectItem value="all">{t("auto.alle_kategorier")}</SelectItem>
             {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
               <SelectItem key={key} value={key}>{config.label}</SelectItem>
             ))}
@@ -364,7 +365,7 @@ export default function Ks2ByggesakBlanketter() {
                         <div className="relative">
                           <FileText className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                           {form.localUrl && (
-                            <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-green-500" title="PDF tilgjengelig" />
+                            <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-green-500" title={t("auto.pdf_tilgjengelig")} />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -374,7 +375,7 @@ export default function Ks2ByggesakBlanketter() {
                           </p>
                           {form.localUrl && (
                             <Badge variant="outline" className="text-[10px] mt-1 px-1 py-0">
-                              PDF klar
+                              {t("auto.pdf_klar")}
                             </Badge>
                           )}
                         </div>
@@ -461,7 +462,7 @@ export default function Ks2ByggesakBlanketter() {
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{viewingFile?.name}</DialogTitle>
-            <DialogDescription>Opplastet dokument</DialogDescription>
+            <DialogDescription>{t("auto.opplastet_dokument")}</DialogDescription>
           </DialogHeader>
           {viewingFile && (
             <div className="flex-1 min-h-[60vh]">

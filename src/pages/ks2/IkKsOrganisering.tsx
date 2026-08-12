@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSelect from "@/components/audits/UserSelect";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { t } from "@/i18n/t";
 
 interface OrganizationRole {
   id: string;
@@ -41,35 +42,35 @@ interface OrganizationData {
 // Predefined role templates for KS/construction project management
 const PREDEFINED_ROLES = [
   {
-    title: "Daglig leder",
-    description: "Daglig leder har det overordnede ansvaret for at kvalitetsstyringssystemet følges. Godkjenner prosjekter og sikrer at ressurser er tilgjengelig for kvalitetsarbeid."
+    title: t("auto.daglig_leder"),
+    description: t("auto.daglig_leder_har_det_overordnede_ansvare")
   },
   {
-    title: "Faglig leder",
-    description: "Faglig leder har ansvar for at prosjekter gjennomføres i henhold til tekniske krav og standarder. Godkjenner tekniske løsninger og sikrer kompetanse i prosjektene."
+    title: t("auto.faglig_leder"),
+    description: t("auto.faglig_leder_har_ansvar_for_at_prosjekte")
   },
   {
-    title: "Prosjektleder",
-    description: "Prosjektleder har det operative ansvaret for prosjektgjennomføring. Koordinerer ressurser, følger opp fremdrift, kvalitet og HMS på prosjektnivå."
+    title: t("auto.prosjektleder"),
+    description: t("auto.prosjektleder_har_det_operative_ansvaret")
   },
   {
-    title: "KS-ansvarlig",
-    description: "KS-ansvarlig koordinerer kvalitetssikringsarbeidet og har ansvar for at sjekklister, kontroller og dokumentasjon gjennomføres og arkiveres korrekt."
+    title: t("auto.ks_ansvarlig"),
+    description: t("auto.ks_ansvarlig_koordinerer_kvalitetssikrin")
   },
   {
-    title: "HMS-ansvarlig prosjekt",
-    description: "HMS-ansvarlig på prosjekt har ansvar for å følge opp SHA-plan, gjennomføre vernerunder og sikre at HMS-tiltak iverksettes."
+    title: t("auto.hms_ansvarlig_prosjekt"),
+    description: t("auto.hms_ansvarlig_paa_prosjekt_har_ansvar_fo")
   },
   {
-    title: "Arbeidsleder",
-    description: "Arbeidsleder har det daglige ansvaret for arbeidet på byggeplass. Følger opp at arbeid utføres i henhold til tegninger, beskrivelser og HMS-krav."
+    title: t("auto.arbeidsleder"),
+    description: t("auto.arbeidsleder_har_det_daglige_ansvaret_fo")
   },
   {
-    title: "Fagarbeider",
-    description: "Fagarbeider utfører arbeid i henhold til tegninger og beskrivelser. Melder fra om avvik og deltar i egenkontroll av utført arbeid."
+    title: t("auto.fagarbeider"),
+    description: t("auto.fagarbeider_utfoerer_arbeid_i_henhold_ti")
   },
   {
-    title: "Egendefinert rolle",
+    title: t("auto.egendefinert_rolle"),
     description: ""
   }
 ];
@@ -108,7 +109,7 @@ export default function IkKsOrganisering() {
         }
       } catch (error) {
         console.error("Error fetching organization:", error);
-        toast.error("Kunne ikke laste organisasjonsdata");
+        toast.error(t("auto.kunne_ikke_laste_organisasjonsdata"));
       } finally {
         setIsLoading(false);
       }
@@ -205,11 +206,11 @@ export default function IkKsOrganisering() {
 
       if (error) throw error;
 
-      toast.success("Organisering lagret");
+      toast.success(t("auto.organisering_lagret"));
       setHasChanges(false);
     } catch (error) {
       console.error("Error saving organization:", error);
-      toast.error("Kunne ikke lagre organisering");
+      toast.error(t("auto.kunne_ikke_lagre_organisering"));
     } finally {
       setIsSaving(false);
     }
@@ -226,7 +227,7 @@ export default function IkKsOrganisering() {
     
     setData({ ...data, description: roleDescriptions });
     setHasChanges(true);
-    toast.success("Beskrivelse generert fra roller");
+    toast.success(t("auto.beskrivelse_generert_fra_roller"));
   };
 
   if (isLoading) {
@@ -249,7 +250,7 @@ export default function IkKsOrganisering() {
               Organisasjonsplan
             </h1>
             <p className="text-muted-foreground mt-1">
-              Organisering av KS-prosjektstyring med roller og ansvar
+              {t("auto.organisering_av_ks_prosjektstyring_med_r")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -270,23 +271,22 @@ export default function IkKsOrganisering() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Rollene som defineres her blir standard for nye prosjekter. 
-            Du kan endre roller på prosjektnivå uten at det påvirker denne malen.
+            {t("auto.rollene_som_defineres_her_blir_standard_")}
           </AlertDescription>
         </Alert>
 
         <Tabs defaultValue="chart" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="chart">Organisasjonskart</TabsTrigger>
-            <TabsTrigger value="description">Beskrivelse</TabsTrigger>
+            <TabsTrigger value="chart">{t("auto.organisasjonskart")}</TabsTrigger>
+            <TabsTrigger value="description">{t("auto.beskrivelse")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chart" className="space-y-6">
             {/* Quick add predefined roles */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Legg til rolle</CardTitle>
-                <CardDescription>Velg en forhåndsdefinert rolle for KS-prosjektstyring</CardDescription>
+                <CardTitle className="text-base">{t("auto.legg_til_rolle")}</CardTitle>
+                <CardDescription>{t("auto.velg_en_forhaandsdefinert_rolle_for_ks_p")}</CardDescription>
               </CardHeader>
               <CardContent>
               <div className="flex flex-wrap gap-2">
@@ -315,9 +315,9 @@ export default function IkKsOrganisering() {
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="font-medium">Ingen roller er definert ennå</p>
+                  <p className="font-medium">{t("auto.ingen_roller_er_definert_ennaa")}</p>
                   <p className="text-sm mt-2">
-                    Velg forhåndsdefinerte roller ovenfor for å bygge organisasjonskartet.
+                    {t("auto.velg_forhaandsdefinerte_roller_ovenfor_f")}
                   </p>
                 </CardContent>
               </Card>
@@ -326,7 +326,7 @@ export default function IkKsOrganisering() {
                 {/* Visual org chart */}
                 <Card className="bg-muted/30">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Organisasjonskart</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.organisasjonskart")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-col items-center gap-2">
@@ -349,7 +349,7 @@ export default function IkKsOrganisering() {
 
                 {/* Role editing cards */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Rediger roller</h3>
+                  <h3 className="font-semibold text-lg">{t("auto.rediger_roller")}</h3>
                   {data.roles.map((role, index) => (
                     <Card key={role.id} className="relative">
                       <div className="absolute right-2 top-2 flex gap-1">
@@ -394,7 +394,7 @@ export default function IkKsOrganisering() {
                               }}
                             >
                               <SelectTrigger>
-                                <SelectValue placeholder="Velg rolletype" />
+                                <SelectValue placeholder={t("auto.velg_rolletype")} />
                               </SelectTrigger>
                               <SelectContent>
                                 {PREDEFINED_ROLES.map((predefined) => (
@@ -402,13 +402,13 @@ export default function IkKsOrganisering() {
                                     {predefined.title}
                                   </SelectItem>
                                 ))}
-                                <SelectItem value="custom">Egendefinert tittel</SelectItem>
+                                <SelectItem value="custom">{t("auto.egendefinert_tittel")}</SelectItem>
                               </SelectContent>
                             </Select>
                             <UserSelect
                               value={role.personName}
                               onValueChange={(value) => handleUpdateRole(role.id, "personName", value)}
-                              placeholder="Velg ansatt"
+                              placeholder={t("auto.velg_ansatt")}
                             />
                           </div>
                         </div>
@@ -418,7 +418,7 @@ export default function IkKsOrganisering() {
                             <Input
                               value={role.title === "Egendefinert rolle" ? "" : role.title}
                               onChange={(e) => handleUpdateRole(role.id, "title", e.target.value)}
-                              placeholder="Skriv inn rolletittel..."
+                              placeholder={t("auto.skriv_inn_rolletittel")}
                               className="max-w-sm"
                             />
                           </div>
@@ -426,11 +426,11 @@ export default function IkKsOrganisering() {
                       </CardHeader>
                       <CardContent className="pt-0">
                         <div className="pl-11">
-                          <label className="text-sm font-medium text-muted-foreground">Ansvarsbeskrivelse</label>
+                          <label className="text-sm font-medium text-muted-foreground">{t("auto.ansvarsbeskrivelse")}</label>
                           <Textarea
                             value={role.description}
                             onChange={(e) => handleUpdateRole(role.id, "description", e.target.value)}
-                            placeholder="Beskriv ansvarsområder og oppgaver..."
+                            placeholder={t("auto.beskriv_ansvarsomraader_og_oppgaver")}
                             rows={2}
                             className="mt-1"
                           />
@@ -448,14 +448,14 @@ export default function IkKsOrganisering() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle>Beskrivelse av organisering</CardTitle>
+                    <CardTitle>{t("auto.beskrivelse_av_organisering")}</CardTitle>
                     <CardDescription>
-                      Fritekst-beskrivelse av KS-organiseringen for bruk i håndbøker og dokumenter
+                      {t("auto.fritekst_beskrivelse_av_ks_organiseringe")}
                     </CardDescription>
                   </div>
                   {data.roles.length > 0 && (
                     <Button variant="outline" size="sm" onClick={generateDescriptionFromRoles}>
-                      Generer fra roller
+                      {t("auto.generer_fra_roller")}
                     </Button>
                   )}
                 </div>
@@ -464,7 +464,7 @@ export default function IkKsOrganisering() {
                 <Textarea
                   value={data.description}
                   onChange={(e) => handleDescriptionChange(e.target.value)}
-                  placeholder="Beskriv hvordan bedriften organiserer kvalitetssikringsarbeidet i prosjekter..."
+                  placeholder={t("auto.beskriv_hvordan_bedriften_organiserer_kv")}
                   rows={12}
                   className="resize-none"
                 />
@@ -477,20 +477,17 @@ export default function IkKsOrganisering() {
             {/* Example text */}
             <Card className="bg-muted/50">
               <CardHeader>
-                <CardTitle className="text-sm text-muted-foreground">Eksempel på organisasjonsbeskrivelse</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">{t("auto.eksempel_paa_organisasjonsbeskrivelse")}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 <p>
-                  <strong>Daglig leder</strong> har det overordnede ansvaret for kvalitetssystemet og godkjenner 
-                  alle prosjekter før oppstart.
+                  <strong>{t("auto.daglig_leder")}</strong> {t("auto.har_det_overordnede_ansvaret_for_kvalite")}
                 </p>
                 <p>
-                  <strong>Faglig leder</strong> sikrer at tekniske løsninger er i henhold til gjeldende krav og 
-                  har ansvar for faglig veiledning i prosjektene.
+                  <strong>{t("auto.faglig_leder")}</strong> {t("auto.sikrer_at_tekniske_loesninger_er_i_henho")}
                 </p>
                 <p>
-                  <strong>Prosjektleder</strong> har det operative ansvaret for gjennomføring og koordinerer 
-                  alle aktiviteter på prosjektnivå.
+                  <strong>{t("auto.prosjektleder")}</strong> {t("auto.har_det_operative_ansvaret_for_gjennomfo")}
                 </p>
               </CardContent>
             </Card>

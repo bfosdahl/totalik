@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 import {
   applyIkMatHandbookImport,
   IkMatImportResult,
@@ -65,7 +66,7 @@ export function IkMatHandbookImportUploader({
 
       const maxSize = 20 * 1024 * 1024;
       if (file.size > maxSize) {
-        toast.error("Filen er for stor. Maks 20MB.");
+        toast.error(t("auto.filen_er_for_stor_maks_20mb"));
         return;
       }
 
@@ -98,7 +99,7 @@ export function IkMatHandbookImportUploader({
         console.error("IK/MAT handbook parse error:", err);
         setError(err instanceof Error ? err.message : "Ukjent feil");
         setStep("upload");
-        toast.error("Kunne ikke analysere håndboken. Prøv igjen.");
+        toast.error(t("auto.kunne_ikke_analysere_haandboken_proev_ig"));
       }
     },
     [],
@@ -112,7 +113,7 @@ export function IkMatHandbookImportUploader({
       setImportResult(result);
       setStep("done");
       if (result.success) {
-        toast.success("IK/MAT-håndboken ble importert!");
+        toast.success(t("auto.ik_mat_haandboken_ble_importert"));
         onImportComplete?.(result);
       } else {
         toast.error(result.error || "Feil ved import");
@@ -141,9 +142,7 @@ export function IkMatHandbookImportUploader({
           Importer fra eksisterende IK/MAT-håndbok
         </CardTitle>
         <CardDescription>
-          Last opp en gammel IK-Mat-perm eller HACCP-dokumentasjon, så
-          trekker AI ut virksomhetsinfo, organisering, HACCP, rutiner,
-          renholdsplan og historiske avvik automatisk.
+          {t("auto.last_opp_en_gammel_ik_mat_perm_eller_hac")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -185,7 +184,7 @@ function UploadStep(
         <div className="flex flex-col items-center justify-center pt-5 pb-6">
           <Upload className="h-10 w-10 text-muted-foreground mb-3" />
           <p className="mb-1 text-sm font-medium">
-            Klikk for å laste opp IK/MAT-håndbok
+            {t("auto.klikk_for_aa_laste_opp_ik_mat_haandbok")}
           </p>
           <p className="text-xs text-muted-foreground">
             PDF, Word (.docx) eller bilder (JPG, PNG) — maks 20MB
@@ -199,7 +198,7 @@ function UploadStep(
         />
       </label>
       <div className="bg-muted/30 rounded-lg p-4 space-y-2">
-        <p className="text-sm font-medium">Hva blir importert?</p>
+        <p className="text-sm font-medium">{t("auto.hva_blir_importert")}</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Utensils className="h-3 w-3" /> Virksomhetsinfo
@@ -230,14 +229,13 @@ function ParsingStep({ fileName }: { fileName: string }) {
     <div className="flex flex-col items-center justify-center py-12 space-y-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
       <div className="text-center">
-        <p className="font-medium">Analyserer IK/MAT-håndboken...</p>
+        <p className="font-medium">{t("auto.analyserer_ik_mat_haandboken")}</p>
         <p className="text-sm text-muted-foreground mt-1">
           <FileText className="h-3 w-3 inline mr-1" />
           {fileName}
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          AI-en leser dokumentet og trekker ut all matsikkerhets-info. Kan ta
-          opptil 30 sekunder.
+          {t("auto.ai_en_leser_dokumentet_og_trekker_ut_all_2")}
         </p>
       </div>
     </div>
@@ -254,7 +252,7 @@ function PreviewStep(
   const sections = [
     {
       icon: Utensils,
-      label: "Virksomhetsinfo",
+      label: t("auto.virksomhetsinfo"),
       count: data.companyInfo ? 1 : 0,
       items: data.companyInfo
         ? [
@@ -266,7 +264,7 @@ function PreviewStep(
     },
     {
       icon: Users,
-      label: "Organisering / roller",
+      label: t("auto.organisering_roller"),
       count: data.organization?.roles?.length || 0,
       items: data.organization?.roles?.map((r) =>
         `${r.title}${r.name ? ": " + r.name : ""}`
@@ -274,31 +272,31 @@ function PreviewStep(
     },
     {
       icon: Target,
-      label: "Mål",
+      label: t("auto.maal"),
       count: data.goals?.length || 0,
       items: data.goals,
     },
     {
       icon: ShieldAlert,
-      label: "Risiko / farekilder",
+      label: t("auto.risiko_farekilder"),
       count: data.risks?.length || 0,
       items: data.risks?.map((r) => r.hazard),
     },
     {
       icon: Sparkles,
-      label: "HACCP-punkter",
+      label: t("auto.haccp_punkter"),
       count: data.haccp?.length || 0,
       items: data.haccp?.map((h) => `${h.step}: ${h.hazard}`),
     },
     {
       icon: ClipboardList,
-      label: "Rutiner",
+      label: t("auto.rutiner"),
       count: data.routines?.length || 0,
       items: data.routines?.map((r) => r.name),
     },
     {
       icon: ClipboardList,
-      label: "Renholdsplan",
+      label: t("auto.renholdsplan"),
       count: data.cleaningPlan?.length || 0,
       items: data.cleaningPlan?.map((c) =>
         `${c.area} (${c.frequency || "?"})`
@@ -306,7 +304,7 @@ function PreviewStep(
     },
     {
       icon: AlertOctagon,
-      label: "Historiske avvik",
+      label: t("auto.historiske_avvik"),
       count: data.deviations?.length || 0,
       items: data.deviations?.map((d) => `${d.dato || "?"}: ${d.tittel}`),
     },
@@ -369,7 +367,7 @@ function PreviewStep(
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={onCancel} className="flex-1">
-          Avbryt
+          {t("auto.avbryt")}
         </Button>
         <Button onClick={onConfirm} className="flex-1">
           <ArrowRight className="h-4 w-4 mr-2" />
@@ -385,9 +383,9 @@ function ImportingStep() {
     <div className="flex flex-col items-center justify-center py-12 space-y-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
       <div className="text-center">
-        <p className="font-medium">Importerer data...</p>
+        <p className="font-medium">{t("auto.importerer_data")}</p>
         <p className="text-xs text-muted-foreground mt-2">
-          Virksomhetsinfo, HACCP, rutiner, renholdsplan og avvik overføres nå.
+          {t("auto.virksomhetsinfo_haccp_rutiner_renholdspl")}
         </p>
       </div>
     </div>
@@ -403,23 +401,22 @@ function DoneStep(
       <Alert className="border-success bg-success/10">
         <CheckCircle2 className="h-4 w-4 text-success" />
         <AlertDescription className="text-success">
-          IK/MAT-håndboken ble importert! Du kan justere videre i AI-veiviseren
-          nedenfor.
+          {t("auto.ik_mat_haandboken_ble_importert_du_kan_j")}
         </AlertDescription>
       </Alert>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
-          { label: "Mål", count: summary.goals, icon: Target },
-          { label: "Risiko", count: summary.risks, icon: ShieldAlert },
+          { label: t("auto.maal"), count: summary.goals, icon: Target },
+          { label: t("auto.risiko"), count: summary.risks, icon: ShieldAlert },
           { label: "HACCP", count: summary.haccp, icon: Sparkles },
-          { label: "Rutiner", count: summary.routines, icon: ClipboardList },
+          { label: t("auto.rutiner"), count: summary.routines, icon: ClipboardList },
           {
-            label: "Renhold",
+            label: t("auto.renhold"),
             count: summary.cleaningPlan,
             icon: ClipboardList,
           },
-          { label: "Avvik", count: summary.deviations, icon: AlertOctagon },
+          { label: t("auto.avvik"), count: summary.deviations, icon: AlertOctagon },
         ].map((item) => (
           <div
             key={item.label}
@@ -433,7 +430,7 @@ function DoneStep(
       </div>
 
       <Button variant="outline" onClick={onReset} className="w-full">
-        Last opp en ny håndbok
+        {t("auto.last_opp_en_ny_haandbok")}
       </Button>
     </div>
   );

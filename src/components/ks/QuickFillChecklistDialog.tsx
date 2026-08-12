@@ -13,6 +13,7 @@ import { useKsModule2Projects, KsModule2Project } from "@/hooks/useKsModule2Proj
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface QuickFillChecklistDialogProps {
   open: boolean;
@@ -128,7 +129,7 @@ export function QuickFillChecklistDialog({ open, onOpenChange, template }: Quick
       setNotes("");
     } catch (error) {
       console.error("Error saving checklist:", error);
-      toast.error("Kunne ikke lagre sjekklisten");
+      toast.error(t("auto.kunne_ikke_lagre_sjekklisten"));
     } finally {
       setIsSaving(false);
     }
@@ -162,7 +163,7 @@ export function QuickFillChecklistDialog({ open, onOpenChange, template }: Quick
         {step === "project" ? (
           <div className="space-y-4 py-2">
             <p className="text-sm text-muted-foreground">
-              Velg hvilket prosjekt denne sjekklisten skal tilhøre
+              {t("auto.velg_hvilket_prosjekt_denne_sjekklisten_")}
             </p>
 
             <div className="flex gap-2">
@@ -185,10 +186,10 @@ export function QuickFillChecklistDialog({ open, onOpenChange, template }: Quick
 
             {projectMode === "existing" ? (
               <div className="space-y-2">
-                <Label>Velg prosjekt</Label>
+                <Label>{t("auto.velg_prosjekt")}</Label>
                 <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg et prosjekt..." />
+                    <SelectValue placeholder={t("auto.velg_et_prosjekt")} />
                   </SelectTrigger>
                   <SelectContent>
                     {projects.filter(p => p.status !== "completed").map(p => (
@@ -210,19 +211,19 @@ export function QuickFillChecklistDialog({ open, onOpenChange, template }: Quick
               </div>
             ) : (
               <div className="space-y-2">
-                <Label>Prosjektnavn / referanse</Label>
+                <Label>{t("auto.prosjektnavn_referanse")}</Label>
                 <Input
                   value={freetextProject}
                   onChange={e => setFreetextProject(e.target.value)}
-                  placeholder="F.eks. Enebolig Fjordveien 8"
+                  placeholder={t("auto.f_eks_enebolig_fjordveien_8")}
                 />
               </div>
             )}
 
             <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>{t("auto.avbryt")}</Button>
               <Button disabled={!canProceedToFill} onClick={() => setStep("fill")}>
-                Neste – Fyll ut sjekkliste
+                {t("auto.neste_fyll_ut_sjekkliste")}
               </Button>
             </div>
           </div>
@@ -273,14 +274,14 @@ export function QuickFillChecklistDialog({ open, onOpenChange, template }: Quick
               <Textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder="Notater om sjekklisten..."
+                placeholder={t("auto.notater_om_sjekklisten")}
                 className="min-h-[80px]"
               />
             </div>
 
             <div className="flex gap-2 justify-between pt-4 border-t sticky bottom-0 bg-background pb-1">
               <Button variant="ghost" size="sm" onClick={() => setStep("project")}>
-                ← Tilbake
+                {t("auto.tilbake_2")}
               </Button>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => handleSave("draft")} disabled={isSaving}>

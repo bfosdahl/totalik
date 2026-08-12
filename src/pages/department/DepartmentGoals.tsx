@@ -10,6 +10,7 @@ import { Target, Save, Loader2, Info, ArrowLeft, Plus, Trash2 } from "lucide-rea
 import { toast } from "sonner";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { Department } from "@/hooks/useDepartments";
+import { t } from "@/i18n/t";
 
 interface DepartmentGoal {
   id: string;
@@ -61,7 +62,7 @@ const DepartmentGoals = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Kunne ikke laste data");
+        toast.error(t("auto.kunne_ikke_laste_data"));
       } finally {
         setIsLoading(false);
       }
@@ -125,11 +126,11 @@ const DepartmentGoals = () => {
 
       if (updateError) throw updateError;
 
-      toast.success("Målsettinger lagret");
+      toast.success(t("auto.maalsettinger_lagret"));
       setHasChanges(false);
     } catch (error) {
       console.error("Error saving goals:", error);
-      toast.error("Kunne ikke lagre målsettinger");
+      toast.error(t("auto.kunne_ikke_lagre_maalsettinger"));
     } finally {
       setIsSaving(false);
     }
@@ -184,8 +185,7 @@ const DepartmentGoals = () => {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Målsettingen beskriver avdelingens overordnede mål for helse, miljø og sikkerhet. 
-            Den bør være konkret og målbar, og gjenspeile avdelingens spesifikke behov.
+            {t("auto.maalsettingen_beskriver_avdelingens_over")}
           </AlertDescription>
         </Alert>
 
@@ -193,7 +193,7 @@ const DepartmentGoals = () => {
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
               <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Ingen målsettinger er definert for denne avdelingen.</p>
+              <p>{t("auto.ingen_maalsettinger_er_definert_for_denn")}</p>
               <Button onClick={handleAddGoal} className="mt-4">
                 <Plus className="h-4 w-4 mr-2" />
                 Legg til målsetting
@@ -222,7 +222,7 @@ const DepartmentGoals = () => {
                   <Textarea
                     value={goal.goal_text}
                     onChange={(e) => handleUpdateGoal(goal.id, e.target.value)}
-                    placeholder="Beskriv avdelingens HMS-målsetting..."
+                    placeholder={t("auto.beskriv_avdelingens_hms_maalsetting")}
                     rows={6}
                     className="resize-none"
                   />
@@ -239,12 +239,11 @@ const DepartmentGoals = () => {
         {/* Example text */}
         <Card className="bg-muted/50">
           <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Eksempel på HMS-målsetting</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t("auto.eksempel_paa_hms_maalsetting")}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>
-              <strong>Eksempel:</strong> Vårt mål er å skape en trygg og helsefremmende arbeidsplass 
-              der alle ansatte trives og kan utføre sitt arbeid uten risiko for skader eller sykdom.
+              <strong>{t("auto.eksempel")}</strong> {t("auto.vaart_maal_er_aa_skape_en_trygg_og_helse")}
             </p>
           </CardContent>
         </Card>

@@ -25,6 +25,7 @@ import { Department } from "@/hooks/useDepartments";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import UserSelect from "@/components/audits/UserSelect";
+import { t } from "@/i18n/t";
 
 interface OrganizationRole {
   id: string;
@@ -42,12 +43,12 @@ interface OrganizationData {
 }
 
 const PREDEFINED_ROLES = [
-  { title: "Avdelingsleder", description: "Avdelingsleder har det overordnede ansvaret for at gjeldende lover, forskrifter og interne retningslinjer etterleves i avdelingen." },
-  { title: "HMS-ansvarlig", description: "HMS-ansvarlig koordinerer det daglige HMS-arbeidet i avdelingen." },
-  { title: "Arbeidsleder", description: "Arbeidsleder har ansvar for å iverksette og følge opp nødvendige tiltak innen sine ansvarsområder." },
-  { title: "Verneombud", description: "Verneombudet fungerer som arbeidstakernes valgte representant i spørsmål knyttet til arbeidsmiljø og sikkerhet." },
-  { title: "Øvrige ansatte", description: "Alle ansatte har en plikt til å informere nærmeste leder om forhold som kan påvirke HMS." },
-  { title: "Egendefinert rolle", description: "" }
+  { title: t("auto.avdelingsleder"), description: t("auto.avdelingsleder_har_det_overordnede_ansva") },
+  { title: t("auto.hms_ansvarlig"), description: t("auto.hms_ansvarlig_koordinerer_det_daglige_hm") },
+  { title: t("auto.arbeidsleder"), description: t("auto.arbeidsleder_har_ansvar_for_aa_iverksett") },
+  { title: t("auto.verneombud"), description: t("auto.verneombudet_fungerer_som_arbeidstakerne") },
+  { title: t("auto.oevrige_ansatte"), description: t("auto.alle_ansatte_har_en_plikt_til_aa_informe") },
+  { title: t("auto.egendefinert_rolle"), description: "" }
 ];
 
 const DepartmentOrganization = () => {
@@ -93,7 +94,7 @@ const DepartmentOrganization = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Kunne ikke laste data");
+        toast.error(t("auto.kunne_ikke_laste_data"));
       } finally {
         setIsLoading(false);
       }
@@ -175,11 +176,11 @@ const DepartmentOrganization = () => {
 
       if (updateError) throw updateError;
 
-      toast.success("Organisering lagret");
+      toast.success(t("auto.organisering_lagret"));
       setHasChanges(false);
     } catch (error) {
       console.error("Error saving organization:", error);
-      toast.error("Kunne ikke lagre organisering");
+      toast.error(t("auto.kunne_ikke_lagre_organisering"));
     } finally {
       setIsSaving(false);
     }
@@ -226,22 +227,22 @@ const DepartmentOrganization = () => {
 
         <Tabs defaultValue="chart" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="chart">Organisasjonskart</TabsTrigger>
-            <TabsTrigger value="description">Beskrivelse</TabsTrigger>
+            <TabsTrigger value="chart">{t("auto.organisasjonskart")}</TabsTrigger>
+            <TabsTrigger value="description">{t("auto.beskrivelse")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="chart" className="space-y-6">
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Definer rollene i avdelingen med ansvar og kontaktpersoner.
+                {t("auto.definer_rollene_i_avdelingen_med_ansvar_")}
               </AlertDescription>
             </Alert>
 
             {/* Quick add roles */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Legg til rolle</CardTitle>
+                <CardTitle className="text-base">{t("auto.legg_til_rolle")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
@@ -264,7 +265,7 @@ const DepartmentOrganization = () => {
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Ingen roller er definert ennå.</p>
+                  <p>{t("auto.ingen_roller_er_definert_ennaa_2")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -272,7 +273,7 @@ const DepartmentOrganization = () => {
                 {/* Visual org chart */}
                 <Card className="bg-muted/30">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Organisasjonskart</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.organisasjonskart")}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-col items-center gap-2">
@@ -291,7 +292,7 @@ const DepartmentOrganization = () => {
 
                 {/* Role editing */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Rediger roller</h3>
+                  <h3 className="font-semibold text-lg">{t("auto.rediger_roller")}</h3>
                   {data.roles.map((role, index) => (
                     <Card key={role.id} className="relative">
                       <div className="absolute right-2 top-2 flex gap-1">
@@ -314,12 +315,12 @@ const DepartmentOrganization = () => {
                             <Input
                               value={role.title}
                               onChange={(e) => handleUpdateRole(role.id, "title", e.target.value)}
-                              placeholder="Rolletittel"
+                              placeholder={t("auto.rolletittel_2")}
                             />
                             <UserSelect
                               value={role.personName}
                               onValueChange={(value) => handleUpdateRole(role.id, "personName", value)}
-                              placeholder="Velg ansatt"
+                              placeholder={t("auto.velg_ansatt")}
                             />
                           </div>
                         </div>
@@ -328,7 +329,7 @@ const DepartmentOrganization = () => {
                         <Textarea
                           value={role.description}
                           onChange={(e) => handleUpdateRole(role.id, "description", e.target.value)}
-                          placeholder="Beskriv ansvarsområder..."
+                          placeholder={t("auto.beskriv_ansvarsomraader")}
                           rows={3}
                           className="resize-none"
                         />
@@ -343,14 +344,14 @@ const DepartmentOrganization = () => {
           <TabsContent value="description" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Organisasjonsbeskrivelse</CardTitle>
-                <CardDescription>Generell beskrivelse av HMS-organiseringen i avdelingen</CardDescription>
+                <CardTitle>{t("auto.organisasjonsbeskrivelse")}</CardTitle>
+                <CardDescription>{t("auto.generell_beskrivelse_av_hms_organisering")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Textarea
                   value={data.description}
                   onChange={(e) => { setData({ ...data, description: e.target.value }); setHasChanges(true); }}
-                  placeholder="Beskriv hvordan HMS-arbeidet er organisert i avdelingen..."
+                  placeholder={t("auto.beskriv_hvordan_hms_arbeidet_er_organise")}
                   rows={10}
                   className="resize-none"
                 />

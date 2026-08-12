@@ -62,6 +62,7 @@ import { generateDailyReportPdf, generateDailyReportPdfBase64, calculateWorkDura
 import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
@@ -72,8 +73,8 @@ const weatherIcons: Record<string, React.ReactNode> = {
 };
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline"; icon: React.ReactNode }> = {
-  draft: { label: "Utkast", variant: "secondary", icon: <Clock className="h-3 w-3" /> },
-  submitted: { label: "Innsendt", variant: "default", icon: <CheckCircle2 className="h-3 w-3" /> },
+  draft: { label: t("auto.utkast"), variant: "secondary", icon: <Clock className="h-3 w-3" /> },
+  submitted: { label: t("auto.innsendt"), variant: "default", icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
 function DailyReportForm({
@@ -201,7 +202,7 @@ function DailyReportForm({
     <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
       {/* Date */}
       <div>
-        <Label>Dato</Label>
+        <Label>{t("auto.dato")}</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}>
@@ -217,19 +218,19 @@ function DailyReportForm({
 
       {/* Weather Section */}
       <div>
-        <SectionHeader id="weather" label="Værforhold" icon={<Sun className="h-4 w-4 text-amber-500" />} />
+        <SectionHeader id="weather" label={t("auto.vaerforhold")} icon={<Sun className="h-4 w-4 text-amber-500" />} />
         {expandedSections.weather && (
           <div className="grid grid-cols-2 gap-3 mt-2">
             <div>
-              <Label className="text-xs">Vær</Label>
+              <Label className="text-xs">{t("auto.vaer")}</Label>
               <Select value={weather} onValueChange={setWeather}>
-                <SelectTrigger><SelectValue placeholder="Velg..." /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("auto.velg")} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sol">☀️ Sol</SelectItem>
-                  <SelectItem value="overskyet">☁️ Overskyet</SelectItem>
-                  <SelectItem value="regn">🌧️ Regn</SelectItem>
-                  <SelectItem value="snø">❄️ Snø</SelectItem>
-                  <SelectItem value="vind">💨 Vind</SelectItem>
+                  <SelectItem value="sol">{t("auto.sol")}</SelectItem>
+                  <SelectItem value="overskyet">{t("auto.overskyet")}</SelectItem>
+                  <SelectItem value="regn">{t("auto.regn")}</SelectItem>
+                  <SelectItem value="snø">{t("auto.snoe")}</SelectItem>
+                  <SelectItem value="vind">{t("auto.vind")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -238,12 +239,12 @@ function DailyReportForm({
               <Input type="number" value={temp} onChange={(e) => setTemp(e.target.value)} placeholder="-5" />
             </div>
             <div>
-              <Label className="text-xs">Vind</Label>
-              <Input value={windCond} onChange={(e) => setWindCond(e.target.value)} placeholder="Svak, liten kuling..." />
+              <Label className="text-xs">{t("auto.vind_2")}</Label>
+              <Input value={windCond} onChange={(e) => setWindCond(e.target.value)} placeholder={t("auto.svak_liten_kuling")} />
             </div>
             <div>
-              <Label className="text-xs">Nedbør</Label>
-              <Input value={precip} onChange={(e) => setPrecip(e.target.value)} placeholder="Ingen, lett regn..." />
+              <Label className="text-xs">{t("auto.nedboer")}</Label>
+              <Input value={precip} onChange={(e) => setPrecip(e.target.value)} placeholder={t("auto.ingen_lett_regn")} />
             </div>
           </div>
         )}
@@ -251,11 +252,11 @@ function DailyReportForm({
 
       {/* Crew Section */}
       <div>
-        <SectionHeader id="crew" label="Mannskap" icon={<Users className="h-4 w-4 text-blue-500" />} />
+        <SectionHeader id="crew" label={t("auto.mannskap")} icon={<Users className="h-4 w-4 text-blue-500" />} />
         {expandedSections.crew && (
           <div className="space-y-3 mt-2">
             <div>
-              <Label className="text-xs">Egne ansatte på plass</Label>
+              <Label className="text-xs">{t("auto.egne_ansatte_paa_plass")}</Label>
               <Input type="number" value={ownCrew} onChange={(e) => setOwnCrew(e.target.value)} min="0" />
             </div>
             <div>
@@ -268,24 +269,24 @@ function DailyReportForm({
 
       {/* Work Section */}
       <div>
-        <SectionHeader id="work" label="Utført arbeid" icon={<Wrench className="h-4 w-4 text-orange-500" />} />
+        <SectionHeader id="work" label={t("auto.utfoert_arbeid")} icon={<Wrench className="h-4 w-4 text-orange-500" />} />
         {expandedSections.work && (
           <div className="space-y-3 mt-2">
             <div>
-              <Label className="text-xs">Beskrivelse av utført arbeid</Label>
-              <Textarea value={workDesc} onChange={(e) => setWorkDesc(e.target.value)} placeholder="Beskrivelse av dagens arbeid..." rows={4} />
+              <Label className="text-xs">{t("auto.beskrivelse_av_utfoert_arbeid")}</Label>
+              <Textarea value={workDesc} onChange={(e) => setWorkDesc(e.target.value)} placeholder={t("auto.beskrivelse_av_dagens_arbeid")} rows={4} />
             </div>
             <div>
-              <Label className="text-xs">Arbeidsområder</Label>
-              <Input value={workAreas} onChange={(e) => setWorkAreas(e.target.value)} placeholder="1. etg, tak, fasade..." />
+              <Label className="text-xs">{t("auto.arbeidsomraader")}</Label>
+              <Input value={workAreas} onChange={(e) => setWorkAreas(e.target.value)} placeholder={t("auto.1_etg_tak_fasade")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Tid fra</Label>
+                <Label className="text-xs">{t("auto.tid_fra")}</Label>
                 <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} placeholder="08:00" />
               </div>
               <div>
-                <Label className="text-xs">Tid til</Label>
+                <Label className="text-xs">{t("auto.tid_til")}</Label>
                 <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} placeholder="16:00" />
               </div>
             </div>
@@ -300,16 +301,16 @@ function DailyReportForm({
 
       {/* Equipment & Materials */}
       <div>
-        <SectionHeader id="equipment" label="Utstyr & Materialer" icon={<Package className="h-4 w-4 text-purple-500" />} />
+        <SectionHeader id="equipment" label={t("auto.utstyr_materialer")} icon={<Package className="h-4 w-4 text-purple-500" />} />
         {expandedSections.equipment && (
           <div className="space-y-3 mt-2">
             <div>
               <Label className="text-xs">Utstyr i bruk (kommaseparert)</Label>
-              <Input value={equipmentText} onChange={(e) => setEquipmentText(e.target.value)} placeholder="Gravemaskin, kran, stillas..." />
+              <Input value={equipmentText} onChange={(e) => setEquipmentText(e.target.value)} placeholder={t("auto.gravemaskin_kran_stillas")} />
             </div>
             <div>
               <Label className="text-xs">Materialer mottatt (kommaseparert)</Label>
-              <Input value={materialsText} onChange={(e) => setMaterialsText(e.target.value)} placeholder="Betong 5m³, armeringsjern..." />
+              <Input value={materialsText} onChange={(e) => setMaterialsText(e.target.value)} placeholder={t("auto.betong_5m_armeringsjern")} />
             </div>
           </div>
         )}
@@ -317,12 +318,12 @@ function DailyReportForm({
 
       {/* Progress */}
       <div>
-        <SectionHeader id="progress" label="Fremdrift" icon={<TrendingUp className="h-4 w-4 text-green-500" />} />
+        <SectionHeader id="progress" label={t("auto.fremdrift")} icon={<TrendingUp className="h-4 w-4 text-green-500" />} />
         {expandedSections.progress && (
           <div className="space-y-3 mt-2">
             <div>
-              <Label className="text-xs">Fremdriftsbeskrivelse</Label>
-              <Textarea value={progressDesc} onChange={(e) => setProgressDesc(e.target.value)} placeholder="Ligger foran/bak plan..." rows={2} />
+              <Label className="text-xs">{t("auto.fremdriftsbeskrivelse")}</Label>
+              <Textarea value={progressDesc} onChange={(e) => setProgressDesc(e.target.value)} placeholder={t("auto.ligger_foran_bak_plan")} rows={2} />
             </div>
             <div>
               <Label className="text-xs">Fremdrift (%): {progressPct}%</Label>
@@ -334,8 +335,8 @@ function DailyReportForm({
             </div>
             {!onSchedule && (
               <div>
-                <Label className="text-xs">Årsak til forsinkelse</Label>
-                <Input value={delayReason} onChange={(e) => setDelayReason(e.target.value)} placeholder="Værforhold, materielle..." />
+                <Label className="text-xs">{t("auto.aarsak_til_forsinkelse")}</Label>
+                <Input value={delayReason} onChange={(e) => setDelayReason(e.target.value)} placeholder={t("auto.vaerforhold_materielle")} />
               </div>
             )}
           </div>
@@ -344,7 +345,7 @@ function DailyReportForm({
 
       {/* Quality Controls */}
       <div>
-        <SectionHeader id="quality" label="Kvalitetskontroller" icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />} />
+        <SectionHeader id="quality" label={t("auto.kvalitetskontroller")} icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />} />
         {expandedSections.quality && (
           <div className="mt-2">
             <Label className="text-xs">Utførte kontroller (en per linje)</Label>
@@ -355,20 +356,20 @@ function DailyReportForm({
 
       {/* HMS */}
       <div>
-        <SectionHeader id="hms" label="HMS / Sikkerhet" icon={<Shield className="h-4 w-4 text-red-500" />} />
+        <SectionHeader id="hms" label={t("auto.hms_sikkerhet")} icon={<Shield className="h-4 w-4 text-red-500" />} />
         {expandedSections.hms && (
           <div className="space-y-3 mt-2">
             <div className="flex items-center gap-3">
               <Switch checked={safetyMeeting} onCheckedChange={setSafetyMeeting} />
-              <Label className="text-xs">Sikkerhetsmøte avholdt</Label>
+              <Label className="text-xs">{t("auto.sikkerhetsmoete_avholdt")}</Label>
             </div>
             <div>
               <Label className="text-xs">HMS-hendelser (en per linje)</Label>
-              <Textarea value={hmsIncText} onChange={(e) => setHmsIncText(e.target.value)} placeholder="Nestenulykke, skade..." rows={2} />
+              <Textarea value={hmsIncText} onChange={(e) => setHmsIncText(e.target.value)} placeholder={t("auto.nestenulykke_skade")} rows={2} />
             </div>
             <div>
-              <Label className="text-xs">HMS-observasjoner</Label>
-              <Textarea value={hmsObs} onChange={(e) => setHmsObs(e.target.value)} placeholder="Manglende verneutstyr observert..." rows={2} />
+              <Label className="text-xs">{t("auto.hms_observasjoner")}</Label>
+              <Textarea value={hmsObs} onChange={(e) => setHmsObs(e.target.value)} placeholder={t("auto.manglende_verneutstyr_observert")} rows={2} />
             </div>
           </div>
         )}
@@ -376,22 +377,22 @@ function DailyReportForm({
 
       {/* Deviations */}
       <div>
-        <SectionHeader id="deviations" label="Avvik registrert i dag" icon={<AlertTriangle className="h-4 w-4 text-amber-500" />} />
+        <SectionHeader id="deviations" label={t("auto.avvik_registrert_i_dag")} icon={<AlertTriangle className="h-4 w-4 text-amber-500" />} />
         {expandedSections.deviations && (
           <div className="mt-2">
             <Label className="text-xs">Avvik (en per linje)</Label>
-            <Textarea value={deviationsText} onChange={(e) => setDeviationsText(e.target.value)} placeholder="Feil i armering 2. etg..." rows={3} />
+            <Textarea value={deviationsText} onChange={(e) => setDeviationsText(e.target.value)} placeholder={t("auto.feil_i_armering_2_etg")} rows={3} />
           </div>
         )}
       </div>
 
       {/* Photos */}
       <div>
-        <SectionHeader id="photos" label="Bilder / vedlegg" icon={<Camera className="h-4 w-4 text-sky-500" />} />
+        <SectionHeader id="photos" label={t("auto.bilder_vedlegg")} icon={<Camera className="h-4 w-4 text-sky-500" />} />
         {expandedSections.photos && (
           <div className="mt-2">
             <p className="text-xs text-muted-foreground mb-2">
-              Ta bilde eller last opp filer. Bilder følger med på PDF og e-post.
+              {t("auto.ta_bilde_eller_last_opp_filer_bilder_foe")}
             </p>
             <DailyReportPhotoUploader photos={photos} onChange={setPhotos} />
           </div>
@@ -400,10 +401,10 @@ function DailyReportForm({
 
       {/* Notes */}
       <div>
-        <SectionHeader id="notes" label="Andre merknader" icon={<FileText className="h-4 w-4 text-muted-foreground" />} />
+        <SectionHeader id="notes" label={t("auto.andre_merknader")} icon={<FileText className="h-4 w-4 text-muted-foreground" />} />
         {expandedSections.notes && (
           <div className="mt-2">
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Øvrige kommentarer..." rows={3} />
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("auto.oevrige_kommentarer")} rows={3} />
           </div>
         )}
       </div>
@@ -411,7 +412,7 @@ function DailyReportForm({
       {/* Action Buttons */}
       <div className="flex gap-2 pt-4 border-t sticky bottom-0 bg-background pb-2">
         <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
-          Avbryt
+          {t("auto.avbryt")}
         </Button>
         <Button variant="secondary" onClick={() => onSubmit(buildData(), true)} disabled={isSubmitting} className="flex-1">
           <Clock className="h-4 w-4 mr-1" />
@@ -445,7 +446,7 @@ function generateReportEmailHtml(report: DailyReport): string {
       report.wind_conditions,
       report.precipitation,
     ].filter(Boolean);
-    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Vær</h3><p style="margin:0;font-size:14px;">${parts.join(" · ")}</p>`);
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">{t("auto.vaer")}</h3><p style="margin:0;font-size:14px;">${parts.join(" · ")}</p>`);
   }
 
   // Crew
@@ -454,12 +455,12 @@ function generateReportEmailHtml(report: DailyReport): string {
     if (report.subcontractor_attendance?.length > 0) {
       crewHtml += report.subcontractor_attendance.map((s: any) => `<p style="margin:0;font-size:14px;">UE ${s.name}: ${s.count} pers</p>`).join("");
     }
-    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Mannskap</h3>${crewHtml}`);
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">{t("auto.mannskap")}</h3>${crewHtml}`);
   }
 
   // Work
   if (report.work_description) {
-    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Utført arbeid</h3><p style="margin:0;font-size:14px;white-space:pre-wrap;">${report.work_description}</p>`);
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">{t("auto.utfoert_arbeid")}</h3><p style="margin:0;font-size:14px;white-space:pre-wrap;">${report.work_description}</p>`);
     if (report.work_areas) sections.push(`<p style="margin:4px 0 0;font-size:13px;color:#64748b;">Områder: ${report.work_areas}</p>`);
   }
 
@@ -469,13 +470,13 @@ function generateReportEmailHtml(report: DailyReport): string {
     if (report.progress_percentage != null) progHtml += `<p style="margin:4px 0 0;font-size:13px;">Fremdrift: ${report.progress_percentage}%</p>`;
     progHtml += `<p style="margin:4px 0 0;font-size:13px;font-weight:600;color:${report.on_schedule ? '#16a34a' : '#dc2626'};">${report.on_schedule ? 'I rute' : 'Forsinket'}</p>`;
     if (report.delay_reason) progHtml += `<p style="margin:2px 0 0;font-size:13px;color:#dc2626;">Årsak: ${report.delay_reason}</p>`;
-    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Fremdrift</h3>${progHtml}`);
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">{t("auto.fremdrift")}</h3>${progHtml}`);
   }
 
   // HMS
   if (report.hms_incidents?.length > 0 || report.hms_observations || report.safety_meeting_held) {
     let hmsHtml = "";
-    if (report.safety_meeting_held) hmsHtml += `<p style="margin:0;font-size:14px;">✅ Sikkerhetsmøte avholdt</p>`;
+    if (report.safety_meeting_held) hmsHtml += `<p style="margin:0;font-size:14px;">{t("auto.sikkerhetsmoete_avholdt_2")}</p>`;
     if (report.hms_incidents?.length > 0) {
       hmsHtml += report.hms_incidents.map((h: any) => `<p style="margin:4px 0 0;font-size:14px;color:#dc2626;">⚠️ ${h.description || h}</p>`).join("");
     }
@@ -485,7 +486,7 @@ function generateReportEmailHtml(report: DailyReport): string {
 
   // Notes
   if (report.notes) {
-    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Merknader</h3><p style="margin:0;font-size:14px;white-space:pre-wrap;">${report.notes}</p>`);
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">{t("auto.merknader")}</h3><p style="margin:0;font-size:14px;white-space:pre-wrap;">${report.notes}</p>`);
   }
 
   return `<div style="max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#1e293b;">${sections.join("")}</div>`;
@@ -554,10 +555,10 @@ export default function Ks2Dagsrapport() {
       await generateDailyReportPdf(report, projectData as any, companyData as any, (cur, tot) => {
         toast.loading(`Genererer PDF (${cur} / ${tot} bilder)…`, { id: toastId });
       });
-      toast.success("PDF lastet ned", { id: toastId });
+      toast.success(t("auto.pdf_lastet_ned"), { id: toastId });
     } catch (err) {
       console.error("PDF generation failed", err);
-      toast.error("Kunne ikke generere PDF", { id: toastId });
+      toast.error(t("auto.kunne_ikke_generere_pdf"), { id: toastId });
     } finally {
       setDownloadingId(null);
     }
@@ -585,10 +586,10 @@ export default function Ks2Dagsrapport() {
       });
       setEmailAttachment({ filename: fileName, content: base64, contentType: "application/pdf" });
       setEmailReport(report);
-      toast.success("E-post klar", { id: toastId });
+      toast.success(t("auto.e_post_klar"), { id: toastId });
     } catch (err) {
       console.error("Failed to prepare PDF for email", err);
-      toast.error("Kunne ikke forberede vedlegg — sender uten", { id: toastId });
+      toast.error(t("auto.kunne_ikke_forberede_vedlegg_sender_uten"), { id: toastId });
       // Still allow sending without attachment
       setEmailAttachment(null);
       setEmailReport(report);
@@ -631,8 +632,8 @@ export default function Ks2Dagsrapport() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Dagsrapporter</h2>
-          <p className="text-sm text-muted-foreground">Daglige rapporter for arbeid, mannskap, vær og fremdrift</p>
+          <h2 className="text-xl font-semibold">{t("auto.dagsrapporter")}</h2>
+          <p className="text-sm text-muted-foreground">{t("auto.daglige_rapporter_for_arbeid_mannskap_va")}</p>
         </div>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
@@ -643,7 +644,7 @@ export default function Ks2Dagsrapport() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh]">
             <DialogHeader>
-              <DialogTitle>Ny dagsrapport</DialogTitle>
+              <DialogTitle>{t("auto.ny_dagsrapport")}</DialogTitle>
             </DialogHeader>
             <DailyReportForm onSubmit={handleSubmit} onClose={() => setIsFormOpen(false)} isSubmitting={isCreating} />
           </DialogContent>
@@ -673,8 +674,8 @@ export default function Ks2Dagsrapport() {
         <Card>
           <CardContent className="py-12 text-center">
             <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-lg font-medium mb-1">Ingen dagsrapporter ennå</h3>
-            <p className="text-sm text-muted-foreground mb-4">Opprett din første dagsrapport for å komme i gang</p>
+            <h3 className="text-lg font-medium mb-1">{t("auto.ingen_dagsrapporter_ennaa")}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t("auto.opprett_din_foerste_dagsrapport_for_aa_k")}</p>
             <Button onClick={() => setIsFormOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Opprett dagsrapport
@@ -734,7 +735,7 @@ export default function Ks2Dagsrapport() {
                     {/* Work description */}
                     {report.work_description && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Utført arbeid</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.utfoert_arbeid")}</h4>
                         <p className="text-sm whitespace-pre-wrap">{report.work_description}</p>
                         {report.work_areas && <p className="text-xs text-muted-foreground mt-1">Områder: {report.work_areas}</p>}
                         {(report.work_start_time || report.work_end_time) && (
@@ -752,7 +753,7 @@ export default function Ks2Dagsrapport() {
                     {/* Weather details */}
                     {(report.wind_conditions || report.precipitation) && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Vær detaljer</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.vaer_detaljer")}</h4>
                         <div className="flex gap-4 text-sm">
                           {report.wind_conditions && <span>Vind: {report.wind_conditions}</span>}
                           {report.precipitation && <span>Nedbør: {report.precipitation}</span>}
@@ -763,7 +764,7 @@ export default function Ks2Dagsrapport() {
                     {/* UE attendance */}
                     {report.subcontractor_attendance?.length > 0 && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">UE-oppmøte</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.ue_oppmoete")}</h4>
                         <div className="flex flex-wrap gap-2">
                           {report.subcontractor_attendance.map((s: any, i: number) => (
                             <Badge key={i} variant="outline" className="text-xs">
@@ -777,7 +778,7 @@ export default function Ks2Dagsrapport() {
                     {/* Equipment */}
                     {report.equipment_used?.length > 0 && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Utstyr</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.utstyr")}</h4>
                         <div className="flex flex-wrap gap-1.5">
                           {report.equipment_used.map((e: any, i: number) => (
                             <Badge key={i} variant="secondary" className="text-xs">{e.name || e}</Badge>
@@ -789,7 +790,7 @@ export default function Ks2Dagsrapport() {
                     {/* Progress */}
                     {report.progress_description && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Fremdrift</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.fremdrift")}</h4>
                         <p className="text-sm">{report.progress_description}</p>
                         <div className="flex items-center gap-3 mt-1">
                           {report.progress_percentage != null && (
@@ -808,7 +809,7 @@ export default function Ks2Dagsrapport() {
                     {/* Quality controls */}
                     {report.quality_controls?.length > 0 && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Kvalitetskontroller</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.kvalitetskontroller")}</h4>
                         <ul className="text-sm space-y-1">
                           {report.quality_controls.map((q: any, i: number) => (
                             <li key={i} className="flex items-start gap-2">
@@ -846,7 +847,7 @@ export default function Ks2Dagsrapport() {
                     {/* Deviations */}
                     {report.deviations_today?.length > 0 && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Avvik</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.avvik")}</h4>
                         <ul className="text-sm space-y-1">
                           {report.deviations_today.map((d: any, i: number) => (
                             <li key={i} className="flex items-start gap-2 text-amber-600">
@@ -861,7 +862,7 @@ export default function Ks2Dagsrapport() {
                     {/* Notes */}
                     {report.notes && (
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Merknader</h4>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">{t("auto.merknader")}</h4>
                         <p className="text-sm whitespace-pre-wrap">{report.notes}</p>
                       </div>
                     )}
@@ -919,14 +920,14 @@ export default function Ks2Dagsrapport() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Slett dagsrapport?</AlertDialogTitle>
+                            <AlertDialogTitle>{t("auto.slett_dagsrapport")}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Er du sikker på at du vil slette denne dagsrapporten? Handlingen kan ikke angres.
+                              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne__7")}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteReport(report.id)}>Slett</AlertDialogAction>
+                            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteReport(report.id)}>{t("auto.slett")}</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

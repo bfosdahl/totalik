@@ -19,6 +19,7 @@ import { useKsModule2Vernerunder } from "@/hooks/useKsModule2Vernerunder";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useMemo } from "react";
+import { t } from "@/i18n/t";
 
 export default function Ks2HmsDashboard() {
   const { projectId } = useParams();
@@ -88,11 +89,11 @@ export default function Ks2HmsDashboard() {
   }, [avvikList]);
 
   const quickActions = [
-    { label: "HMS-plan", icon: FileText, path: "/hms/hms-plan" },
-    { label: "Ny SJA", icon: ClipboardCheck, path: "/hms/sja" },
-    { label: "SHA-plan", icon: FileCheck, path: "/hms/sha-plan" },
-    { label: "Vernerunde", icon: HardHat, path: "/hms/vernerunder" },
-    { label: "HMS-avvik", icon: AlertTriangle, path: "/hms/avvik" },
+    { label: t("auto.hms_plan"), icon: FileText, path: "/hms/hms-plan" },
+    { label: t("auto.ny_sja"), icon: ClipboardCheck, path: "/hms/sja" },
+    { label: t("auto.sha_plan"), icon: FileCheck, path: "/hms/sha-plan" },
+    { label: t("auto.vernerunde"), icon: HardHat, path: "/hms/vernerunder" },
+    { label: t("auto.hms_avvik"), icon: AlertTriangle, path: "/hms/avvik" },
   ];
 
   return (
@@ -103,8 +104,8 @@ export default function Ks2HmsDashboard() {
           <Shield className="h-6 w-6 text-emerald-500" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">HMS / SHA Dashboard</h2>
-          <p className="text-muted-foreground">Oversikt over HMS-arbeid i prosjektet</p>
+          <h2 className="text-2xl font-bold">{t("auto.hms_sha_dashboard")}</h2>
+          <p className="text-muted-foreground">{t("auto.oversikt_over_hms_arbeid_i_prosjektet")}</p>
         </div>
       </div>
 
@@ -112,7 +113,7 @@ export default function Ks2HmsDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>HMS Fremdrift</CardDescription>
+            <CardDescription>{t("auto.hms_fremdrift")}</CardDescription>
             <CardTitle className="text-3xl text-emerald-500">{stats.hmsProgress}%</CardTitle>
           </CardHeader>
           <CardContent>
@@ -122,7 +123,7 @@ export default function Ks2HmsDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Åpne SJA</CardDescription>
+            <CardDescription>{t("auto.aapne_sja")}</CardDescription>
             <CardTitle className="text-3xl">{stats.openSja}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -134,7 +135,7 @@ export default function Ks2HmsDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Åpne HMS-avvik</CardDescription>
+            <CardDescription>{t("auto.aapne_hms_avvik")}</CardDescription>
             <CardTitle className="text-3xl">{stats.openAvvik}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -146,7 +147,7 @@ export default function Ks2HmsDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Vernerunder</CardDescription>
+            <CardDescription>{t("auto.vernerunder")}</CardDescription>
             <CardTitle className="text-3xl">
               {stats.totalVernerunder > 0 ? `${stats.completedVernerunder}/${stats.totalVernerunder}` : "0"}
             </CardTitle>
@@ -158,7 +159,7 @@ export default function Ks2HmsDashboard() {
                 <span>Neste: {stats.nextVernerunde}</span>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Ingen planlagt</p>
+              <p className="text-sm text-muted-foreground">{t("auto.ingen_planlagt")}</p>
             )}
           </CardContent>
         </Card>
@@ -167,7 +168,7 @@ export default function Ks2HmsDashboard() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Hurtighandlinger</CardTitle>
+          <CardTitle className="text-lg">{t("auto.hurtighandlinger")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -192,8 +193,8 @@ export default function Ks2HmsDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Siste SJA</CardTitle>
-              <CardDescription>Nylig gjennomførte sikker jobb analyser</CardDescription>
+              <CardTitle className="text-lg">{t("auto.siste_sja")}</CardTitle>
+              <CardDescription>{t("auto.nylig_gjennomfoerte_sikker_jobb_analyser")}</CardDescription>
             </div>
             <Button 
               variant="ghost" 
@@ -205,7 +206,7 @@ export default function Ks2HmsDashboard() {
           </CardHeader>
           <CardContent>
             {recentSja.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">Ingen SJA registrert ennå</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">{t("auto.ingen_sja_registrert_ennaa")}</p>
             ) : (
               <div className="space-y-3">
                 {recentSja.map((sja) => (
@@ -233,8 +234,8 @@ export default function Ks2HmsDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">HMS-avvik</CardTitle>
-              <CardDescription>Siste registrerte HMS-avvik</CardDescription>
+              <CardTitle className="text-lg">{t("auto.hms_avvik")}</CardTitle>
+              <CardDescription>{t("auto.siste_registrerte_hms_avvik")}</CardDescription>
             </div>
             <Button 
               variant="ghost" 
@@ -246,7 +247,7 @@ export default function Ks2HmsDashboard() {
           </CardHeader>
           <CardContent>
             {recentAvvik.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">Ingen HMS-avvik registrert ennå</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">{t("auto.ingen_hms_avvik_registrert_ennaa")}</p>
             ) : (
               <div className="space-y-3">
                 {recentAvvik.map((avvik) => (

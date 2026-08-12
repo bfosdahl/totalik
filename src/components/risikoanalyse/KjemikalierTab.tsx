@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { t } from "@/i18n/t";
 
 export function KjemikalierTab() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -136,7 +137,7 @@ export function KjemikalierTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold">{totalCount}</p>
-                <p className="text-sm text-muted-foreground">Totalt vurdert</p>
+                <p className="text-sm text-muted-foreground">{t("auto.totalt_vurdert")}</p>
               </div>
               <FlaskConical className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -147,7 +148,7 @@ export function KjemikalierTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-green-600">{completedCount}</p>
-                <p className="text-sm text-muted-foreground">Fullført</p>
+                <p className="text-sm text-muted-foreground">{t("auto.fullfoert")}</p>
               </div>
               <CheckCircle2 className="h-8 w-8 text-green-600" />
             </div>
@@ -158,7 +159,7 @@ export function KjemikalierTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-blue-600">{inProgressCount}</p>
-                <p className="text-sm text-muted-foreground">Pågående</p>
+                <p className="text-sm text-muted-foreground">{t("auto.paagaaende")}</p>
               </div>
               <Clock className="h-8 w-8 text-blue-600" />
             </div>
@@ -169,7 +170,7 @@ export function KjemikalierTab() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-red-600">{highRiskCount}</p>
-                <p className="text-sm text-muted-foreground">Høy risiko</p>
+                <p className="text-sm text-muted-foreground">{t("auto.hoey_risiko")}</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
@@ -187,7 +188,7 @@ export function KjemikalierTab() {
                 Kjemikalierisikovurderinger
               </CardTitle>
               <CardDescription>
-                Oversikt over alle kjemikalierisikovurderinger i bedriften
+                {t("auto.oversikt_over_alle_kjemikalierisikovurde")}
               </CardDescription>
             </div>
             <Button variant="outline" onClick={() => navigate("/ks-modul2")}>
@@ -200,7 +201,7 @@ export function KjemikalierTab() {
             <div className="relative mt-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Søk etter kjemikalie..."
+                placeholder={t("auto.soek_etter_kjemikalie")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -213,12 +214,12 @@ export function KjemikalierTab() {
           {assessments.length === 0 ? (
             <div className="text-center py-12">
               <FlaskConical className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ingen risikovurderinger ennå</h3>
+              <h3 className="text-lg font-medium mb-2">{t("auto.ingen_risikovurderinger_ennaa")}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Risikovurderinger opprettes fra stoffkartoteket i hvert prosjekt
+                {t("auto.risikovurderinger_opprettes_fra_stoffkar")}
               </p>
               <Button onClick={() => navigate("/ks-modul2")}>
-                Gå til prosjekter
+                {t("auto.gaa_til_prosjekter")}
               </Button>
             </div>
           ) : filteredAssessments.length === 0 ? (
@@ -233,11 +234,11 @@ export function KjemikalierTab() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Kjemikalie</TableHead>
-                    <TableHead>Produsent</TableHead>
-                    <TableHead>Risikonivå</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Sist oppdatert</TableHead>
+                    <TableHead>{t("auto.kjemikalie")}</TableHead>
+                    <TableHead>{t("auto.produsent")}</TableHead>
+                    <TableHead>{t("auto.risikonivaa")}</TableHead>
+                    <TableHead>{t("auto.status_2")}</TableHead>
+                    <TableHead>{t("auto.sist_oppdatert")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -278,30 +279,29 @@ export function KjemikalierTab() {
       {/* Info about methodology */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Om kjemikalierisikovurdering</CardTitle>
+          <CardTitle className="text-base">{t("auto.om_kjemikalierisikovurdering")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
           <p>
-            Kjemikalierisikovurdering følger Arbeidstilsynets metodikk for kartlegging og vurdering 
-            av eksponering i tre faser:
+            {t("auto.kjemikalierisikovurdering_foelger_arbeid")}
           </p>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="p-3 bg-muted rounded-lg">
-              <h4 className="font-medium text-foreground mb-1">Fase 1: Innledende vurdering</h4>
+              <h4 className="font-medium text-foreground mb-1">{t("auto.fase_1_innledende_vurdering")}</h4>
               <p className="text-xs">
-                Faglig vurdering basert på sikkerhetsdatablad, arbeidsoppgaver og eksponeringsforhold.
+                {t("auto.faglig_vurdering_basert_paa_sikkerhetsda")}
               </p>
             </div>
             <div className="p-3 bg-muted rounded-lg">
-              <h4 className="font-medium text-foreground mb-1">Fase 2: Forenklet undersøkelse</h4>
+              <h4 className="font-medium text-foreground mb-1">{t("auto.fase_2_forenklet_undersoekelse")}</h4>
               <p className="text-xs">
-                Yrkeshygienisk kartlegging med 3-5 målinger per eksponert gruppe.
+                {t("auto.yrkeshygienisk_kartlegging_med_3_5_maali")}
               </p>
             </div>
             <div className="p-3 bg-muted rounded-lg">
-              <h4 className="font-medium text-foreground mb-1">Fase 3: Detaljert undersøkelse</h4>
+              <h4 className="font-medium text-foreground mb-1">{t("auto.fase_3_detaljert_undersoekelse")}</h4>
               <p className="text-xs">
-                Minimum 6 målinger med statistisk vurdering av resultatene.
+                {t("auto.minimum_6_maalinger_med_statistisk_vurde")}
               </p>
             </div>
           </div>

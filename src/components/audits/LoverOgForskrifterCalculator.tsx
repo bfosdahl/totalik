@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyLawsRegulations, type NewLawRegulation } from "@/hooks/useCompanyLawsRegulations";
+import { t } from "@/i18n/t";
 
 interface BrregData {
   navn: string;
@@ -246,10 +247,9 @@ const LoverOgForskrifterCalculator = () => {
             <Scale className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold mb-1">Lover og forskrifter</h2>
+            <h2 className="text-lg font-semibold mb-1">{t("auto.lover_og_forskrifter")}</h2>
             <p className="text-muted-foreground text-sm">
-              Bruk denne kalkulatoren til å få oversikt over HMS-krav som gjelder for din virksomhet
-              basert på bransje og antall ansatte. Dette er et krav i henhold til Internkontrollforskriften.
+              {t("auto.bruk_denne_kalkulatoren_til_aa_faa_overs")}
             </p>
           </div>
         </div>
@@ -269,7 +269,7 @@ const LoverOgForskrifterCalculator = () => {
                 Lagrede lover og forskrifter
               </CardTitle>
               <CardDescription>
-                Disse lovene er lagret og inkluderes i håndboken
+                {t("auto.disse_lovene_er_lagret_og_inkluderes_i_h")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -286,7 +286,7 @@ const LoverOgForskrifterCalculator = () => {
                           {law.category || "Generelt"}
                         </Badge>
                         {law.is_manually_added && (
-                          <Badge variant="outline" className="text-xs">Manuelt lagt til</Badge>
+                          <Badge variant="outline" className="text-xs">{t("auto.manuelt_lagt_til")}</Badge>
                         )}
                         {law.is_employee_based && (
                           <Badge variant="outline" className="text-xs border-primary/50 text-primary">
@@ -332,30 +332,30 @@ const LoverOgForskrifterCalculator = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Legg til lov eller forskrift</DialogTitle>
+                      <DialogTitle>{t("auto.legg_til_lov_eller_forskrift")}</DialogTitle>
                       <DialogDescription>
-                        Legg til en egendefinert lov eller forskrift som gjelder for din virksomhet
+                        {t("auto.legg_til_en_egendefinert_lov_eller_forsk")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label>Navn på lov/forskrift *</Label>
+                        <Label>{t("auto.navn_paa_lov_forskrift")}</Label>
                         <Input
                           value={newLaw.law_name}
                           onChange={(e) => setNewLaw({ ...newLaw, law_name: e.target.value })}
-                          placeholder="F.eks. Forskrift om maskiner"
+                          placeholder={t("auto.f_eks_forskrift_om_maskiner")}
                         />
                       </div>
                       <div>
-                        <Label>Beskrivelse</Label>
+                        <Label>{t("auto.beskrivelse")}</Label>
                         <Textarea
                           value={newLaw.description || ""}
                           onChange={(e) => setNewLaw({ ...newLaw, description: e.target.value })}
-                          placeholder="Kort beskrivelse av hva loven/forskriften omhandler"
+                          placeholder={t("auto.kort_beskrivelse_av_hva_loven_forskrifte")}
                         />
                       </div>
                       <div>
-                        <Label>Lenke til Lovdata</Label>
+                        <Label>{t("auto.lenke_til_lovdata")}</Label>
                         <Input
                           value={newLaw.link || ""}
                           onChange={(e) => setNewLaw({ ...newLaw, link: e.target.value })}
@@ -363,17 +363,17 @@ const LoverOgForskrifterCalculator = () => {
                         />
                       </div>
                       <div>
-                        <Label>Kategori</Label>
+                        <Label>{t("auto.kategori")}</Label>
                         <Input
                           value={newLaw.category || ""}
                           onChange={(e) => setNewLaw({ ...newLaw, category: e.target.value })}
-                          placeholder="F.eks. Maskinsikkerhet"
+                          placeholder={t("auto.f_eks_maskinsikkerhet")}
                         />
                       </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                       <Button onClick={handleAddManualLaw} disabled={!newLaw.law_name.trim() || isAdding}>
                         {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -396,15 +396,15 @@ const LoverOgForskrifterCalculator = () => {
       >
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Hent bedriftsinformasjon</CardTitle>
+            <CardTitle className="text-base">{t("auto.hent_bedriftsinformasjon")}</CardTitle>
             <CardDescription>
-              Skriv inn organisasjonsnummer for å hente bedriftsinformasjon fra Brønnøysundregistrene
+              {t("auto.skriv_inn_organisasjonsnummer_for_aa_hen")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
-                <Label htmlFor="orgnr" className="sr-only">Organisasjonsnummer</Label>
+                <Label htmlFor="orgnr" className="sr-only">{t("auto.organisasjonsnummer")}</Label>
                 <Input
                   id="orgnr"
                   placeholder="Skriv inn organisasjonsnummer (9 siffer)"
@@ -449,15 +449,15 @@ const LoverOgForskrifterCalculator = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-muted-foreground text-xs">Bedriftsnavn</Label>
+                  <Label className="text-muted-foreground text-xs">{t("auto.bedriftsnavn")}</Label>
                   <p className="font-medium">{bedriftData.navn}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs">Organisasjonsnummer</Label>
+                  <Label className="text-muted-foreground text-xs">{t("auto.organisasjonsnummer")}</Label>
                   <p className="font-medium font-mono">{bedriftData.organisasjonsnummer}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs">Næringskode</Label>
+                  <Label className="text-muted-foreground text-xs">{t("auto.naeringskode")}</Label>
                   <p className="font-medium">
                     {bedriftData.naeringskode1?.kode || 'Ikke oppgitt'}
                     {bedriftData.naeringskode1?.beskrivelse && (
@@ -468,7 +468,7 @@ const LoverOgForskrifterCalculator = () => {
                   </p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs">Antall ansatte</Label>
+                  <Label className="text-muted-foreground text-xs">{t("auto.antall_ansatte")}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -549,7 +549,7 @@ const LoverOgForskrifterCalculator = () => {
                 </div>
               ) : (
                 <p className="text-muted-foreground">
-                  Ingen spesielle krav basert på antall ansatte for virksomheter med færre enn 5 ansatte.
+                  {t("auto.ingen_spesielle_krav_basert_paa_antall_a")}
                 </p>
               )}
 
@@ -557,7 +557,7 @@ const LoverOgForskrifterCalculator = () => {
               {ansattBaserteKrav.filter(k => antallAnsatte < k.minAnsatte).length > 0 && (
                 <div className="mt-4 pt-4 border-t border-border">
                   <p className="text-sm font-medium text-muted-foreground mb-3">
-                    Krav som trer i kraft ved flere ansatte:
+                    {t("auto.krav_som_trer_i_kraft_ved_flere_ansatte")}
                   </p>
                   <div className="space-y-2">
                     {ansattBaserteKrav
@@ -582,7 +582,7 @@ const LoverOgForskrifterCalculator = () => {
                 Gjeldende lover og forskrifter
               </CardTitle>
               <CardDescription>
-                Disse lovene og forskriftene gjelder for alle virksomheter
+                {t("auto.disse_lovene_og_forskriftene_gjelder_for")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -631,8 +631,7 @@ const LoverOgForskrifterCalculator = () => {
               <div className="text-center">
                 <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground mb-3">
-                  Ingen lover er lagret ennå. Søk opp din bedrift ovenfor for å generere rapport og lagre, 
-                  eller legg til manuelt.
+                  {t("auto.ingen_lover_er_lagret_ennaa_soek_opp_din")}
                 </p>
                 <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                   <DialogTrigger asChild>
@@ -643,30 +642,30 @@ const LoverOgForskrifterCalculator = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Legg til lov eller forskrift</DialogTitle>
+                      <DialogTitle>{t("auto.legg_til_lov_eller_forskrift")}</DialogTitle>
                       <DialogDescription>
-                        Legg til en egendefinert lov eller forskrift som gjelder for din virksomhet
+                        {t("auto.legg_til_en_egendefinert_lov_eller_forsk")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label>Navn på lov/forskrift *</Label>
+                        <Label>{t("auto.navn_paa_lov_forskrift")}</Label>
                         <Input
                           value={newLaw.law_name}
                           onChange={(e) => setNewLaw({ ...newLaw, law_name: e.target.value })}
-                          placeholder="F.eks. Forskrift om maskiner"
+                          placeholder={t("auto.f_eks_forskrift_om_maskiner")}
                         />
                       </div>
                       <div>
-                        <Label>Beskrivelse</Label>
+                        <Label>{t("auto.beskrivelse")}</Label>
                         <Textarea
                           value={newLaw.description || ""}
                           onChange={(e) => setNewLaw({ ...newLaw, description: e.target.value })}
-                          placeholder="Kort beskrivelse av hva loven/forskriften omhandler"
+                          placeholder={t("auto.kort_beskrivelse_av_hva_loven_forskrifte")}
                         />
                       </div>
                       <div>
-                        <Label>Lenke til Lovdata</Label>
+                        <Label>{t("auto.lenke_til_lovdata")}</Label>
                         <Input
                           value={newLaw.link || ""}
                           onChange={(e) => setNewLaw({ ...newLaw, link: e.target.value })}
@@ -674,17 +673,17 @@ const LoverOgForskrifterCalculator = () => {
                         />
                       </div>
                       <div>
-                        <Label>Kategori</Label>
+                        <Label>{t("auto.kategori")}</Label>
                         <Input
                           value={newLaw.category || ""}
                           onChange={(e) => setNewLaw({ ...newLaw, category: e.target.value })}
-                          placeholder="F.eks. Maskinsikkerhet"
+                          placeholder={t("auto.f_eks_maskinsikkerhet")}
                         />
                       </div>
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                       <Button onClick={handleAddManualLaw} disabled={!newLaw.law_name.trim() || isAdding}>
                         {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { CreditCard, Building2, User, Calendar, Clock, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface HmsRequest {
   id: string;
@@ -45,10 +46,10 @@ interface HmsRequest {
 }
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ElementType }> = {
-  pending: { label: "Venter", variant: "secondary", icon: Clock },
-  in_progress: { label: "Under behandling", variant: "default", icon: Loader2 },
-  completed: { label: "Fullført", variant: "outline", icon: CheckCircle },
-  rejected: { label: "Avvist", variant: "destructive", icon: XCircle },
+  pending: { label: t("auto.venter"), variant: "secondary", icon: Clock },
+  in_progress: { label: t("auto.under_behandling"), variant: "default", icon: Loader2 },
+  completed: { label: t("auto.fullfoert"), variant: "outline", icon: CheckCircle },
+  rejected: { label: t("auto.avvist"), variant: "destructive", icon: XCircle },
 };
 
 export default function AdminHmsRequests() {
@@ -83,10 +84,10 @@ export default function AdminHmsRequests() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-hms-requests"] });
-      toast.success("Status oppdatert");
+      toast.success(t("auto.status_oppdatert"));
     },
     onError: () => {
-      toast.error("Kunne ikke oppdatere status");
+      toast.error(t("auto.kunne_ikke_oppdatere_status"));
     },
   });
 
@@ -105,9 +106,9 @@ export default function AdminHmsRequests() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">HMS-kort forespørsler</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("auto.hms_kort_forespoersler")}</h1>
           <p className="text-muted-foreground">
-            Behandle forespørsler om hjelp til HMS-kort bestilling
+            {t("auto.behandle_forespoersler_om_hjelp_til_hms_")}
           </p>
         </div>
 
@@ -115,7 +116,7 @@ export default function AdminHmsRequests() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Totalt</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("auto.totalt")}</CardTitle>
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -124,7 +125,7 @@ export default function AdminHmsRequests() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Venter</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("auto.venter")}</CardTitle>
               <Clock className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
@@ -133,7 +134,7 @@ export default function AdminHmsRequests() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Under behandling</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("auto.under_behandling")}</CardTitle>
               <Loader2 className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -142,7 +143,7 @@ export default function AdminHmsRequests() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Fullført</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("auto.fullfoert")}</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
@@ -155,17 +156,17 @@ export default function AdminHmsRequests() {
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <CardTitle>Alle forespørsler</CardTitle>
+              <CardTitle>{t("auto.alle_forespoersler")}</CardTitle>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrer på status" />
+                  <SelectValue placeholder={t("auto.filtrer_paa_status")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle statuser</SelectItem>
-                  <SelectItem value="pending">Venter</SelectItem>
-                  <SelectItem value="in_progress">Under behandling</SelectItem>
-                  <SelectItem value="completed">Fullført</SelectItem>
-                  <SelectItem value="rejected">Avvist</SelectItem>
+                  <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+                  <SelectItem value="pending">{t("auto.venter")}</SelectItem>
+                  <SelectItem value="in_progress">{t("auto.under_behandling")}</SelectItem>
+                  <SelectItem value="completed">{t("auto.fullfoert")}</SelectItem>
+                  <SelectItem value="rejected">{t("auto.avvist")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -177,19 +178,19 @@ export default function AdminHmsRequests() {
               </div>
             ) : filteredRequests.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                Ingen forespørsler funnet
+                {t("auto.ingen_forespoersler_funnet")}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ansatt</TableHead>
-                      <TableHead>Bedrift</TableHead>
-                      <TableHead>Forespurt av</TableHead>
-                      <TableHead>Dato</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Handlinger</TableHead>
+                      <TableHead>{t("auto.ansatt")}</TableHead>
+                      <TableHead>{t("auto.bedrift")}</TableHead>
+                      <TableHead>{t("auto.forespurt_av")}</TableHead>
+                      <TableHead>{t("auto.dato")}</TableHead>
+                      <TableHead>{t("auto.status_2")}</TableHead>
+                      <TableHead>{t("auto.handlinger")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -245,10 +246,10 @@ export default function AdminHmsRequests() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="pending">Venter</SelectItem>
-                                <SelectItem value="in_progress">Under behandling</SelectItem>
-                                <SelectItem value="completed">Fullført</SelectItem>
-                                <SelectItem value="rejected">Avvist</SelectItem>
+                                <SelectItem value="pending">{t("auto.venter")}</SelectItem>
+                                <SelectItem value="in_progress">{t("auto.under_behandling")}</SelectItem>
+                                <SelectItem value="completed">{t("auto.fullfoert")}</SelectItem>
+                                <SelectItem value="rejected">{t("auto.avvist")}</SelectItem>
                               </SelectContent>
                             </Select>
                           </TableCell>

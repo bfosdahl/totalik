@@ -54,6 +54,7 @@ import { DocumentBulkActions } from "@/components/admin/DocumentBulkActions";
 import { AiChecklistDialog } from "@/components/admin/AiChecklistDialog";
 import { KsBygChecklistOverview } from "@/components/admin/KsBygChecklistOverview";
 import { useAdminDocumentFolders, AdminDocumentFolder, ModuleType } from "@/hooks/useAdminDocumentFolders";
+import { t } from "@/i18n/t";
 
 interface AdminDocument {
   id: string;
@@ -74,10 +75,10 @@ interface AdminDocument {
 }
 
 const MODULE_CONFIG: Record<ModuleType, { label: string; icon: any; color: string; bgColor: string }> = {
-  "ik-hms": { label: "IK-HMS", icon: Shield, color: "text-emerald-500", bgColor: "bg-emerald-500/10" },
-  "ik-mat": { label: "IK-Mat", icon: UtensilsCrossed, color: "text-orange-500", bgColor: "bg-orange-500/10" },
-  "ik-alkohol": { label: "IK-Alkohol", icon: Wine, color: "text-amber-500", bgColor: "bg-amber-500/10" },
-  "ks-bygg": { label: "KS Bygg", icon: HardHat, color: "text-blue-500", bgColor: "bg-blue-500/10" },
+  "ik-hms": { label: t("auto.ik_hms_2"), icon: Shield, color: "text-emerald-500", bgColor: "bg-emerald-500/10" },
+  "ik-mat": { label: t("auto.ik_mat_2"), icon: UtensilsCrossed, color: "text-orange-500", bgColor: "bg-orange-500/10" },
+  "ik-alkohol": { label: t("auto.ik_alkohol_2"), icon: Wine, color: "text-amber-500", bgColor: "bg-amber-500/10" },
+  "ks-bygg": { label: t("auto.ks_bygg"), icon: HardHat, color: "text-blue-500", bgColor: "bg-blue-500/10" },
 };
 
 export default function AdminDocuments() {
@@ -259,12 +260,12 @@ export default function AdminDocuments() {
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
-      toast.error("Velg minst én fil");
+      toast.error(t("auto.velg_minst_n_fil"));
       return;
     }
 
     if (!documentForm.folder_id) {
-      toast.error("Velg en mappe for dokumentene");
+      toast.error(t("auto.velg_en_mappe_for_dokumentene"));
       return;
     }
 
@@ -320,7 +321,7 @@ export default function AdminDocuments() {
       queryClient.invalidateQueries({ queryKey: ["admin-documents"] });
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error("Kunne ikke laste opp dokumenter");
+      toast.error(t("auto.kunne_ikke_laste_opp_dokumenter"));
     } finally {
       setIsUploading(false);
     }
@@ -339,11 +340,11 @@ export default function AdminDocuments() {
       if (dbError) throw dbError;
     },
     onSuccess: () => {
-      toast.success("Dokument slettet");
+      toast.success(t("auto.dokument_slettet"));
       queryClient.invalidateQueries({ queryKey: ["admin-documents"] });
     },
     onError: () => {
-      toast.error("Kunne ikke slette dokument");
+      toast.error(t("auto.kunne_ikke_slette_dokument"));
     },
   });
 
@@ -357,12 +358,12 @@ export default function AdminDocuments() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Dokumenter flyttet");
+      toast.success(t("auto.dokumenter_flyttet"));
       setSelectedDocIds(new Set());
       queryClient.invalidateQueries({ queryKey: ["admin-documents"] });
     },
     onError: () => {
-      toast.error("Kunne ikke flytte dokumenter");
+      toast.error(t("auto.kunne_ikke_flytte_dokumenter"));
     },
   });
 
@@ -382,12 +383,12 @@ export default function AdminDocuments() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Dokumenter slettet");
+      toast.success(t("auto.dokumenter_slettet"));
       setSelectedDocIds(new Set());
       queryClient.invalidateQueries({ queryKey: ["admin-documents"] });
     },
     onError: () => {
-      toast.error("Kunne ikke slette dokumenter");
+      toast.error(t("auto.kunne_ikke_slette_dokumenter"));
     },
   });
 
@@ -409,7 +410,7 @@ export default function AdminDocuments() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Kunne ikke laste ned dokument");
+      toast.error(t("auto.kunne_ikke_laste_ned_dokument"));
     }
   };
 
@@ -423,7 +424,7 @@ export default function AdminDocuments() {
       window.open(data.signedUrl, "_blank");
     } catch (error) {
       console.error("Preview error:", error);
-      toast.error("Kunne ikke åpne dokument");
+      toast.error(t("auto.kunne_ikke_aapne_dokument"));
     }
   };
 
@@ -512,7 +513,7 @@ export default function AdminDocuments() {
             {recentDocuments && recentDocuments.length > 0 && (
               <div className="border-t p-3">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-2">
-                  Nylig lagt til
+                  {t("auto.nylig_lagt_til")}
                 </h4>
                 <div className="space-y-1">
                   {recentDocuments?.slice(0, 3).map((doc) => (
@@ -542,7 +543,7 @@ export default function AdminDocuments() {
                   <div>
                     <h1 className="text-xl font-bold">Dokumentsenter - {activeConfig.label}</h1>
                     <p className="text-muted-foreground text-sm">
-                      Administrer maler og dokumenter for kunder
+                      {t("auto.administrer_maler_og_dokumenter_for_kund")}
                     </p>
                   </div>
                 </div>
@@ -580,9 +581,9 @@ export default function AdminDocuments() {
                           onClick={() => document.getElementById("multi-file-input")?.click()}
                         >
                           <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-                          <p className="text-sm font-medium">Dra og slipp filer her</p>
+                          <p className="text-sm font-medium">{t("auto.dra_og_slipp_filer_her")}</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            eller klikk for å velge filer
+                            {t("auto.eller_klikk_for_aa_velge_filer")}
                           </p>
                           <Input
                             id="multi-file-input"
@@ -628,7 +629,7 @@ export default function AdminDocuments() {
                         )}
 
                         <div className="space-y-2">
-                          <Label>Mappe *</Label>
+                          <Label>{t("auto.mappe_2")}</Label>
                           <Select
                             value={documentForm.folder_id}
                             onValueChange={(v) =>
@@ -636,7 +637,7 @@ export default function AdminDocuments() {
                             }
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Velg mappe" />
+                              <SelectValue placeholder={t("auto.velg_mappe")} />
                             </SelectTrigger>
                             <SelectContent>
                               {folders?.map((folder) => (
@@ -648,14 +649,14 @@ export default function AdminDocuments() {
                           </Select>
                           {folders?.length === 0 && (
                             <p className="text-xs text-muted-foreground">
-                              Opprett en mappe først i sidepanelet
+                              {t("auto.opprett_en_mappe_foerst_i_sidepanelet")}
                             </p>
                           )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label>Versjon</Label>
+                            <Label>{t("auto.versjon")}</Label>
                             <Input
                               value={documentForm.version}
                               onChange={(e) =>
@@ -670,7 +671,7 @@ export default function AdminDocuments() {
                                 setDocumentForm((prev) => ({ ...prev, is_mandatory: v }))
                               }
                             />
-                            <Label>Obligatorisk</Label>
+                            <Label>{t("auto.obligatorisk")}</Label>
                           </div>
                         </div>
 
@@ -683,9 +684,9 @@ export default function AdminDocuments() {
                               }
                             />
                             <div>
-                              <Label className="text-sm font-medium">Krever signering</Label>
+                              <Label className="text-sm font-medium">{t("auto.krever_signering")}</Label>
                               <p className="text-xs text-muted-foreground">
-                                Brukeren må signere og laste opp igjen
+                                {t("auto.brukeren_maa_signere_og_laste_opp_igjen")}
                               </p>
                             </div>
                           </div>
@@ -793,7 +794,7 @@ export default function AdminDocuments() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk i dokumenter..."
+                  placeholder={t("auto.soek_i_dokumenter")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -807,9 +808,9 @@ export default function AdminDocuments() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="date">Dato</SelectItem>
-                    <SelectItem value="name">Navn</SelectItem>
-                    <SelectItem value="size">Størrelse</SelectItem>
+                    <SelectItem value="date">{t("auto.dato")}</SelectItem>
+                    <SelectItem value="name">{t("auto.navn_2")}</SelectItem>
+                    <SelectItem value="size">{t("auto.stoerrelse")}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -834,7 +835,7 @@ export default function AdminDocuments() {
 
                 {filteredDocuments && filteredDocuments.length > 0 && (
                   <Button variant="outline" size="sm" onClick={selectAllVisible}>
-                    Velg alle
+                    {t("auto.velg_alle")}
                   </Button>
                 )}
               </div>
@@ -896,7 +897,7 @@ export default function AdminDocuments() {
                             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                               {doc.is_mandatory && (
                                 <Badge variant="destructive" className="text-xs h-5">
-                                  Obligatorisk
+                                  {t("auto.obligatorisk")}
                                 </Badge>
                               )}
                               {doc.version && (
@@ -970,7 +971,7 @@ export default function AdminDocuments() {
                           <div className="flex items-center gap-1.5">
                             {doc.is_mandatory && (
                               <Badge variant="destructive" className="text-xs">
-                                Obligatorisk
+                                {t("auto.obligatorisk")}
                               </Badge>
                             )}
                           </div>

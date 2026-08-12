@@ -39,23 +39,24 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Milestones, Milestone } from "@/hooks/useKsModule2Milestones";
 import { format, differenceInDays, isWithinInterval, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const STATUS_OPTIONS = [
-  { value: "not_started", label: "Ikke startet", color: "bg-muted text-muted-foreground" },
-  { value: "in_progress", label: "Pågår", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  { value: "completed", label: "Fullført", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-  { value: "delayed", label: "Forsinket", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
+  { value: "not_started", label: t("auto.ikke_startet"), color: "bg-muted text-muted-foreground" },
+  { value: "in_progress", label: t("auto.paagaar"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+  { value: "completed", label: t("auto.fullfoert"), color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  { value: "delayed", label: t("auto.forsinket"), color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
 ];
 
 const COLOR_OPTIONS = [
-  { value: "#3B82F6", label: "Blå" },
-  { value: "#22C55E", label: "Grønn" },
-  { value: "#EAB308", label: "Gul" },
-  { value: "#EF4444", label: "Rød" },
-  { value: "#8B5CF6", label: "Lilla" },
-  { value: "#F97316", label: "Oransje" },
-  { value: "#06B6D4", label: "Cyan" },
-  { value: "#EC4899", label: "Rosa" },
+  { value: "#3B82F6", label: t("auto.blaa") },
+  { value: "#22C55E", label: t("auto.groenn") },
+  { value: "#EAB308", label: t("auto.gul") },
+  { value: "#EF4444", label: t("auto.roed") },
+  { value: "#8B5CF6", label: t("auto.lilla") },
+  { value: "#F97316", label: t("auto.oransje") },
+  { value: "#06B6D4", label: t("auto.cyan") },
+  { value: "#EC4899", label: t("auto.rosa") },
 ];
 
 export default function Ks2Fremdriftsplan() {
@@ -266,8 +267,8 @@ export default function Ks2Fremdriftsplan() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Fremdriftsplan</h1>
-          <p className="text-muted-foreground">Planlegg og følg opp prosjektmilepæler</p>
+          <h1 className="text-2xl font-bold">{t("auto.fremdriftsplan")}</h1>
+          <p className="text-muted-foreground">{t("auto.planlegg_og_foelg_opp_prosjektmilepaeler")}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -284,25 +285,25 @@ export default function Ks2Fremdriftsplan() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Tittel *</Label>
+                <Label>{t("auto.tittel_2")}</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="F.eks. Grunnarbeid ferdig"
+                  placeholder={t("auto.f_eks_grunnarbeid_ferdig")}
                 />
               </div>
               <div>
-                <Label>Beskrivelse</Label>
+                <Label>{t("auto.beskrivelse")}</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Detaljer om milepælen..."
+                  placeholder={t("auto.detaljer_om_milepaelen")}
                   rows={2}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Startdato *</Label>
+                  <Label>{t("auto.startdato_3")}</Label>
                   <Input
                     type="date"
                     value={formData.start_date}
@@ -310,7 +311,7 @@ export default function Ks2Fremdriftsplan() {
                   />
                 </div>
                 <div>
-                  <Label>Sluttdato *</Label>
+                  <Label>{t("auto.sluttdato_3")}</Label>
                   <Input
                     type="date"
                     value={formData.end_date}
@@ -320,7 +321,7 @@ export default function Ks2Fremdriftsplan() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Status</Label>
+                  <Label>{t("auto.status_2")}</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(v) => setFormData({ ...formData, status: v })}
@@ -349,15 +350,15 @@ export default function Ks2Fremdriftsplan() {
                 </div>
               </div>
               <div>
-                <Label>Ansvarlig</Label>
+                <Label>{t("auto.ansvarlig_2")}</Label>
                 <Input
                   value={formData.responsible_name}
                   onChange={(e) => setFormData({ ...formData, responsible_name: e.target.value })}
-                  placeholder="Navn på ansvarlig person"
+                  placeholder={t("auto.navn_paa_ansvarlig_person")}
                 />
               </div>
               <div>
-                <Label>Farge</Label>
+                <Label>{t("auto.farge")}</Label>
                 <div className="flex gap-2 flex-wrap mt-1">
                   {COLOR_OPTIONS.map((color) => (
                     <button
@@ -375,7 +376,7 @@ export default function Ks2Fremdriftsplan() {
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button
                   onClick={handleSubmit}
@@ -399,7 +400,7 @@ export default function Ks2Fremdriftsplan() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-xs text-muted-foreground">Milepæler</p>
+                <p className="text-xs text-muted-foreground">{t("auto.milepaeler")}</p>
               </div>
             </div>
           </CardContent>
@@ -412,7 +413,7 @@ export default function Ks2Fremdriftsplan() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.completed}</p>
-                <p className="text-xs text-muted-foreground">Fullført</p>
+                <p className="text-xs text-muted-foreground">{t("auto.fullfoert")}</p>
               </div>
             </div>
           </CardContent>
@@ -425,7 +426,7 @@ export default function Ks2Fremdriftsplan() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.inProgress}</p>
-                <p className="text-xs text-muted-foreground">Pågår</p>
+                <p className="text-xs text-muted-foreground">{t("auto.paagaar")}</p>
               </div>
             </div>
           </CardContent>
@@ -438,7 +439,7 @@ export default function Ks2Fremdriftsplan() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.avgProgress}%</p>
-                <p className="text-xs text-muted-foreground">Snitt fremdrift</p>
+                <p className="text-xs text-muted-foreground">{t("auto.snitt_fremdrift")}</p>
               </div>
             </div>
           </CardContent>
@@ -450,15 +451,15 @@ export default function Ks2Fremdriftsplan() {
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="gantt" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Gantt</span>
+            <span className="hidden sm:inline">{t("auto.gantt")}</span>
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4" />
-            <span className="hidden sm:inline">Kalender</span>
+            <span className="hidden sm:inline">{t("auto.kalender")}</span>
           </TabsTrigger>
           <TabsTrigger value="timeline" className="flex items-center gap-2">
             <History className="h-4 w-4" />
-            <span className="hidden sm:inline">Prosjekttidslinje</span>
+            <span className="hidden sm:inline">{t("auto.prosjekttidslinje")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -478,7 +479,7 @@ export default function Ks2Fremdriftsplan() {
                     {/* Month headers */}
                     <div className="flex border-b mb-2">
                       <div className="w-48 shrink-0 px-2 py-1 font-medium text-sm">
-                        Milepæl
+                        {t("auto.milepael")}
                       </div>
                       <div className="flex-1 flex">
                         {months.map((month, i) => {
@@ -565,9 +566,9 @@ export default function Ks2Fremdriftsplan() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen milepæler ennå</h3>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_milepaeler_ennaa")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Legg til milepæler for å planlegge prosjektfremdriften
+                  {t("auto.legg_til_milepaeler_for_aa_planlegge_pro")}
                 </p>
                 <Button onClick={() => handleOpenDialog()}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -645,7 +646,7 @@ export default function Ks2Fremdriftsplan() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <CalendarDays className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                    <p>Ingen milepæler på denne datoen</p>
+                    <p>{t("auto.ingen_milepaeler_paa_denne_datoen")}</p>
                     {selectedCalendarDate && (
                       <Button
                         variant="outline"
@@ -681,7 +682,7 @@ export default function Ks2Fremdriftsplan() {
       {milestones.length > 0 && viewMode === "gantt" && (
         <Card className="sm:hidden">
           <CardHeader>
-            <CardTitle>Alle milepæler</CardTitle>
+            <CardTitle>{t("auto.alle_milepaeler")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {milestones.map((milestone) => (
@@ -721,15 +722,15 @@ export default function Ks2Fremdriftsplan() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett milepæl?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_milepael")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne milepælen? Handlingen kan ikke angres.
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne__8")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

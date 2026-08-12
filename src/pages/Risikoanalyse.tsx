@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, ClipboardList, CalendarCheck, FileCheck, BookOpen, FlaskConical, Activity, Loader2 } from "lucide-react";
+import { t } from "@/i18n/t";
 
 // Lazy-load each tab so only the active one is fetched & mounted.
 const RisikovurderingOgHandlingsplan = lazy(() =>
@@ -70,9 +71,9 @@ const Risikoanalyse = () => {
               <Shield className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Risikoanalyse</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.risikoanalyse")}</h1>
               <p className="text-muted-foreground text-sm sm:text-base">
-                Risikovurdering, handlingsplan, oppfølging, rutiner og sikker jobb analyse
+                {t("auto.risikovurdering_handlingsplan_oppfoelgin")}
               </p>
             </div>
           </div>
@@ -87,39 +88,39 @@ const Risikoanalyse = () => {
                 className="flex items-center gap-2 py-3 px-3 whitespace-nowrap data-[state=active]:bg-background"
               >
                 <ClipboardList className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Risikovurdering</span>
-                <span className="sm:hidden">Risiko</span>
+                <span className="hidden sm:inline">{t("auto.risikovurdering")}</span>
+                <span className="sm:hidden">{t("auto.risiko")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="kjemikalier"
                 className="flex items-center gap-2 py-3 px-3 whitespace-nowrap data-[state=active]:bg-background"
               >
                 <FlaskConical className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Kjemikalier</span>
-                <span className="sm:hidden">Kjem.</span>
+                <span className="hidden sm:inline">{t("auto.kjemikalier")}</span>
+                <span className="sm:hidden">{t("auto.kjem")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="ergonomi"
                 className="flex items-center gap-2 py-3 px-3 whitespace-nowrap data-[state=active]:bg-background"
               >
                 <Activity className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Ergonomi</span>
-                <span className="sm:hidden">Ergo.</span>
+                <span className="hidden sm:inline">{t("auto.ergonomi")}</span>
+                <span className="sm:hidden">{t("auto.ergo")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="oppfolging"
                 className="flex items-center gap-2 py-3 px-3 whitespace-nowrap data-[state=active]:bg-background"
               >
                 <CalendarCheck className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">Oppfølging</span>
-                <span className="sm:hidden">Oppfølg.</span>
+                <span className="hidden sm:inline">{t("auto.oppfoelging")}</span>
+                <span className="sm:hidden">{t("auto.oppfoelg")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="rutiner"
                 className="flex items-center gap-2 py-3 px-3 whitespace-nowrap data-[state=active]:bg-background"
               >
                 <BookOpen className="h-4 w-4 flex-shrink-0" />
-                <span>Rutiner</span>
+                <span>{t("auto.rutiner")}</span>
               </TabsTrigger>
               <TabsTrigger
                 value="sja"
