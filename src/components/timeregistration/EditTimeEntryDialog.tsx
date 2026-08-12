@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n/t";
 
 interface EditTimeEntryDialogProps {
   open: boolean;
@@ -51,14 +52,14 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Rediger timeregistrering</DialogTitle>
+          <DialogTitle>{t("auto.rediger_timeregistrering")}</DialogTitle>
           <DialogDescription>
             {entry ? `${entry.user_name} – ${entry.entry_date}` : ""}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="edit-hours">Timer</Label>
+            <Label htmlFor="edit-hours">{t("auto.timer")}</Label>
             <Input
               id="edit-hours"
               type="number"
@@ -70,11 +71,11 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
               onClick={(e) => e.stopPropagation()}
             />
             <p className="text-xs text-muted-foreground">
-              Maks 24 timer per døgn. Bruk 0,25 i økninger.
+              {t("auto.maks_24_timer_per_doegn_bruk_0_25_i_oekn")}
             </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-desc">Beskrivelse</Label>
+            <Label htmlFor="edit-desc">{t("auto.beskrivelse")}</Label>
             <Textarea
               id="edit-desc"
               value={description}
@@ -86,7 +87,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? "Lagrer..." : "Lagre"}

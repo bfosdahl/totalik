@@ -35,6 +35,7 @@ import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreateTimeEntry, HourType, TimeEntryAllowanceInput } from "@/hooks/useTimeEntries";
 import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
+import { t } from "@/i18n/t";
 
 interface NewTimeEntryDialogProps {
   open: boolean;
@@ -52,7 +53,7 @@ interface AllowanceRow {
 }
 
 const HOUR_TYPE_OPTIONS: { value: HourType; label: string; hint: string }[] = [
-  { value: "normal", label: "Normal", hint: "Vanlige timer" },
+  { value: "normal", label: t("auto.normal"), hint: "Vanlige timer" },
   { value: "overtime_50", label: "50%", hint: "Overtid 50%" },
   { value: "overtime_100", label: "100%", hint: "Overtid 100%" },
 ];
@@ -155,8 +156,8 @@ export function NewTimeEntryDialog({
 
     // Påkrevd prosjekt: enten KS-prosjekt eller fritekst-prosjekt
     if (!projectName) {
-      toast.error("Du må velge et prosjekt", {
-        description: "Velg et aktivt KS-prosjekt eller skriv inn et prosjektnavn under 'Annet'.",
+      toast.error(t("auto.du_maa_velge_et_prosjekt"), {
+        description: t("auto.velg_et_aktivt_ks_prosjekt_eller_skriv_i"),
       });
       return;
     }
@@ -202,7 +203,7 @@ export function NewTimeEntryDialog({
       const normal = Math.round(breakdown.normal * 100) / 100;
 
       if (ot50 + ot100 > hoursNum + 0.001) {
-        toast.error("Overtid overstiger totalt antall timer");
+        toast.error(t("auto.overtid_overstiger_totalt_antall_timer"));
         setIsSubmitting(false);
         return;
       }
@@ -285,13 +286,13 @@ export function NewTimeEntryDialog({
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Registrer timer</DialogTitle>
+          <DialogTitle>{t("auto.registrer_timer")}</DialogTitle>
         </DialogHeader>
 
         {draftSavedAt && (
           <div className="flex items-center gap-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-emerald-700">
             <Save className="h-4 w-4 shrink-0" />
-            <span className="text-sm font-medium">Utkast lagret</span>
+            <span className="text-sm font-medium">{t("auto.utkast_lagret")}</span>
             <span className="text-xs text-emerald-600/80 ml-auto">
               {format(new Date(draftSavedAt), "HH:mm", { locale: nb })}
             </span>
@@ -302,13 +303,13 @@ export function NewTimeEntryDialog({
           {/* Admin: Registrer for annen ansatt */}
           {canRegisterForOthers && companyUsers.length > 0 && (
             <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
-              <Label className="text-xs uppercase tracking-wide text-primary">Ansatt</Label>
+              <Label className="text-xs uppercase tracking-wide text-primary">{t("auto.ansatt")}</Label>
               <Select value={onBehalfUserId} onValueChange={setOnBehalfUserId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg ansatt" />
+                  <SelectValue placeholder={t("auto.velg_ansatt")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__self__">Meg selv</SelectItem>
+                  <SelectItem value="__self__">{t("auto.meg_selv")}</SelectItem>
                   {companyUsers
                     .filter((u) => u.user_id !== user?.id)
                     .sort((a, b) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
@@ -321,7 +322,7 @@ export function NewTimeEntryDialog({
               </Select>
               {onBehalfUserId !== "__self__" && (
                 <p className="text-[11px] text-muted-foreground">
-                  Timene registreres på valgt ansatt. Handlingen logges automatisk.
+                  {t("auto.timene_registreres_paa_valgt_ansatt_hand")}
                 </p>
               )}
             </div>
@@ -329,7 +330,7 @@ export function NewTimeEntryDialog({
 
           {/* Prosjekt */}
           <div className="space-y-2">
-            <Label>Prosjekt <span className="text-destructive">*</span></Label>
+            <Label>{t("auto.prosjekt")} <span className="text-destructive">*</span></Label>
             {hasKsBygg && activeProjects.length > 0 ? (
               <>
                 <Select
@@ -340,7 +341,7 @@ export function NewTimeEntryDialog({
                     if (v === "custom") setCustomProjectName("");
                   }}
                 >
-                  <SelectTrigger><SelectValue placeholder="Velg prosjekt (påkrevd)" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("auto.velg_prosjekt_paakrevd")} /></SelectTrigger>
                   <SelectContent>
                     {activeProjects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
@@ -351,7 +352,7 @@ export function NewTimeEntryDialog({
                         {project.client_name ? ` — ${project.client_name}` : ""}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Annet (fritekst)</SelectItem>
+                    <SelectItem value="custom">{t("auto.annet_fritekst")}</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -359,7 +360,7 @@ export function NewTimeEntryDialog({
                   <div className="relative mt-2">
                     <FolderOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="Skriv inn prosjektnavn"
+                      placeholder={t("auto.skriv_inn_prosjektnavn")}
                       value={customProjectName}
                       onChange={(e) => setCustomProjectName(e.target.value)}
                       className="pl-10"
@@ -371,7 +372,7 @@ export function NewTimeEntryDialog({
               <div className="relative">
                 <FolderOpen className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="F.eks. Kundeprosjekt A"
+                  placeholder={t("auto.f_eks_kundeprosjekt_a")}
                   value={customProjectName}
                   onChange={(e) => setCustomProjectName(e.target.value)}
                   className="pl-10"
@@ -382,11 +383,11 @@ export function NewTimeEntryDialog({
 
           {/* Kunde */}
           <div className="space-y-2">
-            <Label>Kunde</Label>
+            <Label>{t("auto.kunde")}</Label>
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Kundenavn"
+                placeholder={t("auto.kundenavn")}
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="pl-10"
@@ -396,7 +397,7 @@ export function NewTimeEntryDialog({
 
           {/* Dato */}
           <div className="space-y-2">
-            <Label>Dato</Label>
+            <Label>{t("auto.dato")}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -416,7 +417,7 @@ export function NewTimeEntryDialog({
           {/* Tid fra-til + total timer */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
-              <Label>Fra</Label>
+              <Label>{t("auto.fra")}</Label>
               <Input
                 type="time"
                 lang="nb-NO"
@@ -433,7 +434,7 @@ export function NewTimeEntryDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Til</Label>
+              <Label>{t("auto.til")}</Label>
               <Input
                 type="time"
                 lang="nb-NO"
@@ -450,7 +451,7 @@ export function NewTimeEntryDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Timer</Label>
+              <Label>{t("auto.timer")}</Label>
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -470,7 +471,7 @@ export function NewTimeEntryDialog({
           {/* Timetype – kun aktiv når ingen overtid-segmenter er definert */}
           {overtimeSegments.length === 0 && (
             <div className="space-y-2">
-              <Label>Timetype</Label>
+              <Label>{t("auto.timetype")}</Label>
               <div className="grid grid-cols-3 gap-2">
                 {HOUR_TYPE_OPTIONS.map((opt) => (
                   <button
@@ -492,7 +493,7 @@ export function NewTimeEntryDialog({
                 ))}
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Eller spesifiser overtid som intervaller under (f.eks. 15–18 som 50%).
+                {t("auto.eller_spesifiser_overtid_som_intervaller")}
               </p>
             </div>
           )}
@@ -510,11 +511,11 @@ export function NewTimeEntryDialog({
 
           {/* Beskrivelse */}
           <div className="space-y-2">
-            <Label>Beskrivelse</Label>
+            <Label>{t("auto.beskrivelse")}</Label>
             <div className="relative">
               <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Textarea
-                placeholder="Hva jobbet du med?"
+                placeholder={t("auto.hva_jobbet_du_med")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="pl-10 min-h-[60px]"
@@ -542,7 +543,7 @@ export function NewTimeEntryDialog({
 
             {allowanceTypes.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                Ingen tilleggssatser definert. Bedriftsadmin kan opprette satser under Innstillinger → Lønn & tilleggssatser.
+                {t("auto.ingen_tilleggssatser_definert_bedriftsad")}
               </p>
             )}
 
@@ -607,7 +608,7 @@ export function NewTimeEntryDialog({
 
           <div className="flex gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? "Lagrer..." : "Registrer"}

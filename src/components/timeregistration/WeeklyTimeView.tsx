@@ -27,6 +27,7 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useWorkSchedules, WorkSchedule } from "@/hooks/useWorkSchedules";
 import { useTimeEntries } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface TimeEntry {
   id: string;
@@ -212,7 +213,7 @@ export function WeeklyTimeView({
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={goToCurrentWeek} className="h-8 px-2 sm:px-3">
-              I dag
+              {t("auto.i_dag_2")}
             </Button>
           </div>
           
@@ -241,7 +242,7 @@ export function WeeklyTimeView({
         
         {/* Desktop total */}
         <div className="hidden sm:block text-right">
-          <p className="text-sm text-muted-foreground">Totalt denne uken</p>
+          <p className="text-sm text-muted-foreground">{t("auto.totalt_denne_uken")}</p>
           <p className="text-2xl font-bold">{weekTotal.toFixed(1)} t</p>
         </div>
         
@@ -375,7 +376,7 @@ export function WeeklyTimeView({
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Timer</Label>
+              <Label>{t("auto.timer")}</Label>
               <Input
                 type="number"
                 step="0.5"
@@ -389,24 +390,24 @@ export function WeeklyTimeView({
 
             {hasByggModule && activeProjects.length > 0 ? (
               <div className="space-y-2">
-                <Label>Prosjekt</Label>
+                <Label>{t("auto.prosjekt")}</Label>
                 <Select value={projectId} onValueChange={setProjectId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg prosjekt (valgfritt)" />
+                    <SelectValue placeholder={t("auto.velg_prosjekt_valgfritt")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Ingen prosjekt</SelectItem>
+                    <SelectItem value="none">{t("auto.ingen_prosjekt")}</SelectItem>
                     {activeProjects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.project_number} - {project.project_name}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Annet (fritekst)</SelectItem>
+                    <SelectItem value="custom">{t("auto.annet_fritekst")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {projectId === "custom" && (
                   <Input
-                    placeholder="Skriv prosjektnavn"
+                    placeholder={t("auto.skriv_prosjektnavn")}
                     value={customProject}
                     onChange={(e) => setCustomProject(e.target.value)}
                   />
@@ -414,9 +415,9 @@ export function WeeklyTimeView({
               </div>
             ) : (
               <div className="space-y-2">
-                <Label>Prosjekt (valgfritt)</Label>
+                <Label>{t("auto.prosjekt_valgfritt")}</Label>
                 <Input
-                  placeholder="F.eks. Kundeprosjekt A"
+                  placeholder={t("auto.f_eks_kundeprosjekt_a")}
                   value={customProject}
                   onChange={(e) => setCustomProject(e.target.value)}
                 />
@@ -424,9 +425,9 @@ export function WeeklyTimeView({
             )}
 
             <div className="space-y-2">
-              <Label>Beskrivelse (valgfritt)</Label>
+              <Label>{t("auto.beskrivelse_valgfritt")}</Label>
               <Textarea
-                placeholder="Hva jobbet du med?"
+                placeholder={t("auto.hva_jobbet_du_med")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />

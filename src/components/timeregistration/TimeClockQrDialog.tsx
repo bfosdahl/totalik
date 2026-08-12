@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useTimeClock, TimeClockQrCode } from "@/hooks/useTimeClock";
+import { t } from "@/i18n/t";
 
 interface TimeClockQrDialogProps {
   open: boolean;
@@ -28,7 +29,7 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
 
   const handleCreate = async () => {
     if (!newName.trim()) {
-      toast.error("Angi et navn for stemplingsstedet");
+      toast.error(t("auto.angi_et_navn_for_stemplingsstedet"));
       return;
     }
     setIsCreating(true);
@@ -44,13 +45,13 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
 
   const copyUrl = (code: string) => {
     navigator.clipboard.writeText(getQrUrl(code));
-    toast.success("URL kopiert til utklippstavlen");
+    toast.success(t("auto.url_kopiert_til_utklippstavlen"));
   };
 
   const downloadQrCode = (qrCode: TimeClockQrCode) => {
     const canvas = canvasRefs.current[qrCode.id];
     if (!canvas) {
-      toast.error("Kunne ikke laste ned QR-koden");
+      toast.error(t("auto.kunne_ikke_laste_ned_qr_koden"));
       return;
     }
     
@@ -59,7 +60,7 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
     link.href = url;
     link.download = `qr-stempling-${qrCode.name.toLowerCase().replace(/\s+/g, "-")}.png`;
     link.click();
-    toast.success("QR-kode lastet ned");
+    toast.success(t("auto.qr_kode_lastet_ned"));
   };
 
   return (
@@ -71,7 +72,7 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
             QR-kode stempling
           </DialogTitle>
           <DialogDescription>
-            Generer QR-koder som ansatte kan skanne for å stemple inn/ut
+            {t("auto.generer_qr_koder_som_ansatte_kan_skanne_")}
           </DialogDescription>
         </DialogHeader>
 
@@ -80,11 +81,11 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
           <div className="flex gap-2">
             <div className="flex-1">
               <Label htmlFor="qr-name" className="sr-only">
-                Navn på stemplingssted
+                {t("auto.navn_paa_stemplingssted")}
               </Label>
               <Input
                 id="qr-name"
-                placeholder="Navn (f.eks. Hovedkontor, Lager)"
+                placeholder={t("auto.navn_f_eks_hovedkontor_lager")}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
               />
@@ -99,8 +100,8 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
           {qrCodes.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <QrCode className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Ingen QR-koder ennå</p>
-              <p className="text-sm">Opprett en QR-kode for å komme i gang</p>
+              <p>{t("auto.ingen_qr_koder_ennaa")}</p>
+              <p className="text-sm">{t("auto.opprett_en_qr_kode_for_aa_komme_i_gang")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -161,11 +162,11 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
           )}
 
           <div className="bg-muted/50 rounded-lg p-4 text-sm">
-            <p className="font-medium mb-1">💡 Slik bruker du QR-koden:</p>
+            <p className="font-medium mb-1">{t("auto.slik_bruker_du_qr_koden")}</p>
             <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-              <li>Last ned eller skriv ut QR-koden</li>
-              <li>Heng den opp ved inngangen til arbeidsplassen</li>
-              <li>Ansatte skanner med telefonen for å stemple inn/ut</li>
+              <li>{t("auto.last_ned_eller_skriv_ut_qr_koden")}</li>
+              <li>{t("auto.heng_den_opp_ved_inngangen_til_arbeidspl")}</li>
+              <li>{t("auto.ansatte_skanner_med_telefonen_for_aa_ste")}</li>
             </ol>
           </div>
         </div>

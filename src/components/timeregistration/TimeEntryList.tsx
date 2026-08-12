@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface TimeEntry {
   id: string;
@@ -59,11 +60,11 @@ interface TimeEntryListProps {
 }
 
 const statusConfig: Record<string, { label: string; variant: "secondary" | "default" | "destructive"; className?: string }> = {
-  draft: { label: "Utkast", variant: "secondary" },
-  submitted: { label: "Innsendt", variant: "default" },
-  approved: { label: "Godkjent", variant: "default", className: "bg-green-500 hover:bg-green-600" },
-  rejected: { label: "Avvist", variant: "destructive" },
-  pending_confirmation: { label: "Planlagt", variant: "secondary", className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+  draft: { label: t("auto.utkast"), variant: "secondary" },
+  submitted: { label: t("auto.innsendt"), variant: "default" },
+  approved: { label: t("auto.godkjent"), variant: "default", className: "bg-green-500 hover:bg-green-600" },
+  rejected: { label: t("auto.avvist"), variant: "destructive" },
+  pending_confirmation: { label: t("auto.planlagt"), variant: "secondary", className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
 };
 
 export function TimeEntryList({
@@ -82,7 +83,7 @@ export function TimeEntryList({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Clock className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-medium">Ingen timeregistreringer</h3>
+        <h3 className="text-lg font-medium">{t("auto.ingen_timeregistreringer")}</h3>
         <p className="text-muted-foreground">
           {showEmployee
             ? "Det er ingen timeregistreringer i denne perioden."
@@ -98,13 +99,13 @@ export function TimeEntryList({
 
         <TableHeader>
           <TableRow>
-            <TableHead>Dato</TableHead>
-            {showEmployee && <TableHead>Ansatt</TableHead>}
-            <TableHead className="whitespace-nowrap">Fra–Til</TableHead>
-            <TableHead className="text-right">Timer</TableHead>
-            <TableHead>Prosjekt</TableHead>
-            <TableHead className="hidden md:table-cell">Beskrivelse</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{t("auto.dato")}</TableHead>
+            {showEmployee && <TableHead>{t("auto.ansatt")}</TableHead>}
+            <TableHead className="whitespace-nowrap">{t("auto.fra_til")}</TableHead>
+            <TableHead className="text-right">{t("auto.timer")}</TableHead>
+            <TableHead>{t("auto.prosjekt")}</TableHead>
+            <TableHead className="hidden md:table-cell">{t("auto.beskrivelse")}</TableHead>
+            <TableHead>{t("auto.status_2")}</TableHead>
             <TableHead className="w-[80px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -127,7 +128,7 @@ export function TimeEntryList({
                           <QrCode className="h-4 w-4 text-primary" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>QR-stempling</p>
+                          <p>{t("auto.qr_stempling")}</p>
                           {entry.clock_in && entry.clock_out && (
                             <p className="text-xs text-muted-foreground">
                               {format(new Date(entry.clock_in), "HH:mm")} - {format(new Date(entry.clock_out), "HH:mm")}
@@ -143,7 +144,7 @@ export function TimeEntryList({
                           <CalendarCheck className="h-4 w-4 text-blue-600" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Fra vaktplan</p>
+                          <p>{t("auto.fra_vaktplan")}</p>
                           {entry.schedule_location && (
                             <p className="text-xs text-muted-foreground flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
@@ -208,7 +209,7 @@ export function TimeEntryList({
                             Bekreft timer
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Bekreft at du jobbet disse timene</TooltipContent>
+                        <TooltipContent>{t("auto.bekreft_at_du_jobbet_disse_timene")}</TooltipContent>
                       </Tooltip>
                     )}
                     {/* Show direct action buttons for pending entries */}
@@ -224,7 +225,7 @@ export function TimeEntryList({
                             <Check className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Godkjenn</TooltipContent>
+                        <TooltipContent>{t("auto.godkjenn")}</TooltipContent>
                       </Tooltip>
                     )}
                     {canApprove && onReject && (
@@ -239,7 +240,7 @@ export function TimeEntryList({
                             <X className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Avvis</TooltipContent>
+                        <TooltipContent>{t("auto.avvis")}</TooltipContent>
                       </Tooltip>
                     )}
                     {canModify && onEdit && entry.status !== "pending_confirmation" && (
@@ -254,7 +255,7 @@ export function TimeEntryList({
                             <Pencil className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Rediger</TooltipContent>
+                        <TooltipContent>{t("auto.rediger")}</TooltipContent>
                       </Tooltip>
                     )}
                     {canModify && onDelete && (
@@ -269,7 +270,7 @@ export function TimeEntryList({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Slett</TooltipContent>
+                        <TooltipContent>{t("auto.slett")}</TooltipContent>
                       </Tooltip>
                     )}
                   </div>

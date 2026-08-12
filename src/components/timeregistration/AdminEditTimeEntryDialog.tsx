@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle } from "lucide-react";
+import { t } from "@/i18n/t";
 
 type HourType = "normal" | "overtime_50" | "overtime_100";
 
@@ -65,12 +66,12 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
   const handleSave = async () => {
     if (!entry) return;
     if (reason.trim().length < 3) {
-      toast.error("Du må skrive en kort årsak til endringen");
+      toast.error(t("auto.du_maa_skrive_en_kort_aarsak_til_endring"));
       return;
     }
     const hoursNum = parseFloat(hours);
     if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) {
-      toast.error("Timer må være mellom 0 og 24");
+      toast.error(t("auto.timer_maa_vaere_mellom_0_og_24"));
       return;
     }
     setSaving(true);
@@ -94,7 +95,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
         toast.error((data as any)?.error || error?.message || "Kunne ikke lagre");
         return;
       }
-      toast.success("Timene er oppdatert og ansatt er varslet");
+      toast.success(t("auto.timene_er_oppdatert_og_ansatt_er_varslet"));
       onOpenChange(false);
       onSaved?.();
     } finally {
@@ -112,22 +113,22 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
         <div className="space-y-4">
           <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-3 text-amber-900 text-sm">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-            <p>Ansatt blir varslet via app, push og e-post med både gamle/nye verdier og årsaken du oppgir.</p>
+            <p>{t("auto.ansatt_blir_varslet_via_app_push_og_e_po")}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Dato</Label>
+              <Label>{t("auto.dato")}</Label>
               <Input type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} />
             </div>
             <div className="space-y-1">
-              <Label>Timetype</Label>
+              <Label>{t("auto.timetype")}</Label>
               <Select value={hourType} onValueChange={(v) => setHourType(v as HourType)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="overtime_50">Overtid 50%</SelectItem>
-                  <SelectItem value="overtime_100">Overtid 100%</SelectItem>
+                  <SelectItem value="normal">{t("auto.normal")}</SelectItem>
+                  <SelectItem value="overtime_50">{t("auto.overtid_50")}</SelectItem>
+                  <SelectItem value="overtime_100">{t("auto.overtid_100")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -135,7 +136,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
-              <Label>Fra</Label>
+              <Label>{t("auto.fra")}</Label>
               <Input
                 type="time"
                 value={startTime}
@@ -150,7 +151,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
               />
             </div>
             <div className="space-y-1">
-              <Label>Til</Label>
+              <Label>{t("auto.til")}</Label>
               <Input
                 type="time"
                 value={endTime}
@@ -165,35 +166,35 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
               />
             </div>
             <div className="space-y-1">
-              <Label>Timer</Label>
+              <Label>{t("auto.timer")}</Label>
               <Input type="number" step="0.25" min="0.25" max="24" value={hours} onChange={(e) => setHours(e.target.value)} />
             </div>
           </div>
 
           <div className="space-y-1">
-            <Label>Prosjekt</Label>
-            <Input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="Prosjektnavn (valgfritt)" />
+            <Label>{t("auto.prosjekt")}</Label>
+            <Input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("auto.prosjektnavn_valgfritt")} />
           </div>
 
           <div className="space-y-1">
-            <Label>Beskrivelse</Label>
+            <Label>{t("auto.beskrivelse")}</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[60px]" />
           </div>
 
           <div className="space-y-1 border-t pt-3">
-            <Label className="text-destructive">Årsak til endring *</Label>
+            <Label className="text-destructive">{t("auto.aarsak_til_endring")}</Label>
             <Textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="F.eks. «Glemt pause trukket fra», «Feil prosjekt» eller «Overtidssatsen var feil»"
+              placeholder={t("auto.f_eks_glemt_pause_trukket_fra_feil_prosj")}
               className="min-h-[70px]"
             />
-            <p className="text-xs text-muted-foreground">Årsaken sendes til ansatt og lagres i revisjonsloggen.</p>
+            <p className="text-xs text-muted-foreground">{t("auto.aarsaken_sendes_til_ansatt_og_lagres_i_r")}</p>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Avbryt</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>{t("auto.avbryt")}</Button>
           <Button onClick={handleSave} disabled={saving}>{saving ? "Lagrer..." : "Lagre og varsle"}</Button>
         </DialogFooter>
       </DialogContent>
