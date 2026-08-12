@@ -17709,6 +17709,10 @@ export type Database = {
         Args: { target_company_id: string }
         Returns: undefined
       }
+      employment_contract_self_update_allowed: {
+        Args: { _contract_id: string }
+        Returns: boolean
+      }
       ensure_audit_schedule: {
         Args: {
           p_company_id: string
