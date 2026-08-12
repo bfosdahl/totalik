@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MapPin, Star, Clock } from "lucide-react";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
+import { t } from "@/i18n/t";
 
 interface ShiftCalendarProps {
   selectedWeek: Date;
@@ -13,11 +14,11 @@ interface ShiftCalendarProps {
 }
 
 const LOCATIONS: Record<string, { label: string; color: string }> = {
-  kitchen: { label: "Kjøkken", color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
-  service: { label: "Servering", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  takeaway: { label: "Gatekjøkken", color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
-  storage: { label: "Lager", color: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200" },
-  office: { label: "Kontor", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  kitchen: { label: t("auto.kjoekken"), color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
+  service: { label: t("auto.servering"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+  takeaway: { label: t("auto.gatekjoekken"), color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
+  storage: { label: t("auto.lager"), color: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200" },
+  office: { label: t("auto.kontor"), color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
 };
 
 const ROLES: Record<string, string> = {

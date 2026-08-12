@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Send, CheckCircle2, Package } from "lucide-react";
+import { t } from "@/i18n/t";
 
 const categoryLabels: Record<string, string> = {
   hygiene: "Hygiene",
@@ -82,7 +83,7 @@ export function OrderPostersTab() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedPosters.size === 0) {
-      toast.error("Velg minst én plakat");
+      toast.error(t("auto.velg_minst_n_plakat"));
       return;
     }
 
@@ -103,9 +104,9 @@ export function OrderPostersTab() {
       if (data?.error) throw new Error(data.error);
 
       setOrderSent(true);
-      toast.success("Bestillingen er sendt!");
+      toast.success(t("auto.bestillingen_er_sendt"));
     } catch (err: any) {
-      toast.error("Kunne ikke sende bestilling: " + err.message);
+      toast.error(t("auto.kunne_ikke_sende_bestilling") + err.message);
     } finally {
       setIsSending(false);
     }
@@ -123,13 +124,13 @@ export function OrderPostersTab() {
     return (
       <div className="max-w-2xl mx-auto py-12 text-center space-y-6">
         <CheckCircle2 className="w-16 h-16 mx-auto text-green-500" />
-        <h2 className="text-2xl font-bold">Bestilling sendt!</h2>
+        <h2 className="text-2xl font-bold">{t("auto.bestilling_sendt")}</h2>
         <p className="text-muted-foreground">
           Din bestilling av {selectedPosters.size} {selectedPosters.size === 1 ? "plakat/dokument" : "plakater/dokumenter"} er sendt.
-          Vi tar kontakt på <strong>{contactEmail}</strong> med informasjon om levering.
+          Vi tar kontakt på <strong>{contactEmail}</strong> {t("auto.med_informasjon_om_levering")}
         </p>
         <Button variant="outline" onClick={() => { setOrderSent(false); setSelectedPosters(new Set()); }}>
-          Bestill flere
+          {t("auto.bestill_flere")}
         </Button>
       </div>
     );
@@ -192,26 +193,26 @@ export function OrderPostersTab() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Kontaktinformasjon</CardTitle>
+          <CardTitle className="text-lg">{t("auto.kontaktinformasjon")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Kontaktperson *</Label>
+              <Label>{t("auto.kontaktperson")}</Label>
               <Input value={contactName} onChange={e => setContactName(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label>E-post *</Label>
+              <Label>{t("auto.e_post")}</Label>
               <Input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} required />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Telefon</Label>
-            <Input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="Valgfritt" />
+            <Label>{t("auto.telefon")}</Label>
+            <Input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder={t("auto.valgfritt")} />
           </div>
           <div className="space-y-2">
-            <Label>Melding / spesielle ønsker</Label>
-            <Textarea value={message} onChange={e => setMessage(e.target.value)} placeholder="F.eks. antall eksemplarer, spesielle formater, leveringsadresse..." rows={3} />
+            <Label>{t("auto.melding_spesielle_oensker")}</Label>
+            <Textarea value={message} onChange={e => setMessage(e.target.value)} placeholder={t("auto.f_eks_antall_eksemplarer_spesielle_forma")} rows={3} />
           </div>
         </CardContent>
       </Card>
@@ -222,7 +223,7 @@ export function OrderPostersTab() {
         </p>
         <Button type="submit" size="lg" className="gap-2" disabled={isSending || selectedPosters.size === 0}>
           {isSending ? (
-            <>Sender bestilling...</>
+            <>{t("auto.sender_bestilling")}</>
           ) : (
             <>
               <Send className="w-4 h-4" />

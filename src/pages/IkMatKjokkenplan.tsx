@@ -10,6 +10,7 @@ import { LayoutGrid, Plus, Pencil, Save, Loader2, Trash2, MapPin, Download } fro
 import { KitchenZoneEditor } from "@/components/ikmat/KitchenZoneEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -158,9 +159,9 @@ const IkMatKjokkenplan = () => {
       <div className="space-y-6 max-w-5xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Kjøkkenplanløsning – Ren/uren sone</h1>
+            <h1 className="text-2xl font-bold">{t("auto.kjoekkenplanloesning_ren_uren_sone")}</h1>
             <p className="text-muted-foreground">
-              Del opp kjøkkenet og lokalet i soner for å skille rene og urene arbeidsoppgaver
+              {t("auto.del_opp_kjoekkenet_og_lokalet_i_soner_fo")}
             </p>
           </div>
           {isSaving && (
@@ -251,10 +252,10 @@ const IkMatKjokkenplan = () => {
                   autoFocus
                 />
                 <Button onClick={handleAddRoom} disabled={!newRoomName.trim()}>
-                  Opprett
+                  {t("auto.opprett")}
                 </Button>
                 <Button variant="ghost" onClick={() => { setShowNewRoomInput(false); setNewRoomName(""); }}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
               </div>
             ) : (
@@ -262,10 +263,9 @@ const IkMatKjokkenplan = () => {
                 {rooms.length === 0 && (
                   <div className="mb-4">
                     <LayoutGrid className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                    <h3 className="text-lg font-medium mb-1">Ingen rom/områder lagt til</h3>
+                    <h3 className="text-lg font-medium mb-1">{t("auto.ingen_rom_omraader_lagt_til")}</h3>
                     <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                      Legg til rom og områder i lokalet ditt – f.eks. kjøkken, lager, serveringsområde.
-                      Tegn opp hver sone for å dokumentere ren/uren soneinndeling.
+                      {t("auto.legg_til_rom_og_omraader_i_lokalet_ditt_")}
                     </p>
                   </div>
                 )}
@@ -291,11 +291,11 @@ const IkMatKjokkenplan = () => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: "#bae6fd", border: "1px solid #0284c7" }} />
-              <span className="text-muted-foreground">Kjøl/frys</span>
+              <span className="text-muted-foreground">{t("auto.kjoel_frys_2")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded" style={{ backgroundColor: "#a5f3fc", border: "1px solid #0891b2" }} />
-              <span className="text-muted-foreground">Vask/sanitær</span>
+              <span className="text-muted-foreground">{t("auto.vask_sanitaer")}</span>
             </div>
           </div>
         )}
@@ -306,18 +306,15 @@ const IkMatKjokkenplan = () => {
             <div className="flex flex-col sm:flex-row gap-4 items-start">
               <LayoutGrid className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-medium text-blue-900">Krav om oppdeling av kjøkkenet</p>
+                <p className="font-medium text-blue-900">{t("auto.krav_om_oppdeling_av_kjoekkenet")}</p>
                 <p className="text-sm text-blue-800">
-                  Du bør dele opp kjøkkenet i forskjellige områder for å skille rene og urene arbeidsoppgaver.
-                  For eksempel bør det være et område til matlaging og et eget område til oppvask.
-                  Da er det lettere å sikre at arbeidet foregår på en hygienisk måte.
+                  {t("auto.du_boer_dele_opp_kjoekkenet_i_forskjelli")}
                 </p>
                 <p className="text-sm text-blue-800">
-                  Du kan også kompensere for små og trange lokaler ved å ha god struktur på arbeidet,
-                  eller ved å bruke råvarer som er renset og klargjort på forhånd.
+                  {t("auto.du_kan_ogsaa_kompensere_for_smaa_og_tran")}
                 </p>
                 <p className="text-xs text-blue-700 mt-2">
-                  Kilde: Næringsmiddelhygieneforskriften, Kapittel I – Allmenne krav til lokaler som brukes til næringsmidler
+                  {t("auto.kilde_naeringsmiddelhygieneforskriften_k")}
                 </p>
               </div>
             </div>
@@ -337,13 +334,13 @@ const IkMatKjokkenplan = () => {
         <AlertDialog open={!!deleteRoomId} onOpenChange={() => setDeleteRoomId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Slett rom?</AlertDialogTitle>
+              <AlertDialogTitle>{t("auto.slett_rom")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Er du sikker på at du vil slette dette rommet og tegningen? Dette kan ikke angres.
+                {t("auto.er_du_sikker_paa_at_du_vil_slette_dette_")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={() => deleteRoomId && handleDeleteRoom(deleteRoomId)}

@@ -10,6 +10,7 @@ import { Info, Edit, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RiskSummaryCard } from "@/components/ikmat/RiskSummaryCard";
+import { t } from "@/i18n/t";
 
 const FREQUENCY_LABELS: Record<string, string> = {
   daily: 'Daglig',
@@ -38,7 +39,7 @@ const IkMatRisikovurdering = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Laster...</p>
+            <p className="text-muted-foreground">{t("auto.laster")}</p>
           </div>
         </div>
       </AppLayout>
@@ -52,11 +53,11 @@ const IkMatRisikovurdering = () => {
     const trafficLight = getTrafficLight(level);
     switch (trafficLight) {
       case 'green':
-        return <Badge variant="secondary" className="text-xs font-normal">Lav</Badge>;
+        return <Badge variant="secondary" className="text-xs font-normal">{t("auto.lav")}</Badge>;
       case 'yellow':
-        return <Badge variant="secondary" className="text-xs font-normal bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Middels</Badge>;
+        return <Badge variant="secondary" className="text-xs font-normal bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">{t("auto.middels")}</Badge>;
       case 'red':
-        return <Badge variant="secondary" className="text-xs font-normal bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">Høy</Badge>;
+        return <Badge variant="secondary" className="text-xs font-normal bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">{t("auto.hoey")}</Badge>;
     }
   };
 
@@ -70,7 +71,7 @@ const IkMatRisikovurdering = () => {
               Risikovurdering
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Oversikt over identifiserte farer og kontrollpunkter
+              {t("auto.oversikt_over_identifiserte_farer_og_kon")}
             </p>
           </div>
           <Button asChild size="sm" variant="outline">
@@ -85,13 +86,13 @@ const IkMatRisikovurdering = () => {
           <div className="text-center py-12">
             <ShieldCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
             <h3 className="font-medium text-muted-foreground mb-2">
-              Ingen risikoer definert
+              {t("auto.ingen_risikoer_definert")}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Legg til risikoer for å dokumentere fareanalysen
+              {t("auto.legg_til_risikoer_for_aa_dokumentere_far")}
             </p>
             <Button asChild>
-              <Link to="/ik-mat/risiko-og-tiltak">Kom i gang</Link>
+              <Link to="/ik-mat/risiko-og-tiltak">{t("auto.kom_i_gang")}</Link>
             </Button>
           </div>
         ) : (

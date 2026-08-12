@@ -17,6 +17,7 @@ import { format, subDays } from "date-fns";
 import { nb } from "date-fns/locale";
 
 import { generateChecklistPdf } from "@/utils/ikMatChecklistPdf";
+import { t } from "@/i18n/t";
 
 interface ChecklistResponseEntry {
   id: string;
@@ -338,7 +339,7 @@ const IkMatHandbok = () => {
 
   const handleExportPdf = async () => {
     if (!handbokData || !company) {
-      toast.error("Ingen data å eksportere");
+      toast.error(t("auto.ingen_data_aa_eksportere"));
       return;
     }
 
@@ -447,7 +448,7 @@ const IkMatHandbok = () => {
         })),
       });
 
-      toast.success("IK-MAT håndbok lastet ned som PDF");
+      toast.success(t("auto.ik_mat_haandbok_lastet_ned_som_pdf"));
     } catch (error) {
       console.error("Error generating PDF:", error);
       const errorMessage = error instanceof Error ? error.message : 'Ukjent feil';
@@ -466,7 +467,7 @@ const IkMatHandbok = () => {
         notes: response.notes,
         companyName: company?.name
       });
-      toast.success("Sjekkliste lastet ned som PDF");
+      toast.success(t("auto.sjekkliste_lastet_ned_som_pdf"));
     } catch (error) {
       console.error('Error generating checklist PDF:', error);
       toast.error('Kunne ikke generere PDF');
@@ -500,7 +501,7 @@ const IkMatHandbok = () => {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Ingen IK-MAT innhold funnet. Vennligst fullfør oppsettet først.
+              {t("auto.ingen_ik_mat_innhold_funnet_vennligst_fu")}
               <Button 
                 variant="link" 
                 className="ml-2 p-0 h-auto"
@@ -521,9 +522,9 @@ const IkMatHandbok = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">IK-MAT Håndbok</h1>
+            <h1 className="text-3xl font-bold">{t("auto.ik_mat_haandbok")}</h1>
             <p className="text-muted-foreground mt-1">
-              Komplett dokumentasjon for visning til Mattilsynet
+              {t("auto.komplett_dokumentasjon_for_visning_til_m")}
             </p>
           </div>
           <Button onClick={handleExportPdf}>
@@ -535,15 +536,15 @@ const IkMatHandbok = () => {
         {/* Include options */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Velg hva som skal inkluderes</CardTitle>
-            <CardDescription>Slå av/på seksjoner for visning og PDF-eksport</CardDescription>
+            <CardTitle className="text-lg">{t("auto.velg_hva_som_skal_inkluderes")}</CardTitle>
+            <CardDescription>{t("auto.slaa_av_paa_seksjoner_for_visning_og_pdf")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center justify-between space-x-2 p-3 rounded-lg border">
                 <div className="flex-1">
                   <Label htmlFor="include-checklists" className="text-sm font-medium cursor-pointer">
-                    Utfylte sjekklister
+                    {t("auto.utfylte_sjekklister")}
                   </Label>
                   <p className="text-xs text-muted-foreground">
                     {checklistResponses.length} fra siste 30 dager
@@ -559,7 +560,7 @@ const IkMatHandbok = () => {
               <div className="flex items-center justify-between space-x-2 p-3 rounded-lg border">
                 <div className="flex-1">
                   <Label htmlFor="include-temperature" className="text-sm font-medium cursor-pointer">
-                    Temperaturlogg
+                    {t("auto.temperaturlogg")}
                   </Label>
                   <p className="text-xs text-muted-foreground">
                     {temperatureLogs.length} målinger fra siste 30 dager
@@ -575,7 +576,7 @@ const IkMatHandbok = () => {
               <div className="flex items-center justify-between space-x-2 p-3 rounded-lg border">
                 <div className="flex-1">
                   <Label htmlFor="include-cleaning" className="text-sm font-medium cursor-pointer">
-                    Renholdslogg
+                    {t("auto.renholdslogg")}
                   </Label>
                   <p className="text-xs text-muted-foreground">
                     {cleaningLogs.length} fra siste 30 dager
@@ -594,24 +595,24 @@ const IkMatHandbok = () => {
         {/* Company Info */}
         <Card>
           <CardHeader>
-            <CardTitle>Bedriftsinformasjon</CardTitle>
+            <CardTitle>{t("auto.bedriftsinformasjon")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Bedriftsnavn</p>
+                <p className="text-sm text-muted-foreground">{t("auto.bedriftsnavn")}</p>
                 <p className="font-medium">{company?.name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Virksomhetstype</p>
+                <p className="text-sm text-muted-foreground">{t("auto.virksomhetstype")}</p>
                 <p className="font-medium capitalize">{handbokData.setupAnswers.businessType || 'Ikke oppgitt'}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Antall ansatte</p>
+                <p className="text-sm text-muted-foreground">{t("auto.antall_ansatte")}</p>
                 <p className="font-medium">{handbokData.setupAnswers.numberOfEmployees || 'Ikke oppgitt'}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Ren/uren sone</p>
+                <p className="text-sm text-muted-foreground">{t("auto.ren_uren_sone")}</p>
                 <p className="font-medium">{handbokData.setupAnswers.hasCleanZone ? 'Ja' : 'Nei'}</p>
               </div>
             </div>
@@ -625,7 +626,7 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Målsettinger
             </CardTitle>
-            <CardDescription>Virksomhetens mål for matsikkerhet</CardDescription>
+            <CardDescription>{t("auto.virksomhetens_maal_for_matsikkerhet")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -646,7 +647,7 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Organisasjonsplan
             </CardTitle>
-            <CardDescription>Roller, ansvar og organisering i IK-MAT</CardDescription>
+            <CardDescription>{t("auto.roller_ansvar_og_organisering_i_ik_mat")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -665,7 +666,7 @@ const IkMatHandbok = () => {
                   )}
                 </div>
               )) : (
-                <p className="text-sm text-muted-foreground">Ingen roller lagt inn ennå.</p>
+                <p className="text-sm text-muted-foreground">{t("auto.ingen_roller_lagt_inn_ennaa")}</p>
               )}
             </div>
           </CardContent>
@@ -678,7 +679,7 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               HACCP - Kritiske Kontrollpunkter (KKP)
             </CardTitle>
-            <CardDescription>Kritiske kontrollpunkter i produksjonskjeden</CardDescription>
+            <CardDescription>{t("auto.kritiske_kontrollpunkter_i_produksjonskj")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -690,23 +691,23 @@ const IkMatHandbok = () => {
                   </div>
                   <div className="grid gap-3">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Fare</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.fare")}</p>
                       <p>{item.hazard}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Kritisk grense</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.kritisk_grense")}</p>
                       <p>{item.criticalLimit}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Overvåking</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.overvaaking")}</p>
                       <p>{item.monitoring}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Korrigerende tiltak</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.korrigerende_tiltak_2")}</p>
                       <p>{item.correctiveAction}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Verifisering</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.verifisering")}</p>
                       <p>{item.verification}</p>
                     </div>
                   </div>
@@ -723,7 +724,7 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Generell Risikovurdering
             </CardTitle>
-            <CardDescription>Risikovurdering for mat og servering</CardDescription>
+            <CardDescription>{t("auto.risikovurdering_for_mat_og_servering")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -743,16 +744,16 @@ const IkMatHandbok = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm mb-2">
                     <div>
-                      <span className="text-muted-foreground">Konsekvens: </span>
+                      <span className="text-muted-foreground">{t("auto.konsekvens")} </span>
                       <span className="font-medium">{risk.consequence}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Sannsynlighet: </span>
+                      <span className="text-muted-foreground">{t("auto.sannsynlighet")} </span>
                       <span className="font-medium">{risk.probability}</span>
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Tiltak</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t("auto.tiltak")}</p>
                     <p className="text-sm">{risk.measures}</p>
                   </div>
                 </div>
@@ -768,7 +769,7 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Rutiner og Prosedyrer
             </CardTitle>
-            <CardDescription>Detaljerte rutiner for matsikkerhet</CardDescription>
+            <CardDescription>{t("auto.detaljerte_rutiner_for_matsikkerhet")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -778,15 +779,15 @@ const IkMatHandbok = () => {
                   <h4 className="font-semibold text-lg mb-3">{routine.name}</h4>
                   <div className="grid gap-3">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Beskrivelse</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.beskrivelse")}</p>
                       <p className="whitespace-pre-wrap">{routine.description}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Frekvens</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.frekvens_2")}</p>
                       <p>{routine.frequency}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Ansvarlig</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("auto.ansvarlig_2")}</p>
                       <p>{routine.responsible}</p>
                     </div>
                   </div>
@@ -803,7 +804,7 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Sjekklister
             </CardTitle>
-            <CardDescription>Kontrollskjemaer for daglig bruk</CardDescription>
+            <CardDescription>{t("auto.kontrollskjemaer_for_daglig_bruk")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -834,7 +835,7 @@ const IkMatHandbok = () => {
                 <ClipboardCheck className="h-5 w-5" />
                 Utfylte Sjekklister (siste 30 dager)
               </CardTitle>
-              <CardDescription>Dokumenterte sjekklistegjennomføringer</CardDescription>
+              <CardDescription>{t("auto.dokumenterte_sjekklistegjennomfoeringer")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -931,17 +932,17 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Renholdsplan
             </CardTitle>
-            <CardDescription>Systematisk renhold og hygiene</CardDescription>
+            <CardDescription>{t("auto.systematisk_renhold_og_hygiene")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2 font-semibold">Område</th>
-                    <th className="text-left p-2 font-semibold">Frekvens</th>
-                    <th className="text-left p-2 font-semibold">Metode</th>
-                    <th className="text-left p-2 font-semibold">Ansvarlig</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.omraade_2")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.frekvens_2")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.metode_3")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.ansvarlig_2")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -966,18 +967,18 @@ const IkMatHandbok = () => {
               <Thermometer className="h-5 w-5" />
               Utstyr og temperaturkontroll
             </CardTitle>
-            <CardDescription>Registrert utstyr med grenser, plassering og kontrollfrekvens</CardDescription>
+            <CardDescription>{t("auto.registrert_utstyr_med_grenser_plassering")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2 font-semibold">Navn</th>
-                    <th className="text-left p-2 font-semibold">Type</th>
-                    <th className="text-left p-2 font-semibold">Plassering</th>
-                    <th className="text-left p-2 font-semibold">Temperaturgrenser</th>
-                    <th className="text-left p-2 font-semibold">Frekvens</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.navn_2")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.type")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.plassering")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.temperaturgrenser")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.frekvens_2")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -995,7 +996,7 @@ const IkMatHandbok = () => {
                 </tbody>
               </table>
               {handbokData.equipment.length === 0 && (
-                <p className="text-sm text-muted-foreground py-2">Ingen utstyr registrert ennå.</p>
+                <p className="text-sm text-muted-foreground py-2">{t("auto.ingen_utstyr_registrert_ennaa")}</p>
               )}
             </div>
           </CardContent>
@@ -1009,19 +1010,19 @@ const IkMatHandbok = () => {
                 <Thermometer className="h-5 w-5" />
                 Temperaturlogg (siste 30 dager)
               </CardTitle>
-              <CardDescription>Dokumenterte temperaturmålinger</CardDescription>
+              <CardDescription>{t("auto.dokumenterte_temperaturmaalinger")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
-                      <th className="text-left p-2 font-semibold">Dato</th>
-                      <th className="text-left p-2 font-semibold">Utstyr</th>
-                      <th className="text-left p-2 font-semibold">Temperatur</th>
-                      <th className="text-left p-2 font-semibold">Status</th>
-                      <th className="text-left p-2 font-semibold">Målt av</th>
-                      <th className="text-left p-2 font-semibold">Notater</th>
+                      <th className="text-left p-2 font-semibold">{t("auto.dato")}</th>
+                      <th className="text-left p-2 font-semibold">{t("auto.utstyr")}</th>
+                      <th className="text-left p-2 font-semibold">{t("auto.temperatur")}</th>
+                      <th className="text-left p-2 font-semibold">{t("auto.status_2")}</th>
+                      <th className="text-left p-2 font-semibold">{t("auto.maalt_av")}</th>
+                      <th className="text-left p-2 font-semibold">{t("auto.notater")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1070,7 +1071,7 @@ const IkMatHandbok = () => {
                 <SprayCanIcon className="h-5 w-5" />
                 Renholdslogg (siste 30 dager)
               </CardTitle>
-              <CardDescription>Dokumenterte renholdsgjennomføringer</CardDescription>
+              <CardDescription>{t("auto.dokumenterte_renholdsgjennomfoeringer")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -1127,7 +1128,7 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Allergener
             </CardTitle>
-            <CardDescription>Oversikt og håndtering av allergener</CardDescription>
+            <CardDescription>{t("auto.oversikt_og_haandtering_av_allergener")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -1151,17 +1152,17 @@ const IkMatHandbok = () => {
               <FileText className="h-5 w-5" />
               Faste Avtaler
             </CardTitle>
-            <CardDescription>Oversikt over faste leverandører og serviceavtaler</CardDescription>
+            <CardDescription>{t("auto.oversikt_over_faste_leverandoerer_og_ser")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2 font-semibold">Leverandør</th>
-                    <th className="text-left p-2 font-semibold">Type tjeneste</th>
-                    <th className="text-left p-2 font-semibold">Frekvens</th>
-                    <th className="text-left p-2 font-semibold">Neste revisjon</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.leverandoer")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.type_tjeneste")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.frekvens_2")}</th>
+                    <th className="text-left p-2 font-semibold">{t("auto.neste_revisjon")}</th>
                   </tr>
                 </thead>
                 <tbody>

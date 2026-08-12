@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { CleaningRecord } from '@/hooks/useIkMatCleaningPlan';
+import { t } from "@/i18n/t";
 
 interface CleaningTask {
   area: string;
@@ -141,7 +142,7 @@ export const FillCleaningPlanDialog = ({
             )}
           </div>
           <DialogDescription>
-            Kryss av for oppgaver som er fullført og legg til notater ved behov
+            {t("auto.kryss_av_for_oppgaver_som_er_fullfoert_o")}
           </DialogDescription>
         </DialogHeader>
 
@@ -185,7 +186,7 @@ export const FillCleaningPlanDialog = ({
                       id={`notes-${index}`}
                       value={record.notes || ''}
                       onChange={(e) => handleNotesChange(index, e.target.value)}
-                      placeholder="Legg til notater for denne oppgaven..."
+                      placeholder={t("auto.legg_til_notater_for_denne_oppgaven")}
                       className="mt-1"
                       rows={2}
                       disabled={!!existingResponse && existingResponse.status === 'completed'}
@@ -196,12 +197,12 @@ export const FillCleaningPlanDialog = ({
             })}
 
             <div className="space-y-2">
-              <Label htmlFor="overall-notes">Generelle notater</Label>
+              <Label htmlFor="overall-notes">{t("auto.generelle_notater")}</Label>
               <Textarea
                 id="overall-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Legg til generelle notater for hele renholdsplanen..."
+                placeholder={t("auto.legg_til_generelle_notater_for_hele_renh")}
                 rows={3}
                 disabled={!!existingResponse && existingResponse.status === 'completed'}
               />
@@ -225,7 +226,7 @@ export const FillCleaningPlanDialog = ({
             </>
           ) : (
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
           )}
         </DialogFooter>

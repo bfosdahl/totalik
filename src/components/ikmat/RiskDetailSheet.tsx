@@ -16,6 +16,7 @@ import {
   Shield, Target, ArrowRight, CheckCircle2, AlertCircle, Lock
 } from "lucide-react";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { t } from "@/i18n/t";
 
 interface RiskDetailSheetProps {
   risk: IkMatRisk | null;
@@ -145,11 +146,11 @@ export const RiskDetailSheet = ({
           {/* Tab 1: Risk Analysis */}
           <TabsContent value="analysis" className="space-y-4 mt-4">
             <div>
-              <Label>Farekilde / Risiko</Label>
+              <Label>{t("auto.farekilde_risiko")}</Label>
               <Input
                 value={risk.hazard}
                 onChange={(e) => onUpdateRisk(risk.id, 'hazard', e.target.value)}
-                placeholder="Beskriv faren eller risikoen..."
+                placeholder={t("auto.beskriv_faren_eller_risikoen")}
                 className="mt-1.5"
               />
             </div>
@@ -214,7 +215,7 @@ export const RiskDetailSheet = ({
             {/* Acceptance criteria */}
             <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
               <Label htmlFor={`acceptable-${risk.id}`} className="text-sm cursor-pointer">
-                Er risikoen akseptabel?
+                {t("auto.er_risikoen_akseptabel")}
               </Label>
               <Switch
                 id={`acceptable-${risk.id}`}
@@ -224,11 +225,11 @@ export const RiskDetailSheet = ({
             </div>
 
             <div>
-              <Label className="text-sm">Begrunnelse / Vurdering</Label>
+              <Label className="text-sm">{t("auto.begrunnelse_vurdering")}</Label>
               <Textarea
                 value={risk.justification || ''}
                 onChange={(e) => onUpdateRisk(risk.id, 'justification', e.target.value)}
-                placeholder="Begrunn risikovurderingen..."
+                placeholder={t("auto.begrunn_risikovurderingen")}
                 rows={2}
                 className="mt-1.5 resize-none"
               />
@@ -239,7 +240,7 @@ export const RiskDetailSheet = ({
               <Textarea
                 value={risk.measures}
                 onChange={(e) => onUpdateRisk(risk.id, 'measures', e.target.value)}
-                placeholder="Beskriv hvordan risikoen forebygges i daglig drift..."
+                placeholder={t("auto.beskriv_hvordan_risikoen_forebygges_i_da")}
                 rows={2}
                 className="mt-1.5 resize-none"
               />
@@ -262,30 +263,30 @@ export const RiskDetailSheet = ({
             {!risk.isHaccp ? (
               <div className="text-center py-8 text-muted-foreground">
                 <ClipboardCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">HACCP er ikke aktivert for denne risikoen.</p>
-                <p className="text-xs mt-1">Aktiver KKP i Analyse-fanen for å definere kontrollrutiner.</p>
+                <p className="text-sm">{t("auto.haccp_er_ikke_aktivert_for_denne_risikoe")}</p>
+                <p className="text-xs mt-1">{t("auto.aktiver_kkp_i_analyse_fanen_for_aa_defin")}</p>
               </div>
             ) : (
               <>
                 <div>
-                  <Label className="text-sm">Kritisk grense</Label>
+                  <Label className="text-sm">{t("auto.kritisk_grense")}</Label>
                   <Input
                     value={risk.criticalLimit || ''}
                     onChange={(e) => onUpdateRisk(risk.id, 'criticalLimit', e.target.value)}
-                    placeholder="F.eks. ≤4°C for kjøleskap, ≥75°C for varmebehandling..."
+                    placeholder={t("auto.f_eks_4_c_for_kjoeleskap_75_c_for_varmeb")}
                     className="mt-1.5"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Verdien som ikke må overskrides for å sikre matsikkerhet
+                    {t("auto.verdien_som_ikke_maa_overskrides_for_aa_")}
                   </p>
                 </div>
 
                 <div>
-                  <Label className="text-sm">Kontrollmetode</Label>
+                  <Label className="text-sm">{t("auto.kontrollmetode")}</Label>
                   <Input
                     value={risk.controlMethod || ''}
                     onChange={(e) => onUpdateRisk(risk.id, 'controlMethod', e.target.value)}
-                    placeholder="F.eks. temperaturmåling med termometer..."
+                    placeholder={t("auto.f_eks_temperaturmaaling_med_termometer")}
                     className="mt-1.5"
                   />
                 </div>
@@ -304,13 +305,13 @@ export const RiskDetailSheet = ({
                     />
                   </div>
                   <div>
-                    <Label className="text-sm">Hyppighet</Label>
+                    <Label className="text-sm">{t("auto.hyppighet")}</Label>
                     <Select
                       value={risk.frequency || ''}
                       onValueChange={(value) => onUpdateRisk(risk.id, 'frequency', value)}
                     >
                       <SelectTrigger className="mt-1.5">
-                        <SelectValue placeholder="Velg..." />
+                        <SelectValue placeholder={t("auto.velg")} />
                       </SelectTrigger>
                       <SelectContent>
                         {FREQUENCY_OPTIONS.map(opt => (
@@ -323,8 +324,7 @@ export const RiskDetailSheet = ({
 
                 <div className="p-3 border border-dashed rounded-lg bg-muted/30">
                   <p className="text-xs text-muted-foreground">
-                    💡 Kontroller for denne KKP vil vises i Kontrollplan-oversikten, 
-                    der du kan loggføre målinger og dokumentere avvik for Mattilsynet.
+                    {t("auto.kontroller_for_denne_kkp_vil_vises_i_kon")}
                   </p>
                 </div>
               </>
@@ -335,7 +335,7 @@ export const RiskDetailSheet = ({
           <TabsContent value="actions" className="space-y-4 mt-4">
             {/* Action summary */}
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm text-muted-foreground">Status handlingsplan</span>
+              <span className="text-sm text-muted-foreground">{t("auto.status_handlingsplan")}</span>
               <div className="flex items-center gap-2">
                 <Badge 
                   variant="outline" 
@@ -360,7 +360,7 @@ export const RiskDetailSheet = ({
               <CollapsibleContent className="space-y-2 pt-2">
                 {preventiveActions.length === 0 ? (
                   <p className="text-xs text-muted-foreground py-2">
-                    Ingen forebyggende tiltak definert.
+                    {t("auto.ingen_forebyggende_tiltak_definert")}
                   </p>
                 ) : (
                   preventiveActions.map((action) => (
@@ -396,7 +396,7 @@ export const RiskDetailSheet = ({
               <CollapsibleContent className="space-y-2 pt-2">
                 {correctiveActions.length === 0 ? (
                   <p className="text-xs text-muted-foreground py-2">
-                    Ingen korrigerende tiltak i handlingsplanen.
+                    {t("auto.ingen_korrigerende_tiltak_i_handlingspla")}
                   </p>
                 ) : (
                   correctiveActions.map((action) => (
@@ -432,12 +432,12 @@ export const RiskDetailSheet = ({
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 pt-2">
                 <p className="text-xs text-muted-foreground">
-                  Vurder risikoen på nytt etter at tiltak er iverksatt for å dokumentere effekt.
+                  {t("auto.vurder_risikoen_paa_nytt_etter_at_tiltak")}
                 </p>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm">Ny sannsynlighet</Label>
+                    <Label className="text-sm">{t("auto.ny_sannsynlighet")}</Label>
                     <Select
                       value={String(risk.residualProbability || '')}
                       onValueChange={(value) => {
@@ -450,7 +450,7 @@ export const RiskDetailSheet = ({
                       }}
                     >
                       <SelectTrigger className="mt-1.5">
-                        <SelectValue placeholder="Velg..." />
+                        <SelectValue placeholder={t("auto.velg")} />
                       </SelectTrigger>
                       <SelectContent>
                         {SCALE_OPTIONS.map(opt => (
@@ -460,7 +460,7 @@ export const RiskDetailSheet = ({
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-sm">Ny konsekvens</Label>
+                    <Label className="text-sm">{t("auto.ny_konsekvens")}</Label>
                     <Select
                       value={String(risk.residualConsequence || '')}
                       onValueChange={(value) => {
@@ -473,7 +473,7 @@ export const RiskDetailSheet = ({
                       }}
                     >
                       <SelectTrigger className="mt-1.5">
-                        <SelectValue placeholder="Velg..." />
+                        <SelectValue placeholder={t("auto.velg")} />
                       </SelectTrigger>
                       <SelectContent>
                         {SCALE_OPTIONS.map(opt => (
@@ -489,14 +489,14 @@ export const RiskDetailSheet = ({
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-center gap-3">
                       <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1">Før tiltak</p>
+                        <p className="text-xs text-muted-foreground mb-1">{t("auto.foer_tiltak")}</p>
                         <span className={`font-semibold ${getRiskLevelColor(trafficLight)}`}>
                           {risk.probability}×{risk.consequence} = {risk.riskLevel}
                         </span>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1">Etter tiltak</p>
+                        <p className="text-xs text-muted-foreground mb-1">{t("auto.etter_tiltak")}</p>
                         <span className={`font-semibold ${getRiskLevelColor(residualTrafficLight!)}`}>
                           {risk.residualProbability}×{risk.residualConsequence} = {risk.residualRiskLevel}
                         </span>
@@ -534,7 +534,7 @@ export const RiskDetailSheet = ({
             )}
             {!canClose && risk.status !== 'closed' && (
               <p className="text-xs text-center text-muted-foreground">
-                Alle tiltak må være fullført og rest-risiko må være akseptabel for å lukke.
+                {t("auto.alle_tiltak_maa_vaere_fullfoert_og_rest_")}
               </p>
             )}
           </TabsContent>
@@ -581,7 +581,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
         <Input
           value={action.action}
           onChange={(e) => onUpdate(action.id, 'action', e.target.value)}
-          placeholder="Beskriv tiltaket..."
+          placeholder={t("auto.beskriv_tiltaket")}
           className="text-sm"
         />
         <Button
@@ -599,7 +599,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
           onValueChange={(value) => onUpdate(action.id, 'responsible', value)}
         >
           <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Ansvarlig" />
+            <SelectValue placeholder={t("auto.ansvarlig_2")} />
           </SelectTrigger>
           <SelectContent>
             {employees.map(emp => (
@@ -625,9 +625,9 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="pending">Ikke startet</SelectItem>
-            <SelectItem value="in_progress">Pågår</SelectItem>
-            <SelectItem value="completed">Fullført</SelectItem>
+            <SelectItem value="pending">{t("auto.ikke_startet")}</SelectItem>
+            <SelectItem value="in_progress">{t("auto.paagaar")}</SelectItem>
+            <SelectItem value="completed">{t("auto.fullfoert")}</SelectItem>
           </SelectContent>
         </Select>
         {isOverdue && (
@@ -640,7 +640,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
       
       {showEffect && (
         <div className="space-y-3 pt-2 border-t">
-          <p className="text-xs text-muted-foreground">Effekt på risiko:</p>
+          <p className="text-xs text-muted-foreground">{t("auto.effekt_paa_risiko")}</p>
           <div className="flex flex-wrap gap-3">
             <Dialog>
               <DialogTrigger asChild>
@@ -658,7 +658,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                 <DialogOverlay className="z-[100]" />
                 <DialogContent className="sm:max-w-md z-[100]">
                   <DialogHeader>
-                    <DialogTitle>Ny sannsynlighet etter tiltak</DialogTitle>
+                    <DialogTitle>{t("auto.ny_sannsynlighet_etter_tiltak")}</DialogTitle>
                     <DialogDescription>
                       Velg ny sannsynlighetsverdi (1-5) etter at tiltaket er gjennomført
                     </DialogDescription>
@@ -713,7 +713,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                 <DialogOverlay className="z-[100]" />
                 <DialogContent className="sm:max-w-md z-[100]">
                   <DialogHeader>
-                    <DialogTitle>Ny konsekvens etter tiltak</DialogTitle>
+                    <DialogTitle>{t("auto.ny_konsekvens_etter_tiltak")}</DialogTitle>
                     <DialogDescription>
                       Velg ny konsekvensverdi (1-5) etter at tiltaket er gjennomført
                     </DialogDescription>

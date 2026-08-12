@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import { Printer, FileImage, AlertTriangle, QrCode, UtensilsCrossed } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { t } from "@/i18n/t";
 
 interface Allergen {
   id: string;
@@ -137,7 +138,7 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Allergenplakat</DialogTitle>
+          <DialogTitle>{t("auto.allergenplakat")}</DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="menu" className="w-full">
@@ -204,7 +205,7 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
                             <span className="font-bold text-lg text-gray-900" style={{ fontWeight: 'bold', fontSize: '1.125rem', color: '#111827' }}>
                               I vår {item.name}
                             </span>
-                            <span className="text-gray-600" style={{ color: '#4b5563' }}>inneholder:</span>
+                            <span className="text-gray-600" style={{ color: '#4b5563' }}>{t("auto.inneholder")}</span>
                             <div className="flex flex-wrap gap-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                               {allergenNames.map((name, idx) => (
                                 <span 
@@ -236,10 +237,10 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
                 <div className="text-center py-12" style={{ padding: '48px 0' }}>
                   <UtensilsCrossed className="h-16 w-16 text-gray-300 mx-auto mb-4" style={{ width: 64, height: 64, color: '#d1d5db', margin: '0 auto 16px' }} />
                   <p className="text-gray-500 text-lg" style={{ color: '#6b7280', fontSize: '1.125rem' }}>
-                    Ingen retter med allergener i menyen ennå.
+                    {t("auto.ingen_retter_med_allergener_i_menyen_enn")}
                   </p>
                   <p className="text-gray-400 mt-2" style={{ color: '#9ca3af', marginTop: '8px' }}>
-                    Legg til retter i menyen for å generere plakat.
+                    {t("auto.legg_til_retter_i_menyen_for_aa_generere")}
                   </p>
                 </div>
               )}
@@ -248,7 +249,7 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
               {presentAllergens.length > 0 && (
                 <div className="mt-8 pt-6 border-t-2 border-gray-200" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '2px solid #e5e7eb' }}>
                   <h3 className="text-lg font-semibold text-gray-700 mb-3" style={{ fontSize: '1.125rem', fontWeight: '600', color: '#374151', marginBottom: '12px' }}>
-                    Alle allergener i vår meny:
+                    {t("auto.alle_allergener_i_vaar_meny")}
                   </h3>
                   <div className="flex flex-wrap gap-2" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {presentAllergens.map((allergen, idx) => (
@@ -277,10 +278,10 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
               {/* Footer */}
               <div className="mt-8 pt-6 border-t-2 border-gray-200 text-center" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '2px solid #e5e7eb' }}>
                 <p className="text-gray-600 mb-2" style={{ color: '#4b5563', marginBottom: '8px' }}>
-                  Vennligst informer personalet om eventuelle allergier.
+                  {t("auto.vennligst_informer_personalet_om_eventue")}
                 </p>
                 <p className="text-xs text-gray-400" style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                  Merking i henhold til EU No 1169/2011. Tar ikke hensyn til kryssforurensning.
+                  {t("auto.merking_i_henhold_til_eu_no_1169_2011_ta")}
                 </p>
                 <p className="text-sm text-gray-500 mt-2" style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '8px' }}>
                   Oppdatert: {new Date().toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -326,7 +327,7 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
                   />
                 </div>
                 <p className="mt-6 text-2xl font-bold text-gray-800" style={{ marginTop: '24px', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                  Skann for allergeninformasjon
+                  {t("auto.skann_for_allergeninformasjon")}
                 </p>
               </div>
 
@@ -334,7 +335,7 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
               {menuItemsWithAllergens.length > 0 && (
                 <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mb-6 text-left" style={{ backgroundColor: '#fffbeb', border: '2px solid #fde68a', borderRadius: '8px', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
                   <p className="text-amber-800 font-semibold mb-3" style={{ color: '#92400e', fontWeight: '600', marginBottom: '12px' }}>
-                    Allergener i våre retter:
+                    {t("auto.allergener_i_vaare_retter")}
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {menuItemsWithAllergens.slice(0, 5).map((item) => {
@@ -360,10 +361,10 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
               {/* Footer */}
               <div className="text-center" style={{ textAlign: 'center' }}>
                 <p className="text-gray-600" style={{ color: '#4b5563' }}>
-                  Vennligst informer personalet om eventuelle allergier.
+                  {t("auto.vennligst_informer_personalet_om_eventue")}
                 </p>
                 <p className="text-xs text-gray-400 mt-2" style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '8px' }}>
-                  Merking i henhold til EU No 1169/2011
+                  {t("auto.merking_i_henhold_til_eu_no_1169_2011")}
                 </p>
               </div>
             </div>

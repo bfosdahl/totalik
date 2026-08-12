@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Target, Plus, Trash2, Save, Loader2, GripVertical } from "lucide-react";
+import { t } from "@/i18n/t";
 
 const IkMatMaal = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const IkMatMaal = () => {
               Målsetting
             </h1>
             <p className="text-muted-foreground mt-1">
-              Bedriftens målsetting for matsikkerhet
+              {t("auto.bedriftens_maalsetting_for_matsikkerhet")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -124,7 +125,7 @@ const IkMatMaal = () => {
                   <Textarea
                     value={goal.text}
                     onChange={(e) => handleUpdateGoal(goal.id, e.target.value)}
-                    placeholder="Beskriv målsettingen..."
+                    placeholder={t("auto.beskriv_maalsettingen")}
                     rows={4}
                     className="resize-none"
                   />
@@ -137,13 +138,11 @@ const IkMatMaal = () => {
         {/* Example text for reference */}
         <Card className="bg-muted/50">
           <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Eksempel på målsetting</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t("auto.eksempel_paa_maalsetting")}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
             <p>
-              Bedriftens målsetting er å produsere og/eller servere ernæringsmessig og 
-              hygienisk kvalitetsmat til våre kunder. All mat som blir servert skal serveres 
-              i rett tid og ha riktig temperatur på leverings-/serveringstidspunktet.
+              {t("auto.bedriftens_maalsetting_er_aa_produsere_o")}
             </p>
           </CardContent>
         </Card>

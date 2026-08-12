@@ -22,6 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { ShiftRequestDialog } from "./ShiftRequestDialog";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
+import { t } from "@/i18n/t";
 
 export function MyShiftsPanel() {
   const { profile } = useAuth();
@@ -86,15 +87,15 @@ export function MyShiftsPanel() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Venter</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">{t("auto.venter")}</Badge>;
       case "employee_approved":
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Venter på leder</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">{t("auto.venter_paa_leder")}</Badge>;
       case "manager_approved":
-        return <Badge className="bg-green-500">Godkjent</Badge>;
+        return <Badge className="bg-green-500">{t("auto.godkjent")}</Badge>;
       case "rejected":
-        return <Badge variant="destructive">Avvist</Badge>;
+        return <Badge variant="destructive">{t("auto.avvist")}</Badge>;
       case "cancelled":
-        return <Badge variant="outline">Kansellert</Badge>;
+        return <Badge variant="outline">{t("auto.kansellert")}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -139,8 +140,8 @@ export function MyShiftsPanel() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Mine kommende vakter</CardTitle>
-                <CardDescription>Dine planlagte vakter fremover</CardDescription>
+                <CardTitle>{t("auto.mine_kommende_vakter")}</CardTitle>
+                <CardDescription>{t("auto.dine_planlagte_vakter_fremover")}</CardDescription>
               </div>
               <Button onClick={handleNewShiftRequest} size="sm">
                 <Plus className="w-4 h-4 mr-1" />
@@ -151,7 +152,7 @@ export function MyShiftsPanel() {
               {myShifts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Ingen kommende vakter</p>
+                  <p>{t("auto.ingen_kommende_vakter")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -194,7 +195,7 @@ export function MyShiftsPanel() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => handleSwapRequest(shift)}
-                              title="Be om å bytte vakt"
+                              title={t("auto.be_om_aa_bytte_vakt")}
                             >
                               <ArrowRightLeft className="w-4 h-4" />
                             </Button>
@@ -202,7 +203,7 @@ export function MyShiftsPanel() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => handleAvailabilityRequest(shift)}
-                              title="Legg ut som ledig"
+                              title={t("auto.legg_ut_som_ledig")}
                             >
                               <Hand className="w-4 h-4" />
                             </Button>
@@ -210,7 +211,7 @@ export function MyShiftsPanel() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => handleAbsenceRequest(shift)}
-                              title="Meld fravær"
+                              title={t("auto.meld_fravaer")}
                             >
                               <XCircle className="w-4 h-4" />
                             </Button>
@@ -229,14 +230,14 @@ export function MyShiftsPanel() {
         <TabsContent value="pending">
           <Card>
             <CardHeader>
-              <CardTitle>Forespørsler til meg</CardTitle>
-              <CardDescription>Bytteforespørsler du må svare på</CardDescription>
+              <CardTitle>{t("auto.forespoersler_til_meg")}</CardTitle>
+              <CardDescription>{t("auto.bytteforespoersler_du_maa_svare_paa")}</CardDescription>
             </CardHeader>
             <CardContent>
               {pendingForMe.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckCircle2 className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Ingen ventende forespørsler</p>
+                  <p>{t("auto.ingen_ventende_forespoersler")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -283,14 +284,14 @@ export function MyShiftsPanel() {
         <TabsContent value="requests">
           <Card>
             <CardHeader>
-              <CardTitle>Mine forespørsler</CardTitle>
-              <CardDescription>Status på dine innsendte forespørsler</CardDescription>
+              <CardTitle>{t("auto.mine_forespoersler")}</CardTitle>
+              <CardDescription>{t("auto.status_paa_dine_innsendte_forespoersler")}</CardDescription>
             </CardHeader>
             <CardContent>
               {myRequests.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <AlertCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Ingen aktive forespørsler</p>
+                  <p>{t("auto.ingen_aktive_forespoersler")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -329,14 +330,14 @@ export function MyShiftsPanel() {
         <TabsContent value="open">
           <Card>
             <CardHeader>
-              <CardTitle>Ledige vakter</CardTitle>
-              <CardDescription>Vakter som er tilgjengelige for å ta over</CardDescription>
+              <CardTitle>{t("auto.ledige_vakter")}</CardTitle>
+              <CardDescription>{t("auto.vakter_som_er_tilgjengelige_for_aa_ta_ov")}</CardDescription>
             </CardHeader>
             <CardContent>
               {openShifts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Ingen ledige vakter akkurat nå</p>
+                  <p>{t("auto.ingen_ledige_vakter_akkurat_naa")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">

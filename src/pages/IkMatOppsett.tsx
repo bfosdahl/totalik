@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Building2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { t } from "@/i18n/t";
 
 const IkMatOppsett = () => {
   const { profile, company, isLoading: authLoading } = useAuth();
@@ -48,7 +49,7 @@ const IkMatOppsett = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Laster...</p>
+            <p className="text-muted-foreground">{t("auto.laster")}</p>
           </div>
         </div>
       </AppLayout>
@@ -62,7 +63,7 @@ const IkMatOppsett = () => {
           <Alert>
             <Building2 className="h-4 w-4" />
             <AlertDescription>
-              Du må være tilknyttet en bedrift for å sette opp IK/MAT.
+              {t("auto.du_maa_vaere_tilknyttet_en_bedrift_for_a")}
             </AlertDescription>
           </Alert>
         </div>
@@ -74,9 +75,9 @@ const IkMatOppsett = () => {
     <AppLayout>
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div className="mb-4 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">IK/MAT Oppsett</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{t("auto.ik_mat_oppsett")}</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Sett opp ditt skreddersydde matsikkerhetssystem med AI
+            {t("auto.sett_opp_ditt_skreddersydde_matsikkerhet")}
           </p>
         </div>
 
@@ -85,25 +86,23 @@ const IkMatOppsett = () => {
             <Alert className="border-success bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <AlertDescription className="text-success text-sm sm:text-base">
-                IK/MAT oppsett er fullført! Ditt skreddersydde matsikkerhetssystem er klar til bruk.
+                {t("auto.ik_mat_oppsett_er_fullfoert_ditt_skredde")}
               </AlertDescription>
             </Alert>
 
             <div className="bg-muted/50 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
-              <h3 className="font-semibold text-base sm:text-lg">Viktig informasjon</h3>
+              <h3 className="font-semibold text-base sm:text-lg">{t("auto.viktig_informasjon")}</h3>
               <div className="space-y-3 text-xs sm:text-sm">
                 <div>
-                  <p className="font-medium mb-1">✅ Dine data er trygge</p>
+                  <p className="font-medium mb-1">{t("auto.dine_data_er_trygge")}</p>
                   <p className="text-muted-foreground">
-                    Hvis du kjører oppsettet på nytt, beholdes alle gjennomførte sjekklister, 
-                    renholdsplaner, sporingsposter og tilpassede maler. Kun AI-genererte maler oppdateres.
+                    {t("auto.hvis_du_kjoerer_oppsettet_paa_nytt_behol")}
                   </p>
                 </div>
                 <div>
-                  <p className="font-medium mb-1">⏱️ Estimert tidsbruk</p>
+                  <p className="font-medium mb-1">{t("auto.estimert_tidsbruk")}</p>
                   <p className="text-muted-foreground">
-                    Et komplett AI-oppsett tar normalt 5-10 minutter, avhengig av hvor detaljert 
-                    du svarer på spørsmålene.
+                    {t("auto.et_komplett_ai_oppsett_tar_normalt_5_10_")}
                   </p>
                 </div>
               </div>
@@ -111,7 +110,7 @@ const IkMatOppsett = () => {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button onClick={() => navigate('/ik-mat/handbok')} className="w-full sm:w-auto">
-                Se generert innhold
+                {t("auto.se_generert_innhold")}
               </Button>
               <Button 
                 variant="outline" 
@@ -151,22 +150,21 @@ const IkMatOppsett = () => {
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
                 <p>
-                  Du er i ferd med å starte et nytt AI-oppsett. Dette vil ta 5-10 minutter å fullføre.
+                  {t("auto.du_er_i_ferd_med_aa_starte_et_nytt_ai_op")}
                 </p>
                 <p className="font-medium text-foreground">
-                  ⚠️ Viktig: Ditt nåværende oppsett beholdes helt til det nye oppsettet er 100% fullført. 
-                  Hvis du avbryter underveis, beholdes det opprinnelige oppsettet.
+                  {t("auto.viktig_ditt_naavaerende_oppsett_beholdes")}
                 </p>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowRestartDialog(false);
                 setIsRestarting(true);
                 setSetupCompleted(false);
               }}>
-                Start nytt oppsett
+                {t("auto.start_nytt_oppsett")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

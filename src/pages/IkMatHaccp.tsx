@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ShieldAlert } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { t } from "@/i18n/t";
 
 interface CriticalControlPoint {
   step: string;
@@ -47,7 +48,7 @@ const IkMatHaccp = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Laster...</p>
+            <p className="text-muted-foreground">{t("auto.laster")}</p>
           </div>
         </div>
       </AppLayout>
@@ -58,7 +59,7 @@ const IkMatHaccp = () => {
     <AppLayout>
       <div className="container max-w-7xl mx-auto py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">HACCP - Kritiske Kontrollpunkter</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("auto.haccp_kritiske_kontrollpunkter")}</h1>
           <p className="text-muted-foreground">
             Hazard Analysis and Critical Control Points (KKP) for matsikkerhet
           </p>
@@ -68,7 +69,7 @@ const IkMatHaccp = () => {
           <Alert>
             <ShieldAlert className="h-4 w-4" />
             <AlertDescription>
-              Ingen kritiske kontrollpunkter funnet. Kjør IK/MAT oppsettet først for å generere HACCP-analyse.
+              {t("auto.ingen_kritiske_kontrollpunkter_funnet_kj")}
             </AlertDescription>
           </Alert>
         ) : (
@@ -76,7 +77,7 @@ const IkMatHaccp = () => {
             <CardHeader>
               <CardTitle>Kritiske Kontrollpunkter (KKP) for {company?.name}</CardTitle>
               <CardDescription>
-                HACCP-basert analyse av kritiske punkter i matproduksjonskjeden
+                {t("auto.haccp_basert_analyse_av_kritiske_punkter")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -87,7 +88,7 @@ const IkMatHaccp = () => {
                       <div className="flex items-start justify-between">
                         <div>
                           <CardTitle className="text-lg">KKP {idx + 1}: {ccp.step}</CardTitle>
-                          <Badge variant="destructive" className="mt-2">Kritisk kontrollpunkt</Badge>
+                          <Badge variant="destructive" className="mt-2">{t("auto.kritisk_kontrollpunkt")}</Badge>
                         </div>
                       </div>
                     </CardHeader>
@@ -95,23 +96,23 @@ const IkMatHaccp = () => {
                       <Table>
                         <TableBody>
                           <TableRow>
-                            <TableHead className="w-1/4">Fare</TableHead>
+                            <TableHead className="w-1/4">{t("auto.fare")}</TableHead>
                             <TableCell className="font-medium">{ccp.hazard}</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableHead>Kritisk grense</TableHead>
+                            <TableHead>{t("auto.kritisk_grense")}</TableHead>
                             <TableCell className="font-medium text-destructive">{ccp.criticalLimit}</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableHead>Overvåking</TableHead>
+                            <TableHead>{t("auto.overvaaking")}</TableHead>
                             <TableCell>{ccp.monitoring}</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableHead>Korrigerende tiltak</TableHead>
+                            <TableHead>{t("auto.korrigerende_tiltak_2")}</TableHead>
                             <TableCell>{ccp.correctiveAction}</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableHead>Verifisering</TableHead>
+                            <TableHead>{t("auto.verifisering")}</TableHead>
                             <TableCell>{ccp.verification}</TableCell>
                           </TableRow>
                         </TableBody>

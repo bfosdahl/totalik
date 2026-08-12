@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, QrCode, Printer } from "lucide-react";
 import { downloadQrAsPng, printQr } from "@/utils/qrCodeExport";
+import { t } from "@/i18n/t";
 
 interface VaremottakQRCodeDialogProps {
   open: boolean;
@@ -31,8 +32,8 @@ export function VaremottakQRCodeDialog({
     downloadQrAsPng({
       svg,
       filename: "QR-Varemottak",
-      title: "📦 Varemottak",
-      subtitle: "Skann for å registrere varemottak",
+      title: t("auto.varemottak_2"),
+      subtitle: t("auto.skann_for_aa_registrere_varemottak"),
     });
   };
 
@@ -41,8 +42,8 @@ export function VaremottakQRCodeDialog({
     if (!svg) return;
     printQr({
       svg,
-      title: "📦 Varemottak",
-      subtitle: "Skann QR-koden for å registrere varemottak",
+      title: t("auto.varemottak_2"),
+      subtitle: t("auto.skann_qr_koden_for_aa_registrere_varemot"),
     });
   };
 
@@ -67,20 +68,20 @@ export function VaremottakQRCodeDialog({
           </div>
 
           <div className="text-center space-y-1">
-            <p className="font-medium text-lg">📦 Varemottak</p>
+            <p className="font-medium text-lg">{t("auto.varemottak_2")}</p>
             <p className="text-sm text-muted-foreground">
-              Skriv ut og heng opp ved varemottaket
+              {t("auto.skriv_ut_og_heng_opp_ved_varemottaket")}
             </p>
           </div>
 
           <p className="text-xs text-muted-foreground text-center max-w-[300px]">
-            Skann denne QR-koden med mobilen for å gå direkte til registrering av varemottak.
+            {t("auto.skann_denne_qr_koden_med_mobilen_for_aa_")}
           </p>
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Lukk
+            {t("auto.lukk")}
           </Button>
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />

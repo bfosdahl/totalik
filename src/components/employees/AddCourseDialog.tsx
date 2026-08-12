@@ -23,6 +23,7 @@ import { FileText, Upload, X, Loader2, Sparkles, AlertCircle } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { t } from "@/i18n/t";
 
 interface AddCourseDialogProps {
   open: boolean;
@@ -113,7 +114,7 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
           notes: parsed.notes || prev.notes,
         }));
 
-        toast.success("Kursbevis analysert! Feltene er fylt ut automatisk.");
+        toast.success(t("auto.kursbevis_analysert_feltene_er_fylt_ut_a"));
       } else {
         setParseError("Kunne ikke lese dokumentet. Vennligst fyll inn manuelt.");
       }
@@ -130,7 +131,7 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
     if (file) {
       // Max 10MB
       if (file.size > 10 * 1024 * 1024) {
-        toast.error("Filen er for stor. Maks 10MB.");
+        toast.error(t("auto.filen_er_for_stor_maks_10mb"));
         return;
       }
       setCertificateFile(file);
@@ -185,15 +186,15 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Legg til kurs</DialogTitle>
+          <DialogTitle>{t("auto.legg_til_kurs")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Velg kurs</Label>
+            <Label>{t("auto.velg_kurs")}</Label>
             <Select onValueChange={handleCourseSelect}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg fra liste..." />
+                <SelectValue placeholder={t("auto.velg_fra_liste")} />
               </SelectTrigger>
               <SelectContent>
                 {COMMON_COURSES.map(course => (
@@ -207,40 +208,40 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="course_name">Kursnavn *</Label>
+            <Label htmlFor="course_name">{t("auto.kursnavn")}</Label>
             <Input
               id="course_name"
               value={formData.course_name}
               onChange={(e) => setFormData(prev => ({ ...prev, course_name: e.target.value }))}
-              placeholder="Navn på kurset"
+              placeholder={t("auto.navn_paa_kurset")}
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="course_provider">Kursleverandør</Label>
+              <Label htmlFor="course_provider">{t("auto.kursleverandoer")}</Label>
               <Input
                 id="course_provider"
                 value={formData.course_provider}
                 onChange={(e) => setFormData(prev => ({ ...prev, course_provider: e.target.value }))}
-                placeholder="f.eks. Norsk Brannvernforening"
+                placeholder={t("auto.f_eks_norsk_brannvernforening")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="certificate_number">Sertifikatnummer</Label>
+              <Label htmlFor="certificate_number">{t("auto.sertifikatnummer")}</Label>
               <Input
                 id="certificate_number"
                 value={formData.certificate_number}
                 onChange={(e) => setFormData(prev => ({ ...prev, certificate_number: e.target.value }))}
-                placeholder="Valgfritt"
+                placeholder={t("auto.valgfritt")}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="completed_date">Fullført dato *</Label>
+              <Label htmlFor="completed_date">{t("auto.fullfoert_dato")}</Label>
               <Input
                 id="completed_date"
                 type="date"
@@ -266,21 +267,21 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
           {/* Certificate Upload with AI Parsing */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
-              Last opp kursbevis
+              {t("auto.last_opp_kursbevis")}
               <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                 <Sparkles className="h-3 w-3" />
                 AI-analyse
               </span>
             </Label>
             <p className="text-xs text-muted-foreground">
-              Last opp kursbeviset så fyller vi ut feltene automatisk
+              {t("auto.last_opp_kursbeviset_saa_fyller_vi_ut_fe")}
             </p>
             <div className="border-2 border-dashed border-border rounded-lg p-4">
               {isParsing ? (
                 <div className="flex flex-col items-center justify-center py-6">
                   <Loader2 className="h-8 w-8 text-primary animate-spin mb-3" />
-                  <p className="text-sm font-medium">Analyserer kursbevis...</p>
-                  <p className="text-xs text-muted-foreground">Dette kan ta noen sekunder</p>
+                  <p className="text-sm font-medium">{t("auto.analyserer_kursbevis")}</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.dette_kan_ta_noen_sekunder")}</p>
                 </div>
               ) : certificateFile ? (
                 <div className="space-y-3">
@@ -317,7 +318,7 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Klikk for å laste opp</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.klikk_for_aa_laste_opp")}</p>
                   <p className="text-xs text-muted-foreground">PDF, JPG, PNG (maks 10MB)</p>
                 </div>
               )}
@@ -333,19 +334,19 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notater</Label>
+            <Label htmlFor="notes">{t("auto.notater")}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Eventuelle notater..."
+              placeholder={t("auto.eventuelle_notater")}
               rows={2}
             />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={addCourse.isPending || isParsing}>
               {addCourse.isPending ? "Lagrer..." : "Legg til"}

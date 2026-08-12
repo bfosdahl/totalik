@@ -20,6 +20,7 @@ import { useAdminTemplatesForCustomers } from "@/hooks/useAdminTemplatesForCusto
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 // Icon map for dynamic rendering
 const iconMap: Record<string, React.ElementType> = {
@@ -147,7 +148,7 @@ export default function IkHmsDokumentsenter() {
     if (url) {
       window.open(url, "_blank");
     } else {
-      toast.error("Kunne ikke åpne dokument");
+      toast.error(t("auto.kunne_ikke_aapne_dokument"));
     }
   };
 
@@ -188,9 +189,9 @@ export default function IkHmsDokumentsenter() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Tilbake
         </Button>
-        <h1 className="text-2xl sm:text-3xl font-bold">Dokumentsenter</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.dokumentsenter")}</h1>
         <p className="text-muted-foreground mt-1">
-          Last ned maler og administrer bedriftens dokumenter
+          {t("auto.last_ned_maler_og_administrer_bedriftens")}
         </p>
       </div>
 
@@ -198,13 +199,13 @@ export default function IkHmsDokumentsenter() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="templates" className="flex items-center gap-2">
             <FolderOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Maler fra systemet</span>
-            <span className="sm:hidden">Maler</span>
+            <span className="hidden sm:inline">{t("auto.maler_fra_systemet")}</span>
+            <span className="sm:hidden">{t("auto.maler")}</span>
           </TabsTrigger>
           <TabsTrigger value="documents" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Mine dokumenter</span>
-            <span className="sm:hidden">Dokumenter</span>
+            <span className="hidden sm:inline">{t("auto.mine_dokumenter")}</span>
+            <span className="sm:hidden">{t("auto.dokumenter")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -214,7 +215,7 @@ export default function IkHmsDokumentsenter() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Søk i maler..."
+                placeholder={t("auto.soek_i_maler")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -224,13 +225,13 @@ export default function IkHmsDokumentsenter() {
 
           {adminLoading ? (
             <div className="text-center py-8 text-muted-foreground">
-              Laster maler...
+              {t("auto.laster_maler")}
             </div>
           ) : folderTree.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Ingen maler tilgjengelig ennå</p>
-              <p className="text-sm mt-1">Maler vil bli lagt til av systemadministrator</p>
+              <p className="font-medium">{t("auto.ingen_maler_tilgjengelig_ennaa")}</p>
+              <p className="text-sm mt-1">{t("auto.maler_vil_bli_lagt_til_av_systemadminist")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -314,7 +315,7 @@ export default function IkHmsDokumentsenter() {
                                     className="shrink-0"
                                   >
                                     <Download className="h-4 w-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Last ned</span>
+                                    <span className="hidden sm:inline">{t("auto.last_ned")}</span>
                                   </Button>
                                 </div>
                               ))}
@@ -396,7 +397,7 @@ export default function IkHmsDokumentsenter() {
                           
                           {folderDocs.length === 0 && folder.children.length === 0 && (
                             <div className="text-center py-4 text-muted-foreground">
-                              <p className="text-sm">Ingen dokumenter i denne mappen</p>
+                              <p className="text-sm">{t("auto.ingen_dokumenter_i_denne_mappen")}</p>
                             </div>
                           )}
                         </CardContent>
@@ -415,14 +416,14 @@ export default function IkHmsDokumentsenter() {
           <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Last opp dokument</DialogTitle>
+                <DialogTitle>{t("auto.last_opp_dokument")}</DialogTitle>
                 <DialogDescription>
-                  Velg en fil og legg til informasjon
+                  {t("auto.velg_en_fil_og_legg_til_informasjon")}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                 <div>
-                  <Label>Fil</Label>
+                  <Label>{t("auto.fil")}</Label>
                   <div
                     className="mt-2 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
                     onClick={() => fileInputRef.current?.click()}
@@ -441,7 +442,7 @@ export default function IkHmsDokumentsenter() {
                       <>
                         <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                         <p className="text-sm text-muted-foreground">
-                          Klikk for å velge fil eller dra og slipp
+                          {t("auto.klikk_for_aa_velge_fil_eller_dra_og_slip")}
                         </p>
                       </>
                     )}
@@ -455,16 +456,16 @@ export default function IkHmsDokumentsenter() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="docName">Dokumentnavn</Label>
+                  <Label htmlFor="docName">{t("auto.dokumentnavn")}</Label>
                   <Input
                     id="docName"
                     value={documentName}
                     onChange={(e) => setDocumentName(e.target.value)}
-                    placeholder="Gi dokumentet et navn"
+                    placeholder={t("auto.gi_dokumentet_et_navn")}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="category">Kategori / Mappe</Label>
+                  <Label htmlFor="category">{t("auto.kategori_mappe")}</Label>
                   <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger>
                       <SelectValue />
@@ -482,7 +483,7 @@ export default function IkHmsDokumentsenter() {
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Legg til en beskrivelse..."
+                    placeholder={t("auto.legg_til_en_beskrivelse")}
                     rows={2}
                   />
                 </div>
@@ -496,10 +497,10 @@ export default function IkHmsDokumentsenter() {
                   />
                   <div className="flex-1">
                     <Label htmlFor="includeInPdf" className="text-sm font-medium cursor-pointer">
-                      Inkluder i PDF-rapport
+                      {t("auto.inkluder_i_pdf_rapport")}
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Dokumentet vil inkluderes i handbok-eksporten
+                      {t("auto.dokumentet_vil_inkluderes_i_handbok_eksp")}
                     </p>
                   </div>
                   <FileCheck className="h-5 w-5 text-emerald-500" />
@@ -515,10 +516,10 @@ export default function IkHmsDokumentsenter() {
                     />
                     <div className="flex-1">
                       <Label htmlFor="requiresSignature" className="text-sm font-medium cursor-pointer">
-                        Krever signering
+                        {t("auto.krever_signering")}
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Marker at dette dokumentet må signeres og lastes opp på nytt
+                        {t("auto.marker_at_dette_dokumentet_maa_signeres_")}
                       </p>
                     </div>
                     <Clock className="h-5 w-5 text-amber-500" />
@@ -534,7 +535,7 @@ export default function IkHmsDokumentsenter() {
                         max={365}
                         value={uploadDeadlineDays || ""}
                         onChange={(e) => setUploadDeadlineDays(e.target.value ? parseInt(e.target.value) : undefined)}
-                        placeholder="f.eks. 14"
+                        placeholder={t("auto.f_eks_14")}
                         className="mt-1 w-32"
                       />
                     </div>
@@ -543,7 +544,7 @@ export default function IkHmsDokumentsenter() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsUploadOpen(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
                 <Button 
                   onClick={handleUpload} 
@@ -560,7 +561,7 @@ export default function IkHmsDokumentsenter() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Søk i dokumenter..."
+                placeholder={t("auto.soek_i_dokumenter")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -574,7 +575,7 @@ export default function IkHmsDokumentsenter() {
 
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">
-              Laster dokumenter...
+              {t("auto.laster_dokumenter")}
             </div>
           ) : (
             <div className="grid gap-4">
@@ -620,7 +621,7 @@ export default function IkHmsDokumentsenter() {
                               className="shrink-0"
                             >
                               <Upload className="h-4 w-4 mr-1" />
-                              <span className="hidden sm:inline">Last opp</span>
+                              <span className="hidden sm:inline">{t("auto.last_opp")}</span>
                             </Button>
                             {isExpanded ? (
                               <ChevronDown className="h-5 w-5 text-muted-foreground" />
@@ -638,8 +639,8 @@ export default function IkHmsDokumentsenter() {
                               onClick={() => openUploadForCategory(folder.name)}
                             >
                               <Upload className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                              <p className="text-sm">Ingen dokumenter ennå</p>
-                              <p className="text-xs mt-1">Klikk for å laste opp</p>
+                              <p className="text-sm">{t("auto.ingen_dokumenter_ennaa")}</p>
+                              <p className="text-xs mt-1">{t("auto.klikk_for_aa_laste_opp")}</p>
                             </div>
                           ) : (
                             <div className="grid gap-2">
@@ -680,7 +681,7 @@ export default function IkHmsDokumentsenter() {
                                       variant="ghost"
                                       size="icon"
                                       onClick={() => handleDownload(doc)}
-                                      title="Last ned"
+                                      title={t("auto.last_ned")}
                                     >
                                       <Download className="h-4 w-4" />
                                     </Button>
@@ -690,21 +691,21 @@ export default function IkHmsDokumentsenter() {
                                           variant="ghost"
                                           size="icon"
                                           className="text-destructive hover:text-destructive"
-                                          title="Slett"
+                                          title={t("auto.slett")}
                                         >
                                           <Trash2 className="h-4 w-4" />
                                         </Button>
                                       </AlertDialogTrigger>
                                       <AlertDialogContent>
                                         <AlertDialogHeader>
-                                          <AlertDialogTitle>Slett dokument?</AlertDialogTitle>
+                                          <AlertDialogTitle>{t("auto.slett_dokument_2")}</AlertDialogTitle>
                                           <AlertDialogDescription>
                                             Er du sikker på at du vil slette "{doc.document_name}"? 
                                             Denne handlingen kan ikke angres.
                                           </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                          <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                                          <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                                           <AlertDialogAction
                                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                             onClick={() => deleteDocument(doc)}

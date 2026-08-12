@@ -32,6 +32,7 @@ import {
   Ruler,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { t } from "@/i18n/t";
 
 // Kitchen zone element types
 type KitchenElementType =
@@ -75,21 +76,21 @@ const MIN_ELEMENT_SIZE = 10;
 const GRID_SNAP = 10;
 
 const KITCHEN_PRESETS: Record<KitchenElementType, { label: string; emoji: string; defaultWidth: number; defaultHeight: number; color: string; zone?: "ren" | "uren" }> = {
-  rom:           { label: "Rom",            emoji: "⬜", defaultWidth: 500, defaultHeight: 450, color: "#f9fafb" },
-  wall:          { label: "Vegg",           emoji: "▬", defaultWidth: 200, defaultHeight: 10, color: "#1f2937" },
-  matsone:       { label: "Matsone",        emoji: "🍳", defaultWidth: 250, defaultHeight: 180, color: "#fef3c7", zone: "ren" },
-  oppvasksone:   { label: "Oppvasksone",    emoji: "🫧", defaultWidth: 200, defaultHeight: 150, color: "#e0e7ff", zone: "uren" },
-  kjoeleskap:    { label: "Kjøl",           emoji: "❄️", defaultWidth: 100, defaultHeight: 150, color: "#bae6fd" },
-  fryser:        { label: "Frys",           emoji: "🧊", defaultWidth: 100, defaultHeight: 100, color: "#e0e7ff" },
-  haandvask:     { label: "Håndvask",       emoji: "🚰", defaultWidth: 60,  defaultHeight: 50,  color: "#a5f3fc" },
-  matkum:        { label: "Matkum",         emoji: "🫗", defaultWidth: 80,  defaultHeight: 60,  color: "#99f6e4" },
-  komfyr:        { label: "Komfyr",         emoji: "🔥", defaultWidth: 80,  defaultHeight: 60,  color: "#fecaca" },
-  oppvaskmaskin: { label: "Oppvaskmaskin",  emoji: "🫧", defaultWidth: 60,  defaultHeight: 60,  color: "#c7d2fe" },
+  rom:           { label: t("auto.rom"),            emoji: "⬜", defaultWidth: 500, defaultHeight: 450, color: "#f9fafb" },
+  wall:          { label: t("auto.vegg"),           emoji: "▬", defaultWidth: 200, defaultHeight: 10, color: "#1f2937" },
+  matsone:       { label: t("auto.matsone"),        emoji: "🍳", defaultWidth: 250, defaultHeight: 180, color: "#fef3c7", zone: "ren" },
+  oppvasksone:   { label: t("auto.oppvasksone"),    emoji: "🫧", defaultWidth: 200, defaultHeight: 150, color: "#e0e7ff", zone: "uren" },
+  kjoeleskap:    { label: t("auto.kjoel"),           emoji: "❄️", defaultWidth: 100, defaultHeight: 150, color: "#bae6fd" },
+  fryser:        { label: t("auto.frys"),           emoji: "🧊", defaultWidth: 100, defaultHeight: 100, color: "#e0e7ff" },
+  haandvask:     { label: t("auto.haandvask"),       emoji: "🚰", defaultWidth: 60,  defaultHeight: 50,  color: "#a5f3fc" },
+  matkum:        { label: t("auto.matkum"),         emoji: "🫗", defaultWidth: 80,  defaultHeight: 60,  color: "#99f6e4" },
+  komfyr:        { label: t("auto.komfyr"),         emoji: "🔥", defaultWidth: 80,  defaultHeight: 60,  color: "#fecaca" },
+  oppvaskmaskin: { label: t("auto.oppvaskmaskin"),  emoji: "🫧", defaultWidth: 60,  defaultHeight: 60,  color: "#c7d2fe" },
   hylle_rent:    { label: "Hylle (rent)",   emoji: "📦", defaultWidth: 60,  defaultHeight: 40,  color: "#bbf7d0", zone: "ren" },
   hylle_urent:   { label: "Hylle (uren)",   emoji: "📦", defaultWidth: 60,  defaultHeight: 40,  color: "#fed7aa", zone: "uren" },
-  torrvarelager: { label: "Tørrvarer",      emoji: "🏪", defaultWidth: 120, defaultHeight: 80,  color: "#d9f99d" },
-  door:          { label: "Dør",            emoji: "🚪", defaultWidth: 50,  defaultHeight: 10,  color: "#3b82f6" },
-  text:          { label: "Tekst",          emoji: "Aa", defaultWidth: 80,  defaultHeight: 24,  color: "#1f2937" },
+  torrvarelager: { label: t("auto.toerrvarer"),      emoji: "🏪", defaultWidth: 120, defaultHeight: 80,  color: "#d9f99d" },
+  door:          { label: t("auto.doer"),            emoji: "🚪", defaultWidth: 50,  defaultHeight: 10,  color: "#3b82f6" },
+  text:          { label: t("auto.tekst"),          emoji: "Aa", defaultWidth: 80,  defaultHeight: 24,  color: "#1f2937" },
 };
 
 type ResizeHandle = "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
@@ -697,10 +698,10 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       ctx.font = "11px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
       let lx = 20;
       [
-        { label: "Ren sone", color: "#fef3c7" },
-        { label: "Uren sone", color: "#e0e7ff" },
-        { label: "Kjøl/Frys", color: "#bae6fd" },
-        { label: "Vask", color: "#a5f3fc" },
+        { label: t("auto.ren_sone"), color: "#fef3c7" },
+        { label: t("auto.uren_sone"), color: "#e0e7ff" },
+        { label: t("auto.kjoel_frys"), color: "#bae6fd" },
+        { label: t("auto.vask"), color: "#a5f3fc" },
       ].forEach(({ label, color }) => {
         ctx.fillStyle = color; ctx.fillRect(lx, legendY + 2, 16, 16);
         ctx.strokeStyle = "#9ca3af"; ctx.lineWidth = 0.5; ctx.strokeRect(lx, legendY + 2, 16, 16);
@@ -747,7 +748,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
   const renderDesktopSidebar = () => (
     <div className="w-60 border-r bg-muted/30 p-3 flex flex-col gap-3 overflow-y-auto">
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Verktøy</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.verktoey")}</Label>
         <div className="grid grid-cols-2 gap-1">
           <TooltipProvider>
             <Tooltip>
@@ -756,7 +757,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
                   <MousePointer className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Velg</TooltipContent>
+              <TooltipContent>{t("auto.velg_2")}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -764,7 +765,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
                   <Move className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Flytt visning</TooltipContent>
+              <TooltipContent>{t("auto.flytt_visning")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -773,7 +774,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Romplan</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.romplan")}</Label>
         <div className="grid grid-cols-1 gap-1">
           <TooltipProvider>{roomPresets.map(renderPresetButton)}</TooltipProvider>
         </div>
@@ -782,7 +783,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Soner</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.soner")}</Label>
         <div className="grid grid-cols-1 gap-1">
           <TooltipProvider>{zonePresets.map(renderPresetButton)}</TooltipProvider>
         </div>
@@ -791,7 +792,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Utstyr</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.utstyr")}</Label>
         <div className="grid grid-cols-2 gap-1">
           <TooltipProvider>{equipmentPresets.map(renderPresetButton)}</TooltipProvider>
         </div>
@@ -800,7 +801,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       <Separator />
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">Annet</Label>
+        <Label className="text-xs text-muted-foreground">{t("auto.annet")}</Label>
         <div className="grid grid-cols-2 gap-1">
           <TooltipProvider>{otherPresets.map(renderPresetButton)}</TooltipProvider>
         </div>
@@ -808,8 +809,8 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
 
       {activeTool === "text" && (
         <div className="space-y-2">
-          <Label className="text-xs">Tekst</Label>
-          <Input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Skriv inn tekst..." className="h-8 text-sm" />
+          <Label className="text-xs">{t("auto.tekst")}</Label>
+          <Input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder={t("auto.skriv_inn_tekst")} className="h-8 text-sm" />
         </div>
       )}
 
@@ -818,18 +819,18 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       {selectedElement && (
         <>
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Etikett</Label>
-            <Input value={selectedElement.label || ""} onChange={(e) => updateSelectedLabel(e.target.value)} placeholder="Navn..." className="h-8 text-sm" />
+            <Label className="text-xs text-muted-foreground">{t("auto.etikett")}</Label>
+            <Input value={selectedElement.label || ""} onChange={(e) => updateSelectedLabel(e.target.value)} placeholder={t("auto.navn")} className="h-8 text-sm" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground flex items-center gap-1"><Ruler className="h-3 w-3" />Mål (meter)</Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Bredde</Label>
+                <Label className="text-[10px] text-muted-foreground">{t("auto.bredde")}</Label>
                 <Input type="number" step="0.1" min="0.1" value={pxToMeters(selectedElement.width, ppm)} onChange={(e) => updateSelectedSize("width", e.target.value)} className="h-7 text-xs" />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-muted-foreground">Høyde</Label>
+                <Label className="text-[10px] text-muted-foreground">{t("auto.hoeyde")}</Label>
                 <Input type="number" step="0.1" min="0.1" value={pxToMeters(selectedElement.height, ppm)} onChange={(e) => updateSelectedSize("height", e.target.value)} className="h-7 text-xs" />
               </div>
             </div>
@@ -840,7 +841,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-xs text-muted-foreground">Vis mål</Label>
+          <Label className="text-xs text-muted-foreground">{t("auto.vis_maal")}</Label>
           <Button variant={showDimensions ? "default" : "outline"} size="sm" className="h-6 text-[10px] px-2" onClick={() => setShowDimensions(!showDimensions)}>
             {showDimensions ? "På" : "Av"}
           </Button>
@@ -882,7 +883,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
         <div className="flex-1" />
         <Button variant="outline" size="sm" className="shrink-0 gap-1" onClick={() => setMobileToolbarOpen(!mobileToolbarOpen)}>
           {mobileToolbarOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          <span className="text-xs">Elementer</span>
+          <span className="text-xs">{t("auto.elementer")}</span>
         </Button>
       </div>
       {mobileToolbarOpen && (
@@ -915,10 +916,10 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
       }>
         <DialogHeader className={isMobile ? "px-4 pt-4 pb-2 shrink-0" : "px-6 pt-6 pb-2 shrink-0"}>
           <DialogTitle className={isMobile ? "text-base" : ""}>
-            Kjøkkenplanløsning – Ren/uren sone
+            {t("auto.kjoekkenplanloesning_ren_uren_sone")}
           </DialogTitle>
           <DialogDescription className={isMobile ? "text-xs" : ""}>
-            Tegn opp kjøkkenet med soner for matlaging, oppvask, lagring og utstyr. Skille mellom rene og urene soner.
+            {t("auto.tegn_opp_kjoekkenet_med_soner_for_matlag")}
           </DialogDescription>
         </DialogHeader>
 
@@ -933,14 +934,14 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
                 <Separator orientation="vertical" className="h-6" />
                 {selectedElement && (
                   <div className="flex items-center gap-2">
-                    <Label className="text-xs">Etikett:</Label>
-                    <Input value={selectedElement.label || ""} onChange={(e) => updateSelectedLabel(e.target.value)} placeholder="Navn..." className="h-7 w-32 text-xs" />
+                    <Label className="text-xs">{t("auto.etikett_2")}</Label>
+                    <Input value={selectedElement.label || ""} onChange={(e) => updateSelectedLabel(e.target.value)} placeholder={t("auto.navn")} className="h-7 w-32 text-xs" />
                     <Separator orientation="vertical" className="h-6" />
                     <span className="text-xs text-muted-foreground">{pxToMeters(selectedElement.width, ppm)}m × {pxToMeters(selectedElement.height, ppm)}m</span>
                   </div>
                 )}
                 <div className="flex-1" />
-                <Button variant="ghost" size="sm" onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1); }}>Tilbakestill visning</Button>
+                <Button variant="ghost" size="sm" onClick={() => { setPan({ x: 0, y: 0 }); setZoom(1); }}>{t("auto.tilbakestill_visning")}</Button>
               </div>
             )}
             <div
@@ -968,7 +969,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
         </div>
 
         <DialogFooter className={isMobile ? "px-4 py-3 border-t shrink-0 flex-row gap-2" : "px-6 py-4 border-t shrink-0"}>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className={isMobile ? "flex-1" : ""}>Avbryt</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className={isMobile ? "flex-1" : ""}>{t("auto.avbryt")}</Button>
           <Button onClick={handleSave} disabled={isSaving || elements.length === 0} className={isMobile ? "flex-1 gap-2" : "gap-2"}>
             <Download className="h-4 w-4" />
             {isSaving ? "Lagrer..." : "Lagre tegning"}

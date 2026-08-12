@@ -19,6 +19,7 @@ import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { t } from "@/i18n/t";
 
 export default function Employees() {
   const navigate = useNavigate();
@@ -112,7 +113,7 @@ export default function Employees() {
       setInviteRole("user");
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     } catch (error: any) {
-      toast.error("Kunne ikke sende invitasjon:" + error.message);
+      toast.error(t("auto.kunne_ikke_sende_invitasjon") + error.message);
     } finally {
       setIsInviting(false);
     }
@@ -147,12 +148,12 @@ export default function Employees() {
       }
       if (data?.error) throw new Error(data.error);
 
-      toast.success("Bruker opprettet:" + createForm.email);
+      toast.success(t("auto.bruker_opprettet") + createForm.email);
       setCreateDirectDialogOpen(false);
       setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user" });
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     } catch (error: any) {
-      toast.error("Kunne ikke opprette bruker:" + error.message);
+      toast.error(t("auto.kunne_ikke_opprette_bruker") + error.message);
     } finally {
       setIsCreating(false);
     }
@@ -164,9 +165,9 @@ export default function Employees() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Ansatte</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t("auto.ansatte")}</h1>
             <p className="text-muted-foreground mt-1">
-              Administrer ansattinformasjon, dokumenter og kurs
+              {t("auto.administrer_ansattinformasjon_dokumenter")}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -210,7 +211,7 @@ export default function Employees() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{employees?.length || 0}</p>
-                  <p className="text-sm text-muted-foreground">Totalt ansatte</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.totalt_ansatte")}</p>
                 </div>
               </div>
             </CardContent>
@@ -224,7 +225,7 @@ export default function Employees() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{courses?.length || 0}</p>
-                  <p className="text-sm text-muted-foreground">Registrerte kurs</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.registrerte_kurs")}</p>
                 </div>
               </div>
             </CardContent>
@@ -238,7 +239,7 @@ export default function Employees() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{expiringCourses.length}</p>
-                  <p className="text-sm text-muted-foreground">Kurs utløper</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.kurs_utloeper")}</p>
                 </div>
               </div>
             </CardContent>
@@ -252,7 +253,7 @@ export default function Employees() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{expiredCourses.length}</p>
-                  <p className="text-sm text-muted-foreground">Utgåtte kurs</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.utgaatte_kurs")}</p>
                 </div>
               </div>
             </CardContent>
@@ -266,7 +267,7 @@ export default function Employees() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{hmsCardIssues.length}</p>
-                  <p className="text-sm text-muted-foreground">HMS-kort problemer</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.hms_kort_problemer")}</p>
                 </div>
               </div>
             </CardContent>
@@ -276,8 +277,8 @@ export default function Employees() {
         {/* Main Content */}
         <Tabs defaultValue="employees" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="employees">Ansatte</TabsTrigger>
-            <TabsTrigger value="courses">Kursoversikt</TabsTrigger>
+            <TabsTrigger value="employees">{t("auto.ansatte")}</TabsTrigger>
+            <TabsTrigger value="courses">{t("auto.kursoversikt")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="employees" className="space-y-4">
@@ -286,7 +287,7 @@ export default function Employees() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk etter ansatt..."
+                  placeholder={t("auto.soek_etter_ansatt")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -297,15 +298,15 @@ export default function Employees() {
             {/* Employee List */}
             <Card>
               <CardHeader>
-                <CardTitle>Ansattoversikt</CardTitle>
+                <CardTitle>{t("auto.ansattoversikt")}</CardTitle>
                 <CardDescription>
-                  Klikk på en ansatt for å se detaljer, dokumenter og kurs
+                  {t("auto.klikk_paa_en_ansatt_for_aa_se_detaljer_d")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Laster ansatte...
+                    {t("auto.laster_ansatte")}
                   </div>
                 ) : filteredEmployees.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -363,7 +364,7 @@ export default function Employees() {
                             )}
                             {hmsCardExpiring && (
                               <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-600">
-                                HMS-kort utløper
+                                {t("auto.hms_kort_utloeper")}
                               </Badge>
                             )}
                             {expiredCount > 0 && (
@@ -393,15 +394,15 @@ export default function Employees() {
           <TabsContent value="courses" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Alle kurs</CardTitle>
+                <CardTitle>{t("auto.alle_kurs")}</CardTitle>
                 <CardDescription>
-                  Oversikt over alle registrerte kurs og sertifiseringer
+                  {t("auto.oversikt_over_alle_registrerte_kurs_og_s")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {courses?.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Ingen kurs registrert ennå
+                    {t("auto.ingen_kurs_registrert_ennaa")}
                   </div>
                 ) : (
                   <>
@@ -410,11 +411,11 @@ export default function Employees() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Ansatt</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Kurs</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Fullført</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Utløper</th>
-                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t("auto.ansatt")}</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t("auto.kurs")}</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t("auto.fullfoert")}</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t("auto.utloeper")}</th>
+                            <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t("auto.status_2")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -455,14 +456,14 @@ export default function Employees() {
                                 </td>
                                 <td className="py-3 px-4">
                                   {isExpired ? (
-                                    <Badge variant="destructive">Utgått</Badge>
+                                    <Badge variant="destructive">{t("auto.utgaatt")}</Badge>
                                   ) : isExpiringSoon ? (
                                     <Badge variant="outline" className="border-yellow-500 text-yellow-600">
-                                      Utløper snart
+                                      {t("auto.utloeper_snart")}
                                     </Badge>
                                   ) : (
                                     <Badge variant="secondary" className="bg-green-500/10 text-green-600">
-                                      Gyldig
+                                      {t("auto.gyldig")}
                                     </Badge>
                                   )}
                                 </td>
@@ -493,14 +494,14 @@ export default function Employees() {
                                 <span className="font-medium text-sm">{employee?.first_name} {employee?.last_name}</span>
                               </div>
                               {isExpired ? (
-                                <Badge variant="destructive">Utgått</Badge>
+                                <Badge variant="destructive">{t("auto.utgaatt")}</Badge>
                               ) : isExpiringSoon ? (
                                 <Badge variant="outline" className="border-yellow-500 text-yellow-600">
-                                  Utløper snart
+                                  {t("auto.utloeper_snart")}
                                 </Badge>
                               ) : (
                                 <Badge variant="secondary" className="bg-green-500/10 text-green-600">
-                                  Gyldig
+                                  {t("auto.gyldig")}
                                 </Badge>
                               )}
                             </div>
@@ -545,14 +546,14 @@ export default function Employees() {
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send invitasjon</DialogTitle>
+            <DialogTitle>{t("auto.send_invitasjon")}</DialogTitle>
             <DialogDescription>
-              Send en e-postinvitasjon til en ny ansatt
+              {t("auto.send_en_e_postinvitasjon_til_en_ny_ansat")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="invite-email">E-postadresse</Label>
+              <Label htmlFor="invite-email">{t("auto.e_postadresse")}</Label>
               <Input
                 id="invite-email"
                 type="email"
@@ -562,21 +563,21 @@ export default function Employees() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="invite-role">Rolle</Label>
+              <Label htmlFor="invite-role">{t("auto.rolle")}</Label>
               <Select value={inviteRole} onValueChange={setInviteRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">Bruker</SelectItem>
-                  <SelectItem value="company_admin">Bedriftsadministrator</SelectItem>
+                  <SelectItem value="user">{t("auto.bruker")}</SelectItem>
+                  <SelectItem value="company_admin">{t("auto.bedriftsadministrator")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleInviteUser} disabled={!inviteEmail || isInviting}>
               {isInviting ? "Sender..." : "Send invitasjon"}
@@ -589,14 +590,14 @@ export default function Employees() {
       <Dialog open={createDirectDialogOpen} onOpenChange={setCreateDirectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Legg til ansatt</DialogTitle>
+            <DialogTitle>{t("auto.legg_til_ansatt")}</DialogTitle>
             <DialogDescription>
-              Opprett en ny ansatt med brukernavn og passord
+              {t("auto.opprett_en_ny_ansatt_med_brukernavn_og_p")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="create-email">E-postadresse</Label>
+              <Label htmlFor="create-email">{t("auto.e_postadresse")}</Label>
               <Input
                 id="create-email"
                 type="email"
@@ -606,12 +607,12 @@ export default function Employees() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-password">Passord</Label>
+              <Label htmlFor="create-password">{t("auto.passord")}</Label>
               <div className="relative">
                 <Input
                   id="create-password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Velg et passord"
+                  placeholder={t("auto.velg_et_passord")}
                   value={createForm.password}
                   onChange={(e) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
                 />
@@ -628,26 +629,26 @@ export default function Employees() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="create-firstname">Fornavn</Label>
+                <Label htmlFor="create-firstname">{t("auto.fornavn")}</Label>
                 <Input
                   id="create-firstname"
-                  placeholder="Fornavn"
+                  placeholder={t("auto.fornavn")}
                   value={createForm.firstName}
                   onChange={(e) => setCreateForm(prev => ({ ...prev, firstName: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-lastname">Etternavn</Label>
+                <Label htmlFor="create-lastname">{t("auto.etternavn")}</Label>
                 <Input
                   id="create-lastname"
-                  placeholder="Etternavn"
+                  placeholder={t("auto.etternavn")}
                   value={createForm.lastName}
                   onChange={(e) => setCreateForm(prev => ({ ...prev, lastName: e.target.value }))}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-role">Rolle</Label>
+              <Label htmlFor="create-role">{t("auto.rolle")}</Label>
               <Select 
                 value={createForm.role} 
                 onValueChange={(value) => setCreateForm(prev => ({ ...prev, role: value }))}
@@ -656,15 +657,15 @@ export default function Employees() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">Bruker</SelectItem>
-                  <SelectItem value="company_admin">Bedriftsadministrator</SelectItem>
+                  <SelectItem value="user">{t("auto.bruker")}</SelectItem>
+                  <SelectItem value="company_admin">{t("auto.bedriftsadministrator")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDirectDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleCreateUserDirect} 

@@ -41,17 +41,17 @@ import { useNavigate } from "react-router-dom";
 import { useIkMatOverdueSync } from "@/hooks/useIkMatOverdueSync";
 
 const priorityConfig = {
-  low: { label: "Lav", color: "bg-muted text-muted-foreground" },
-  medium: { label: "Medium", color: "bg-warning/10 text-warning" },
-  high: { label: "Høy", color: "bg-destructive/10 text-destructive" },
-  critical: { label: "Kritisk", color: "bg-destructive text-destructive-foreground" },
+  low: { label: t("auto.lav"), color: "bg-muted text-muted-foreground" },
+  medium: { label: t("auto.medium"), color: "bg-warning/10 text-warning" },
+  high: { label: t("auto.hoey"), color: "bg-destructive/10 text-destructive" },
+  critical: { label: t("auto.kritisk"), color: "bg-destructive text-destructive-foreground" },
 };
 
 const statusConfig = {
-  open: { label: "Åpen", color: "bg-destructive/10 text-destructive" },
-  "in-progress": { label: "Under arbeid", color: "bg-warning/10 text-warning" },
-  resolved: { label: "Løst", color: "bg-success/10 text-success" },
-  closed: { label: "Lukket", color: "bg-success/10 text-success" },
+  open: { label: t("auto.aapen"), color: "bg-destructive/10 text-destructive" },
+  "in-progress": { label: t("auto.under_arbeid"), color: "bg-warning/10 text-warning" },
+  resolved: { label: t("auto.loest"), color: "bg-success/10 text-success" },
+  closed: { label: t("auto.lukket"), color: "bg-success/10 text-success" },
 };
 
 // IK-MAT specific categories - completely separate from HMS
@@ -72,21 +72,22 @@ const ikMatCategories = [
 type IkMatCategory = typeof ikMatCategories[number];
 
 const ikMatCategoryConfig: Record<IkMatCategory, { label: string; color: string; icon?: string }> = {
-  temperature: { label: "Temperaturavvik", color: "bg-red-500/10 text-red-600" },
-  cleaning: { label: "Renhold ikke utført", color: "bg-yellow-500/10 text-yellow-600" },
-  pests: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
-  allergen: { label: "Allergenhåndtering", color: "bg-purple-500/10 text-purple-600" },
-  storage: { label: "Feil lagring", color: "bg-blue-500/10 text-blue-600" },
-  expiry: { label: "Utgått holdbarhet", color: "bg-amber-500/10 text-amber-600" },
-  hygiene: { label: "Personlig hygiene", color: "bg-pink-500/10 text-pink-600" },
-  contamination: { label: "Krysskontaminering", color: "bg-rose-500/10 text-rose-600" },
-  receiving: { label: "Varemottak", color: "bg-teal-500/10 text-teal-600" },
-  traceability: { label: "Sporbarhet", color: "bg-cyan-500/10 text-cyan-600" },
-  other_food: { label: "Annet", color: "bg-muted text-muted-foreground" },
+  temperature: { label: t("auto.temperaturavvik"), color: "bg-red-500/10 text-red-600" },
+  cleaning: { label: t("auto.renhold_ikke_utfoert"), color: "bg-yellow-500/10 text-yellow-600" },
+  pests: { label: t("auto.skadedyr"), color: "bg-orange-500/10 text-orange-600" },
+  allergen: { label: t("auto.allergenhaandtering"), color: "bg-purple-500/10 text-purple-600" },
+  storage: { label: t("auto.feil_lagring"), color: "bg-blue-500/10 text-blue-600" },
+  expiry: { label: t("auto.utgaatt_holdbarhet"), color: "bg-amber-500/10 text-amber-600" },
+  hygiene: { label: t("auto.personlig_hygiene"), color: "bg-pink-500/10 text-pink-600" },
+  contamination: { label: t("auto.krysskontaminering"), color: "bg-rose-500/10 text-rose-600" },
+  receiving: { label: t("auto.varemottak"), color: "bg-teal-500/10 text-teal-600" },
+  traceability: { label: t("auto.sporbarhet"), color: "bg-cyan-500/10 text-cyan-600" },
+  other_food: { label: t("auto.annet"), color: "bg-muted text-muted-foreground" },
 };
 
 // Use shared type from useDeviations
 import type { DeviationCategory } from "@/hooks/useDeviations";
+import { t } from "@/i18n/t";
 
 interface DeviationForDialog {
   id: string;
@@ -248,7 +249,7 @@ const IkMatAvvik = () => {
     if (createdDeviation && input.pendingFiles && input.pendingFiles.length > 0) {
       await uploadFilesForDeviation(createdDeviation.id, input.pendingFiles);
       toast({
-        title: "Vedlegg lastet opp",
+        title: t("auto.vedlegg_lastet_opp"),
         description: `${input.pendingFiles.length} fil(er) ble lastet opp`,
       });
     }
@@ -293,7 +294,7 @@ const IkMatAvvik = () => {
     if (success) {
       setSelectedDeviation(prev => prev ? { ...prev, status: newStatus } : null);
       toast({
-        title: "Status oppdatert",
+        title: t("auto.status_oppdatert"),
         description: `Avviket er nå "${statusConfig[newStatus].label}"`,
       });
     }
@@ -315,7 +316,7 @@ const IkMatAvvik = () => {
     if (success) {
       setSelectedDeviation(prev => prev ? { ...prev, assignee: assigneeName } : null);
       toast({
-        title: "Ansvarlig oppdatert",
+        title: t("auto.ansvarlig_oppdatert"),
         description: assigneeUser?.email 
           ? `${assigneeName} vil motta en e-postvarsling`
           : `Avviket er nå tildelt "${assigneeName}"`,
@@ -453,8 +454,8 @@ const IkMatAvvik = () => {
 
     if (deviationsToDelete.length === 0) {
       toast({
-        title: "Ingen avvik å nullstille",
-        description: "Ingen avvik matcher valgt status/kategori.",
+        title: t("auto.ingen_avvik_aa_nullstille"),
+        description: t("auto.ingen_avvik_matcher_valgt_status_kategor"),
       });
       return;
     }
@@ -525,7 +526,7 @@ const IkMatAvvik = () => {
       }
 
       toast({
-        title: "Avvik nullstilt",
+        title: t("auto.avvik_nullstilt"),
         description: `${deviationsToDelete.length} avvik ble slettet fra valgt visning.`,
       });
 
@@ -537,8 +538,8 @@ const IkMatAvvik = () => {
     } catch (error) {
       console.error('Error resetting deviations:', error);
       toast({
-        title: "Feil ved nullstilling",
-        description: "Kunne ikke nullstille avvik. Prøv igjen.",
+        title: t("auto.feil_ved_nullstilling"),
+        description: t("auto.kunne_ikke_nullstille_avvik_proev_igjen"),
         variant: "destructive",
       });
     } finally {
@@ -571,9 +572,9 @@ const IkMatAvvik = () => {
                 <Utensils className="h-6 w-6 text-orange-500" />
               </div>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold tracking-tight">IK-MAT Avvik</h1>
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight">{t("auto.ik_mat_avvik")}</h1>
                 <p className="text-sm text-muted-foreground">
-                  Avvik relatert til matsikkerhet og hygiene
+                  {t("auto.avvik_relatert_til_matsikkerhet_og_hygie")}
                 </p>
               </div>
             </div>
@@ -592,14 +593,14 @@ const IkMatAvvik = () => {
                   ) : (
                     <RotateCcw className="w-4 h-4" />
                   )}
-                  <span className="hidden sm:inline">Nullstill avvik</span>
+                  <span className="hidden sm:inline">{t("auto.nullstill_avvik")}</span>
                 </Button>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-1.5">
                     <Download className="w-4 h-4" />
-                    <span className="hidden sm:inline">Eksporter</span>
+                    <span className="hidden sm:inline">{t("auto.eksporter")}</span>
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -616,8 +617,8 @@ const IkMatAvvik = () => {
               </DropdownMenu>
               <Button size="sm" className="gap-1.5" onClick={() => setIsDialogOpen(true)}>
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Nytt avvik</span>
-                <span className="sm:hidden">Ny</span>
+                <span className="hidden sm:inline">{t("auto.nytt_avvik")}</span>
+                <span className="sm:hidden">{t("auto.ny")}</span>
               </Button>
             </div>
           </div>
@@ -631,10 +632,10 @@ const IkMatAvvik = () => {
           className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4"
         >
           {[
-            { label: "Totalt", value: stats.total, color: "text-foreground", bg: "bg-muted/50" },
-            { label: "Åpne", value: stats.open, color: "text-destructive", bg: "bg-destructive/5" },
-            { label: "Under arbeid", value: stats.inProgress, color: "text-warning", bg: "bg-warning/5" },
-            { label: "Løst", value: stats.resolved, color: "text-success", bg: "bg-success/5" },
+            { label: t("auto.totalt"), value: stats.total, color: "text-foreground", bg: "bg-muted/50" },
+            { label: t("auto.aapne"), value: stats.open, color: "text-destructive", bg: "bg-destructive/5" },
+            { label: t("auto.under_arbeid"), value: stats.inProgress, color: "text-warning", bg: "bg-warning/5" },
+            { label: t("auto.loest"), value: stats.resolved, color: "text-success", bg: "bg-success/5" },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -659,7 +660,7 @@ const IkMatAvvik = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Søk i avvik..."
+              placeholder={t("auto.soek_i_avvik")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-11"
@@ -723,9 +724,9 @@ const IkMatAvvik = () => {
           {filteredDeviations.length === 0 ? (
             <div className="bg-card rounded-xl border border-border p-8 text-center text-muted-foreground">
               <Utensils className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Ingen matsikkerhetsavvik funnet</p>
+              <p className="font-medium">{t("auto.ingen_matsikkerhetsavvik_funnet")}</p>
               {searchQuery || filterStatus || filterCategory ? (
-                <p className="text-sm mt-1">Prøv å endre søkekriteriene</p>
+                <p className="text-sm mt-1">{t("auto.proev_aa_endre_soekekriteriene")}</p>
               ) : (
                 <p className="text-sm mt-1">Klikk "Nytt avvik" for å registrere det første avviket</p>
               )}

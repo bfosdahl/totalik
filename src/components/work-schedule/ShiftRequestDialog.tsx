@@ -13,6 +13,7 @@ import { useShiftRequests, ShiftRequestType } from "@/hooks/useShiftRequests";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface ShiftRequestDialogProps {
   open: boolean;
@@ -117,15 +118,15 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
             {requestType === "swap" && (
               <>
                 <div className="flex items-center justify-between">
-                  <Label>Åpen for alle</Label>
+                  <Label>{t("auto.aapen_for_alle")}</Label>
                   <Switch checked={isOpenRequest} onCheckedChange={setIsOpenRequest} />
                 </div>
                 {!isOpenRequest && (
                   <div className="space-y-2">
-                    <Label>Bytt med</Label>
+                    <Label>{t("auto.bytt_med")}</Label>
                     <Select value={targetEmployeeId} onValueChange={setTargetEmployeeId}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg kollega" />
+                        <SelectValue placeholder={t("auto.velg_kollega")} />
                       </SelectTrigger>
                       <SelectContent>
                         {otherUsers.map((user) => (
@@ -143,7 +144,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
             {/* Availability */}
             {requestType === "availability" && (
               <p className="text-sm text-muted-foreground">
-                Vakten blir lagt ut som ledig. Andre ansatte kan melde interesse, og leder godkjenner endelig.
+                {t("auto.vakten_blir_lagt_ut_som_ledig_andre_ansa")}
               </p>
             )}
 
@@ -151,7 +152,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
             {requestType === "time_change" && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Ny starttid</Label>
+                  <Label>{t("auto.ny_starttid")}</Label>
                   <Input
                     type="time"
                     value={proposedStartTime}
@@ -159,7 +160,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Ny sluttid</Label>
+                  <Label>{t("auto.ny_sluttid")}</Label>
                   <Input
                     type="time"
                     value={proposedEndTime}
@@ -173,7 +174,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
             {requestType === "new_shift" && (
               <>
                 <div className="space-y-2">
-                  <Label>Dato</Label>
+                  <Label>{t("auto.dato")}</Label>
                   <Input
                     type="date"
                     value={proposedDate}
@@ -183,7 +184,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Fra</Label>
+                    <Label>{t("auto.fra")}</Label>
                     <Input
                       type="time"
                       value={proposedStartTime}
@@ -191,7 +192,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Til</Label>
+                    <Label>{t("auto.til")}</Label>
                     <Input
                       type="time"
                       value={proposedEndTime}
@@ -200,13 +201,13 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Sted</Label>
+                  <Label>{t("auto.sted")}</Label>
                   <Select value={proposedLocation || "__none__"} onValueChange={(v) => setProposedLocation(v === "__none__" ? "" : v)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg sted" />
+                      <SelectValue placeholder={t("auto.velg_sted")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">Ikke valgt</SelectItem>
+                      <SelectItem value="__none__">{t("auto.ikke_valgt")}</SelectItem>
                       {Object.entries(LOCATIONS).map(([key, loc]) => (
                         <SelectItem key={key} value={key}>{loc.label}</SelectItem>
                       ))}
@@ -219,17 +220,17 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
             {/* Absence */}
             {requestType === "absence" && (
               <div className="space-y-2">
-                <Label>Grunn for fravær</Label>
+                <Label>{t("auto.grunn_for_fravaer")}</Label>
                 <Select value={absenceReason} onValueChange={setAbsenceReason}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg årsak" />
+                    <SelectValue placeholder={t("auto.velg_aarsak")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sick">Sykdom</SelectItem>
-                    <SelectItem value="child_sick">Sykt barn</SelectItem>
-                    <SelectItem value="personal">Personlige årsaker</SelectItem>
+                    <SelectItem value="sick">{t("auto.sykdom")}</SelectItem>
+                    <SelectItem value="child_sick">{t("auto.sykt_barn")}</SelectItem>
+                    <SelectItem value="personal">{t("auto.personlige_aarsaker")}</SelectItem>
                     <SelectItem value="appointment">Avtale (lege, tannlege etc.)</SelectItem>
-                    <SelectItem value="other">Annet</SelectItem>
+                    <SelectItem value="other">{t("auto.annet")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -239,7 +240,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
             <div className="space-y-2">
               <Label>Merknad (valgfritt)</Label>
               <Textarea
-                placeholder="Legg til en beskjed..."
+                placeholder={t("auto.legg_til_en_beskjed")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -248,7 +249,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Sender..." : "Send forespørsel"}

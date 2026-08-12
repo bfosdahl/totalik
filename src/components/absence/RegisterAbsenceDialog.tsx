@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { CreateAbsence } from "@/hooks/useEmployeeAbsence";
+import { t } from "@/i18n/t";
 
 interface RegisterAbsenceDialogProps {
   open: boolean;
@@ -38,11 +39,11 @@ interface RegisterAbsenceDialogProps {
 }
 
 const ABSENCE_TYPES = [
-  { value: "egenmelding", label: "Egenmelding" },
-  { value: "sykmelding", label: "Sykmelding" },
-  { value: "permisjon", label: "Permisjon" },
-  { value: "ferie", label: "Ferie" },
-  { value: "annet", label: "Annet fravær" },
+  { value: "egenmelding", label: t("auto.egenmelding") },
+  { value: "sykmelding", label: t("auto.sykmelding") },
+  { value: "permisjon", label: t("auto.permisjon") },
+  { value: "ferie", label: t("auto.ferie") },
+  { value: "annet", label: t("auto.annet_fravaer") },
 ];
 
 export function RegisterAbsenceDialog({
@@ -101,17 +102,17 @@ export function RegisterAbsenceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Registrer fravær</DialogTitle>
+          <DialogTitle>{t("auto.registrer_fravaer")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Employee selection (only if not for self) */}
           {!forSelf && (
             <div className="space-y-2">
-              <Label>Ansatt</Label>
+              <Label>{t("auto.ansatt")}</Label>
               <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg ansatt" />
+                  <SelectValue placeholder={t("auto.velg_ansatt")} />
                 </SelectTrigger>
                 <SelectContent>
                   {(employees || []).map((emp) => (
@@ -126,10 +127,10 @@ export function RegisterAbsenceDialog({
 
           {/* Absence type */}
           <div className="space-y-2">
-            <Label>Type fravær</Label>
+            <Label>{t("auto.type_fravaer")}</Label>
             <Select value={absenceType} onValueChange={setAbsenceType}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg type" />
+                <SelectValue placeholder={t("auto.velg_type")} />
               </SelectTrigger>
               <SelectContent>
                 {ABSENCE_TYPES.map((type) => (
@@ -144,7 +145,7 @@ export function RegisterAbsenceDialog({
           {/* Date range */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Fra dato</Label>
+              <Label>{t("auto.fra_dato")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -171,7 +172,7 @@ export function RegisterAbsenceDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>Til dato</Label>
+              <Label>{t("auto.til_dato")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -205,7 +206,7 @@ export function RegisterAbsenceDialog({
             <Input
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Kort beskrivelse av årsak"
+              placeholder={t("auto.kort_beskrivelse_av_aarsak")}
             />
           </div>
 
@@ -215,7 +216,7 @@ export function RegisterAbsenceDialog({
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Eventuelle tilleggsopplysninger"
+              placeholder={t("auto.eventuelle_tilleggsopplysninger")}
               rows={3}
             />
           </div>
@@ -223,7 +224,7 @@ export function RegisterAbsenceDialog({
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleSubmit} disabled={!isValid || isSubmitting}>
             {isSubmitting ? "Registrerer..." : "Registrer fravær"}

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Car, Loader2 } from "lucide-react";
 import { useCompanyVehicles, type CompanyVehicle, type VehicleInput } from "@/hooks/useCompanyVehicles";
+import { t } from "@/i18n/t";
 
 const empty: VehicleInput = {
   license_plate: "",
@@ -62,7 +63,7 @@ export default function HrVehicles() {
               <Car className="h-7 w-7 text-primary" /> Bilpark
             </h1>
             <p className="text-muted-foreground mt-1">
-              Registrer bedriftens biler så de kan velges direkte i kjøreboken
+              {t("auto.registrer_bedriftens_biler_saa_de_kan_ve")}
             </p>
           </div>
           <Button onClick={openNew} className="gap-2">
@@ -97,7 +98,7 @@ export default function HrVehicles() {
                           {v.vehicle_type === "company" ? "Firmabil" : v.vehicle_type === "private" ? "Privatbil" : v.vehicle_type}
                         </div>
                       </div>
-                      {!v.is_active && <Badge variant="outline">Inaktiv</Badge>}
+                      {!v.is_active && <Badge variant="outline">{t("auto.inaktiv")}</Badge>}
                     </div>
                     <div className="flex gap-1">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(v)}><Pencil className="h-4 w-4" /></Button>
@@ -120,41 +121,41 @@ export default function HrVehicles() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Registreringsnummer *</Label>
+              <Label>{t("auto.registreringsnummer")}</Label>
               <Input value={form.license_plate} onChange={(e) => setForm({ ...form, license_plate: e.target.value.toUpperCase() })} placeholder="AB12345" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Merke</Label>
-                <Input value={form.make || ""} onChange={(e) => setForm({ ...form, make: e.target.value })} placeholder="Toyota" />
+                <Label>{t("auto.merke")}</Label>
+                <Input value={form.make || ""} onChange={(e) => setForm({ ...form, make: e.target.value })} placeholder={t("auto.toyota")} />
               </div>
               <div>
-                <Label>Modell</Label>
-                <Input value={form.model || ""} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="Hilux" />
+                <Label>{t("auto.modell")}</Label>
+                <Input value={form.model || ""} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder={t("auto.hilux")} />
               </div>
               <div>
-                <Label>Årsmodell</Label>
+                <Label>{t("auto.aarsmodell")}</Label>
                 <Input type="number" value={form.year || ""} onChange={(e) => setForm({ ...form, year: e.target.value ? parseInt(e.target.value) : null })} placeholder="2023" />
               </div>
               <div>
-                <Label>Type</Label>
+                <Label>{t("auto.type")}</Label>
                 <Select value={form.vehicle_type || "company"} onValueChange={(v) => setForm({ ...form, vehicle_type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="company">Firmabil</SelectItem>
-                    <SelectItem value="private">Privatbil</SelectItem>
-                    <SelectItem value="leased">Leasingbil</SelectItem>
+                    <SelectItem value="company">{t("auto.firmabil")}</SelectItem>
+                    <SelectItem value="private">{t("auto.privatbil")}</SelectItem>
+                    <SelectItem value="leased">{t("auto.leasingbil")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <Label>Notater</Label>
-              <Input value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="F.eks. tildelt avdeling, drivstoff..." />
+              <Label>{t("auto.notater")}</Label>
+              <Input value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder={t("auto.f_eks_tildelt_avdeling_drivstoff")} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>{t("auto.avbryt")}</Button>
             <Button onClick={handleSave} disabled={!form.license_plate.trim() || create.isPending || update.isPending}>
               {(create.isPending || update.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {editing ? "Lagre endringer" : "Legg til"}

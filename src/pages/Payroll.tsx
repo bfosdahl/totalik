@@ -27,6 +27,7 @@ import { getHourBreakdown } from "@/utils/hourBreakdown";
 import { Navigate } from "react-router-dom";
 import { AdminEditTimeEntryDialog, type AdminEditableEntry } from "@/components/timeregistration/AdminEditTimeEntryDialog";
 import { Pencil } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface Row {
   id: string;
@@ -168,7 +169,7 @@ export default function Payroll() {
         .order("entry_date", { ascending: true });
       if (error) {
         console.error(error);
-        toast.error("Kunne ikke hente timer");
+        toast.error(t("auto.kunne_ikke_hente_timer"));
         setRows([]);
         setAllowanceMap(new Map());
         setAllowanceDetailsList([]);
@@ -345,7 +346,7 @@ export default function Payroll() {
       period.end,
       exportAllowanceDetails
     );
-    toast.success("Lønnsgrunnlag eksportert");
+    toast.success(t("auto.loennsgrunnlag_eksportert"));
   };
 
   const handleExportTripletex = () => {
@@ -354,7 +355,7 @@ export default function Payroll() {
       empMap[k] = { email: m.email, employee_number: m.employee_number };
     });
     exportPayrollTripletex(exportEntries, empMap, company?.name || "Bedrift", period.start, period.end);
-    toast.success("Tripletex-eksport klar");
+    toast.success(t("auto.tripletex_eksport_klar"));
   };
 
   const handleSaveSettings = async () => {
@@ -364,11 +365,11 @@ export default function Payroll() {
       .update({ payroll_period_start_day: startDay } as any)
       .eq("id", company.id);
     if (error) {
-      toast.error("Kunne ikke lagre innstilling");
+      toast.error(t("auto.kunne_ikke_lagre_innstilling"));
       return;
     }
     setSavedStartDay(startDay);
-    toast.success("Lønnsperiode lagret");
+    toast.success(t("auto.loennsperiode_lagret"));
     setSettingsOpen(false);
   };
 
@@ -380,14 +381,14 @@ export default function Payroll() {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end gap-3 justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold">Lønnsgrunnlag</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">{t("auto.loennsgrunnlag")}</h1>
             <p className="text-sm text-muted-foreground">
-              Godkjente timer per ansatt og prosjekt for valgt lønnsperiode.
+              {t("auto.godkjente_timer_per_ansatt_og_prosjekt_f")}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => setRatesOpen(true)}>
-              Ansattnr & timesatser
+              {t("auto.ansattnr_timesatser")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
               <SettingsIcon className="h-4 w-4 mr-1" /> Lønnsperiode
@@ -436,20 +437,20 @@ export default function Payroll() {
               </Button>
               {customRange && (
                 <Button variant="ghost" size="sm" onClick={() => setCustomRange(null)}>
-                  Tilbake til lønnsperiode
+                  {t("auto.tilbake_til_loennsperiode")}
                 </Button>
               )}
             </div>
 
             <div className="w-full sm:w-auto">
-              <Label className="text-xs">Prosjekt</Label>
+              <Label className="text-xs">{t("auto.prosjekt")}</Label>
               <Select value={projectFilter} onValueChange={setProjectFilter}>
                 <SelectTrigger className="h-9 w-full sm:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle prosjekter</SelectItem>
-                  <SelectItem value="_none">Uten prosjekt</SelectItem>
+                  <SelectItem value="all">{t("auto.alle_prosjekter")}</SelectItem>
+                  <SelectItem value="_none">{t("auto.uten_prosjekt")}</SelectItem>
                   {projects.map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
@@ -458,13 +459,13 @@ export default function Payroll() {
             </div>
 
             <div className="w-full sm:w-auto">
-              <Label className="text-xs">Ansatt</Label>
+              <Label className="text-xs">{t("auto.ansatt")}</Label>
               <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
                 <SelectTrigger className="h-9 w-full sm:w-[220px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle ansatte</SelectItem>
+                  <SelectItem value="all">{t("auto.alle_ansatte")}</SelectItem>
                   {employeeOptions.map((e) => (
                     <SelectItem key={e.user_id} value={e.user_id}>{e.user_name}</SelectItem>
                   ))}
@@ -476,7 +477,7 @@ export default function Payroll() {
 
             <div className="flex items-end gap-2 ml-auto">
               <div>
-                <Label className="text-xs">Fra</Label>
+                <Label className="text-xs">{t("auto.fra")}</Label>
                 <Input
                   type="date"
                   className="h-9"
@@ -490,7 +491,7 @@ export default function Payroll() {
                 />
               </div>
               <div>
-                <Label className="text-xs">Til</Label>
+                <Label className="text-xs">{t("auto.til")}</Label>
                 <Input
                   type="date"
                   className="h-9"
@@ -514,49 +515,49 @@ export default function Payroll() {
             <p className="text-2xl font-bold">{totals.hours.toFixed(2)}</p>
           </CardContent></Card>
           <Card><CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Ansatte</p>
+            <p className="text-xs text-muted-foreground">{t("auto.ansatte")}</p>
             <p className="text-2xl font-bold">{totals.employees}</p>
           </CardContent></Card>
           <Card><CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Tillegg</p>
+            <p className="text-xs text-muted-foreground">{t("auto.tillegg")}</p>
             <p className="text-2xl font-bold">{nok(totals.allow)}</p>
           </CardContent></Card>
           <Card><CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Sum lønn</p>
+            <p className="text-xs text-muted-foreground">{t("auto.sum_loenn")}</p>
             <p className="text-2xl font-bold">{nok(totals.sum)}</p>
           </CardContent></Card>
         </div>
 
         <Tabs defaultValue="employees">
           <TabsList>
-            <TabsTrigger value="employees">Per ansatt</TabsTrigger>
-            <TabsTrigger value="projects">Per prosjekt</TabsTrigger>
-            <TabsTrigger value="detail">Alle registreringer</TabsTrigger>
+            <TabsTrigger value="employees">{t("auto.per_ansatt")}</TabsTrigger>
+            <TabsTrigger value="projects">{t("auto.per_prosjekt")}</TabsTrigger>
+            <TabsTrigger value="detail">{t("auto.alle_registreringer")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="employees">
             <Card>
-              <CardHeader><CardTitle className="text-base">Lønnsgrunnlag per ansatt</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t("auto.loennsgrunnlag_per_ansatt")}</CardTitle></CardHeader>
               <CardContent>
                 {isLoading ? (
-                  <p className="text-sm text-muted-foreground">Laster…</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.laster_2")}</p>
                 ) : byEmployee.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Ingen godkjente timer i perioden.</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.ingen_godkjente_timer_i_perioden")}</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Ansattnr</TableHead>
-                          <TableHead>Ansatt</TableHead>
-                          <TableHead className="text-right">Normaltimer</TableHead>
-                          <TableHead className="text-right">50% overtid</TableHead>
-                          <TableHead className="text-right">100% overtid</TableHead>
-                          <TableHead className="text-right">Timer totalt</TableHead>
-                          <TableHead className="text-right">Timesats</TableHead>
-                          <TableHead className="text-right">Grunnlønn</TableHead>
-                          <TableHead className="text-right">Tillegg</TableHead>
-                          <TableHead className="text-right">Sum</TableHead>
+                          <TableHead>{t("auto.ansattnr")}</TableHead>
+                          <TableHead>{t("auto.ansatt")}</TableHead>
+                          <TableHead className="text-right">{t("auto.normaltimer")}</TableHead>
+                          <TableHead className="text-right">{t("auto.50_overtid")}</TableHead>
+                          <TableHead className="text-right">{t("auto.100_overtid")}</TableHead>
+                          <TableHead className="text-right">{t("auto.timer_totalt")}</TableHead>
+                          <TableHead className="text-right">{t("auto.timesats")}</TableHead>
+                          <TableHead className="text-right">{t("auto.grunnloenn")}</TableHead>
+                          <TableHead className="text-right">{t("auto.tillegg")}</TableHead>
+                          <TableHead className="text-right">{t("auto.sum")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -566,7 +567,7 @@ export default function Payroll() {
                             <TableCell className="font-medium">
                               {e.user_name}
                               {e.hourly_rate == null && (
-                                <Badge variant="outline" className="ml-2 text-xs">Mangler sats</Badge>
+                                <Badge variant="outline" className="ml-2 text-xs">{t("auto.mangler_sats")}</Badge>
                               )}
                             </TableCell>
                             <TableCell className="text-right">{(e.normal_hours ?? 0).toFixed(2)}</TableCell>
@@ -605,16 +606,16 @@ export default function Payroll() {
 
           <TabsContent value="projects">
             <Card>
-              <CardHeader><CardTitle className="text-base">Timer per prosjekt</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t("auto.timer_per_prosjekt")}</CardTitle></CardHeader>
               <CardContent>
                 {byProject.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Ingen godkjente timer i perioden.</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.ingen_godkjente_timer_i_perioden")}</p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Prosjekt</TableHead>
-                        <TableHead className="text-right">Timer</TableHead>
+                        <TableHead>{t("auto.prosjekt")}</TableHead>
+                        <TableHead className="text-right">{t("auto.timer")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -637,24 +638,24 @@ export default function Payroll() {
 
           <TabsContent value="detail">
             <Card>
-              <CardHeader><CardTitle className="text-base">Alle godkjente registreringer</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t("auto.alle_godkjente_registreringer")}</CardTitle></CardHeader>
               <CardContent>
                 {filteredRows.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Ingen godkjente timer i perioden.</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.ingen_godkjente_timer_i_perioden")}</p>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Dato</TableHead>
-                          <TableHead>Ansatt</TableHead>
-                          <TableHead>Fra–til</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Prosjekt</TableHead>
-                          <TableHead>Beskrivelse</TableHead>
-                          <TableHead className="text-right">Timer</TableHead>
-                          <TableHead className="text-right">Tillegg</TableHead>
-                          <TableHead className="text-right">Handling</TableHead>
+                          <TableHead>{t("auto.dato")}</TableHead>
+                          <TableHead>{t("auto.ansatt")}</TableHead>
+                          <TableHead>{t("auto.fra_til_2")}</TableHead>
+                          <TableHead>{t("auto.type")}</TableHead>
+                          <TableHead>{t("auto.prosjekt")}</TableHead>
+                          <TableHead>{t("auto.beskrivelse")}</TableHead>
+                          <TableHead className="text-right">{t("auto.timer")}</TableHead>
+                          <TableHead className="text-right">{t("auto.tillegg")}</TableHead>
+                          <TableHead className="text-right">{t("auto.handling")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -673,7 +674,7 @@ export default function Payroll() {
                               ) : r.hour_type === "overtime_100" ? (
                                 <Badge variant="outline" className="text-red-600 border-red-300">100%</Badge>
                               ) : (
-                                <span className="text-muted-foreground">Normal</span>
+                                <span className="text-muted-foreground">{t("auto.normal")}</span>
                               )}
                             </TableCell>
                             <TableCell>{r.project_name || "-"}</TableCell>
@@ -717,7 +718,7 @@ export default function Payroll() {
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Lønnsperiode</DialogTitle>
+            <DialogTitle>{t("auto.loennsperiode")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <Label>Start-dag i måneden (1–28)</Label>
@@ -736,9 +737,9 @@ export default function Payroll() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setStartDay(savedStartDay); setSettingsOpen(false); }}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
-            <Button onClick={handleSaveSettings}>Lagre</Button>
+            <Button onClick={handleSaveSettings}>{t("auto.lagre")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -825,9 +826,9 @@ function HourlyRatesDialog({
       const results = await Promise.all(updates);
       const firstErr = results.find((r) => r.error);
       if (firstErr?.error) {
-        toast.error("Kunne ikke lagre: " + firstErr.error.message);
+        toast.error(t("auto.kunne_ikke_lagre") + firstErr.error.message);
       } else {
-        toast.success("Lagret");
+        toast.success(t("auto.lagret"));
         onSaved();
         onOpenChange(false);
       }
@@ -840,18 +841,18 @@ function HourlyRatesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Ansattnummer og timesatser</DialogTitle>
+          <DialogTitle>{t("auto.ansattnummer_og_timesatser")}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto space-y-2">
           {loading ? (
-            <p className="text-sm text-muted-foreground">Laster…</p>
+            <p className="text-sm text-muted-foreground">{t("auto.laster_2")}</p>
           ) : list.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Ingen aktive ansatte.</p>
+            <p className="text-sm text-muted-foreground">{t("auto.ingen_aktive_ansatte")}</p>
           ) : (
             <>
               <div className="flex items-center gap-3 px-1 text-xs font-medium text-muted-foreground">
-                <span className="flex-1">Ansatt</span>
-                <span className="w-28">Ansattnr</span>
+                <span className="flex-1">{t("auto.ansatt")}</span>
+                <span className="w-28">{t("auto.ansattnr")}</span>
                 <span className="w-32 text-right">Timesats (kr/t)</span>
               </div>
               {list.map((item, idx) => (
@@ -889,7 +890,7 @@ function HourlyRatesDialog({
                         });
                       }}
                     />
-                    <span className="text-xs text-muted-foreground">kr/t</span>
+                    <span className="text-xs text-muted-foreground">{t("auto.kr_t")}</span>
                   </div>
                 </div>
               ))}
@@ -898,7 +899,7 @@ function HourlyRatesDialog({
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleSave} disabled={saving || loading}>
             {saving ? "Lagrer…" : "Lagre alle"}

@@ -19,6 +19,7 @@ import { defaultPersonalhandbokChapters } from "@/lib/personalhandbokDefaults";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface Chapter {
   id: string;
@@ -87,7 +88,7 @@ const PersonalhandbokPage = () => {
       }
     } catch (error) {
       console.error("Error fetching chapters:", error);
-      toast.error("Kunne ikke laste kapitler");
+      toast.error(t("auto.kunne_ikke_laste_kapitler"));
     } finally {
       setLoading(false);
     }
@@ -170,12 +171,12 @@ const PersonalhandbokPage = () => {
         .eq("id", editingChapter.id);
 
       if (error) throw error;
-      toast.success("Kapittel lagret");
+      toast.success(t("auto.kapittel_lagret"));
       setEditingChapter(null);
       fetchChapters();
     } catch (error) {
       console.error("Error saving chapter:", error);
-      toast.error("Kunne ikke lagre kapittel");
+      toast.error(t("auto.kunne_ikke_lagre_kapittel"));
     } finally {
       setSaving(false);
     }
@@ -191,20 +192,20 @@ const PersonalhandbokPage = () => {
           company_id: company!.id,
           title: newChapterTitle,
           slug,
-          content: `<h2>${newChapterTitle}</h2>\n<p>Fyll inn innhold her...</p>`,
+          content: `<h2>${newChapterTitle}</h2>\n<p>{t("auto.fyll_inn_innhold_her")}</p>`,
           sort_order: chapters.length,
           is_default: false,
           is_active: true,
         });
 
       if (error) throw error;
-      toast.success("Kapittel lagt til");
+      toast.success(t("auto.kapittel_lagt_til"));
       setShowAddDialog(false);
       setNewChapterTitle("");
       fetchChapters();
     } catch (error) {
       console.error("Error adding chapter:", error);
-      toast.error("Kunne ikke legge til kapittel");
+      toast.error(t("auto.kunne_ikke_legge_til_kapittel"));
     }
   };
 
@@ -217,12 +218,12 @@ const PersonalhandbokPage = () => {
         .eq("id", chapterId);
 
       if (error) throw error;
-      toast.success("Kapittel slettet");
+      toast.success(t("auto.kapittel_slettet"));
       if (selectedChapter?.id === chapterId) setSelectedChapter(null);
       fetchChapters();
     } catch (error) {
       console.error("Error deleting chapter:", error);
-      toast.error("Kunne ikke slette kapittel");
+      toast.error(t("auto.kunne_ikke_slette_kapittel"));
     }
   };
 
@@ -238,13 +239,13 @@ const PersonalhandbokPage = () => {
         });
 
       if (error) throw error;
-      toast.success("Du har bekreftet at du har lest personalhåndboken");
+      toast.success(t("auto.du_har_bekreftet_at_du_har_lest_personal"));
       setShowConfirmDialog(false);
       fetchConfirmation();
       if (isAdmin) fetchAllConfirmations();
     } catch (error) {
       console.error("Error confirming:", error);
-      toast.error("Kunne ikke bekrefte");
+      toast.error(t("auto.kunne_ikke_bekrefte"));
     }
   };
 
@@ -265,7 +266,7 @@ const PersonalhandbokPage = () => {
               <BookOpen className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Personalhåndbok</h1>
+              <h1 className="text-2xl font-bold text-foreground">{t("auto.personalhaandbok")}</h1>
               <p className="text-sm text-muted-foreground">
                 {company?.name} • Versjon {currentVersion}
               </p>
@@ -308,7 +309,7 @@ const PersonalhandbokPage = () => {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Søk i kapitler..."
+            placeholder={t("auto.soek_i_kapitler")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -321,7 +322,7 @@ const PersonalhandbokPage = () => {
           <Card className="h-fit lg:sticky lg:top-20">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground uppercase">
-                Innholdsfortegnelse
+                {t("auto.innholdsfortegnelse")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -404,11 +405,11 @@ const PersonalhandbokPage = () => {
             ) : editingChapter ? (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Rediger kapittel</CardTitle>
+                  <CardTitle className="text-lg">{t("auto.rediger_kapittel")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Tittel</label>
+                    <label className="text-sm font-medium">{t("auto.tittel")}</label>
                     <Input
                       value={editingChapter.title}
                       onChange={(e) => setEditingChapter({ ...editingChapter, title: e.target.value })}
@@ -429,7 +430,7 @@ const PersonalhandbokPage = () => {
                       {saving ? "Lagrer..." : "Lagre"}
                     </Button>
                     <Button variant="outline" onClick={() => setEditingChapter(null)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                   </div>
                 </CardContent>
@@ -438,7 +439,7 @@ const PersonalhandbokPage = () => {
               <Card className="flex items-center justify-center py-20">
                 <div className="text-center text-muted-foreground">
                   <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>Velg et kapittel fra innholdsfortegnelsen</p>
+                  <p>{t("auto.velg_et_kapittel_fra_innholdsfortegnelse")}</p>
                 </div>
               </Card>
             )}
@@ -450,18 +451,18 @@ const PersonalhandbokPage = () => {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Legg til nytt kapittel</DialogTitle>
-            <DialogDescription>Gi kapittelet et navn. Du kan redigere innholdet etterpå.</DialogDescription>
+            <DialogTitle>{t("auto.legg_til_nytt_kapittel")}</DialogTitle>
+            <DialogDescription>{t("auto.gi_kapittelet_et_navn_du_kan_redigere_in")}</DialogDescription>
           </DialogHeader>
           <Input
-            placeholder="Kapitteltittel..."
+            placeholder={t("auto.kapitteltittel")}
             value={newChapterTitle}
             onChange={(e) => setNewChapterTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddChapter()}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>Avbryt</Button>
-            <Button onClick={handleAddChapter}>Legg til</Button>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>{t("auto.avbryt")}</Button>
+            <Button onClick={handleAddChapter}>{t("auto.legg_til")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -470,13 +471,13 @@ const PersonalhandbokPage = () => {
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bekreft at du har lest personalhåndboken</DialogTitle>
+            <DialogTitle>{t("auto.bekreft_at_du_har_lest_personalhaandboke")}</DialogTitle>
             <DialogDescription>
               Ved å bekrefte bekrefter du at du har lest og forstått innholdet i personalhåndboken (versjon {currentVersion}).
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>{t("auto.avbryt")}</Button>
             <Button onClick={handleConfirmRead} className="bg-emerald-600 hover:bg-emerald-700">
               <CheckCircle2 className="w-4 h-4 mr-1.5" />
               Jeg bekrefter

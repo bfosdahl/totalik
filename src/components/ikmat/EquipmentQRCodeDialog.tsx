@@ -12,6 +12,7 @@ import { Download, QrCode } from "lucide-react";
 import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
 import type { TemperatureEquipment } from "@/hooks/useIkMatTemperature";
 import { downloadQrAsPng } from "@/utils/qrCodeExport";
+import { t } from "@/i18n/t";
 
 interface EquipmentQRCodeDialogProps {
   open: boolean;
@@ -76,13 +77,13 @@ export function EquipmentQRCodeDialog({
           </div>
 
           <p className="text-xs text-muted-foreground text-center max-w-[300px]">
-            Skann denne QR-koden for å gå direkte til temperaturregistrering for dette utstyret.
+            {t("auto.skann_denne_qr_koden_for_aa_gaa_direkte_")}
           </p>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Lukk
+            {t("auto.lukk")}
           </Button>
           <Button onClick={handleDownload}>
             <Download className="h-4 w-4 mr-2" />

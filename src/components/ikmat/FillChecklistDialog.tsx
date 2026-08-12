@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckpointResponse, CheckpointItem, getCheckpointText } from "@/hooks/useIkMatChecklistResponses";
 import { Check, X, Minus } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface FillChecklistDialogProps {
   open: boolean;
@@ -93,7 +94,7 @@ export function FillChecklistDialog({
                   <RadioGroupItem value="not_ok" id={`not_ok-${index}`} />
                   <Label htmlFor={`not_ok-${index}`} className="flex items-center gap-2 cursor-pointer">
                     {getStatusIcon('not_ok')}
-                    <span>Ikke OK</span>
+                    <span>{t("auto.ikke_ok")}</span>
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -117,7 +118,7 @@ export function FillChecklistDialog({
           <div className="space-y-2">
             <Label>Notater (valgfritt)</Label>
             <Textarea
-              placeholder="Generelle notater om sjekklisten..."
+              placeholder={t("auto.generelle_notater_om_sjekklisten")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-[100px]"

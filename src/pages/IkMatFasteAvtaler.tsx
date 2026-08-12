@@ -13,6 +13,7 @@ import { useIkMatSuppliers } from "@/hooks/useIkMatSuppliers";
 import { AddSupplierDialog } from "@/components/ikmat/AddSupplierDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface Contract {
   supplier: string;
@@ -54,7 +55,7 @@ const IkMatFasteAvtaler = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Laster...</p>
+            <p className="text-muted-foreground">{t("auto.laster")}</p>
           </div>
         </div>
       </AppLayout>
@@ -88,9 +89,9 @@ const IkMatFasteAvtaler = () => {
       <div className="container max-w-6xl mx-auto py-8">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Faste avtaler</h1>
+            <h1 className="text-3xl font-bold mb-2">{t("auto.faste_avtaler")}</h1>
             <p className="text-muted-foreground">
-              Oversikt over leverandører og serviceavtaler
+              {t("auto.oversikt_over_leverandoerer_og_serviceav")}
             </p>
           </div>
           <Button onClick={() => {
@@ -106,7 +107,7 @@ const IkMatFasteAvtaler = () => {
           <Alert>
             <FileText className="h-4 w-4" />
             <AlertDescription>
-              Ingen faste avtaler funnet. Legg til leverandører eller kjør IK/MAT oppsettet for å generere anbefalte leverandøravtaler.
+              {t("auto.ingen_faste_avtaler_funnet_legg_til_leve")}
             </AlertDescription>
           </Alert>
         ) : (
@@ -117,18 +118,18 @@ const IkMatFasteAvtaler = () => {
                 <CardHeader>
                   <CardTitle>Dine leverandører ({suppliers.length})</CardTitle>
                   <CardDescription>
-                    Leverandører og serviceavtaler du har registrert
+                    {t("auto.leverandoerer_og_serviceavtaler_du_har_r")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Leverandør</TableHead>
-                        <TableHead>Type tjeneste</TableHead>
-                        <TableHead>Kontakt</TableHead>
-                        <TableHead>Avtale slutt</TableHead>
-                        <TableHead className="w-[100px]">Handlinger</TableHead>
+                        <TableHead>{t("auto.leverandoer")}</TableHead>
+                        <TableHead>{t("auto.type_tjeneste")}</TableHead>
+                        <TableHead>{t("auto.kontakt")}</TableHead>
+                        <TableHead>{t("auto.avtale_slutt")}</TableHead>
+                        <TableHead className="w-[100px]">{t("auto.handlinger")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -180,18 +181,18 @@ const IkMatFasteAvtaler = () => {
                 <CardHeader>
                   <CardTitle>Anbefalte avtaler ({contracts.length})</CardTitle>
                   <CardDescription>
-                    AI-genererte forslag til leverandøravtaler
+                    {t("auto.ai_genererte_forslag_til_leverandoeravta")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Leverandør</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Frekvens</TableHead>
-                        <TableHead>Kontakt</TableHead>
-                        <TableHead>Neste gjennomgang</TableHead>
+                        <TableHead>{t("auto.leverandoer")}</TableHead>
+                        <TableHead>{t("auto.type")}</TableHead>
+                        <TableHead>{t("auto.frekvens_2")}</TableHead>
+                        <TableHead>{t("auto.kontakt")}</TableHead>
+                        <TableHead>{t("auto.neste_gjennomgang")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

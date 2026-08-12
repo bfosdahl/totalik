@@ -16,6 +16,7 @@ import { SporbarhetTab } from "@/components/ikmat/kontroll/SporbarhetTab";
 import { KalenderTab } from "@/components/ikmat/kontroll/KalenderTab";
 import { RunderTab } from "@/components/ikmat/kontroll/RunderTab";
 import { RevisjonTab } from "@/components/ikmat/kontroll/RevisjonTab";
+import { t } from "@/i18n/t";
 
 const IkMatKontroll = () => {
   const { company } = useAuth();
@@ -61,7 +62,7 @@ const IkMatKontroll = () => {
               Kontroll
             </h1>
             <p className="text-muted-foreground mt-1">
-              Daglige kontroller, logging og dokumentasjon for matsikkerhet
+              {t("auto.daglige_kontroller_logging_og_dokumentas")}
             </p>
           </div>
           <QuickStartRoundButton onOpenRunder={() => handleTabChange("runder")} />
@@ -72,31 +73,31 @@ const IkMatKontroll = () => {
             <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:max-w-5xl sm:grid-cols-7 h-auto p-1">
               <TabsTrigger value="kalender" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <CalendarDays className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">Kalender</span>
+                <span className="hidden xs:inline sm:inline">{t("auto.kalender")}</span>
               </TabsTrigger>
               <TabsTrigger value="runder" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <RouteIcon className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">Runder</span>
+                <span className="hidden xs:inline sm:inline">{t("auto.runder")}</span>
               </TabsTrigger>
               <TabsTrigger value="sjekklister" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <ClipboardCheck className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">Sjekklister</span>
+                <span className="hidden xs:inline sm:inline">{t("auto.sjekklister")}</span>
               </TabsTrigger>
               <TabsTrigger value="renholdsplan" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <SprayCan className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">Renhold</span>
+                <span className="hidden xs:inline sm:inline">{t("auto.renhold")}</span>
               </TabsTrigger>
               <TabsTrigger value="temperatur" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <Thermometer className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">Temp</span>
+                <span className="hidden xs:inline sm:inline">{t("auto.temp")}</span>
               </TabsTrigger>
               <TabsTrigger value="sporbarhet" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <Package className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">Mottak</span>
+                <span className="hidden xs:inline sm:inline">{t("auto.mottak")}</span>
               </TabsTrigger>
               <TabsTrigger value="revisjon" className="gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                 <FileSearch className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">Revisjon</span>
+                <span className="hidden xs:inline sm:inline">{t("auto.revisjon")}</span>
               </TabsTrigger>
             </TabsList>
           </div>

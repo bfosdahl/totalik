@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { t } from "@/i18n/t";
 
 const STATUS_LABEL: Record<SundayHistoryRow["status"], string> = {
   ok: "OK",
@@ -23,11 +24,11 @@ const STATUS_LABEL: Record<SundayHistoryRow["status"], string> = {
 };
 
 function StatusBadge({ status }: { status: SundayHistoryRow["status"] }) {
-  if (status === "breach") return <Badge variant="destructive">Brudd</Badge>;
+  if (status === "breach") return <Badge variant="destructive">{t("auto.brudd")}</Badge>;
   if (status === "risk")
     return (
       <Badge className="bg-amber-500 hover:bg-amber-500/90 text-white border-transparent">
-        Risiko
+        {t("auto.risiko")}
       </Badge>
     );
   return <Badge variant="secondary">OK</Badge>;
@@ -60,9 +61,9 @@ export default function HrSundayReport() {
     return (
       <AppLayout>
         <Alert>
-          <AlertTitle>Ingen tilgang</AlertTitle>
+          <AlertTitle>{t("auto.ingen_tilgang")}</AlertTitle>
           <AlertDescription>
-            Søndagsrapporten er forbeholdt administratorer.
+            {t("auto.soendagsrapporten_er_forbeholdt_administ")}
           </AlertDescription>
         </Alert>
       </AppLayout>
@@ -123,7 +124,7 @@ export default function HrSundayReport() {
 
         <Alert>
           <FileText className="h-4 w-4" />
-          <AlertTitle>Hva viser denne rapporten?</AlertTitle>
+          <AlertTitle>{t("auto.hva_viser_denne_rapporten")}</AlertTitle>
           <AlertDescription>
             <p>
               Arbeidstilsynet krever at ansatte får fri annenhver søndag (AML §10-8).
@@ -142,19 +143,19 @@ export default function HrSundayReport() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription>Ansatte totalt</CardDescription>
+              <CardDescription>{t("auto.ansatte_totalt")}</CardDescription>
               <CardTitle className="text-2xl">{summary.total}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription className="text-destructive">Brudd</CardDescription>
+              <CardDescription className="text-destructive">{t("auto.brudd")}</CardDescription>
               <CardTitle className="text-2xl text-destructive">{summary.breaches}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardDescription className="text-amber-600">Risiko</CardDescription>
+              <CardDescription className="text-amber-600">{t("auto.risiko")}</CardDescription>
               <CardTitle className="text-2xl text-amber-600">{summary.risks}</CardTitle>
             </CardHeader>
           </Card>
@@ -168,10 +169,9 @@ export default function HrSundayReport() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Detaljer per ansatt</CardTitle>
+            <CardTitle>{t("auto.detaljer_per_ansatt")}</CardTitle>
             <CardDescription>
-              Sortert etter alvorlighet. Klikk PDF-knappen for å eksportere til
-              Arbeidstilsynet.
+              {t("auto.sortert_etter_alvorlighet_klikk_pdf_knap")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -190,11 +190,11 @@ export default function HrSundayReport() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ansatt</TableHead>
-                      <TableHead className="text-right">Søndager jobbet</TableHead>
-                      <TableHead className="text-right">Lengste rad</TableHead>
-                      <TableHead className="text-right">På rad nå</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t("auto.ansatt")}</TableHead>
+                      <TableHead className="text-right">{t("auto.soendager_jobbet")}</TableHead>
+                      <TableHead className="text-right">{t("auto.lengste_rad")}</TableHead>
+                      <TableHead className="text-right">{t("auto.paa_rad_naa")}</TableHead>
+                      <TableHead>{t("auto.status_2")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

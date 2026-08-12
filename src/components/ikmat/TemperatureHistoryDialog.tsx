@@ -25,6 +25,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface TemperatureHistoryDialogProps {
   open: boolean;
@@ -63,7 +64,7 @@ export function TemperatureHistoryDialog({
 
   const handleExportPDF = () => {
     if (logs.length === 0) {
-      toast.error("Ingen data å eksportere");
+      toast.error(t("auto.ingen_data_aa_eksportere"));
       return;
     }
 
@@ -133,7 +134,7 @@ export function TemperatureHistoryDialog({
 
     const fileName = `Temperaturlogg-${company?.name?.replace(/\s+/g, '-') || 'bedrift'}-${startDate}-${endDate}.pdf`;
     doc.save(fileName);
-    toast.success("PDF eksportert");
+    toast.success(t("auto.pdf_eksportert"));
   };
 
   const getEquipmentName = (log: TemperatureLog) => {
@@ -154,7 +155,7 @@ export function TemperatureHistoryDialog({
           {/* Date filters */}
           <div className="flex flex-wrap gap-4 items-end">
             <div className="space-y-2">
-              <Label>Fra dato</Label>
+              <Label>{t("auto.fra_dato")}</Label>
               <Input
                 type="date"
                 value={startDate}
@@ -162,7 +163,7 @@ export function TemperatureHistoryDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Til dato</Label>
+              <Label>{t("auto.til_dato")}</Label>
               <Input
                 type="date"
                 value={endDate}
@@ -181,12 +182,12 @@ export function TemperatureHistoryDialog({
           {/* Summary */}
           {logs.length > 0 && (
             <div className="flex gap-4 text-sm">
-              <span>Totalt: <strong>{logs.length}</strong> målinger</span>
+              <span>{t("auto.totalt_2")} <strong>{logs.length}</strong> {t("auto.maalinger")}</span>
               <span className="text-green-600">
-                OK: <strong>{logs.filter(l => l.is_acceptable).length}</strong>
+                {t("auto.ok")} <strong>{logs.filter(l => l.is_acceptable).length}</strong>
               </span>
               <span className="text-red-600">
-                Avvik: <strong>{logs.filter(l => !l.is_acceptable).length}</strong>
+                {t("auto.avvik_2")} <strong>{logs.filter(l => !l.is_acceptable).length}</strong>
               </span>
             </div>
           )}
@@ -200,19 +201,19 @@ export function TemperatureHistoryDialog({
             ) : logs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <FileText className="h-12 w-12 mb-4" />
-                <p>Ingen målinger funnet i valgt periode</p>
+                <p>{t("auto.ingen_maalinger_funnet_i_valgt_periode")}</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Dato</TableHead>
-                    <TableHead>Tidspunkt</TableHead>
-                    <TableHead>Utstyr</TableHead>
-                    <TableHead>Temperatur</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Registrert av</TableHead>
-                    <TableHead>Korrigerende tiltak</TableHead>
+                    <TableHead>{t("auto.dato")}</TableHead>
+                    <TableHead>{t("auto.tidspunkt_2")}</TableHead>
+                    <TableHead>{t("auto.utstyr")}</TableHead>
+                    <TableHead>{t("auto.temperatur")}</TableHead>
+                    <TableHead>{t("auto.status_2")}</TableHead>
+                    <TableHead>{t("auto.registrert_av")}</TableHead>
+                    <TableHead>{t("auto.korrigerende_tiltak_2")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

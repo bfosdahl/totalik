@@ -29,6 +29,7 @@ import {
   EQUIPMENT_TYPE_DEFAULTS,
 } from "@/lib/temperatureGuidelines";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface LogTemperatureDialogProps {
   open: boolean;
@@ -186,16 +187,16 @@ export function LogTemperatureDialog({
       <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="sr-only">Alle målinger fullført</DialogTitle>
+            <DialogTitle className="sr-only">{t("auto.alle_maalinger_fullfoert")}</DialogTitle>
           </DialogHeader>
           <div className="text-center py-6 space-y-4">
             <div className="mx-auto h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
               <PartyPopper className="h-10 w-10 text-primary" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Bra jobba! 🎉</h2>
+              <h2 className="text-2xl font-bold">{t("auto.bra_jobba")}</h2>
               <p className="text-muted-foreground">
-                Alle dagens temperaturmålinger er registrert.
+                {t("auto.alle_dagens_temperaturmaalinger_er_regis")}
               </p>
               <p className="text-sm text-muted-foreground">
                 {completedCount} av {initialPending || completedCount} målinger fullført
@@ -204,7 +205,7 @@ export function LogTemperatureDialog({
           </div>
           <DialogFooter>
             <Button className="w-full" onClick={handleClose}>
-              Ferdig
+              {t("auto.ferdig")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -239,10 +240,10 @@ export function LogTemperatureDialog({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="equipment">Velg utstyr</Label>
+            <Label htmlFor="equipment">{t("auto.velg_utstyr")}</Label>
             <Select value={selectedEquipmentId} onValueChange={setSelectedEquipmentId} disabled={isEditMode}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg utstyr..." />
+                <SelectValue placeholder={t("auto.velg_utstyr_2")} />
               </SelectTrigger>
               <SelectContent>
                 {equipment.map((equip) => (
@@ -257,15 +258,15 @@ export function LogTemperatureDialog({
           {selectedEquip && (
             <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
               <p>
-                <strong>Type:</strong>{" "}
+                <strong>{t("auto.type_2")}</strong>{" "}
                 {EQUIPMENT_TYPE_DEFAULTS[selectedEquip.equipment_type as keyof typeof EQUIPMENT_TYPE_DEFAULTS]?.label}
               </p>
               <p>
-                <strong>Akseptabel temperatur:</strong>{" "}
+                <strong>{t("auto.akseptabel_temperatur")}</strong>{" "}
                 {selectedEquip.min_temp}°C til {selectedEquip.max_temp}°C
               </p>
               {selectedEquip.location && (
-                <p><strong>Plassering:</strong> {selectedEquip.location}</p>
+                <p><strong>{t("auto.plassering_2")}</strong> {selectedEquip.location}</p>
               )}
             </div>
           )}
@@ -293,7 +294,7 @@ export function LogTemperatureDialog({
                 type="text"
                 inputMode="decimal"
                 pattern="-?[0-9]*\.?[0-9]*"
-                placeholder="f.eks. -20 eller 3.5"
+                placeholder={t("auto.f_eks_20_eller_3_5")}
                 value={temperature}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -321,7 +322,7 @@ export function LogTemperatureDialog({
                 </span>
               </div>
               <p className={cn("text-sm", getStatusTextClass(guideline.status))}>
-                <strong>Anbefalt tiltak:</strong> {guideline.action}
+                <strong>{t("auto.anbefalt_tiltak")}</strong> {guideline.action}
               </p>
             </div>
           )}
@@ -329,19 +330,19 @@ export function LogTemperatureDialog({
           {showCorrectiveAction && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Avvik registrert!</AlertTitle>
+              <AlertTitle>{t("auto.avvik_registrert")}</AlertTitle>
               <AlertDescription>
-                Temperaturen er utenfor akseptable grenser. Du må beskrive korrigerende tiltak.
+                {t("auto.temperaturen_er_utenfor_akseptable_grens")}
               </AlertDescription>
             </Alert>
           )}
 
           {showCorrectiveAction && (
             <div className="space-y-2">
-              <Label htmlFor="corrective-action">Korrigerende tiltak *</Label>
+              <Label htmlFor="corrective-action">{t("auto.korrigerende_tiltak")}</Label>
               <Textarea
                 id="corrective-action"
-                placeholder="Beskriv hva som ble gjort for å rette avviket..."
+                placeholder={t("auto.beskriv_hva_som_ble_gjort_for_aa_rette_a")}
                 value={correctiveAction}
                 onChange={(e) => setCorrectiveAction(e.target.value)}
                 rows={3}
@@ -353,7 +354,7 @@ export function LogTemperatureDialog({
             <Label htmlFor="notes">Merknad (valgfritt)</Label>
             <Textarea
               id="notes"
-              placeholder="Eventuelle merknader..."
+              placeholder={t("auto.eventuelle_merknader")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
@@ -363,7 +364,7 @@ export function LogTemperatureDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -375,7 +376,7 @@ export function LogTemperatureDialog({
               "Oppdater"
             ) : showProgress && remainingAfterThis > 0 ? (
               <>
-                Registrer & neste <ChevronRight className="h-4 w-4 ml-1" />
+                {t("auto.registrer_neste")} <ChevronRight className="h-4 w-4 ml-1" />
               </>
             ) : (
               "Registrer"

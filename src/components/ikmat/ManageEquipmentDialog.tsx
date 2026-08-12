@@ -38,6 +38,7 @@ import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
 import { Plus, Trash2, Settings, QrCode, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { EquipmentQRCodeDialog } from "./EquipmentQRCodeDialog";
+import { t } from "@/i18n/t";
 
 interface ManageEquipmentDialogProps {
   open: boolean;
@@ -75,7 +76,7 @@ export function ManageEquipmentDialog({
 
   const handleAdd = async () => {
     if (!newEquipment.name) {
-      toast.error("Navn er påkrevd");
+      toast.error(t("auto.navn_er_paakrevd"));
       return;
     }
 
@@ -114,7 +115,7 @@ export function ManageEquipmentDialog({
 
   const handleSaveEdit = async () => {
     if (!editingEquipment || !newEquipment.name) {
-      toast.error("Navn er påkrevd");
+      toast.error(t("auto.navn_er_paakrevd"));
       return;
     }
 
@@ -161,7 +162,7 @@ export function ManageEquipmentDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="truncate">Administrer utstyr</span>
+            <span className="truncate">{t("auto.administrer_utstyr")}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -186,7 +187,7 @@ export function ManageEquipmentDialog({
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => handleStartEdit(equip)}
-                          title="Rediger"
+                          title={t("auto.rediger")}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -195,7 +196,7 @@ export function ManageEquipmentDialog({
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => setQrEquipment(equip)}
-                          title="QR-kode"
+                          title={t("auto.qr_kode")}
                         >
                           <QrCode className="h-4 w-4" />
                         </Button>
@@ -222,11 +223,11 @@ export function ManageEquipmentDialog({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Navn</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Plassering</TableHead>
-                      <TableHead>Grenser</TableHead>
-                      <TableHead>Frekvens</TableHead>
+                      <TableHead>{t("auto.navn_2")}</TableHead>
+                      <TableHead>{t("auto.type")}</TableHead>
+                      <TableHead>{t("auto.plassering")}</TableHead>
+                      <TableHead>{t("auto.grenser")}</TableHead>
+                      <TableHead>{t("auto.frekvens_2")}</TableHead>
                       <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -263,7 +264,7 @@ export function ManageEquipmentDialog({
                               size="icon"
                               className="h-8 w-8"
                               onClick={() => setQrEquipment(equip)}
-                              title="QR-kode"
+                              title={t("auto.qr_kode")}
                             >
                               <QrCode className="h-4 w-4" />
                             </Button>
@@ -294,9 +295,9 @@ export function ManageEquipmentDialog({
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Navn *</Label>
+                  <Label className="text-xs sm:text-sm">{t("auto.navn_3")}</Label>
                   <Input
-                    placeholder="f.eks. Kjøleskap 1"
+                    placeholder={t("auto.f_eks_kjoeleskap_1")}
                     value={newEquipment.name}
                     onChange={(e) => setNewEquipment({ ...newEquipment, name: e.target.value })}
                     className="h-9 sm:h-10"
@@ -304,18 +305,18 @@ export function ManageEquipmentDialog({
                 </div>
                 
                 <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Type</Label>
+                  <Label className="text-xs sm:text-sm">{t("auto.type")}</Label>
                   <Select value={newEquipment.equipment_type} onValueChange={handleTypeChange}>
                     <SelectTrigger className="h-9 sm:h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fridge">Kjøleskap</SelectItem>
-                      <SelectItem value="freezer">Fryser</SelectItem>
-                      <SelectItem value="hot_holding">Varmholding</SelectItem>
-                      <SelectItem value="heat_treatment">Varmebehandling</SelectItem>
-                      <SelectItem value="hot_display">Varmebuffet</SelectItem>
-                      <SelectItem value="cold_display">Kjøledisk</SelectItem>
+                      <SelectItem value="fridge">{t("auto.kjoeleskap")}</SelectItem>
+                      <SelectItem value="freezer">{t("auto.fryser")}</SelectItem>
+                      <SelectItem value="hot_holding">{t("auto.varmholding")}</SelectItem>
+                      <SelectItem value="heat_treatment">{t("auto.varmebehandling")}</SelectItem>
+                      <SelectItem value="hot_display">{t("auto.varmebuffet")}</SelectItem>
+                      <SelectItem value="cold_display">{t("auto.kjoeledisk")}</SelectItem>
                       <SelectItem value="dishwasher_home">Oppvaskmaskin (husholdning)</SelectItem>
                       <SelectItem value="dishwasher_pro">Oppvaskmaskin (profesjonell)</SelectItem>
                     </SelectContent>
@@ -323,9 +324,9 @@ export function ManageEquipmentDialog({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Plassering</Label>
+                  <Label className="text-xs sm:text-sm">{t("auto.plassering")}</Label>
                   <Input
-                    placeholder="f.eks. Kjøkken"
+                    placeholder={t("auto.f_eks_kjoekken")}
                     value={newEquipment.location}
                     onChange={(e) => setNewEquipment({ ...newEquipment, location: e.target.value })}
                     className="h-9 sm:h-10"
@@ -333,7 +334,7 @@ export function ManageEquipmentDialog({
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs sm:text-sm">Målefrekvens</Label>
+                  <Label className="text-xs sm:text-sm">{t("auto.maalefrekvens")}</Label>
                   <Select 
                     value={newEquipment.measurement_frequency} 
                     onValueChange={(val) => setNewEquipment({ ...newEquipment, measurement_frequency: val })}
@@ -342,11 +343,11 @@ export function ManageEquipmentDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="daily">Daglig</SelectItem>
-                      <SelectItem value="twice_daily">2x daglig</SelectItem>
-                      <SelectItem value="weekly">Ukentlig</SelectItem>
-                      <SelectItem value="monthly">Månedlig</SelectItem>
-                      <SelectItem value="on_demand">Ved behov</SelectItem>
+                      <SelectItem value="daily">{t("auto.daglig")}</SelectItem>
+                      <SelectItem value="twice_daily">{t("auto.2x_daglig")}</SelectItem>
+                      <SelectItem value="weekly">{t("auto.ukentlig")}</SelectItem>
+                      <SelectItem value="monthly">{t("auto.maanedlig")}</SelectItem>
+                      <SelectItem value="on_demand">{t("auto.ved_behov")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -385,7 +386,7 @@ export function ManageEquipmentDialog({
                     : (addEquipment.isPending ? "Legger til..." : "Legg til")}
                 </Button>
                 <Button size="sm" variant="outline" onClick={cancelForm}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
               </div>
             </div>
@@ -408,14 +409,14 @@ export function ManageEquipmentDialog({
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Fjerne utstyr?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.fjerne_utstyr")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil fjerne "{deleteTarget?.name}"? Denne handlingen kan ikke angres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Fjern</AlertDialogAction>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>{t("auto.fjern")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

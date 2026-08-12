@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Bell } from 'lucide-react';
 import { type SensorNotificationSettings } from '@/hooks/useIkMatSensors';
+import { t } from "@/i18n/t";
 
 interface SensorNotificationCardProps {
   settings: SensorNotificationSettings | null;
@@ -35,7 +36,7 @@ export function SensorNotificationCard({ settings, onSave, isSaving }: SensorNot
           <CardTitle className="flex items-center gap-2"><Bell className="h-5 w-5" /> Varsling ved sensoravvik</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Laster varslingsinnstillinger...</p>
+          <p className="text-sm text-muted-foreground">{t("auto.laster_varslingsinnstillinger")}</p>
         </CardContent>
       </Card>
     );
@@ -70,8 +71,7 @@ export function SensorNotificationCard({ settings, onSave, isSaving }: SensorNot
           <Bell className="h-5 w-5" /> Varsling ved sensoravvik
         </CardTitle>
         <CardDescription>
-          Hvem skal motta e-post når en sensor går utenfor grenser, får lavt batteri eller blir
-          offline.
+          {t("auto.hvem_skal_motta_e_post_naar_en_sensor_ga")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -79,8 +79,8 @@ export function SensorNotificationCard({ settings, onSave, isSaving }: SensorNot
           <div className="flex items-center gap-3">
             <Mail className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-sm font-medium">E-postvarsler</p>
-              <p className="text-xs text-muted-foreground">Send e-post til mottakerlisten</p>
+              <p className="text-sm font-medium">{t("auto.e_postvarsler")}</p>
+              <p className="text-xs text-muted-foreground">{t("auto.send_e_post_til_mottakerlisten")}</p>
             </div>
           </div>
           <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
@@ -88,10 +88,10 @@ export function SensorNotificationCard({ settings, onSave, isSaving }: SensorNot
 
         {emailEnabled && (
           <div className="space-y-3">
-            <Label className="text-xs">Mottakere</Label>
+            <Label className="text-xs">{t("auto.mottakere")}</Label>
             <div className="flex flex-wrap gap-2">
               {emailRecipients.length === 0 && (
-                <span className="text-xs text-muted-foreground">Ingen mottakere lagt til</span>
+                <span className="text-xs text-muted-foreground">{t("auto.ingen_mottakere_lagt_til")}</span>
               )}
               {emailRecipients.map((email) => (
                 <Badge key={email} variant="secondary" className="gap-1">
@@ -100,7 +100,7 @@ export function SensorNotificationCard({ settings, onSave, isSaving }: SensorNot
                     type="button"
                     onClick={() => removeEmail(email)}
                     className="ml-1 text-muted-foreground hover:text-destructive"
-                    aria-label="Fjern mottaker"
+                    aria-label={t("auto.fjern_mottaker")}
                   >
                     ×
                   </button>
@@ -116,7 +116,7 @@ export function SensorNotificationCard({ settings, onSave, isSaving }: SensorNot
                 onKeyDown={(e) => e.key === 'Enter' && addEmail()}
               />
               <Button type="button" variant="outline" onClick={addEmail}>
-                Legg til
+                {t("auto.legg_til")}
               </Button>
             </div>
           </div>
@@ -124,8 +124,8 @@ export function SensorNotificationCard({ settings, onSave, isSaving }: SensorNot
 
         <div className="flex items-center justify-between rounded-md border p-3">
           <div>
-            <p className="text-sm font-medium">SMS-varsler</p>
-            <p className="text-xs text-muted-foreground">Kommer snart. Krev integrasjon mot SMS-leverandør.</p>
+            <p className="text-sm font-medium">{t("auto.sms_varsler")}</p>
+            <p className="text-xs text-muted-foreground">{t("auto.kommer_snart_krev_integrasjon_mot_sms_le")}</p>
           </div>
           <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} disabled />
         </div>

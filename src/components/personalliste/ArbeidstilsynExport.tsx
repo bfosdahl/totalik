@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { t } from "@/i18n/t";
 
 /**
  * Fase 2 — Arbeidstilsyn-pakke
@@ -285,9 +286,9 @@ Ved arbeidstid på 8 timer eller mer skal pausene til sammen være minst en halv
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast({ title: "Pakke generert", description: `${timerRows.length} stemplinger, ${manuelleRows.length} manuelle, ${arbeidsplanRows.length} planlagte skift.` });
+      toast({ title: t("auto.pakke_generert"), description: `${timerRows.length} stemplinger, ${manuelleRows.length} manuelle, ${arbeidsplanRows.length} planlagte skift.` });
     } catch (e: any) {
-      toast({ title: "Feil ved generering", description: e.message, variant: "destructive" });
+      toast({ title: t("auto.feil_ved_generering"), description: e.message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -307,11 +308,11 @@ Ved arbeidstid på 8 timer eller mer skal pausene til sammen være minst en halv
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <Label>Fra dato</Label>
+            <Label>{t("auto.fra_dato")}</Label>
             <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           </div>
           <div>
-            <Label>Til dato</Label>
+            <Label>{t("auto.til_dato")}</Label>
             <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
         </div>
@@ -321,8 +322,8 @@ Ved arbeidstid på 8 timer eller mer skal pausene til sammen være minst en halv
             <Info className="h-3.5 w-3.5" /> Ikke inkludert (må hentes andre steder)
           </div>
           <p>• Lønnsslipper → lønnssystem (Tripletex/Visma/Duett)</p>
-          <p>• Kontoutskrift som viser lønnsutbetaling → nettbank</p>
-          <p>• Signerte PDF‑ansettelsesavtaler → HR › Ansettelsesavtaler i systemet</p>
+          <p>{t("auto.kontoutskrift_som_viser_loennsutbetaling")}</p>
+          <p>{t("auto.signerte_pdf_ansettelsesavtaler_hr_anset")}</p>
         </div>
 
         <Button onClick={generate} disabled={busy} className="w-full md:w-auto">

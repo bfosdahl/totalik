@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ExtendedContractDialog } from "@/components/hr/contracts/ExtendedContractDialog";
 import { ContractSignatureDialog } from "@/components/hr/contracts/ContractSignatureDialog";
 import { ContractCard } from "@/components/hr/contracts/ContractCard";
+import { t } from "@/i18n/t";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -105,9 +106,9 @@ export default function HrContracts() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Ansettelsesavtaler</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("auto.ansettelsesavtaler")}</h1>
             <p className="text-muted-foreground mt-1">
-              Administrer arbeidsavtaler og ansettelsesdokumenter
+              {t("auto.administrer_arbeidsavtaler_og_ansettelse")}
             </p>
           </div>
           {isCompanyAdmin && (
@@ -122,19 +123,19 @@ export default function HrContracts() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card className="p-4">
             <div className="text-2xl font-bold">{stats.totalActive}</div>
-            <div className="text-sm text-muted-foreground">Totalt aktive</div>
+            <div className="text-sm text-muted-foreground">{t("auto.totalt_aktive")}</div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold">{stats.temporary}</div>
-            <div className="text-sm text-muted-foreground">Midlertidige</div>
+            <div className="text-sm text-muted-foreground">{t("auto.midlertidige")}</div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold">{stats.onProbation}</div>
-            <div className="text-sm text-muted-foreground">Under prøvetid</div>
+            <div className="text-sm text-muted-foreground">{t("auto.under_proevetid")}</div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold">{stats.expiringSoon}</div>
-            <div className="text-sm text-muted-foreground">Utgår snart</div>
+            <div className="text-sm text-muted-foreground">{t("auto.utgaar_snart")}</div>
           </Card>
         </div>
 
@@ -143,7 +144,7 @@ export default function HrContracts() {
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Søk etter ansatt eller stilling..."
+              placeholder={t("auto.soek_etter_ansatt_eller_stilling")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -180,9 +181,9 @@ export default function HrContracts() {
           <Card className="p-12">
             <div className="flex flex-col items-center justify-center text-center">
               <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Ingen ansettelsesavtaler enda</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_ansettelsesavtaler_enda")}</h3>
               <p className="text-muted-foreground mb-4 max-w-sm">
-                Start med å legge til en ny avtale for å holde oversikt over alle ansettelsesforhold
+                {t("auto.start_med_aa_legge_til_en_ny_avtale_for_")}
               </p>
               {isCompanyAdmin && (
                 <Button onClick={() => setShowCreateDialog(true)}>
@@ -198,7 +199,7 @@ export default function HrContracts() {
         {!isLoading && contracts.length > 0 && filteredContracts.length === 0 && (
           <Card className="p-8">
             <div className="text-center text-muted-foreground">
-              Ingen avtaler matcher søket ditt
+              {t("auto.ingen_avtaler_matcher_soeket_ditt")}
             </div>
           </Card>
         )}
@@ -238,15 +239,15 @@ export default function HrContracts() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett avtale?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_avtale")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne avtalen? Denne handlingen kan ikke angres.
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne_")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

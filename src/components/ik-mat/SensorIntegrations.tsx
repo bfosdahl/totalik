@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plug, Plus, RefreshCw, Trash2, KeyRound, PlayCircle, ScrollText, ShieldCheck } from 'lucide-react';
 import { useSensorIntegrations, type SensorIntegration } from '@/hooks/useSensorIntegrations';
+import { t } from "@/i18n/t";
 
 interface Props {
   endpointId?: string | null;
@@ -73,8 +74,8 @@ export function SensorIntegrations({
 
   const statusBadge = (integration: SensorIntegration) => {
     const s = integration.last_sync_status;
-    if (!s) return <Badge variant="secondary">Ikke testet</Badge>;
-    if (s.includes('error')) return <Badge variant="destructive">Feil</Badge>;
+    if (!s) return <Badge variant="secondary">{t("auto.ikke_testet")}</Badge>;
+    if (s.includes('error')) return <Badge variant="destructive">{t("auto.feil")}</Badge>;
     return <Badge className="bg-emerald-600 hover:bg-emerald-600">OK</Badge>;
   };
 
@@ -87,8 +88,7 @@ export function SensorIntegrations({
               <Plug className="h-5 w-5" /> Leverandørintegrasjoner
             </CardTitle>
             <CardDescription>
-              Koble til sensorleverandøren din. Enten pusher de data til webhooken vår, eller så henter vi
-              målingene automatisk fra API-et deres.
+              {t("auto.koble_til_sensorleverandoeren_din_enten_")}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -104,18 +104,18 @@ export function SensorIntegrations({
               </DialogTrigger>
               <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
-                  <DialogTitle>Ny leverandørintegrasjon</DialogTitle>
-                  <DialogDescription>Velg leverandør og hvordan data skal hentes inn.</DialogDescription>
+                  <DialogTitle>{t("auto.ny_leverandoerintegrasjon")}</DialogTitle>
+                  <DialogDescription>{t("auto.velg_leverandoer_og_hvordan_data_skal_he")}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Leverandør</Label>
+                    <Label>{t("auto.leverandoer")}</Label>
                     <Select value={providerId} onValueChange={(v) => {
                       setProviderId(v);
                       const p = providers.find((x) => x.id === v);
                       setBaseUrl(p?.defaultBaseUrl ?? '');
                     }}>
-                      <SelectTrigger><SelectValue placeholder="Velg leverandør" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("auto.velg_leverandoer")} /></SelectTrigger>
                       <SelectContent>
                         {providers.map((p) => (
                           <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
@@ -124,19 +124,19 @@ export function SensorIntegrations({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Visningsnavn</Label>
-                    <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="F.eks. Kjølerom nord" />
+                    <Label>{t("auto.visningsnavn")}</Label>
+                    <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t("auto.f_eks_kjoelerom_nord")} />
                   </div>
                   {selectedProvider?.mode === 'api' && (
                     <div className="space-y-2">
-                      <Label>API-URL</Label>
+                      <Label>{t("auto.api_url")}</Label>
                       <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="https://..." />
                     </div>
                   )}
                 </div>
                 <DialogFooter>
                   <Button onClick={handleCreate} disabled={!providerId || createIntegration.isPending}>
-                    Opprett
+                    {t("auto.opprett")}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -147,8 +147,7 @@ export function SensorIntegrations({
           {integrations.length === 0 && (
             <Alert>
               <AlertDescription>
-                Ingen integrasjoner ennå. Bruk webhook-URL-en direkte hos leverandøren, eller opprett en
-                API-integrasjon her hvis leverandøren krever at vi henter dataene.
+                {t("auto.ingen_integrasjoner_ennaa_bruk_webhook_u")}
               </AlertDescription>
             </Alert>
           )}
@@ -180,7 +179,7 @@ export function SensorIntegrations({
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label>Visningsnavn</Label>
+                        <Label>{t("auto.visningsnavn")}</Label>
                         <Input
                           defaultValue={integration.display_name ?? ''}
                           onBlur={(e) =>
@@ -192,7 +191,7 @@ export function SensorIntegrations({
                       {integration.mode === 'api' && (
                         <>
                           <div className="space-y-2">
-                            <Label>API-URL</Label>
+                            <Label>{t("auto.api_url")}</Label>
                             <Input
                               defaultValue={integration.base_url ?? ''}
                               onBlur={(e) =>
@@ -219,8 +218,8 @@ export function SensorIntegrations({
                       )}
                       <div className="flex items-center justify-between rounded-md border p-3">
                         <div>
-                          <p className="text-sm font-medium">Aktiv</p>
-                          <p className="text-xs text-muted-foreground">Sett av for å pause innhenting</p>
+                          <p className="text-sm font-medium">{t("auto.aktiv")}</p>
+                          <p className="text-xs text-muted-foreground">{t("auto.sett_av_for_aa_pause_innhenting")}</p>
                         </div>
                         <Switch
                           checked={integration.is_active}
@@ -235,7 +234,7 @@ export function SensorIntegrations({
                           <KeyRound className="h-4 w-4" /> Innlogging hos leverandøren
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Nøkler lagres kryptert på serveren og kan aldri leses ut igjen fra nettleseren.
+                          {t("auto.noekler_lagres_kryptert_paa_serveren_og_")}
                         </p>
                         <div className="grid gap-3 sm:grid-cols-2">
                           {provider.credentialFields.map((field) => (
@@ -266,7 +265,7 @@ export function SensorIntegrations({
                           </Button>
                           {integration.has_credentials && (
                             <Button size="sm" variant="outline" onClick={() => clearCredentials.mutate(integration.id)}>
-                              Slett nøkler
+                              {t("auto.slett_noekler")}
                             </Button>
                           )}
                         </div>
@@ -330,7 +329,7 @@ export function SensorIntegrations({
           <CardContent className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Hemmelig signaturnøkkel</Label>
+                <Label>{t("auto.hemmelig_signaturnoekkel")}</Label>
                 <Input
                   type="password"
                   autoComplete="off"
@@ -340,14 +339,14 @@ export function SensorIntegrations({
                 />
               </div>
               <div className="space-y-2">
-                <Label>Header-navn</Label>
+                <Label>{t("auto.header_navn")}</Label>
                 <Input value={headerDraft} onChange={(e) => setHeaderDraft(e.target.value)} />
               </div>
             </div>
             <div className="flex items-center justify-between rounded-md border p-3">
               <div>
-                <p className="text-sm font-medium">Loggfør mottatte datapakker</p>
-                <p className="text-xs text-muted-foreground">Nyttig ved feilsøking mot leverandøren</p>
+                <p className="text-sm font-medium">{t("auto.loggfoer_mottatte_datapakker")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.nyttig_ved_feilsoeking_mot_leverandoeren")}</p>
               </div>
               <Switch
                 checked={debugLogging}
@@ -374,11 +373,11 @@ export function SensorIntegrations({
           <CardTitle className="flex items-center gap-2">
             <ScrollText className="h-5 w-5" /> Datalogg (feilsøking)
           </CardTitle>
-          <CardDescription>De 50 siste datapakkene inn og ut, med status og feilmeldinger.</CardDescription>
+          <CardDescription>{t("auto.de_50_siste_datapakkene_inn_og_ut_med_st")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {payloadLog.length === 0 && (
-            <p className="text-sm text-muted-foreground">Ingen data registrert ennå.</p>
+            <p className="text-sm text-muted-foreground">{t("auto.ingen_data_registrert_ennaa")}</p>
           )}
           <Accordion type="multiple">
             {payloadLog.map((entry) => (

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { IkMatSupplier } from "@/hooks/useIkMatSuppliers";
+import { t } from "@/i18n/t";
 
 interface AddSupplierDialogProps {
   open: boolean;
@@ -73,32 +74,32 @@ export function AddSupplierDialog({ open, onOpenChange, onSave, editingSupplier 
         <DialogHeader>
           <DialogTitle>{editingSupplier ? "Rediger leverandør" : "Legg til leverandør"}</DialogTitle>
           <DialogDescription>
-            Registrer en leverandør eller serviceavtale for IK/MAT
+            {t("auto.registrer_en_leverandoer_eller_serviceav")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="supplier_name">
-                Leverandør <span className="text-destructive">*</span>
+                {t("auto.leverandoer")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="supplier_name"
                 value={formData.supplier_name}
                 onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
-                placeholder="Navn på leverandør"
+                placeholder={t("auto.navn_paa_leverandoer")}
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="service_type">
-                Type tjeneste <span className="text-destructive">*</span>
+                {t("auto.type_tjeneste")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="service_type"
                 value={formData.service_type}
                 onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
-                placeholder="f.eks. Skadedyrkontroll, Renhold"
+                placeholder={t("auto.f_eks_skadedyrkontroll_renhold")}
                 required
               />
             </div>
@@ -106,39 +107,39 @@ export function AddSupplierDialog({ open, onOpenChange, onSave, editingSupplier 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="contact_person">Kontaktperson</Label>
+              <Label htmlFor="contact_person">{t("auto.kontaktperson_2")}</Label>
               <Input
                 id="contact_person"
                 value={formData.contact_person}
                 onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                placeholder="Navn på kontaktperson"
+                placeholder={t("auto.navn_paa_kontaktperson")}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefon</Label>
+              <Label htmlFor="phone">{t("auto.telefon")}</Label>
               <Input
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Telefonnummer"
+                placeholder={t("auto.telefonnummer")}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">E-post</Label>
+            <Label htmlFor="email">{t("auto.e_post_2")}</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="E-postadresse"
+              placeholder={t("auto.e_postadresse")}
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="contract_start_date">Avtale start</Label>
+              <Label htmlFor="contract_start_date">{t("auto.avtale_start")}</Label>
               <Input
                 id="contract_start_date"
                 type="date"
@@ -147,7 +148,7 @@ export function AddSupplierDialog({ open, onOpenChange, onSave, editingSupplier 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contract_end_date">Avtale slutt</Label>
+              <Label htmlFor="contract_end_date">{t("auto.avtale_slutt")}</Label>
               <Input
                 id="contract_end_date"
                 type="date"
@@ -158,19 +159,19 @@ export function AddSupplierDialog({ open, onOpenChange, onSave, editingSupplier 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notater</Label>
+            <Label htmlFor="notes">{t("auto.notater")}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Tilleggsinfo, frekvens, osv."
+              placeholder={t("auto.tilleggsinfo_frekvens_osv")}
               rows={3}
             />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit">
               {editingSupplier ? "Oppdater" : "Legg til"}

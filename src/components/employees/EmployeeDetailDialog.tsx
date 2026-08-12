@@ -48,6 +48,7 @@ import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments, useUserDepartments } from "@/hooks/useDepartments";
 import { useQueryClient } from "@tanstack/react-query";
+import { t } from "@/i18n/t";
 
 interface EmployeeDetailDialogProps {
   employee: Employee;
@@ -110,7 +111,7 @@ export function EmployeeDetailDialog({
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     } catch (err) {
       console.error("Change email error:", err);
-      toast.error("En feil oppstod ved endring av e-post");
+      toast.error(t("auto.en_feil_oppstod_ved_endring_av_e_post"));
     } finally {
       setIsChangingEmail(false);
     }
@@ -119,7 +120,7 @@ export function EmployeeDetailDialog({
 
   const handleSendWelcomeEmail = async () => {
     if (!employee.email) {
-      toast.error("Ansatt mangler e-postadresse");
+      toast.error(t("auto.ansatt_mangler_e_postadresse"));
       return;
     }
     setIsSendingWelcome(true);
@@ -139,7 +140,7 @@ export function EmployeeDetailDialog({
       toast.success(`Velkomstmail sendt til ${employee.email}. Passord er satt til Abc_1234.`);
     } catch (err) {
       console.error("Send welcome email error:", err);
-      toast.error("En feil oppstod ved sending av velkomstmail");
+      toast.error(t("auto.en_feil_oppstod_ved_sending_av_velkomstm"));
     } finally {
       setIsSendingWelcome(false);
     }
@@ -147,7 +148,7 @@ export function EmployeeDetailDialog({
 
   const handleResetPassword = async () => {
     if (!newPassword || newPassword.length < 6) {
-      toast.error("Passordet må være minst 6 tegn");
+      toast.error(t("auto.passordet_maa_vaere_minst_6_tegn"));
       return;
     }
 
@@ -174,7 +175,7 @@ export function EmployeeDetailDialog({
       setNewPassword("");
     } catch (err) {
       console.error("Password reset error:", err);
-      toast.error("En feil oppstod ved endring av passord");
+      toast.error(t("auto.en_feil_oppstod_ved_endring_av_passord"));
     } finally {
       setIsResettingPassword(false);
     }
@@ -272,11 +273,11 @@ export function EmployeeDetailDialog({
   };
 
   const getCourseStatus = (expiryDate: string | null) => {
-    if (!expiryDate) return { label: "Ingen utløp", variant: "secondary" as const };
+    if (!expiryDate) return { label: t("auto.ingen_utloep"), variant: "secondary" as const };
     const daysUntil = differenceInDays(new Date(expiryDate), new Date());
-    if (daysUntil < 0) return { label: "Utgått", variant: "destructive" as const };
-    if (daysUntil <= 30) return { label: "Utløper snart", variant: "outline" as const };
-    return { label: "Gyldig", variant: "secondary" as const };
+    if (daysUntil < 0) return { label: t("auto.utgaatt"), variant: "destructive" as const };
+    if (daysUntil <= 30) return { label: t("auto.utloeper_snart"), variant: "outline" as const };
+    return { label: t("auto.gyldig"), variant: "secondary" as const };
   };
 
   return (
@@ -304,33 +305,33 @@ export function EmployeeDetailDialog({
             <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto gap-1">
               <TabsTrigger value="info" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Informasjon</span>
-                <span className="sm:hidden">Info</span>
+                <span className="hidden sm:inline">{t("auto.informasjon")}</span>
+                <span className="sm:hidden">{t("auto.info")}</span>
               </TabsTrigger>
               <TabsTrigger value="departments" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <Building2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Avdelinger</span>
-                <span className="sm:hidden">Avd</span>
+                <span className="hidden sm:inline">{t("auto.avdelinger")}</span>
+                <span className="sm:hidden">{t("auto.avd")}</span>
               </TabsTrigger>
               <TabsTrigger value="hmscard" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">HMS-kort</span>
+                <span className="hidden sm:inline">{t("auto.hms_kort")}</span>
                 <span className="sm:hidden">HMS</span>
               </TabsTrigger>
               <TabsTrigger value="documents" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Dokumenter</span>
-                <span className="sm:hidden">Dok</span>
+                <span className="hidden sm:inline">{t("auto.dokumenter")}</span>
+                <span className="sm:hidden">{t("auto.dok")}</span>
               </TabsTrigger>
               <TabsTrigger value="courses" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Kurs</span>
-                <span className="sm:hidden">Kurs</span>
+                <span className="hidden sm:inline">{t("auto.kurs")}</span>
+                <span className="sm:hidden">{t("auto.kurs")}</span>
               </TabsTrigger>
               <TabsTrigger value="signature" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <Pen className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Signatur</span>
-                <span className="sm:hidden">Sign</span>
+                <span className="hidden sm:inline">{t("auto.signatur")}</span>
+                <span className="sm:hidden">{t("auto.sign")}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -339,8 +340,8 @@ export function EmployeeDetailDialog({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle className="text-lg">Kontaktinformasjon</CardTitle>
-                    <CardDescription>Personlig informasjon om ansatt</CardDescription>
+                    <CardTitle className="text-lg">{t("auto.kontaktinformasjon")}</CardTitle>
+                    <CardDescription>{t("auto.personlig_informasjon_om_ansatt")}</CardDescription>
                   </div>
                   {canManage && !isEditing && (
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
@@ -354,14 +355,14 @@ export function EmployeeDetailDialog({
                     <div className="flex items-center gap-3">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">E-post</p>
+                        <p className="text-sm text-muted-foreground">{t("auto.e_post_2")}</p>
                         <p>{employee.email || "Ikke angitt"}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <Phone className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground">Telefon</p>
+                        <p className="text-sm text-muted-foreground">{t("auto.telefon")}</p>
                         {isEditing ? (
                           <Input
                             value={editData.phone}
@@ -383,33 +384,33 @@ export function EmployeeDetailDialog({
                     <Users className="w-5 h-5" />
                     Pårørende
                   </CardTitle>
-                  <CardDescription>Kontaktperson ved nødstilfeller</CardDescription>
+                  <CardDescription>{t("auto.kontaktperson_ved_noedstilfeller")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {isEditing ? (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <Label>Navn</Label>
+                        <Label>{t("auto.navn_2")}</Label>
                         <Input
                           value={editData.next_of_kin_name}
                           onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_name: e.target.value }))}
-                          placeholder="Navn på pårørende"
+                          placeholder={t("auto.navn_paa_paaroerende")}
                         />
                       </div>
                       <div>
-                        <Label>Telefon</Label>
+                        <Label>{t("auto.telefon")}</Label>
                         <Input
                           value={editData.next_of_kin_phone}
                           onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_phone: e.target.value }))}
-                          placeholder="Telefonnummer"
+                          placeholder={t("auto.telefonnummer")}
                         />
                       </div>
                       <div>
-                        <Label>Relasjon</Label>
+                        <Label>{t("auto.relasjon")}</Label>
                         <Input
                           value={editData.next_of_kin_relation}
                           onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_relation: e.target.value }))}
-                          placeholder="f.eks. Ektefelle, Forelder"
+                          placeholder={t("auto.f_eks_ektefelle_forelder")}
                         />
                       </div>
                     </div>
@@ -418,20 +419,20 @@ export function EmployeeDetailDialog({
                       {nok?.next_of_kin_name ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
-                            <p className="text-sm text-muted-foreground">Navn</p>
+                            <p className="text-sm text-muted-foreground">{t("auto.navn_2")}</p>
                             <p>{nok.next_of_kin_name}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Telefon</p>
+                            <p className="text-sm text-muted-foreground">{t("auto.telefon")}</p>
                             <p>{nok.next_of_kin_phone || "Ikke angitt"}</p>
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Relasjon</p>
+                            <p className="text-sm text-muted-foreground">{t("auto.relasjon")}</p>
                             <p>{nok.next_of_kin_relation || "Ikke angitt"}</p>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-muted-foreground">Ingen pårørende registrert</p>
+                        <p className="text-muted-foreground">{t("auto.ingen_paaroerende_registrert")}</p>
                       )}
                     </>
                   )}
@@ -458,18 +459,18 @@ export function EmployeeDetailDialog({
                       <Key className="w-5 h-5" />
                       Endre passord
                     </CardTitle>
-                    <CardDescription>Sett nytt passord for denne ansatte</CardDescription>
+                    <CardDescription>{t("auto.sett_nytt_passord_for_denne_ansatte")}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="newPassword">Nytt passord</Label>
+                        <Label htmlFor="newPassword">{t("auto.nytt_passord")}</Label>
                         <Input
                           id="newPassword"
                           type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Minst 6 tegn"
+                          placeholder={t("auto.minst_6_tegn")}
                         />
                       </div>
                       <div className="flex items-end">
@@ -493,14 +494,14 @@ export function EmployeeDetailDialog({
                         onCheckedChange={(checked) => setSendPasswordEmail(checked as boolean)}
                       />
                       <Label htmlFor="sendEmail" className="text-sm font-normal cursor-pointer">
-                        Send nytt passord på e-post til ansatt
+                        {t("auto.send_nytt_passord_paa_e_post_til_ansatt")}
                       </Label>
                     </div>
 
                     <div className="pt-4 border-t space-y-2">
                       <p className="text-sm font-medium">Endre e-post (brukernavn)</p>
                       <p className="text-xs text-muted-foreground">
-                        Brukeren logger inn med den nye adressen umiddelbart. Passordet er uendret.
+                        {t("auto.brukeren_logger_inn_med_den_nye_adressen")}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2">
                         <Input
@@ -531,9 +532,9 @@ export function EmployeeDetailDialog({
                     <div className="pt-4 border-t">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
-                          <p className="text-sm font-medium">Send velkomstmail på nytt</p>
+                          <p className="text-sm font-medium">{t("auto.send_velkomstmail_paa_nytt")}</p>
                           <p className="text-xs text-muted-foreground">
-                            Tilbakestiller passord til <code className="px-1 py-0.5 rounded bg-muted">Abc_1234</code> og sender e-post med innloggingsinfo.
+                            {t("auto.tilbakestiller_passord_til")} <code className="px-1 py-0.5 rounded bg-muted">{t("auto.abc_1234")}</code> {t("auto.og_sender_e_post_med_innloggingsinfo")}
                           </p>
                         </div>
                         <Button
@@ -565,7 +566,7 @@ export function EmployeeDetailDialog({
                     Avdelingstilhørighet
                   </CardTitle>
                   <CardDescription>
-                    Velg hvilke enheter denne ansatte skal tilhøre
+                    {t("auto.velg_hvilke_enheter_denne_ansatte_skal_t")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -588,7 +589,7 @@ export function EmployeeDetailDialog({
                           </div>
                           <div>
                             <p className="font-medium">{company?.name || 'Hovedenheten'}</p>
-                            <p className="text-sm text-muted-foreground">Hovedenhet</p>
+                            <p className="text-sm text-muted-foreground">{t("auto.hovedenhet")}</p>
                           </div>
                         </div>
                         {canManage && (
@@ -612,7 +613,7 @@ export function EmployeeDetailDialog({
                                 toast.success(isAssignedToMain ? "Fjernet fra hovedenheten" : "Lagt til i hovedenheten");
                               } catch (err) {
                                 console.error("Error updating main company assignment:", err);
-                                toast.error("Kunne ikke oppdatere tilhørighet");
+                                toast.error(t("auto.kunne_ikke_oppdatere_tilhoerighet"));
                               } finally {
                                 setIsAssigningMain(false);
                               }
@@ -711,7 +712,7 @@ export function EmployeeDetailDialog({
                       
                       {departments.filter(d => d.is_active).length === 0 && (
                         <p className="text-sm text-muted-foreground py-2">
-                          Ingen avdelinger er opprettet ennå. Gå til Innstillinger → Avdelinger for å opprette avdelinger.
+                          {t("auto.ingen_avdelinger_er_opprettet_ennaa_gaa_")}
                         </p>
                       )}
                     </div>
@@ -729,9 +730,9 @@ export function EmployeeDetailDialog({
             <TabsContent value="documents" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="font-semibold">Dokumenter</h3>
+                  <h3 className="font-semibold">{t("auto.dokumenter")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Last opp og administrer dokumenter for denne ansatte
+                    {t("auto.last_opp_og_administrer_dokumenter_for_d")}
                   </p>
                 </div>
                 {canManage && (
@@ -743,12 +744,12 @@ export function EmployeeDetailDialog({
               </div>
 
               {docsLoading ? (
-                <p className="text-muted-foreground">Laster dokumenter...</p>
+                <p className="text-muted-foreground">{t("auto.laster_dokumenter")}</p>
               ) : documents?.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
                     <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Ingen dokumenter lastet opp</p>
+                    <p>{t("auto.ingen_dokumenter_lastet_opp")}</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -794,9 +795,9 @@ export function EmployeeDetailDialog({
             <TabsContent value="courses" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="font-semibold">Kurs og sertifiseringer</h3>
+                  <h3 className="font-semibold">{t("auto.kurs_og_sertifiseringer")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Oversikt over kurs med automatisk varsling ved utløp
+                    {t("auto.oversikt_over_kurs_med_automatisk_varsli")}
                   </p>
                 </div>
                 {canManage && (
@@ -808,12 +809,12 @@ export function EmployeeDetailDialog({
               </div>
 
               {coursesLoading ? (
-                <p className="text-muted-foreground">Laster kurs...</p>
+                <p className="text-muted-foreground">{t("auto.laster_kurs")}</p>
               ) : courses?.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
                     <GraduationCap className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Ingen kurs registrert</p>
+                    <p>{t("auto.ingen_kurs_registrert")}</p>
                   </CardContent>
                 </Card>
               ) : (

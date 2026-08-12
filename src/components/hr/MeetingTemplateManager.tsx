@@ -12,6 +12,7 @@ import { Plus, Trash2, FileText, Pencil, Heading } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 interface Template {
   id: string;
@@ -147,7 +148,7 @@ export function MeetingTemplateManager() {
       fetchTemplates();
     } catch (error) {
       console.error("Error creating template:", error);
-      toast({ title: "Feil", description: "Kunne ikke opprette mal", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_opprette_mal"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -157,12 +158,12 @@ export function MeetingTemplateManager() {
     try {
       const { error } = await supabase.from("hr_meeting_templates").delete().eq("id", id);
       if (error) throw error;
-      toast({ title: "Mal slettet" });
+      toast({ title: t("auto.mal_slettet") });
       if (selectedTemplate?.id === id) setSelectedTemplate(null);
       fetchTemplates();
     } catch (error) {
       console.error("Error deleting template:", error);
-      toast({ title: "Feil", description: "Kunne ikke slette mal", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_slette_mal"), variant: "destructive" });
     }
   };
 
@@ -243,7 +244,7 @@ export function MeetingTemplateManager() {
             <Badge variant="outline" className="text-xs">
               {questionTypeLabels[q.question_type] || q.question_type}
             </Badge>
-            {q.is_required && <Badge variant="secondary" className="text-xs">Påkrevd</Badge>}
+            {q.is_required && <Badge variant="secondary" className="text-xs">{t("auto.paakrevd")}</Badge>}
             {opts.length > 0 && (
               <span className="text-xs text-muted-foreground">
                 Alternativer: {opts.join(", ")}
@@ -262,9 +263,9 @@ export function MeetingTemplateManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Spørsmålsmaler</h2>
+          <h2 className="text-lg font-semibold">{t("auto.spoersmaalsmaler")}</h2>
           <p className="text-sm text-muted-foreground">
-            Opprett maler med spørsmål du vil bruke i medarbeidersamtaler
+            {t("auto.opprett_maler_med_spoersmaal_du_vil_bruk")}
           </p>
         </div>
         <Dialog open={newDialogOpen} onOpenChange={setNewDialogOpen}>
@@ -276,33 +277,33 @@ export function MeetingTemplateManager() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Opprett spørsmålsmal</DialogTitle>
+              <DialogTitle>{t("auto.opprett_spoersmaalsmal")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Navn på mal *</Label>
+                <Label>{t("auto.navn_paa_mal")}</Label>
                 <Input
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="F.eks. Årlig medarbeidersamtale"
+                  placeholder={t("auto.f_eks_aarlig_medarbeidersamtale")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Type samtale</Label>
+                <Label>{t("auto.type_samtale")}</Label>
                 <Select value={newType} onValueChange={setNewType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="medarbeidersamtale">Medarbeidersamtale</SelectItem>
-                    <SelectItem value="utviklingssamtale">Utviklingssamtale</SelectItem>
-                    <SelectItem value="oppfølging">Oppfølgingssamtale</SelectItem>
-                    <SelectItem value="prøvetid">Prøvetidssamtale</SelectItem>
+                    <SelectItem value="medarbeidersamtale">{t("auto.medarbeidersamtale")}</SelectItem>
+                    <SelectItem value="utviklingssamtale">{t("auto.utviklingssamtale")}</SelectItem>
+                    <SelectItem value="oppfølging">{t("auto.oppfoelgingssamtale")}</SelectItem>
+                    <SelectItem value="prøvetid">{t("auto.proevetidssamtale")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setNewDialogOpen(false)}>Avbryt</Button>
+                <Button variant="outline" onClick={() => setNewDialogOpen(false)}>{t("auto.avbryt")}</Button>
                 <Button onClick={createTemplate} disabled={saving || !newName.trim()}>
                   {saving ? "Oppretter..." : "Opprett"}
                 </Button>
@@ -316,11 +317,11 @@ export function MeetingTemplateManager() {
         {/* Template list */}
         <div className="space-y-2">
           {loading ? (
-            <Card className="p-8 text-center text-muted-foreground">Laster...</Card>
+            <Card className="p-8 text-center text-muted-foreground">{t("auto.laster")}</Card>
           ) : templates.length === 0 ? (
             <Card className="p-8 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Ingen maler ennå. Opprett din første mal.</p>
+              <p className="text-sm text-muted-foreground">{t("auto.ingen_maler_ennaa_opprett_din_foerste_ma")}</p>
             </Card>
           ) : (
             templates.map((t) => (
@@ -360,7 +361,7 @@ export function MeetingTemplateManager() {
           {!selectedTemplate ? (
             <Card className="p-12 text-center">
               <Pencil className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Velg en mal for å redigere spørsmål</p>
+              <p className="text-muted-foreground">{t("auto.velg_en_mal_for_aa_redigere_spoersmaal")}</p>
             </Card>
           ) : (
             <Card className="p-5 space-y-5">
@@ -374,9 +375,9 @@ export function MeetingTemplateManager() {
               {/* Question list */}
               <div className="space-y-2">
                 {questionsLoading ? (
-                  <p className="text-sm text-muted-foreground">Laster spørsmål...</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.laster_spoersmaal")}</p>
                 ) : questions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic">Ingen spørsmål ennå. Legg til nedenfor.</p>
+                  <p className="text-sm text-muted-foreground italic">{t("auto.ingen_spoersmaal_ennaa_legg_til_nedenfor")}</p>
                 ) : (
                   questions.map((q, i) => renderQuestionItem(q, i))
                 )}
@@ -384,7 +385,7 @@ export function MeetingTemplateManager() {
 
               {/* Add question form */}
               <div className="border-t pt-4 space-y-3">
-                <Label className="text-sm font-medium">Legg til spørsmål</Label>
+                <Label className="text-sm font-medium">{t("auto.legg_til_spoersmaal")}</Label>
                 <Textarea
                   value={newQuestionText}
                   onChange={(e) => setNewQuestionText(e.target.value)}
@@ -413,11 +414,11 @@ export function MeetingTemplateManager() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="section_header">📋 Seksjonstittel</SelectItem>
-                      <SelectItem value="text">Fritekst</SelectItem>
+                      <SelectItem value="section_header">{t("auto.seksjonstittel")}</SelectItem>
+                      <SelectItem value="text">{t("auto.fritekst")}</SelectItem>
                       <SelectItem value="rating">Vurdering (1-5)</SelectItem>
-                      <SelectItem value="yes_no">Ja/Nei</SelectItem>
-                      <SelectItem value="multiple_choice">Flervalg</SelectItem>
+                      <SelectItem value="yes_no">{t("auto.ja_nei")}</SelectItem>
+                      <SelectItem value="multiple_choice">{t("auto.flervalg")}</SelectItem>
                     </SelectContent>
                   </Select>
                   {newQuestionType !== "section_header" && (
@@ -427,7 +428,7 @@ export function MeetingTemplateManager() {
                         onCheckedChange={setNewQuestionRequired}
                         id="required-switch"
                       />
-                      <Label htmlFor="required-switch" className="text-sm">Påkrevd</Label>
+                      <Label htmlFor="required-switch" className="text-sm">{t("auto.paakrevd")}</Label>
                     </div>
                   )}
                   <Button

@@ -14,6 +14,7 @@ import { Trash2, Plus, Loader2, CalendarPlus, Calendar, ChevronLeft, ChevronRigh
 import { toast } from "sonner";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface StandardScheduleDialogProps {
   open: boolean;
@@ -92,11 +93,11 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
 
   const handleAddSchedules = async () => {
     if (!selectedEmployee) {
-      toast.error("Velg en ansatt først");
+      toast.error(t("auto.velg_en_ansatt_foerst"));
       return;
     }
     if (selectedDays.length === 0) {
-      toast.error("Velg minst én dag");
+      toast.error(t("auto.velg_minst_n_dag"));
       return;
     }
 
@@ -138,11 +139,11 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
 
   const handleBulkAddMonth = async () => {
     if (!selectedEmployee) {
-      toast.error("Velg en ansatt først");
+      toast.error(t("auto.velg_en_ansatt_foerst"));
       return;
     }
     if (quickPlan.selectedDays.length === 0) {
-      toast.error("Velg minst én ukedag");
+      toast.error(t("auto.velg_minst_n_ukedag"));
       return;
     }
 
@@ -214,19 +215,19 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Faste arbeidstider & Planlegger</DialogTitle>
+          <DialogTitle>{t("auto.faste_arbeidstider_planlegger")}</DialogTitle>
           <DialogDescription>
-            Sett opp faste arbeidstider eller planlegg vakter for en hel måned
+            {t("auto.sett_opp_faste_arbeidstider_eller_planle")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Employee selector */}
           <div className="space-y-2">
-            <Label>Velg ansatt</Label>
+            <Label>{t("auto.velg_ansatt")}</Label>
             <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg ansatt" />
+                <SelectValue placeholder={t("auto.velg_ansatt")} />
               </SelectTrigger>
               <SelectContent>
                 {(users || []).map((user) => (
@@ -240,7 +241,7 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
 
           {/* Month selector */}
           <div className="space-y-2">
-            <Label>Velg måned</Label>
+            <Label>{t("auto.velg_maaned")}</Label>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setTargetMonth(prev => subMonths(prev, 1))}>
                 <ChevronLeft className="w-4 h-4" />
@@ -266,15 +267,15 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                 {/* Day selection for quick plan */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs">Hvilke ukedager?</Label>
+                    <Label className="text-xs">{t("auto.hvilke_ukedager")}</Label>
                     <div className="flex gap-1">
                       <Button type="button" variant="ghost" size="sm" className="h-6 text-xs px-2"
                         onClick={() => setQuickPlan(p => ({ ...p, selectedDays: [1,2,3,4,5] }))}>
-                        Man-Fre
+                        {t("auto.man_fre")}
                       </Button>
                       <Button type="button" variant="ghost" size="sm" className="h-6 text-xs px-2"
                         onClick={() => setQuickPlan(p => ({ ...p, selectedDays: [1,2,3,4,5,6,0] }))}>
-                        Alle
+                        {t("auto.alle")}
                       </Button>
                     </div>
                   </div>
@@ -295,23 +296,23 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                 {/* Time and location */}
                 <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Fra</Label>
+                    <Label className="text-xs">{t("auto.fra")}</Label>
                     <Input type="time" value={quickPlan.start_time}
                       onChange={(e) => setQuickPlan(p => ({ ...p, start_time: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Til</Label>
+                    <Label className="text-xs">{t("auto.til")}</Label>
                     <Input type="time" value={quickPlan.end_time}
                       onChange={(e) => setQuickPlan(p => ({ ...p, end_time: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Sted</Label>
+                    <Label className="text-xs">{t("auto.sted")}</Label>
                     <Select
                       value={quickPlan.location || "__none__"}
                       onValueChange={(v) => setQuickPlan(p => ({ ...p, location: v === "__none__" ? "" : v }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Valgfritt" />
+                        <SelectValue placeholder={t("auto.valgfritt")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none__">-</SelectItem>
@@ -347,7 +348,7 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                   </div>
                 ) : employeeSchedules.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-2">
-                    Ingen faste arbeidstider registrert
+                    {t("auto.ingen_faste_arbeidstider_registrert")}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -381,16 +382,16 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
 
               {/* Add standard schedule */}
               <div className="space-y-3 p-3 border rounded-lg bg-muted/20">
-                <Label className="text-sm font-medium">Legg til faste arbeidstider</Label>
+                <Label className="text-sm font-medium">{t("auto.legg_til_faste_arbeidstider")}</Label>
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs">Velg dager</Label>
+                    <Label className="text-xs">{t("auto.velg_dager")}</Label>
                     <div className="flex gap-1">
                       <Button type="button" variant="ghost" size="sm" className="h-6 text-xs px-2"
-                        onClick={() => setSelectedDays([1,2,3,4,5])}>Man-Fre</Button>
+                        onClick={() => setSelectedDays([1,2,3,4,5])}>{t("auto.man_fre")}</Button>
                       <Button type="button" variant="ghost" size="sm" className="h-6 text-xs px-2"
-                        onClick={() => setSelectedDays([1,2,3,4,5,6,0])}>Alle</Button>
+                        onClick={() => setSelectedDays([1,2,3,4,5,6,0])}>{t("auto.alle")}</Button>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -411,21 +412,21 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
 
                 <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs">Fra</Label>
+                    <Label className="text-xs">{t("auto.fra")}</Label>
                     <Input type="time" value={newSchedule.start_time}
                       onChange={(e) => setNewSchedule({ ...newSchedule, start_time: e.target.value })} />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Til</Label>
+                    <Label className="text-xs">{t("auto.til")}</Label>
                     <Input type="time" value={newSchedule.end_time}
                       onChange={(e) => setNewSchedule({ ...newSchedule, end_time: e.target.value })} />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Sted</Label>
+                    <Label className="text-xs">{t("auto.sted")}</Label>
                     <Select
                       value={newSchedule.location || "__none__"}
                       onValueChange={(v) => setNewSchedule({ ...newSchedule, location: v === "__none__" ? "" : v })}>
-                      <SelectTrigger><SelectValue placeholder="Valgfritt" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("auto.valgfritt")} /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none__">-</SelectItem>
                         {Object.entries(LOCATIONS).map(([key, loc]) => (
@@ -461,7 +462,7 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
               Generer {targetMonthName}
             </Button>
           </div>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Lukk</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("auto.lukk")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

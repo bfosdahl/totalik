@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { IkMatRisk, IkMatActionItem, getTrafficLight, getActionPlanStatus } from "@/hooks/useIkMatContent";
+import { t } from "@/i18n/t";
 
 interface RiskSummaryCardProps {
   risks: IkMatRisk[];
@@ -24,36 +25,36 @@ export const RiskSummaryCard = ({ risks, actions }: RiskSummaryCardProps) => {
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-green-500" />
               <span className="text-sm font-medium">{counts.green}</span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">Lav</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">{t("auto.lav")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-yellow-500" />
               <span className="text-sm font-medium">{counts.yellow}</span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">Middels</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">{t("auto.middels")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-orange-500" />
               <span className="text-sm font-medium">{counts.red}</span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">Høy</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">{t("auto.hoey")}</span>
             </div>
           </div>
           
           <div className="flex items-center gap-4 text-sm">
             {counts.haccp > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">KKP:</span>
+                <span className="text-muted-foreground">{t("auto.kkp")}</span>
                 <span className="font-medium">{counts.haccp}</span>
               </div>
             )}
             {counts.closed > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Lukket:</span>
+                <span className="text-muted-foreground">{t("auto.lukket_2")}</span>
                 <span className="font-medium text-green-600">{counts.closed}</span>
               </div>
             )}
             {counts.overdue > 0 && (
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Forfalt:</span>
+                <span className="text-muted-foreground">{t("auto.forfalt_2")}</span>
                 <span className="font-medium text-red-600">{counts.overdue}</span>
               </div>
             )}

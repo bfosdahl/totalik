@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface Question {
   id: string;
@@ -109,7 +110,7 @@ export function ConductMeetingDialog({
       if (q.is_required) {
         const a = answers[q.id];
         if (!a || (typeof a === "string" && !a.trim()) || (q.question_type === "rating" && a === 0) || (Array.isArray(a) && a.length === 0)) {
-          toast({ title: "Manglende svar", description: `Spørsmål "${q.question_text}" er påkrevd`, variant: "destructive" });
+          toast({ title: t("auto.manglende_svar"), description: `Spørsmål "${q.question_text}" er påkrevd`, variant: "destructive" });
           return;
         }
       }
@@ -152,7 +153,7 @@ export function ConductMeetingDialog({
       onCompleted();
     } catch (error) {
       console.error("Error saving meeting:", error);
-      toast({ title: "Feil", description: "Kunne ikke lagre samtalen", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_lagre_samtalen"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -269,11 +270,11 @@ export function ConductMeetingDialog({
             >
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="ja" id={`${q.id}-ja`} />
-                <Label htmlFor={`${q.id}-ja`}>Ja</Label>
+                <Label htmlFor={`${q.id}-ja`}>{t("auto.ja")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="nei" id={`${q.id}-nei`} />
-                <Label htmlFor={`${q.id}-nei`}>Nei</Label>
+                <Label htmlFor={`${q.id}-nei`}>{t("auto.nei")}</Label>
               </div>
             </RadioGroup>
           </div>
@@ -288,7 +289,7 @@ export function ConductMeetingDialog({
             <Textarea
               value={answers[q.id] || ""}
               onChange={(e) => setAnswer(q.id, e.target.value)}
-              placeholder="Skriv svar..."
+              placeholder={t("auto.skriv_svar")}
               rows={3}
             />
           </div>
@@ -309,10 +310,10 @@ export function ConductMeetingDialog({
 
         <div className="space-y-6 py-2">
           {loading ? (
-            <p className="text-muted-foreground text-sm">Laster spørsmål...</p>
+            <p className="text-muted-foreground text-sm">{t("auto.laster_spoersmaal")}</p>
           ) : questions.length === 0 ? (
             <div className="text-sm text-muted-foreground italic border rounded-lg p-4 bg-muted/30">
-              Ingen spørsmålsmal er knyttet til denne samtalen. Du kan likevel registrere notater og markere som gjennomført.
+              {t("auto.ingen_spoersmaalsmal_er_knyttet_til_denn")}
             </div>
           ) : (
             <div className="space-y-5">
@@ -321,18 +322,18 @@ export function ConductMeetingDialog({
           )}
 
           <div className="space-y-2 border-t pt-4">
-            <Label>Oppsummering / notater</Label>
+            <Label>{t("auto.oppsummering_notater")}</Label>
             <Textarea
               value={meetingNotes}
               onChange={(e) => setMeetingNotes(e.target.value)}
-              placeholder="Legg til oppsummering eller notater fra samtalen..."
+              placeholder={t("auto.legg_til_oppsummering_eller_notater_fra_")}
               rows={4}
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleSubmit} disabled={saving} className="gap-2">
               <CheckCircle2 className="w-4 h-4" />
