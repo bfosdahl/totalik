@@ -2815,54 +2815,54 @@ const Handbook = () => {
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.1_maal_for_internkontroll")}</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">${t("auto.1_maal_for_internkontroll")}</h2>
           ${goals.length > 0 
             ? `<ul>${goals.map(g => `<li>${g.goal_text}</li>`).join("")}</ul>` 
-            : "<p>{t("auto.ingen_maal_definert")}</p>"
+            : `<p>${t("auto.ingen_maal_definert")}</p>`
           }
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.2_organisering_og_ansvar")}</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">${t("auto.2_organisering_og_ansvar")}</h2>
           <div>${(organization?.roles?.length ?? 0) > 0 
             ? `<p style="white-space: pre-wrap;">${organization?.roles?.map(r => `${r.title}${r.personName ? ` (${r.personName})` : ''}`).join(', ')}</p>`
             : (organization?.description 
                 ? (looksLikeHtml(organization.description) 
                     ? DOMPurify.sanitize(organization.description) 
                     : `<p style="white-space: pre-wrap;">${organization.description.substring(0, 500)}</p>`)
-                : "<p>{t("auto.ikke_definert")}</p>")}</div>
+                : `<p>${t("auto.ikke_definert")}</p>`)}</div>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.3_risikovurderinger")}</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">${t("auto.3_risikovurderinger")}</h2>
           <p>${(riskAssessment?.risks?.length ?? 0)} risikoer identifisert</p>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.4_handlingsplan")}</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">${t("auto.4_handlingsplan")}</h2>
           <p>${(actionPlan?.actions?.length ?? 0)} tiltak registrert</p>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.5_rutiner_og_prosedyrer")}</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">${t("auto.5_rutiner_og_prosedyrer")}</h2>
           ${(routines?.routines?.length ?? 0) > 0 
             ? `<ul>${routines?.routines.slice(0, 10).map(r => `<li>${r.routine_number}: ${r.routine_name}</li>`).join("")}</ul>` 
-            : "<p>{t("auto.ingen_rutiner_registrert")}</p>"
+            : `<p>${t("auto.ingen_rutiner_registrert")}</p>`
           }
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.6_avviksbehandling")}</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">${t("auto.6_avviksbehandling")}</h2>
           <p>${deviations.length} avvik totalt, ${openDeviationsCount} åpne</p>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.7_revisjoner_og_evaluering")}</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">${t("auto.7_revisjoner_og_evaluering")}</h2>
           <p>${completedAuditsCount} revisjoner gjennomført</p>
         </div>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
-          <p>{t("auto.denne_oppsummeringen_ble_sendt_fra_hms_s")}</p>
+          <p>${t("auto.denne_oppsummeringen_ble_sendt_fra_hms_s")}</p>
         </div>
       </body>
       </html>
