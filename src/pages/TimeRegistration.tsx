@@ -293,7 +293,7 @@ export default function TimeRegistration() {
               />
             </CardContent>
           </Card>
-        {t("auto.iscompanyadmin")}
+        ) : isCompanyAdmin ? (
           <Tabs defaultValue="all" className="space-y-4">
             <TabsList>
               <TabsTrigger value="all">{t("auto.alle_ansatte")}</TabsTrigger>

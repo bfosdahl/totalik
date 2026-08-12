@@ -42,7 +42,7 @@ const isUiText = (s) => {
   if (/[{}<>$`=;"\\|]/.test(t)) return false;
   if (/\b(const|let|return|function|useState|import|export|null|undefined|true|false)\b/.test(t)) return false;
   if (/^[A-Z0-9_]+$/.test(t)) return false;             // CONSTANT
-  if (/\w\(/.test(t)) return false;                     // function call
+  if (/[()]/.test(t)) return false;                      // any parens = likely code
   const opens = (t.match(/\(/g) || []).length, closes = (t.match(/\)/g) || []).length;
   if (opens !== closes) return false;
   return true;
