@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { IkMatActionItem, IkMatRisk } from "@/hooks/useIkMatContent";
 import { AlertCircle, CheckCircle2, Clock, Filter, ExternalLink } from "lucide-react";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { t } from "@/i18n/t";
 
 interface ActionPlanOverviewProps {
   actions: IkMatActionItem[];
@@ -96,10 +97,10 @@ export const ActionPlanOverview = ({
       <div className="text-center py-12">
         <ClipboardListIcon className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
         <h3 className="font-medium text-muted-foreground mb-2">
-          Ingen tiltak i handlingsplanen
+          {t("auto.ingen_tiltak_i_handlingsplanen")}
         </h3>
         <p className="text-sm text-muted-foreground">
-          Tiltak opprettes fra risikovurderingene. Klikk på en risiko for å legge til tiltak.
+          {t("auto.tiltak_opprettes_fra_risikovurderingene_")}
         </p>
       </div>
     );
@@ -110,23 +111,23 @@ export const ActionPlanOverview = ({
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         <Card className="p-3">
-          <p className="text-xs text-muted-foreground">Totalt</p>
+          <p className="text-xs text-muted-foreground">{t("auto.totalt")}</p>
           <p className="text-lg font-semibold">{stats.total}</p>
         </Card>
         <Card className="p-3">
-          <p className="text-xs text-muted-foreground">Ikke startet</p>
+          <p className="text-xs text-muted-foreground">{t("auto.ikke_startet")}</p>
           <p className="text-lg font-semibold">{stats.pending}</p>
         </Card>
         <Card className="p-3">
-          <p className="text-xs text-muted-foreground">Pågår</p>
+          <p className="text-xs text-muted-foreground">{t("auto.paagaar")}</p>
           <p className="text-lg font-semibold text-blue-600">{stats.inProgress}</p>
         </Card>
         <Card className="p-3">
-          <p className="text-xs text-muted-foreground">Fullført</p>
+          <p className="text-xs text-muted-foreground">{t("auto.fullfoert")}</p>
           <p className="text-lg font-semibold text-green-600">{stats.completed}</p>
         </Card>
         <Card className={`p-3 ${stats.overdue > 0 ? 'border-red-300 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20' : ''}`}>
-          <p className="text-xs text-muted-foreground">Forfalt</p>
+          <p className="text-xs text-muted-foreground">{t("auto.forfalt")}</p>
           <p className={`text-lg font-semibold ${stats.overdue > 0 ? 'text-red-600' : ''}`}>{stats.overdue}</p>
         </Card>
       </div>
@@ -137,23 +138,23 @@ export const ActionPlanOverview = ({
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)}>
             <SelectTrigger className="w-[140px] h-8">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t("auto.status_2")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle status</SelectItem>
-              <SelectItem value="overdue">Forfalt</SelectItem>
-              <SelectItem value="pending">Ikke startet</SelectItem>
-              <SelectItem value="in_progress">Pågår</SelectItem>
-              <SelectItem value="completed">Fullført</SelectItem>
+              <SelectItem value="all">{t("auto.alle_status")}</SelectItem>
+              <SelectItem value="overdue">{t("auto.forfalt")}</SelectItem>
+              <SelectItem value="pending">{t("auto.ikke_startet")}</SelectItem>
+              <SelectItem value="in_progress">{t("auto.paagaar")}</SelectItem>
+              <SelectItem value="completed">{t("auto.fullfoert")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <Select value={filterResponsible} onValueChange={setFilterResponsible}>
           <SelectTrigger className="w-[160px] h-8">
-            <SelectValue placeholder="Ansvarlig" />
+            <SelectValue placeholder={t("auto.ansvarlig_2")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle ansvarlige</SelectItem>
+            <SelectItem value="all">{t("auto.alle_ansvarlige")}</SelectItem>
             {employees.map(emp => (
               <SelectItem key={emp.id} value={emp.id}>
                 {emp.first_name} {emp.last_name}
@@ -232,7 +233,7 @@ export const ActionPlanOverview = ({
 
       {filteredActions.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
-          <p className="text-sm">Ingen tiltak matcher filteret</p>
+          <p className="text-sm">{t("auto.ingen_tiltak_matcher_filteret")}</p>
         </div>
       )}
     </div>

@@ -12,60 +12,61 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, Plus, Trash2, Save, Loader2, ChevronUp, ChevronDown, Info } from "lucide-react";
 import UserSelect from "@/components/audits/UserSelect";
+import { t } from "@/i18n/t";
 
 // Predefined restaurant/kitchen roles with descriptions
 const PREDEFINED_ROLES = [
   {
-    title: "Daglig leder",
+    title: t("auto.daglig_leder"),
     description: "Har det overordnede ansvaret for drift, økonomi og personale. Ansvar for HMS, IK-MAT og etterlevelse av regelverk. Kontakt med myndigheter (kommune, Mattilsynet, Arbeidstilsynet). Skal sikre at gjeldende lover og forskrifter etterleves."
   },
   {
-    title: "Restaurantsjef",
-    description: "Ansvarlig for den daglige driften av restauranten, herunder bemanning, service, rutiner og kundebehandling. Har personalansvar for servering og ansvar for kvalitet på service og kundeopplevelse."
+    title: t("auto.restaurantsjef"),
+    description: t("auto.ansvarlig_for_den_daglige_driften_av_res")
   },
   {
-    title: "Kjøkkensjef",
-    description: "Har faglig og operativt ansvar for kjøkkenet, inkludert matproduksjon, hygiene, IK-MAT, opplæring og kvalitetssikring. Ansvar for meny, råvarer og internkontroll på kjøkken."
+    title: t("auto.kjoekkensjef"),
+    description: t("auto.har_faglig_og_operativt_ansvar_for_kjoek")
   },
   {
-    title: "Kokk",
-    description: "Utfører matproduksjon i henhold til gjeldende rutiner for hygiene, kvalitet og matsikkerhet. Ansvar for tilberedning av mat, følge rutiner for hygiene og matsikkerhet, samt renhold av arbeidsstasjon."
+    title: t("auto.kokk"),
+    description: t("auto.utfoerer_matproduksjon_i_henhold_til_gje")
   },
   {
-    title: "Hjelpekokk / Kjøkkenmedarbeider",
-    description: "Bistår kjøkkenet med forberedelser, enklere matlaging og renhold i tråd med interne rutiner. Ansvar for kutting, klargjøring og enklere matproduksjon."
+    title: t("auto.hjelpekokk_kjoekkenmedarbeider"),
+    description: t("auto.bistaar_kjoekkenet_med_forberedelser_enk")
   },
   {
-    title: "Oppvasker",
-    description: "Ansvarlig for oppvask, renhold og orden i kjøkkenets bakrom. Håndterer avfallshåndtering og holder orden på kjøkken og bakrom."
+    title: t("auto.oppvasker"),
+    description: t("auto.ansvarlig_for_oppvask_renhold_og_orden_i")
   },
   {
-    title: "Servitør",
-    description: "Utfører servering og kundebehandling i tråd med virksomhetens rutiner og servicekrav. Ansvar for servering av mat og drikke, kundebehandling og enkel kassehåndtering."
+    title: t("auto.servitoer"),
+    description: t("auto.utfoerer_servering_og_kundebehandling_i_")
   },
   {
-    title: "Bartender",
-    description: "Ansvarlig for servering av alkoholholdig og alkoholfri drikke i henhold til alkoholloven og interne rutiner. Har ansvar for alderskontroll og renhold av bar."
+    title: t("auto.bartender"),
+    description: t("auto.ansvarlig_for_servering_av_alkoholholdig")
   },
   {
-    title: "Runner",
-    description: "Bistår serveringspersonalet med levering av mat, rydding og praktiske oppgaver. Leverer mat fra kjøkken til bord."
+    title: t("auto.runner"),
+    description: t("auto.bistaar_serveringspersonalet_med_leverin")
   },
   {
-    title: "Gatekjøkkenmedarbeider",
-    description: "Utfører matlaging, kundebehandling og renhold i tråd med rutiner for matsikkerhet og hygiene. Ansvar for enkel matproduksjon, kasse og kundeservice."
+    title: t("auto.gatekjoekkenmedarbeider"),
+    description: t("auto.utfoerer_matlaging_kundebehandling_og_re")
   },
   {
-    title: "Skiftleder",
-    description: "Har ansvar for drift og ansatte på eget skift, og påser at rutiner og krav følges. Ansvar for opplæring av ansatte."
+    title: t("auto.skiftleder"),
+    description: t("auto.har_ansvar_for_drift_og_ansatte_paa_eget")
   },
   {
-    title: "Renholder",
-    description: "Utfører renhold i henhold til fastsatte renholdsplaner og hygienekrav. Ansvar for renhold av kjøkken, toaletter og fellesarealer."
+    title: t("auto.renholder"),
+    description: t("auto.utfoerer_renhold_i_henhold_til_fastsatte")
   },
   {
-    title: "Lageransvarlig",
-    description: "Ansvarlig for varemottak, lagring og kontroll av råvarer i henhold til rutiner for matsikkerhet. Ansvar for lagerkontroll, FIFO og datokontroll."
+    title: t("auto.lageransvarlig"),
+    description: t("auto.ansvarlig_for_varemottak_lagring_og_kont")
   }
 ];
 
@@ -199,7 +200,7 @@ const IkMatOrganisasjon = () => {
               Organisasjonskart
             </h1>
             <p className="text-muted-foreground mt-1">
-              IK-MAT organisasjonsstruktur med roller og ansvar
+              {t("auto.ik_mat_organisasjonsstruktur_med_roller_")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -221,10 +222,9 @@ const IkMatOrganisasjon = () => {
         <div className="flex items-start gap-3 p-4 rounded-lg bg-info/5 border border-info/20">
           <Info className="w-5 h-5 text-info mt-0.5 flex-shrink-0" />
           <div className="text-sm">
-            <p className="font-medium text-info mb-1">Dokumenter virksomhetens organisering</p>
+            <p className="font-medium text-info mb-1">{t("auto.dokumenter_virksomhetens_organisering")}</p>
             <p className="text-muted-foreground">
-              Velg forhåndsdefinerte roller med standardbeskrivelser for restaurant og kjøkken,
-              eller lag egne. Du kan velge ansatte fra listen eller skrive inn navn manuelt.
+              {t("auto.velg_forhaandsdefinerte_roller_med_stand")}
             </p>
           </div>
         </div>
@@ -239,9 +239,9 @@ const IkMatOrganisasjon = () => {
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Ingen roller er definert ennå</p>
+              <p className="font-medium">{t("auto.ingen_roller_er_definert_ennaa")}</p>
               <p className="text-sm mt-2">
-                Velg forhåndsdefinerte roller ovenfor for å bygge organisasjonskartet.
+                {t("auto.velg_forhaandsdefinerte_roller_ovenfor_f")}
               </p>
             </CardContent>
           </Card>
@@ -250,7 +250,7 @@ const IkMatOrganisasjon = () => {
             {/* Visual org chart */}
             <Card className="bg-muted/30">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Organisasjonskart</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.organisasjonskart")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center gap-2">
@@ -273,7 +273,7 @@ const IkMatOrganisasjon = () => {
 
             {/* Role editing cards */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-muted-foreground">Rediger roller</h3>
+              <h3 className="font-semibold text-sm text-muted-foreground">{t("auto.rediger_roller")}</h3>
               {organization.roles.map((role, index) => (
                 <motion.div
                   key={role.id}
@@ -327,7 +327,7 @@ const IkMatOrganisasjon = () => {
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Velg rolletype" />
+                              <SelectValue placeholder={t("auto.velg_rolletype")} />
                             </SelectTrigger>
                             <SelectContent>
                               {PREDEFINED_ROLES.map((predefined) => (
@@ -335,13 +335,13 @@ const IkMatOrganisasjon = () => {
                                   {predefined.title}
                                 </SelectItem>
                               ))}
-                              <SelectItem value="custom">Egendefinert tittel</SelectItem>
+                              <SelectItem value="custom">{t("auto.egendefinert_tittel")}</SelectItem>
                             </SelectContent>
                           </Select>
                           <UserSelect
                             value={role.personName}
                             onValueChange={(value) => handleUpdateRole(role.id, "personName", value)}
-                            placeholder="Velg ansatt"
+                            placeholder={t("auto.velg_ansatt")}
                           />
                         </div>
                       </div>
@@ -351,7 +351,7 @@ const IkMatOrganisasjon = () => {
                           <Input
                             value={role.title}
                             onChange={(e) => handleUpdateRole(role.id, "title", e.target.value)}
-                            placeholder="Skriv inn egendefinert rolletittel"
+                            placeholder={t("auto.skriv_inn_egendefinert_rolletittel")}
                           />
                         </div>
                       )}
@@ -360,7 +360,7 @@ const IkMatOrganisasjon = () => {
                       <Textarea
                         value={role.description}
                         onChange={(e) => handleUpdateRole(role.id, "description", e.target.value)}
-                        placeholder="Beskriv ansvarsområder og oppgaver for denne rollen..."
+                        placeholder={t("auto.beskriv_ansvarsomraader_og_oppgaver_for_")}
                         rows={3}
                         className="resize-none"
                       />

@@ -16,6 +16,7 @@ import { CreateShiftDialog } from "@/components/work-schedule/CreateShiftDialog"
 import { StandardScheduleDialog } from "@/components/work-schedule/StandardScheduleDialog";
 import { MonthCalendar } from "@/components/work-schedule/MonthCalendar";
 import type { WorkSchedule as WorkScheduleType } from "@/hooks/useWorkSchedules";
+import { t } from "@/i18n/t";
 
 export default function WorkSchedule() {
   const { profile, isCompanyAdmin, isSystemAdmin } = useAuth();
@@ -70,7 +71,7 @@ export default function WorkSchedule() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <Clock className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-muted-foreground">Laster arbeidsplaner...</p>
+            <p className="text-muted-foreground">{t("auto.laster_arbeidsplaner")}</p>
           </div>
         </div>
       </AppLayout>
@@ -82,9 +83,9 @@ export default function WorkSchedule() {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Arbeidsplanlegger</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.arbeidsplanlegger")}</h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Vaktliste med oppgaver og ansvar
+              {t("auto.vaktliste_med_oppgaver_og_ansvar")}
             </p>
           </div>
           {isAdmin && (
@@ -161,7 +162,7 @@ export default function WorkSchedule() {
 
         <Tabs defaultValue="calendar">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="calendar">Kalender</TabsTrigger>
+            <TabsTrigger value="calendar">{t("auto.kalender")}</TabsTrigger>
             <TabsTrigger value="planned">Planlagt ({plannedSchedules.length})</TabsTrigger>
             <TabsTrigger value="actual">Faktisk ({actualSchedules.length})</TabsTrigger>
           </TabsList>
@@ -191,13 +192,13 @@ export default function WorkSchedule() {
           <TabsContent value="planned">
             <Card>
               <CardHeader>
-                <CardTitle>Planlagte vakter</CardTitle>
-                <CardDescription>Oversikt over planlagte vakter for uken</CardDescription>
+                <CardTitle>{t("auto.planlagte_vakter")}</CardTitle>
+                <CardDescription>{t("auto.oversikt_over_planlagte_vakter_for_uken")}</CardDescription>
               </CardHeader>
               <CardContent>
                 {plannedSchedules.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Ingen planlagte vakter denne uken
+                    {t("auto.ingen_planlagte_vakter_denne_uken")}
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -258,13 +259,13 @@ export default function WorkSchedule() {
           <TabsContent value="actual">
             <Card>
               <CardHeader>
-                <CardTitle>Registrerte arbeidstimer</CardTitle>
-                <CardDescription>Faktisk arbeidstid for uken</CardDescription>
+                <CardTitle>{t("auto.registrerte_arbeidstimer")}</CardTitle>
+                <CardDescription>{t("auto.faktisk_arbeidstid_for_uken")}</CardDescription>
               </CardHeader>
               <CardContent>
                 {actualSchedules.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    Ingen registrerte arbeidstimer denne uken
+                    {t("auto.ingen_registrerte_arbeidstimer_denne_uke")}
                   </div>
                 ) : (
                   <div className="space-y-4">

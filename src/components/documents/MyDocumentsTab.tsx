@@ -56,6 +56,7 @@ import {
 import { useCompanyModuleDocuments, ModuleDocumentType, CompanyModuleDocument } from "@/hooks/useCompanyModuleDocuments";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface MyDocumentsTabProps {
   moduleType: ModuleDocumentType;
@@ -307,9 +308,9 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold">Mine dokumenter</h3>
+          <h3 className="text-lg font-semibold">{t("auto.mine_dokumenter")}</h3>
           <p className="text-sm text-muted-foreground">
-            Organiser dokumentene dine i mapper og undermapper
+            {t("auto.organiser_dokumentene_dine_i_mapper_og_u")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -390,12 +391,12 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                     </button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" title="Mer">
+                        <Button variant="ghost" size="icon" title={t("auto.mer")}>
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Mappe</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t("auto.mappe")}</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => setCurrentPath(stats.fullPath)}>
                           <FolderOpen className="h-4 w-4 mr-2" />
                           Åpne
@@ -459,18 +460,18 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDownload(doc)}
-                      title="Last ned"
+                      title={t("auto.last_ned")}
                     >
                       <Download className="h-4 w-4" />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" title="Mer">
+                        <Button variant="ghost" size="icon" title={t("auto.mer")}>
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Handlinger</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t("auto.handlinger")}</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => openMoveDialog(doc)}>
                           <FolderInput className="h-4 w-4 mr-2" />
                           Flytt til mappe
@@ -500,11 +501,11 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
             <DialogTitle>{currentPath ? "Ny undermappe" : "Ny mappe"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Mappenavn</Label>
+            <Label>{t("auto.mappenavn")}</Label>
             <Input
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="F.eks. Sertifikater, Avtaler, 2024"
+              placeholder={t("auto.f_eks_sertifikater_avtaler_2024")}
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleCreateFolder();
@@ -512,19 +513,19 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
             />
             {currentPath && (
               <p className="text-xs text-muted-foreground">
-                Opprettes som undermappe i: <span className="font-medium">{currentPath}</span>
+                {t("auto.opprettes_som_undermappe_i")} <span className="font-medium">{currentPath}</span>
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Mappen lagres permanent når du har lastet opp minst ett dokument i den.
+              {t("auto.mappen_lagres_permanent_naar_du_har_last")}
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNewFolderDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleCreateFolder} disabled={!newFolderName.trim() || newFolderName.includes("/")}>
-              Opprett
+              {t("auto.opprett")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -534,11 +535,11 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Last opp dokument</DialogTitle>
+            <DialogTitle>{t("auto.last_opp_dokument")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Fil</Label>
+              <Label>{t("auto.fil")}</Label>
               <Input
                 ref={fileInputRef}
                 type="file"
@@ -547,15 +548,15 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               />
             </div>
             <div className="space-y-2">
-              <Label>Dokumentnavn</Label>
+              <Label>{t("auto.dokumentnavn")}</Label>
               <Input
                 value={documentName}
                 onChange={(e) => setDocumentName(e.target.value)}
-                placeholder="Skriv inn dokumentnavn"
+                placeholder={t("auto.skriv_inn_dokumentnavn")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Mappe</Label>
+              <Label>{t("auto.mappe")}</Label>
               <Select value={uploadFolder} onValueChange={setUploadFolder}>
                 <SelectTrigger>
                   <SelectValue />
@@ -576,7 +577,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                 <Input
                   value={customFolderName}
                   onChange={(e) => setCustomFolderName(e.target.value)}
-                  placeholder="Navn på ny mappe"
+                  placeholder={t("auto.navn_paa_ny_mappe")}
                 />
               )}
             </div>
@@ -585,14 +586,14 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Kort beskrivelse av dokumentet"
+                placeholder={t("auto.kort_beskrivelse_av_dokumentet")}
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={handleUpload}
@@ -613,10 +614,10 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Flytt til mappe</DialogTitle>
+            <DialogTitle>{t("auto.flytt_til_mappe")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label>Velg mappe</Label>
+            <Label>{t("auto.velg_mappe")}</Label>
             <Select value={moveTargetFolder} onValueChange={setMoveTargetFolder}>
               <SelectTrigger>
                 <SelectValue />
@@ -637,13 +638,13 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               <Input
                 value={moveCustomFolder}
                 onChange={(e) => setMoveCustomFolder(e.target.value)}
-                placeholder="Navn på ny mappe"
+                placeholder={t("auto.navn_paa_ny_mappe")}
               />
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setMoveDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={handleConfirmMove}
@@ -662,14 +663,14 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett dokument</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_dokument")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{selectedDocument?.document_name}"?
               Denne handlingen kan ikke angres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -684,9 +685,9 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
       <AlertDialog open={deleteFolderDialogOpen} onOpenChange={setDeleteFolderDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett mappe</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_mappe")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette mappen <span className="font-medium">"{folderToDelete}"</span>?
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_mappen")} <span className="font-medium">"{folderToDelete}"</span>?
               {folderToDeleteStats.docs > 0 || folderToDeleteStats.subs > 0 ? (
                 <>
                   <br /><br />
@@ -697,12 +698,12 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                   . Denne handlingen kan ikke angres.
                 </>
               ) : (
-                <> Mappen er tom.</>
+                <> {t("auto.mappen_er_tom")}</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDeleteFolder}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

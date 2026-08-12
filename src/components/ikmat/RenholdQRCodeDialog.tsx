@@ -11,6 +11,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Download, QrCode, Printer } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { downloadQrAsPng, printQr } from "@/utils/qrCodeExport";
+import { t } from "@/i18n/t";
 
 type FrequencyType = 'daily' | 'weekly' | 'monthly' | 'periodic';
 
@@ -69,10 +70,10 @@ export function RenholdQRCodeDialog({
 
         <Tabs value={selectedFrequency} onValueChange={(v) => setSelectedFrequency(v as FrequencyType)}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="daily" className="text-xs">Daglig</TabsTrigger>
-            <TabsTrigger value="weekly" className="text-xs">Ukentlig</TabsTrigger>
-            <TabsTrigger value="monthly" className="text-xs">Månedlig</TabsTrigger>
-            <TabsTrigger value="periodic" className="text-xs">Periodisk</TabsTrigger>
+            <TabsTrigger value="daily" className="text-xs">{t("auto.daglig")}</TabsTrigger>
+            <TabsTrigger value="weekly" className="text-xs">{t("auto.ukentlig")}</TabsTrigger>
+            <TabsTrigger value="monthly" className="text-xs">{t("auto.maanedlig")}</TabsTrigger>
+            <TabsTrigger value="periodic" className="text-xs">{t("auto.periodisk")}</TabsTrigger>
           </TabsList>
 
           {(['daily', 'weekly', 'monthly', 'periodic'] as FrequencyType[]).map((freq) => (
@@ -90,7 +91,7 @@ export function RenholdQRCodeDialog({
                 <div className="text-center space-y-1">
                   <p className="font-medium text-lg">{FREQUENCY_CONFIG[freq].emoji} {FREQUENCY_CONFIG[freq].label} renhold</p>
                   <p className="text-sm text-muted-foreground">
-                    Skriv ut og heng opp i aktuelt område
+                    {t("auto.skriv_ut_og_heng_opp_i_aktuelt_omraade")}
                   </p>
                 </div>
 
@@ -104,7 +105,7 @@ export function RenholdQRCodeDialog({
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Lukk
+            {t("auto.lukk")}
           </Button>
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />

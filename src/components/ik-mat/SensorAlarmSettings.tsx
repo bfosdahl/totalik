@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { BellRing } from 'lucide-react';
 import type { IkMatSensor } from '@/hooks/useIkMatSensors';
+import { t } from "@/i18n/t";
 
 interface Props {
   sensor: IkMatSensor;
@@ -82,11 +83,11 @@ export function SensorAlarmSettings({ sensor, onSave, isSaving }: Props) {
         </AccordionTrigger>
         <AccordionContent className="space-y-3 pt-2">
           <div className="space-y-1">
-            <Label className="text-xs">Plassering</Label>
+            <Label className="text-xs">{t("auto.plassering")}</Label>
             <Input
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
-              placeholder="f.eks. Kjøkken, kjølerom 1"
+              placeholder={t("auto.f_eks_kjoekken_kjoelerom_1")}
             />
           </div>
 
@@ -161,30 +162,28 @@ export function SensorAlarmSettings({ sensor, onSave, isSaving }: Props) {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Brukes når sensoren sender volt i stedet for prosent. Velg litium hvis sensoren har
-              litiumbatteri, ellers blir batterinivået vist for lavt.
+              {t("auto.brukes_naar_sensoren_sender_volt_i_stede")}
             </p>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Karenstid hindrer falske alarmer ved døråpning og avriming. Alarm sendes først når
-            temperaturen har vært utenfor grensene sammenhengende i angitt antall minutter.
+            {t("auto.karenstid_hindrer_falske_alarmer_ved_doe")}
           </p>
 
           <div className="space-y-1">
-            <Label className="text-xs">Varsle disse e-postadressene</Label>
+            <Label className="text-xs">{t("auto.varsle_disse_e_postadressene")}</Label>
             <Input
               value={form.emails}
               onChange={(e) => setForm({ ...form, emails: e.target.value })}
               placeholder="kjokkensjef@bedrift.no, drift@bedrift.no"
             />
             <p className="text-xs text-muted-foreground">
-              La feltet stå tomt for å varsle bedriftens administratorer.
+              {t("auto.la_feltet_staa_tomt_for_aa_varsle_bedrif")}
             </p>
           </div>
 
           <Button size="sm" onClick={save} disabled={isSaving}>
-            Lagre alarminnstillinger
+            {t("auto.lagre_alarminnstillinger")}
           </Button>
         </AccordionContent>
       </AccordionItem>

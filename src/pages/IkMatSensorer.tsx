@@ -22,6 +22,7 @@ import { SensorIntegrations } from '@/components/ik-mat/SensorIntegrations';
 import { SensorVendorDocs } from '@/components/ik-mat/SensorVendorDocs';
 import { SensorNotificationCard } from '@/components/ik-mat/SensorNotificationCard';
 import { useQuery } from '@tanstack/react-query';
+import { t } from "@/i18n/t";
 
 const UNMAPPED = '__none__';
 
@@ -54,7 +55,7 @@ function SensorMiniGraph({ sensor, getSensorLogs }: { sensor: IkMatSensor; getSe
 
   if (!sensor.equipment_id) return null;
   if (logs.length === 0) {
-    return <p className="text-xs text-muted-foreground">Ingen målinger siste 24 timer.</p>;
+    return <p className="text-xs text-muted-foreground">{t("auto.ingen_maalinger_siste_24_timer")}</p>;
   }
 
   const temps = logs.map((l) => l.temperature);
@@ -192,8 +193,7 @@ export default function IkMatSensorer() {
             Automatiske sensorer
           </h1>
           <p className="text-muted-foreground mt-1">
-            Koble trådløse temperatursensorer til IK-Mat. Målinger logges automatisk, avvik opprettes
-            og ansvarlige varsles på e-post når noe er galt — også når en sensor slutter å svare.
+            {t("auto.koble_traadloese_temperatursensorer_til_")}
           </p>
         </div>
 
@@ -202,8 +202,8 @@ export default function IkMatSensorer() {
           <Card>
             <CardHeader className="flex flex-row items-start justify-between gap-4">
               <div>
-                <CardTitle>Driftsstatus</CardTitle>
-                <CardDescription>Oppdateres automatisk hvert minutt.</CardDescription>
+                <CardTitle>{t("auto.driftsstatus")}</CardTitle>
+                <CardDescription>{t("auto.oppdateres_automatisk_hvert_minutt")}</CardDescription>
               </div>
               <Button
                 variant="outline"
@@ -218,19 +218,19 @@ export default function IkMatSensorer() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="rounded-lg border p-3">
                   <p className="text-2xl font-bold text-primary">{counts.ok}</p>
-                  <p className="text-xs text-muted-foreground">I orden</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.i_orden")}</p>
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-2xl font-bold text-destructive">{counts.alarm}</p>
-                  <p className="text-xs text-muted-foreground">Temperaturalarm</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.temperaturalarm")}</p>
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-2xl font-bold">{counts.offline}</p>
-                  <p className="text-xs text-muted-foreground">Offline</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.offline")}</p>
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-2xl font-bold">{counts.unmapped}</p>
-                  <p className="text-xs text-muted-foreground">Ikke koblet</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.ikke_koblet")}</p>
                 </div>
               </div>
             </CardContent>
@@ -240,18 +240,18 @@ export default function IkMatSensorer() {
         {/* Endpoint */}
         <Card>
           <CardHeader>
-            <CardTitle>Ditt mottaksendepunkt</CardTitle>
+            <CardTitle>{t("auto.ditt_mottaksendepunkt")}</CardTitle>
             <CardDescription>
-              Dette er adressen sensorleverandøren skal sende målinger til. Del den kun med leverandøren din.
+              {t("auto.dette_er_adressen_sensorleverandoeren_sk")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {isLoading ? (
-              <p className="text-muted-foreground">Laster...</p>
+              <p className="text-muted-foreground">{t("auto.laster")}</p>
             ) : !endpoint ? (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Du har ikke aktivert sensormottak ennå.
+                  {t("auto.du_har_ikke_aktivert_sensormottak_ennaa")}
                 </p>
                 <Button onClick={() => createEndpoint.mutate()} disabled={createEndpoint.isPending}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -261,7 +261,7 @@ export default function IkMatSensorer() {
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label>Webhook-URL</Label>
+                  <Label>{t("auto.webhook_url")}</Label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Input readOnly value={webhookUrl} className="font-mono text-xs" />
                     <Button variant="outline" onClick={() => copy(webhookUrl, 'URL')}>
@@ -310,9 +310,9 @@ export default function IkMatSensorer() {
         <Card>
           <CardHeader className="flex flex-row items-start justify-between gap-4">
             <div>
-              <CardTitle>Sensorer</CardTitle>
+              <CardTitle>{t("auto.sensorer")}</CardTitle>
               <CardDescription>
-                Koble hver sensor til riktig kjøleskap, fryser eller varmeskap.
+                {t("auto.koble_hver_sensor_til_riktig_kjoeleskap_")}
               </CardDescription>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -323,45 +323,45 @@ export default function IkMatSensorer() {
               </DialogTrigger>
               <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader>
-                  <DialogTitle>Ny sensor</DialogTitle>
+                  <DialogTitle>{t("auto.ny_sensor")}</DialogTitle>
                   <DialogDescription>
-                    Sensor-ID må være nøyaktig den ID-en leverandøren sender med målingene.
+                    {t("auto.sensor_id_maa_vaere_noeyaktig_den_id_en_")}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Sensor-ID *</Label>
+                    <Label>{t("auto.sensor_id")}</Label>
                     <Input
                       value={newSensor.external_id}
                       onChange={(e) => setNewSensor({ ...newSensor, external_id: e.target.value })}
-                      placeholder="f.eks. A1B2C3"
+                      placeholder={t("auto.f_eks_a1b2c3")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Navn</Label>
+                    <Label>{t("auto.navn_2")}</Label>
                     <Input
                       value={newSensor.name}
                       onChange={(e) => setNewSensor({ ...newSensor, name: e.target.value })}
-                      placeholder="f.eks. Kjøleskap kjøkken"
+                      placeholder={t("auto.f_eks_kjoeleskap_kjoekken")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Leverandør</Label>
+                    <Label>{t("auto.leverandoer")}</Label>
                     <Input
                       value={newSensor.provider}
                       onChange={(e) => setNewSensor({ ...newSensor, provider: e.target.value })}
-                      placeholder="f.eks. SensorPush"
+                      placeholder={t("auto.f_eks_sensorpush")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Koblet til utstyr</Label>
+                    <Label>{t("auto.koblet_til_utstyr")}</Label>
                     <Select
                       value={newSensor.equipment_id}
                       onValueChange={(v) => setNewSensor({ ...newSensor, equipment_id: v })}
                     >
-                      <SelectTrigger><SelectValue placeholder="Velg utstyr" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder={t("auto.velg_utstyr")} /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={UNMAPPED}>Ikke koblet</SelectItem>
+                        <SelectItem value={UNMAPPED}>{t("auto.ikke_koblet")}</SelectItem>
                         {equipment.map((eq) => (
                           <SelectItem key={eq.id} value={eq.id}>{eq.name}</SelectItem>
                         ))}
@@ -370,8 +370,8 @@ export default function IkMatSensorer() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Avbryt</Button>
-                  <Button onClick={handleAdd} disabled={addSensor.isPending}>Lagre</Button>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("auto.avbryt")}</Button>
+                  <Button onClick={handleAdd} disabled={addSensor.isPending}>{t("auto.lagre")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -391,7 +391,7 @@ export default function IkMatSensorer() {
               <div className="relative flex-1">
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk etter navn, ID eller leverandør..."
+                  placeholder={t("auto.soek_etter_navn_id_eller_leverandoer")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -399,14 +399,14 @@ export default function IkMatSensorer() {
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-44">
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t("auto.status_2")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle statuser</SelectItem>
-                  <SelectItem value="ok">I orden</SelectItem>
-                  <SelectItem value="alarm">Alarm</SelectItem>
-                  <SelectItem value="offline">Offline</SelectItem>
-                  <SelectItem value="unmapped">Ikke koblet</SelectItem>
+                  <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+                  <SelectItem value="ok">{t("auto.i_orden")}</SelectItem>
+                  <SelectItem value="alarm">{t("auto.alarm")}</SelectItem>
+                  <SelectItem value="offline">{t("auto.offline")}</SelectItem>
+                  <SelectItem value="unmapped">{t("auto.ikke_koblet")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button variant="outline" onClick={exportCsv}>
@@ -416,7 +416,7 @@ export default function IkMatSensorer() {
 
             {filteredSensors.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Ingen sensorer matcher filteret. Nye sensorer dukker opp automatisk her første gang de sender data.
+                {t("auto.ingen_sensorer_matcher_filteret_nye_sens")}
               </p>
             ) : (
               filteredSensors.map((sensor) => (
@@ -443,7 +443,7 @@ export default function IkMatSensorer() {
                         variant="ghost"
                         size="icon"
                         onClick={() => deleteSensor.mutate(sensor.id)}
-                        aria-label="Fjern sensor"
+                        aria-label={t("auto.fjern_sensor")}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
@@ -471,16 +471,16 @@ export default function IkMatSensorer() {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-1">
-                      <Label className="text-xs">Koblet til utstyr</Label>
+                      <Label className="text-xs">{t("auto.koblet_til_utstyr")}</Label>
                       <Select
                         value={sensor.equipment_id ?? UNMAPPED}
                         onValueChange={(v) =>
                           updateSensor.mutate({ id: sensor.id, equipment_id: v === UNMAPPED ? null : v })
                         }
                       >
-                        <SelectTrigger><SelectValue placeholder="Velg utstyr" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t("auto.velg_utstyr")} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={UNMAPPED}>Ikke koblet</SelectItem>
+                          <SelectItem value={UNMAPPED}>{t("auto.ikke_koblet")}</SelectItem>
                           {equipment.map((eq) => (
                             <SelectItem key={eq.id} value={eq.id}>{eq.name}</SelectItem>
                           ))}
@@ -488,7 +488,7 @@ export default function IkMatSensorer() {
                       </Select>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Simuler scenario</Label>
+                      <Label className="text-xs">{t("auto.simuler_scenario")}</Label>
                       <Select
                         value=""
                         onValueChange={(scenario) => {
@@ -497,7 +497,7 @@ export default function IkMatSensorer() {
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Velg scenario" />
+                          <SelectValue placeholder={t("auto.velg_scenario")} />
                         </SelectTrigger>
                         <SelectContent>
                           {SCENARIOS.map((s) => (
@@ -530,12 +530,12 @@ export default function IkMatSensorer() {
               <Bell className="h-5 w-5" /> Varslingslogg
             </CardTitle>
             <CardDescription>
-              Dokumentasjon på at alarmer er sendt — kan vises fram ved tilsyn.
+              {t("auto.dokumentasjon_paa_at_alarmer_er_sendt_ka")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {alerts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Ingen varsler er sendt ennå.</p>
+              <p className="text-sm text-muted-foreground">{t("auto.ingen_varsler_er_sendt_ennaa")}</p>
             ) : (
               alerts.map((a) => (
                 <div key={a.id} className="rounded-lg border p-3 text-sm space-y-1">
@@ -596,24 +596,23 @@ export default function IkMatSensorer() {
           <CardContent>
             <Accordion type="single" collapsible>
               <AccordionItem value="1">
-                <AccordionTrigger>1. Skaff sensorer</AccordionTrigger>
+                <AccordionTrigger>{t("auto.1_skaff_sensorer")}</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground space-y-2">
                   <p>
                     Du trenger trådløse temperatursensorer med internett-tilkobling (4G, WiFi eller
                     basestasjon). Vanlige leverandører er SensorPush, Efento, Disruptive Technologies og
                     Temperaturvakt. Har du sensorer fra før, kan de som regel brukes direkte.
                   </p>
-                  <p>Total-IK selger ikke sensorer - du kjøper eller leier utstyret av leverandøren.</p>
+                  <p>{t("auto.total_ik_selger_ikke_sensorer_du_kjoeper")}</p>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="2">
-                <AccordionTrigger>2. Legg inn webhook-URL hos leverandøren</AccordionTrigger>
+                <AccordionTrigger>{t("auto.2_legg_inn_webhook_url_hos_leverandoeren")}</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground space-y-2">
                   <p>
-                    I sensorleverandørens portal finner du gjerne «Webhook», «Integrasjon» eller «Push
-                    API». Lim inn URL-en over, og velg metode POST med JSON.
+                    {t("auto.i_sensorleverandoerens_portal_finner_du_")}
                   </p>
-                  <p>Vi leser vanlige feltnavn automatisk, for eksempel:</p>
+                  <p>{t("auto.vi_leser_vanlige_feltnavn_automatisk_for")}</p>
                   <pre className="bg-muted p-3 rounded text-xs overflow-x-auto">
 {`{
   "sensor_id": "A1B2C3",
@@ -622,15 +621,13 @@ export default function IkMatSensorer() {
   "battery": 92
 }`}
                   </pre>
-                  <p>Flere målinger kan sendes samlet som en liste under «readings».</p>
+                  <p>{t("auto.flere_maalinger_kan_sendes_samlet_som_en")}</p>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="3">
-                <AccordionTrigger>3. Koble sensor til utstyr</AccordionTrigger>
+                <AccordionTrigger>{t("auto.3_koble_sensor_til_utstyr")}</AccordionTrigger>
                 <AccordionContent className="text-sm text-muted-foreground">
-                  Første gang en sensor sender data dukker den opp i listen over. Velg hvilket kjøleskap,
-                  fryser eller varmeskap den tilhører. Da logges målingene i temperaturloggen, og avvik
-                  opprettes automatisk hvis grensene brytes.
+                  {t("auto.foerste_gang_en_sensor_sender_data_dukke")}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

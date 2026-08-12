@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n/t";
 
 interface HmsCardSectionProps {
   employee: Employee;
@@ -101,7 +102,7 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Ukjent feil";
       toast({ 
-        title: "Feil", 
+        title: t("auto.feil"), 
         description: errorMessage,
         variant: "destructive" 
       });
@@ -112,21 +113,21 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
 
   const getHmsCardStatus = () => {
     if (!employee.hms_card_required) {
-      return { label: "Ikke påkrevd", variant: "secondary" as const, icon: null };
+      return { label: t("auto.ikke_paakrevd"), variant: "secondary" as const, icon: null };
     }
     if (!employee.hms_card_obtained) {
-      return { label: "Mangler", variant: "destructive" as const, icon: AlertCircle };
+      return { label: t("auto.mangler"), variant: "destructive" as const, icon: AlertCircle };
     }
     if (employee.hms_card_expiry_date) {
       const daysUntil = differenceInDays(new Date(employee.hms_card_expiry_date), new Date());
       if (daysUntil < 0) {
-        return { label: "Utgått", variant: "destructive" as const, icon: AlertCircle };
+        return { label: t("auto.utgaatt"), variant: "destructive" as const, icon: AlertCircle };
       }
       if (daysUntil <= 30) {
-        return { label: "Utløper snart", variant: "outline" as const, icon: AlertCircle };
+        return { label: t("auto.utloeper_snart"), variant: "outline" as const, icon: AlertCircle };
       }
     }
-    return { label: "Gyldig", variant: "secondary" as const, icon: CheckCircle2 };
+    return { label: t("auto.gyldig"), variant: "secondary" as const, icon: CheckCircle2 };
   };
 
   const status = getHmsCardStatus();
@@ -169,9 +170,9 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label>HMS-kort påkrevd</Label>
+                  <Label>{t("auto.hms_kort_paakrevd")}</Label>
                   <p className="text-sm text-muted-foreground">
-                    Er HMS-kort lovpålagt for denne ansatte?
+                    {t("auto.er_hms_kort_lovpaalagt_for_denne_ansatte")}
                   </p>
                 </div>
                 <Switch
@@ -186,9 +187,9 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
                 <>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>HMS-kort ordnet</Label>
+                      <Label>{t("auto.hms_kort_ordnet")}</Label>
                       <p className="text-sm text-muted-foreground">
-                        Har den ansatte fått HMS-kort?
+                        {t("auto.har_den_ansatte_faatt_hms_kort")}
                       </p>
                     </div>
                     <Switch
@@ -202,18 +203,18 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
                   {editData.hms_card_obtained && (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Kortnummer</Label>
+                        <Label>{t("auto.kortnummer")}</Label>
                         <Input
                           value={editData.hms_card_number}
                           onChange={(e) => setEditData(prev => ({ 
                             ...prev, 
                             hms_card_number: e.target.value 
                           }))}
-                          placeholder="HMS-kortnummer"
+                          placeholder={t("auto.hms_kortnummer")}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Utløpsdato</Label>
+                        <Label>{t("auto.utloepsdato")}</Label>
                         <Input
                           type="date"
                           value={editData.hms_card_expiry_date}
@@ -255,7 +256,7 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium">HMS-kort status</p>
+                    <p className="font-medium">{t("auto.hms_kort_status")}</p>
                     <Badge 
                       variant={status.variant}
                       className={status.variant === "outline" ? "border-yellow-500 text-yellow-600" : ""}
@@ -283,12 +284,12 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground mt-1">
-                        HMS-kort er påkrevd men ikke ordnet ennå
+                        {t("auto.hms_kort_er_paakrevd_men_ikke_ordnet_enn")}
                       </p>
                     )
                   ) : (
                     <p className="text-sm text-muted-foreground mt-1">
-                      HMS-kort er ikke påkrevd for denne ansatte
+                      {t("auto.hms_kort_er_ikke_paakrevd_for_denne_ansa")}
                     </p>
                   )}
                 </div>
@@ -330,7 +331,7 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
                 id="helpNotes"
                 value={helpNotes}
                 onChange={(e) => setHelpNotes(e.target.value)}
-                placeholder="F.eks. bransje, spesielle behov, etc."
+                placeholder={t("auto.f_eks_bransje_spesielle_behov_etc")}
                 rows={3}
                 className="mt-2"
               />
@@ -338,7 +339,7 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleRequestHelp}
               disabled={isSubmittingHelp}

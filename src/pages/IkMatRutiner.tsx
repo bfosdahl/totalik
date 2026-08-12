@@ -19,6 +19,7 @@ import { AiRoutineDialog } from "@/components/routines/AiRoutineDialog";
 import { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const FREQUENCY_OPTIONS = [
   'Daglig',
@@ -154,7 +155,7 @@ const IkMatRutiner = () => {
               Rutiner
             </h1>
             <p className="text-muted-foreground mt-1">
-              Rutiner og prosedyrer for matsikkerhet
+              {t("auto.rutiner_og_prosedyrer_for_matsikkerhet")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -177,7 +178,7 @@ const IkMatRutiner = () => {
         {routines.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              Ingen rutiner ennå. Bruk Rutinebiblioteket for å hente standardrutiner eller opprett egne.
+              {t("auto.ingen_rutiner_ennaa_bruk_rutinebibliotek")}
             </CardContent>
           </Card>
         ) : (
@@ -237,7 +238,7 @@ const IkMatRutiner = () => {
                       )}
                       <div className="flex flex-wrap gap-x-6 gap-y-1 mt-3 text-sm text-muted-foreground">
                         {routine.responsible && (
-                          <p><span className="font-medium">Ansvarlig:</span> {routine.responsible}</p>
+                          <p><span className="font-medium">{t("auto.ansvarlig")}</span> {routine.responsible}</p>
                         )}
                         {(routine.revisionCount != null && routine.revisionCount > 0) && (
                           <p className="flex items-center gap-1">
@@ -275,27 +276,27 @@ const IkMatRutiner = () => {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Rutinenavn *</Label>
+                <Label>{t("auto.rutinenavn")}</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Navn på rutine"
+                  placeholder={t("auto.navn_paa_rutine")}
                   className="mt-1"
                 />
               </div>
               <div>
-                <Label>Beskrivelse</Label>
+                <Label>{t("auto.beskrivelse")}</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Detaljert beskrivelse av rutinen..."
+                  placeholder={t("auto.detaljert_beskrivelse_av_rutinen")}
                   rows={6}
                   className="resize-none mt-1"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Frekvens</Label>
+                  <Label>{t("auto.frekvens_2")}</Label>
                   <Select
                     value={formData.frequency}
                     onValueChange={(value) => setFormData({ ...formData, frequency: value })}
@@ -311,18 +312,18 @@ const IkMatRutiner = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label>Ansvarlig</Label>
+                  <Label>{t("auto.ansvarlig_2")}</Label>
                   <Input
                     value={formData.responsible}
                     onChange={(e) => setFormData({ ...formData, responsible: e.target.value })}
-                    placeholder="F.eks. Kjøkkensjef"
+                    placeholder={t("auto.f_eks_kjoekkensjef")}
                     className="mt-1"
                   />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Avbryt</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>{t("auto.avbryt")}</Button>
               <Button onClick={handleSave} disabled={!formData.name || isSaving}>
                 {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Lagre

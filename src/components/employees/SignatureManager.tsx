@@ -8,6 +8,7 @@ import { Pen, Upload, Eraser, Save, Check, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface SignatureManagerProps {
   employeeId: string;
@@ -87,7 +88,7 @@ export function SignatureManager({
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Bildet er for stort. Maks 2MB.");
+      toast.error(t("auto.bildet_er_for_stort_maks_2mb"));
       return;
     }
 
@@ -102,7 +103,7 @@ export function SignatureManager({
     const signatureToSave = mode === "draw" ? drawnSignature : uploadedSignature;
     
     if (!signatureToSave) {
-      toast.error("Ingen signatur å lagre");
+      toast.error(t("auto.ingen_signatur_aa_lagre"));
       return;
     }
 
@@ -115,12 +116,12 @@ export function SignatureManager({
 
       if (error) throw error;
 
-      toast.success("Signatur lagret");
+      toast.success(t("auto.signatur_lagret"));
       setMode("view");
       onSignatureUpdated?.();
     } catch (error) {
       console.error("Error saving signature:", error);
-      toast.error("Kunne ikke lagre signatur");
+      toast.error(t("auto.kunne_ikke_lagre_signatur"));
     } finally {
       setIsSaving(false);
     }
@@ -136,11 +137,11 @@ export function SignatureManager({
 
       if (error) throw error;
 
-      toast.success("Signatur slettet");
+      toast.success(t("auto.signatur_slettet"));
       onSignatureUpdated?.();
     } catch (error) {
       console.error("Error deleting signature:", error);
-      toast.error("Kunne ikke slette signatur");
+      toast.error(t("auto.kunne_ikke_slette_signatur"));
     } finally {
       setIsSaving(false);
     }
@@ -160,7 +161,7 @@ export function SignatureManager({
           Min signatur
         </CardTitle>
         <CardDescription>
-          Din signatur brukes automatisk når du signerer sjekklister, vernerunder og andre dokumenter
+          {t("auto.din_signatur_brukes_automatisk_naar_du_s")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -200,8 +201,8 @@ export function SignatureManager({
               <div className="space-y-4">
                 <div className="border border-dashed rounded-lg p-8 text-center text-muted-foreground">
                   <Image className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Ingen signatur registrert</p>
-                  <p className="text-sm mt-1">Legg til signatur for raskere signering av dokumenter</p>
+                  <p>{t("auto.ingen_signatur_registrert")}</p>
+                  <p className="text-sm mt-1">{t("auto.legg_til_signatur_for_raskere_signering_")}</p>
                 </div>
                 {canManage && (
                   <div className="flex flex-col sm:flex-row gap-2">
@@ -223,7 +224,7 @@ export function SignatureManager({
         {mode === "draw" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label>Tegn signaturen din</Label>
+              <Label>{t("auto.tegn_signaturen_din")}</Label>
               <Button variant="ghost" size="sm" onClick={handleClear}>
                 <Eraser className="w-4 h-4 mr-1" />
                 Slett
@@ -248,7 +249,7 @@ export function SignatureManager({
                 {!drawnSignature && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <p className="text-muted-foreground text-sm">
-                      Tegn signaturen din her
+                      {t("auto.tegn_signaturen_din_her")}
                     </p>
                   </div>
                 )}
@@ -260,7 +261,7 @@ export function SignatureManager({
                 Lagre signatur
               </Button>
               <Button variant="outline" onClick={cancelEdit}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
             </div>
           </div>
@@ -269,9 +270,9 @@ export function SignatureManager({
         {mode === "upload" && (
           <div className="space-y-4">
             <div>
-              <Label>Last opp signaturbilde</Label>
+              <Label>{t("auto.last_opp_signaturbilde")}</Label>
               <p className="text-sm text-muted-foreground mt-1">
-                PNG eller JPG, maks 2MB. Bruk gjerne transparent bakgrunn.
+                {t("auto.png_eller_jpg_maks_2mb_bruk_gjerne_trans")}
               </p>
             </div>
             <Input
@@ -296,7 +297,7 @@ export function SignatureManager({
                 Lagre signatur
               </Button>
               <Button variant="outline" onClick={cancelEdit}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
             </div>
           </div>

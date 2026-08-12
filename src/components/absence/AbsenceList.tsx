@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
 import { EmployeeAbsence } from "@/hooks/useEmployeeAbsence";
+import { t } from "@/i18n/t";
 
 interface AbsenceListProps {
   absences: EmployeeAbsence[];
@@ -38,9 +39,9 @@ const ABSENCE_TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Venter", variant: "secondary" },
-  approved: { label: "Godkjent", variant: "default" },
-  rejected: { label: "Avvist", variant: "destructive" },
+  pending: { label: t("auto.venter"), variant: "secondary" },
+  approved: { label: t("auto.godkjent"), variant: "default" },
+  rejected: { label: t("auto.avvist"), variant: "destructive" },
 };
 
 export function AbsenceList({
@@ -56,7 +57,7 @@ export function AbsenceList({
     return (
       <Card className="p-8">
         <div className="text-center text-muted-foreground">
-          Ingen fraværsregistreringer funnet
+          {t("auto.ingen_fravaersregistreringer_funnet")}
         </div>
       </Card>
     );
@@ -67,12 +68,12 @@ export function AbsenceList({
       <Table>
         <TableHeader>
           <TableRow>
-            {showEmployee && <TableHead>Ansatt</TableHead>}
-            <TableHead>Type</TableHead>
-            <TableHead>Periode</TableHead>
-            <TableHead>Dager</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Handlinger</TableHead>
+            {showEmployee && <TableHead>{t("auto.ansatt")}</TableHead>}
+            <TableHead>{t("auto.type")}</TableHead>
+            <TableHead>{t("auto.periode")}</TableHead>
+            <TableHead>{t("auto.dager")}</TableHead>
+            <TableHead>{t("auto.status_2")}</TableHead>
+            <TableHead className="text-right">{t("auto.handlinger")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -114,7 +115,7 @@ export function AbsenceList({
                             <Check className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Godkjenn</TooltipContent>
+                        <TooltipContent>{t("auto.godkjenn")}</TooltipContent>
                       </Tooltip>
                     )}
                     {canApprove && isPending && onReject && (
@@ -129,7 +130,7 @@ export function AbsenceList({
                             <X className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Avvis</TooltipContent>
+                        <TooltipContent>{t("auto.avvis")}</TooltipContent>
                       </Tooltip>
                     )}
                     {canDelete && isPending && onDelete && (
@@ -144,7 +145,7 @@ export function AbsenceList({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Slett</TooltipContent>
+                        <TooltipContent>{t("auto.slett")}</TooltipContent>
                       </Tooltip>
                     )}
                   </div>

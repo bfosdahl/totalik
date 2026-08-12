@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { t } from "@/i18n/t";
 
 /**
  * Personalliste
@@ -138,9 +139,9 @@ export default function Personalliste() {
         <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
           <TabsTrigger value="live"><Users className="mr-1 h-4 w-4" />Inne nå ({activeEntries.length})</TabsTrigger>
           <TabsTrigger value="guest"><UserPlus className="mr-1 h-4 w-4" />Innleid/vikar</TabsTrigger>
-          <TabsTrigger value="employees">Ansatte</TabsTrigger>
+          <TabsTrigger value="employees">{t("auto.ansatte")}</TabsTrigger>
           <TabsTrigger value="export"><FileArchive className="mr-1 h-4 w-4" />Arbeidstilsyn</TabsTrigger>
-          <TabsTrigger value="audit">Endringslogg</TabsTrigger>
+          <TabsTrigger value="audit">{t("auto.endringslogg")}</TabsTrigger>
           <TabsTrigger value="settings"><SettingsIcon className="mr-1 h-4 w-4" />Innstillinger</TabsTrigger>
         </TabsList>
 
@@ -149,13 +150,13 @@ export default function Personalliste() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Personer i lokalet akkurat nå</CardTitle>
+                <CardTitle>{t("auto.personer_i_lokalet_akkurat_naa")}</CardTitle>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Denne skjermen kan vises til Skatteetaten ved uanmeldt kontroll
+                  {t("auto.denne_skjermen_kan_vises_til_skatteetate")}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Label htmlFor="auto" className="text-xs">Auto‑oppdater</Label>
+                <Label htmlFor="auto" className="text-xs">{t("auto.auto_oppdater")}</Label>
                 <Switch id="auto" checked={autoRefresh} onCheckedChange={setAutoRefresh} />
                 <Button variant="ghost" size="icon" onClick={() => refetchActive()}>
                   <RefreshCw className="h-4 w-4" />
@@ -164,7 +165,7 @@ export default function Personalliste() {
             </CardHeader>
             <CardContent>
               {activeEntries.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Ingen er stemplet inn akkurat nå</p>
+                <p className="text-center text-muted-foreground py-8">{t("auto.ingen_er_stemplet_inn_akkurat_naa")}</p>
               ) : (
                 <div className="space-y-2">
                   {activeEntries.map((e: any) => {
@@ -174,7 +175,7 @@ export default function Personalliste() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold">{e.user_name || e.guest_name}</span>
-                            {e.is_guest_worker && <Badge variant="secondary">Innleid</Badge>}
+                            {e.is_guest_worker && <Badge variant="secondary">{t("auto.innleid")}</Badge>}
                             {e.guest_employer && <Badge variant="outline" className="text-xs">{e.guest_employer}</Badge>}
                             {onBreak && <Badge className="bg-amber-500"><Coffee className="mr-1 h-3 w-3" />På pause</Badge>}
                           </div>
@@ -205,9 +206,9 @@ export default function Personalliste() {
         <TabsContent value="employees">
           <Card>
             <CardHeader>
-              <CardTitle>Fødselsnummer og innkvartering</CardTitle>
+              <CardTitle>{t("auto.foedselsnummer_og_innkvartering")}</CardTitle>
               <p className="text-xs text-muted-foreground">
-                Skatteetaten krever fnr/D‑nr på personalliste. Arbeidstilsynet spør etter adresse hvis arbeidsgiver stiller bolig.
+                {t("auto.skatteetaten_krever_fnr_d_nr_paa_persona")}
               </p>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -215,7 +216,7 @@ export default function Personalliste() {
                 <EmployeeRow key={emp.id} employee={emp} companyId={companyId!} onSaved={() => qc.invalidateQueries({ queryKey: ["personalliste-employees"] })} />
               ))}
               {employees.length === 0 && (
-                <p className="text-center text-muted-foreground py-6">Ingen aktive ansatte</p>
+                <p className="text-center text-muted-foreground py-6">{t("auto.ingen_aktive_ansatte_2")}</p>
               )}
             </CardContent>
           </Card>
@@ -231,14 +232,14 @@ export default function Personalliste() {
         <TabsContent value="audit">
           <Card>
             <CardHeader>
-              <CardTitle>Endringslogg for stemplinger</CardTitle>
+              <CardTitle>{t("auto.endringslogg_for_stemplinger")}</CardTitle>
               <p className="text-xs text-muted-foreground">
                 Bokføringsforskriften krever at endringer i elektronisk personalliste logges (hvem, hva, når).
               </p>
             </CardHeader>
             <CardContent>
               {auditEntries.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Ingen endringer registrert</p>
+                <p className="text-center text-muted-foreground py-8">{t("auto.ingen_endringer_registrert")}</p>
               ) : (
                 <div className="space-y-2 text-sm">
                   {auditEntries.map((a: any) => (
@@ -287,7 +288,7 @@ function EmployeeRow({ employee, companyId, onSaved }: { employee: any; companyI
       if (nid) {
         const parsed = nidSchema.safeParse(nid);
         if (!parsed.success) {
-          toast({ title: "Ugyldig ID", description: "Fnr/D‑nr må være 6–20 tegn", variant: "destructive" });
+          toast({ title: "Ugyldig ID", description: t("auto.fnr_d_nr_maa_vaere_6_20_tegn"), variant: "destructive" });
           setSaving(false);
           return;
         }
@@ -339,35 +340,35 @@ function EmployeeRow({ employee, companyId, onSaved }: { employee: any; companyI
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Type ID</Label>
+              <Label>{t("auto.type_id")}</Label>
               <Select value={idType} onValueChange={setIdType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fnr">Fødselsnummer</SelectItem>
-                  <SelectItem value="dnr">D‑nummer</SelectItem>
-                  <SelectItem value="passport">Passnummer</SelectItem>
+                  <SelectItem value="fnr">{t("auto.foedselsnummer")}</SelectItem>
+                  <SelectItem value="dnr">{t("auto.d_nummer")}</SelectItem>
+                  <SelectItem value="passport">{t("auto.passnummer")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Nummer</Label>
-              <Input value={nid} onChange={(e) => setNid(e.target.value)} placeholder="11 siffer for fnr/dnr" />
+              <Label>{t("auto.nummer")}</Label>
+              <Input value={nid} onChange={(e) => setNid(e.target.value)} placeholder={t("auto.11_siffer_for_fnr_dnr")} />
             </div>
             <div className="border-t pt-3">
               <div className="flex items-center justify-between">
-                <Label>Arbeidsgiver stiller bolig/innkvartering</Label>
+                <Label>{t("auto.arbeidsgiver_stiller_bolig_innkvartering")}</Label>
                 <Switch checked={accProvided} onCheckedChange={setAccProvided} />
               </div>
               {accProvided && (
                 <div className="mt-3">
-                  <Label>Adresse til boligen</Label>
+                  <Label>{t("auto.adresse_til_boligen")}</Label>
                   <Textarea value={accAddress} onChange={(e) => setAccAddress(e.target.value)} rows={2} />
                 </div>
               )}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>{t("auto.avbryt")}</Button>
             <Button onClick={save} disabled={saving}>{saving ? "Lagrer..." : "Lagre"}</Button>
           </DialogFooter>
         </DialogContent>
@@ -416,7 +417,7 @@ function GuestWorkerPanel({ companyId, activeEntries }: { companyId: string; act
       setName(""); setNid(""); setEmployer(""); setRole("");
       qc.invalidateQueries({ queryKey: ["personalliste-active"] });
     } catch (e: any) {
-      toast({ title: "Feil", description: e.message, variant: "destructive" });
+      toast({ title: t("auto.feil"), description: e.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -442,14 +443,14 @@ function GuestWorkerPanel({ companyId, activeEntries }: { companyId: string; act
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Innleide / vikarer / ulønnede</CardTitle>
-          <p className="text-xs text-muted-foreground">Personer som er på jobb hos dere uten å være ansatt her</p>
+          <CardTitle>{t("auto.innleide_vikarer_uloennede")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("auto.personer_som_er_paa_jobb_hos_dere_uten_a")}</p>
         </div>
         <Button onClick={() => setOpen(true)}><UserPlus className="mr-2 h-4 w-4" />Stemple inn</Button>
       </CardHeader>
       <CardContent>
         {guestActive.length === 0 ? (
-          <p className="text-center text-muted-foreground py-6">Ingen innleide er inne nå</p>
+          <p className="text-center text-muted-foreground py-6">{t("auto.ingen_innleide_er_inne_naa")}</p>
         ) : (
           <div className="space-y-2">
             {guestActive.map((e: any) => (
@@ -471,15 +472,15 @@ function GuestWorkerPanel({ companyId, activeEntries }: { companyId: string; act
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-          <DialogHeader><DialogTitle>Stemple inn innleid / vikar</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("auto.stemple_inn_innleid_vikar")}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Navn *</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-            <div><Label>Fnr / D‑nr</Label><Input value={nid} onChange={(e) => setNid(e.target.value)} /></div>
-            <div><Label>Arbeidsgiver / vikarbyrå *</Label><Input value={employer} onChange={(e) => setEmployer(e.target.value)} /></div>
-            <div><Label>Rolle / stilling</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Kokk, servitør, ..." /></div>
+            <div><Label>{t("auto.navn_3")}</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+            <div><Label>{t("auto.fnr_d_nr")}</Label><Input value={nid} onChange={(e) => setNid(e.target.value)} /></div>
+            <div><Label>{t("auto.arbeidsgiver_vikarbyraa")}</Label><Input value={employer} onChange={(e) => setEmployer(e.target.value)} /></div>
+            <div><Label>{t("auto.rolle_stilling")}</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder={t("auto.kokk_servitoer")} /></div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>{t("auto.avbryt")}</Button>
             <Button onClick={clockInGuest} disabled={saving}>{saving ? "..." : "Stemple inn"}</Button>
           </DialogFooter>
         </DialogContent>
@@ -529,32 +530,32 @@ function PersonallistaeSettingsCard({ companyId, company }: { companyId: string;
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Personalliste & pauseregler</CardTitle>
+        <CardTitle>{t("auto.personalliste_pauseregler")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="flex items-center justify-between border-b pb-4">
           <div>
             <Label className="text-base">Aktiver personalliste (Skatteetaten)</Label>
             <p className="text-xs text-muted-foreground mt-1">
-              For serveringssteder m.fl. som er pålagt å føre personalliste
+              {t("auto.for_serveringssteder_m_fl_som_er_paalagt")}
             </p>
           </div>
           <Switch checked={enabled} onCheckedChange={setEnabled} />
         </div>
         <div>
           <div className="flex items-center justify-between">
-            <Label>Er pauser betalt?</Label>
+            <Label>{t("auto.er_pauser_betalt")}</Label>
             <Switch checked={paid} onCheckedChange={setPaid} />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">Arbeidstilsynet spør om dette.</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("auto.arbeidstilsynet_spoer_om_dette")}</p>
         </div>
         <div>
           <Label>Standard pauselengde (minutter)</Label>
           <Input type="number" min={0} max={240} value={minutes} onChange={(e) => setMinutes(parseInt(e.target.value || "0"))} />
         </div>
         <div>
-          <Label>Beskrivelse av pauserutine</Label>
-          <Textarea rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="F.eks.: Ansatte tar pauser fortløpende ved lav trafikk, minimum 30 min ved skift over 5,5 t." />
+          <Label>{t("auto.beskrivelse_av_pauserutine")}</Label>
+          <Textarea rows={3} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder={t("auto.f_eks_ansatte_tar_pauser_fortloepende_ve")} />
         </div>
         <Button onClick={save} disabled={saving}>{saving ? "Lagrer..." : "Lagre innstillinger"}</Button>
       </CardContent>

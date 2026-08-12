@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MyDocumentsTab } from "@/components/documents/MyDocumentsTab";
 import { OrderPostersTab } from "@/components/documents/OrderPostersTab";
+import { t } from "@/i18n/t";
 
 interface AdminDocument {
   id: string;
@@ -96,7 +97,7 @@ export default function IkMatDokumentsenter() {
       window.open(data.signedUrl, "_blank");
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Kunne ikke åpne dokument");
+      toast.error(t("auto.kunne_ikke_aapne_dokument"));
     }
   };
 
@@ -208,7 +209,7 @@ export default function IkMatDokumentsenter() {
           <CollapsibleContent>
             <CardContent className="pt-0 pb-4">
               {filteredDocs.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-2">Ingen dokumenter i denne mappen</p>
+                <p className="text-sm text-muted-foreground py-2">{t("auto.ingen_dokumenter_i_denne_mappen")}</p>
               ) : (
                 <div className="grid gap-2">
                   {filteredDocs.map((doc) => (
@@ -233,7 +234,7 @@ export default function IkMatDokumentsenter() {
                         className="shrink-0"
                       >
                         <Download className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Last ned</span>
+                        <span className="hidden sm:inline">{t("auto.last_ned")}</span>
                       </Button>
                     </div>
                   ))}
@@ -266,17 +267,17 @@ export default function IkMatDokumentsenter() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Tilbake
           </Button>
-          <h1 className="text-2xl sm:text-3xl font-bold">Dokumentsenter</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.dokumentsenter")}</h1>
           <p className="text-muted-foreground mt-1">
-            Maler og egne dokumenter for IK-Mat
+            {t("auto.maler_og_egne_dokumenter_for_ik_mat")}
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full max-w-lg grid-cols-3">
-            <TabsTrigger value="maler">Maler</TabsTrigger>
-            <TabsTrigger value="mine">Mine dokumenter</TabsTrigger>
-            <TabsTrigger value="bestill">Bestill plakater</TabsTrigger>
+            <TabsTrigger value="maler">{t("auto.maler")}</TabsTrigger>
+            <TabsTrigger value="mine">{t("auto.mine_dokumenter")}</TabsTrigger>
+            <TabsTrigger value="bestill">{t("auto.bestill_plakater")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="maler" className="mt-6">
@@ -284,7 +285,7 @@ export default function IkMatDokumentsenter() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk i dokumenter..."
+                  placeholder={t("auto.soek_i_dokumenter")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -301,9 +302,9 @@ export default function IkMatDokumentsenter() {
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                   <FolderOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-                  <h3 className="font-medium text-lg">Ingen maler tilgjengelig ennå</h3>
+                  <h3 className="font-medium text-lg">{t("auto.ingen_maler_tilgjengelig_ennaa")}</h3>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Dokumentmaler vil bli lagt til av systemadministrator
+                    {t("auto.dokumentmaler_vil_bli_lagt_til_av_system")}
                   </p>
                 </CardContent>
               </Card>

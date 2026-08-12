@@ -16,6 +16,7 @@ import {
   Pencil
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface ShiftDetailsDialogProps {
   schedule: WorkSchedule | null;
@@ -91,7 +92,7 @@ export function ShiftDetailsDialog({
           {/* Notes */}
           {schedule.notes && (
             <div className="text-sm bg-muted/50 p-3 rounded-lg">
-              <span className="text-muted-foreground">Notater:</span>
+              <span className="text-muted-foreground">{t("auto.notater_2")}</span>
               <p className="mt-1">{schedule.notes}</p>
             </div>
           )}

@@ -13,6 +13,7 @@ import { ConductMeetingDialog } from "@/components/hr/ConductMeetingDialog";
 import { MeetingTemplateManager } from "@/components/hr/MeetingTemplateManager";
 import { format, parseISO, isAfter, addDays } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface HrMeeting {
   id: string;
@@ -68,11 +69,11 @@ export default function HrMeetings() {
     try {
       const { error } = await supabase.from("hr_meetings").delete().eq("id", id);
       if (error) throw error;
-      toast({ title: "Samtale slettet" });
+      toast({ title: t("auto.samtale_slettet") });
       fetchMeetings();
     } catch (error) {
       console.error("Error deleting meeting:", error);
-      toast({ title: "Feil", description: "Kunne ikke slette", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_slette"), variant: "destructive" });
     }
   };
 
@@ -96,7 +97,7 @@ export default function HrMeetings() {
             {meetingTypeLabels[meeting.meeting_type] || meeting.meeting_type}
           </Badge>
           {meeting.status === "completed" && (
-            <Badge variant="default" className="text-xs bg-green-600">Gjennomført</Badge>
+            <Badge variant="default" className="text-xs bg-green-600">{t("auto.gjennomfoert")}</Badge>
           )}
         </div>
         <div className="text-sm text-muted-foreground mt-1">
@@ -115,13 +116,13 @@ export default function HrMeetings() {
             variant="outline"
             className="gap-1.5"
             onClick={() => setConductMeeting(meeting)}
-            title="Gjennomfør samtale"
+            title={t("auto.gjennomfoer_samtale")}
           >
             <PlayCircle className="w-4 h-4" />
             Gjennomfør
           </Button>
         )}
-        <Button size="icon" variant="ghost" onClick={() => deleteMeeting(meeting.id)} title="Slett">
+        <Button size="icon" variant="ghost" onClick={() => deleteMeeting(meeting.id)} title={t("auto.slett")}>
           <Trash2 className="w-4 h-4 text-destructive" />
         </Button>
       </div>
@@ -134,7 +135,7 @@ export default function HrMeetings() {
         <UserCheck className="w-12 h-12 text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">{message}</h3>
         <p className="text-muted-foreground mb-4 max-w-sm">
-          Start med å planlegge medarbeidersamtaler for å følge opp dine ansatte
+          {t("auto.start_med_aa_planlegge_medarbeidersamtal")}
         </p>
         <ScheduleMeetingDialog onCreated={fetchMeetings} trigger={
           <Button><Calendar className="w-4 h-4 mr-2" />Planlegg første samtale</Button>
@@ -148,9 +149,9 @@ export default function HrMeetings() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Medarbeidersamtaler</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("auto.medarbeidersamtaler")}</h1>
             <p className="text-muted-foreground mt-1">
-              Planlegg, gjennomfør og følg opp medarbeidersamtaler
+              {t("auto.planlegg_gjennomfoer_og_foelg_opp_medarb")}
             </p>
           </div>
           <ScheduleMeetingDialog onCreated={fetchMeetings} />
@@ -159,15 +160,15 @@ export default function HrMeetings() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card className="p-4">
             <div className="text-2xl font-bold">{planned.length}</div>
-            <div className="text-sm text-muted-foreground">Planlagte samtaler</div>
+            <div className="text-sm text-muted-foreground">{t("auto.planlagte_samtaler")}</div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold">{completedThisYear.length}</div>
-            <div className="text-sm text-muted-foreground">Gjennomført i år</div>
+            <div className="text-sm text-muted-foreground">{t("auto.gjennomfoert_i_aar")}</div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold">{dueSoon.length}</div>
-            <div className="text-sm text-muted-foreground">Forfaller snart</div>
+            <div className="text-sm text-muted-foreground">{t("auto.forfaller_snart")}</div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold">
@@ -175,15 +176,15 @@ export default function HrMeetings() {
                 ? Math.round((completed.length / meetings.length) * 100) + "%"
                 : "–"}
             </div>
-            <div className="text-sm text-muted-foreground">Dekningsgrad</div>
+            <div className="text-sm text-muted-foreground">{t("auto.dekningsgrad")}</div>
           </Card>
         </div>
 
         <Tabs defaultValue="upcoming">
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="upcoming">Kommende</TabsTrigger>
-            <TabsTrigger value="completed">Gjennomført</TabsTrigger>
-            <TabsTrigger value="all">Alle</TabsTrigger>
+            <TabsTrigger value="upcoming">{t("auto.kommende")}</TabsTrigger>
+            <TabsTrigger value="completed">{t("auto.gjennomfoert")}</TabsTrigger>
+            <TabsTrigger value="all">{t("auto.alle")}</TabsTrigger>
             <TabsTrigger value="templates" className="gap-1.5">
               <FileText className="w-3.5 h-3.5" />
               Spørsmålsmaler

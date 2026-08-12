@@ -24,6 +24,7 @@ import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments, useUserDepartments } from "@/hooks/useDepartments";
 import { useQuery } from "@tanstack/react-query";
+import { t } from "@/i18n/t";
 
 export default function MyEmployeeCard() {
   const { profile, company, user } = useAuth();
@@ -169,11 +170,11 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
   };
 
   const getCourseStatus = (expiryDate: string | null) => {
-    if (!expiryDate) return { label: "Ingen utløp", variant: "secondary" as const };
+    if (!expiryDate) return { label: t("auto.ingen_utloep"), variant: "secondary" as const };
     const daysUntil = differenceInDays(new Date(expiryDate), new Date());
-    if (daysUntil < 0) return { label: "Utgått", variant: "destructive" as const };
-    if (daysUntil <= 30) return { label: "Utløper snart", variant: "outline" as const };
-    return { label: "Gyldig", variant: "secondary" as const };
+    if (daysUntil < 0) return { label: t("auto.utgaatt"), variant: "destructive" as const };
+    if (daysUntil <= 30) return { label: t("auto.utloeper_snart"), variant: "outline" as const };
+    return { label: t("auto.gyldig"), variant: "secondary" as const };
   };
 
   const canManage = true; // Users can always manage their own card
@@ -184,33 +185,33 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
         <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto gap-1">
           <TabsTrigger value="info" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <User className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Informasjon</span>
-            <span className="sm:hidden">Info</span>
+            <span className="hidden sm:inline">{t("auto.informasjon")}</span>
+            <span className="sm:hidden">{t("auto.info")}</span>
           </TabsTrigger>
           <TabsTrigger value="departments" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <Building2 className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Avdelinger</span>
-            <span className="sm:hidden">Avd</span>
+            <span className="hidden sm:inline">{t("auto.avdelinger")}</span>
+            <span className="sm:hidden">{t("auto.avd")}</span>
           </TabsTrigger>
           <TabsTrigger value="hmscard" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">HMS-kort</span>
+            <span className="hidden sm:inline">{t("auto.hms_kort")}</span>
             <span className="sm:hidden">HMS</span>
           </TabsTrigger>
           <TabsTrigger value="documents" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Dokumenter</span>
-            <span className="sm:hidden">Dok</span>
+            <span className="hidden sm:inline">{t("auto.dokumenter")}</span>
+            <span className="sm:hidden">{t("auto.dok")}</span>
           </TabsTrigger>
           <TabsTrigger value="courses" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Kurs</span>
-            <span className="sm:hidden">Kurs</span>
+            <span className="hidden sm:inline">{t("auto.kurs")}</span>
+            <span className="sm:hidden">{t("auto.kurs")}</span>
           </TabsTrigger>
           <TabsTrigger value="signature" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2">
             <Pen className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Signatur</span>
-            <span className="sm:hidden">Sign</span>
+            <span className="hidden sm:inline">{t("auto.signatur")}</span>
+            <span className="sm:hidden">{t("auto.sign")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -219,8 +220,8 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-lg">Kontaktinformasjon</CardTitle>
-                <CardDescription>Din personlige informasjon</CardDescription>
+                <CardTitle className="text-lg">{t("auto.kontaktinformasjon")}</CardTitle>
+                <CardDescription>{t("auto.din_personlige_informasjon")}</CardDescription>
               </div>
               {!isEditing && (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
@@ -234,14 +235,14 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">E-post</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.e_post_2")}</p>
                     <p>{employee.email || "Ikke angitt"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Telefon</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.telefon")}</p>
                     {isEditing ? (
                       <Input
                         value={editData.phone}
@@ -263,34 +264,34 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                 <Users className="w-5 h-5" />
                 Pårørende
               </CardTitle>
-              <CardDescription>Kontaktperson ved nødstilfeller</CardDescription>
+              <CardDescription>{t("auto.kontaktperson_ved_noedstilfeller")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {isEditing ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label>Navn</Label>
-                    <Input value={editData.next_of_kin_name} onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_name: e.target.value }))} placeholder="Navn på pårørende" />
+                    <Label>{t("auto.navn_2")}</Label>
+                    <Input value={editData.next_of_kin_name} onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_name: e.target.value }))} placeholder={t("auto.navn_paa_paaroerende")} />
                   </div>
                   <div>
-                    <Label>Telefon</Label>
-                    <Input value={editData.next_of_kin_phone} onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_phone: e.target.value }))} placeholder="Telefonnummer" />
+                    <Label>{t("auto.telefon")}</Label>
+                    <Input value={editData.next_of_kin_phone} onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_phone: e.target.value }))} placeholder={t("auto.telefonnummer")} />
                   </div>
                   <div>
-                    <Label>Relasjon</Label>
-                    <Input value={editData.next_of_kin_relation} onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_relation: e.target.value }))} placeholder="f.eks. Ektefelle, Forelder" />
+                    <Label>{t("auto.relasjon")}</Label>
+                    <Input value={editData.next_of_kin_relation} onChange={(e) => setEditData(prev => ({ ...prev, next_of_kin_relation: e.target.value }))} placeholder={t("auto.f_eks_ektefelle_forelder")} />
                   </div>
                 </div>
               ) : (
                 <>
                   {nok?.next_of_kin_name ? (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div><p className="text-sm text-muted-foreground">Navn</p><p>{nok.next_of_kin_name}</p></div>
-                      <div><p className="text-sm text-muted-foreground">Telefon</p><p>{nok.next_of_kin_phone || "Ikke angitt"}</p></div>
-                      <div><p className="text-sm text-muted-foreground">Relasjon</p><p>{nok.next_of_kin_relation || "Ikke angitt"}</p></div>
+                      <div><p className="text-sm text-muted-foreground">{t("auto.navn_2")}</p><p>{nok.next_of_kin_name}</p></div>
+                      <div><p className="text-sm text-muted-foreground">{t("auto.telefon")}</p><p>{nok.next_of_kin_phone || "Ikke angitt"}</p></div>
+                      <div><p className="text-sm text-muted-foreground">{t("auto.relasjon")}</p><p>{nok.next_of_kin_relation || "Ikke angitt"}</p></div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">Ingen pårørende registrert</p>
+                    <p className="text-muted-foreground">{t("auto.ingen_paaroerende_registrert")}</p>
                   )}
                 </>
               )}
@@ -318,7 +319,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                 <Building2 className="w-5 h-5" />
                 Avdelingstilhørighet
               </CardTitle>
-              <CardDescription>Dine avdelinger</CardDescription>
+              <CardDescription>{t("auto.dine_avdelinger")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {(deptsLoading || userDeptsLoading) ? (
@@ -335,7 +336,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                         </div>
                         <div>
                           <p className="font-medium">{company?.name || 'Hovedenheten'}</p>
-                          <p className="text-sm text-muted-foreground">Hovedenhet</p>
+                          <p className="text-sm text-muted-foreground">{t("auto.hovedenhet")}</p>
                         </div>
                       </div>
                       <Badge variant="secondary"><Check className="w-3 h-3 mr-1" />Tilhører</Badge>
@@ -356,7 +357,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                     </div>
                   ))}
                   {!isAssignedToMain && departments.filter(d => d.is_active && assignedDepartmentIds.includes(d.id)).length === 0 && (
-                    <p className="text-muted-foreground text-sm">Du er ikke tilordnet noen avdelinger ennå.</p>
+                    <p className="text-muted-foreground text-sm">{t("auto.du_er_ikke_tilordnet_noen_avdelinger_enn")}</p>
                   )}
                 </div>
               )}
@@ -373,20 +374,20 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
         <TabsContent value="documents" className="space-y-4 mt-4">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-semibold">Dokumenter</h3>
-              <p className="text-sm text-muted-foreground">Dine opplastede dokumenter</p>
+              <h3 className="font-semibold">{t("auto.dokumenter")}</h3>
+              <p className="text-sm text-muted-foreground">{t("auto.dine_opplastede_dokumenter")}</p>
             </div>
             <Button onClick={() => setIsUploadDocOpen(true)}>
               <Upload className="w-4 h-4 mr-2" /> Last opp
             </Button>
           </div>
           {docsLoading ? (
-            <p className="text-muted-foreground">Laster dokumenter...</p>
+            <p className="text-muted-foreground">{t("auto.laster_dokumenter")}</p>
           ) : documents?.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
                 <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen dokumenter lastet opp</p>
+                <p>{t("auto.ingen_dokumenter_lastet_opp")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -422,20 +423,20 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
         <TabsContent value="courses" className="space-y-4 mt-4">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-semibold">Kurs og sertifiseringer</h3>
-              <p className="text-sm text-muted-foreground">Oversikt over dine kurs med automatisk varsling ved utløp</p>
+              <h3 className="font-semibold">{t("auto.kurs_og_sertifiseringer")}</h3>
+              <p className="text-sm text-muted-foreground">{t("auto.oversikt_over_dine_kurs_med_automatisk_v")}</p>
             </div>
             <Button onClick={() => setIsAddCourseOpen(true)}>
               <Plus className="w-4 h-4 mr-2" /> Legg til kurs
             </Button>
           </div>
           {coursesLoading ? (
-            <p className="text-muted-foreground">Laster kurs...</p>
+            <p className="text-muted-foreground">{t("auto.laster_kurs")}</p>
           ) : courses?.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
                 <GraduationCap className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen kurs registrert</p>
+                <p>{t("auto.ingen_kurs_registrert")}</p>
               </CardContent>
             </Card>
           ) : (

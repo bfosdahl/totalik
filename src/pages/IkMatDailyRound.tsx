@@ -28,12 +28,13 @@ import { useIkMatCleaningPlan } from "@/hooks/useIkMatCleaningPlan";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
+import { t } from "@/i18n/t";
 
 const TYPE_META = {
-  temperature: { icon: Thermometer, label: "Temperatur", color: "text-blue-600" },
-  checklist: { icon: ClipboardCheck, label: "Sjekkliste", color: "text-emerald-600" },
-  cleaning: { icon: SprayCan, label: "Renhold", color: "text-purple-600" },
-  custom: { icon: ListChecks, label: "Egendefinert", color: "text-amber-600" },
+  temperature: { icon: Thermometer, label: t("auto.temperatur"), color: "text-blue-600" },
+  checklist: { icon: ClipboardCheck, label: t("auto.sjekkliste"), color: "text-emerald-600" },
+  cleaning: { icon: SprayCan, label: t("auto.renhold"), color: "text-purple-600" },
+  custom: { icon: ListChecks, label: t("auto.egendefinert"), color: "text-amber-600" },
 } as const;
 
 export default function IkMatDailyRound() {
@@ -74,14 +75,14 @@ export default function IkMatDailyRound() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md">
           <CardHeader>
-            <CardTitle>Runde ikke funnet</CardTitle>
+            <CardTitle>{t("auto.runde_ikke_funnet")}</CardTitle>
             <CardDescription>
-              Denne runden finnes ikke eller er slettet.
+              {t("auto.denne_runden_finnes_ikke_eller_er_slette")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/ik-mat/kontroll?tab=runder")}>
-              Til Kontroll
+              {t("auto.til_kontroll")}
             </Button>
           </CardContent>
         </Card>
@@ -126,7 +127,7 @@ export default function IkMatDailyRound() {
     if (action === "done" && currentStation.type === "temperature") {
       const value = parseFloat(tempInput.replace(",", "."));
       if (isNaN(value)) {
-        toast.error("Skriv inn en gyldig temperatur");
+        toast.error(t("auto.skriv_inn_en_gyldig_temperatur"));
         return;
       }
       try {
@@ -274,7 +275,7 @@ export default function IkMatDailyRound() {
       });
       setFinished(true);
     } catch (e: any) {
-      toast.error("Kunne ikke lagre runde: " + e.message);
+      toast.error(t("auto.kunne_ikke_lagre_runde") + e.message);
     } finally {
       setSubmitting(false);
     }
@@ -285,14 +286,14 @@ export default function IkMatDailyRound() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md">
           <CardHeader>
-            <CardTitle>Ingen stasjoner i denne runden</CardTitle>
+            <CardTitle>{t("auto.ingen_stasjoner_i_denne_runden")}</CardTitle>
             <CardDescription>
-              Legg til stasjoner i runden for å bruke wizarden.
+              {t("auto.legg_til_stasjoner_i_runden_for_aa_bruke")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/ik-mat/kontroll?tab=runder")}>
-              Til Kontroll
+              {t("auto.til_kontroll")}
             </Button>
           </CardContent>
         </Card>
@@ -308,14 +309,14 @@ export default function IkMatDailyRound() {
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
               <PartyPopper className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle>Runde fullført!</CardTitle>
+            <CardTitle>{t("auto.runde_fullfoert")}</CardTitle>
             <CardDescription>
               {round.name} – {Object.values(results).filter((r) => r.status === "done").length} av {totalSteps} stasjoner gjennomført.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button className="w-full" onClick={() => navigate("/ik-mat/kontroll?tab=runder")}>
-              Til oversikten
+              {t("auto.til_oversikten")}
             </Button>
             <Button
               variant="outline"
@@ -382,7 +383,7 @@ export default function IkMatDailyRound() {
                 )}
                 {(equip.min_temp !== null || equip.max_temp !== null) && (
                   <div className="text-sm bg-muted rounded-md p-3">
-                    <span className="font-medium">Krav: </span>
+                    <span className="font-medium">{t("auto.krav")} </span>
                     {equip.min_temp !== null && <>min {equip.min_temp}°C</>}
                     {equip.min_temp !== null && equip.max_temp !== null && " / "}
                     {equip.max_temp !== null && <>maks {equip.max_temp}°C</>}
@@ -396,7 +397,7 @@ export default function IkMatDailyRound() {
                     inputMode="decimal"
                     step="0.1"
                     autoFocus
-                    placeholder="f.eks. 4"
+                    placeholder={t("auto.f_eks_4")}
                     value={tempInput}
                     onChange={(e) => setTempInput(e.target.value)}
                     className="text-2xl h-14 text-center"
@@ -433,16 +434,16 @@ export default function IkMatDailyRound() {
             {currentStation.type === "cleaning" && cleaning && (
               <div className="space-y-3">
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <div><span className="font-medium">Frekvens:</span> {cleaning.frequency}</div>
-                  <div><span className="font-medium">Metode:</span> {cleaning.method}</div>
-                  <div><span className="font-medium">Ansvarlig:</span> {cleaning.responsible}</div>
+                  <div><span className="font-medium">{t("auto.frekvens_3")}</span> {cleaning.frequency}</div>
+                  <div><span className="font-medium">{t("auto.metode_2")}</span> {cleaning.method}</div>
+                  <div><span className="font-medium">{t("auto.ansvarlig")}</span> {cleaning.responsible}</div>
                 </div>
                 <label className="flex items-center gap-3 p-3 rounded-md border hover:bg-muted cursor-pointer">
                   <Checkbox
                     checked={cleaningDone}
                     onCheckedChange={(v) => setCleaningDone(!!v)}
                   />
-                  <span className="text-sm font-medium">Renhold utført</span>
+                  <span className="text-sm font-medium">{t("auto.renhold_utfoert")}</span>
                 </label>
               </div>
             )}
@@ -475,7 +476,7 @@ export default function IkMatDailyRound() {
                 )}
                 {!currentStation.instructions && (!currentStation.checkpoints || currentStation.checkpoints.length === 0) && (
                   <p className="text-sm text-muted-foreground italic">
-                    Bekreft at punktet er utført, eller hopp over.
+                    {t("auto.bekreft_at_punktet_er_utfoert_eller_hopp")}
                   </p>
                 )}
               </div>
@@ -485,7 +486,7 @@ export default function IkMatDailyRound() {
               <Label htmlFor="note">Notat (valgfritt)</Label>
               <Textarea
                 id="note"
-                placeholder="Kommentar..."
+                placeholder={t("auto.kommentar")}
                 value={noteInput}
                 onChange={(e) => setNoteInput(e.target.value)}
                 rows={2}
@@ -513,11 +514,11 @@ export default function IkMatDailyRound() {
           <Button onClick={() => handleNext("done")} disabled={submitting}>
             {stepIdx === totalSteps - 1 ? (
               <>
-                Fullfør <CheckCircle2 className="h-4 w-4 ml-1" />
+                {t("auto.fullfoer")} <CheckCircle2 className="h-4 w-4 ml-1" />
               </>
             ) : (
               <>
-                Neste <ChevronRight className="h-4 w-4 ml-1" />
+                {t("auto.neste")} <ChevronRight className="h-4 w-4 ml-1" />
               </>
             )}
           </Button>

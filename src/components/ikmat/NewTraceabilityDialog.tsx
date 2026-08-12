@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { t } from "@/i18n/t";
 
 interface NewTraceabilityDialogProps {
   open: boolean;
@@ -193,7 +194,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Du må være innlogget for å skanne bilder");
+        toast.error(t("auto.du_maa_vaere_innlogget_for_aa_skanne_bil"));
         return;
       }
 
@@ -203,7 +204,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
 
       if (response.error) {
         console.error("Scan error:", response.error);
-        toast.error("Kunne ikke skanne bildet");
+        toast.error(t("auto.kunne_ikke_skanne_bildet"));
         return;
       }
 
@@ -219,11 +220,11 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
           production_date: extracted.production_date || prev.production_date,
         }));
         
-        toast.success("Informasjon hentet fra bildet!");
+        toast.success(t("auto.informasjon_hentet_fra_bildet"));
       }
     } catch (error) {
       console.error("Error scanning label:", error);
-      toast.error("Feil ved skanning av bilde");
+      toast.error(t("auto.feil_ved_skanning_av_bilde"));
     } finally {
       setIsScanning(false);
     }
@@ -375,9 +376,9 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrer varemottak</DialogTitle>
+          <DialogTitle>{t("auto.registrer_varemottak")}</DialogTitle>
           <DialogDescription>
-            Registrer informasjon om mottatt vare for sporbarhet
+            {t("auto.registrer_informasjon_om_mottatt_vare_fo")}
           </DialogDescription>
         </DialogHeader>
 
@@ -393,7 +394,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               </span>
             </Label>
             <p className="text-sm text-muted-foreground mb-2">
-              Ta bilde av frakteetiketten for automatisk utfylling av felt
+              {t("auto.ta_bilde_av_frakteetiketten_for_automati")}
             </p>
             <div className="flex flex-col gap-2">
               <input
@@ -462,7 +463,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
           {/* Internal Production Toggle */}
           <div className="flex items-start justify-between p-4 border rounded-lg bg-muted/30 gap-4">
             <div className="space-y-0.5">
-              <Label className="text-sm font-semibold">Egenprodusert mat</Label>
+              <Label className="text-sm font-semibold">{t("auto.egenprodusert_mat")}</Label>
               <p className="text-xs text-muted-foreground">
                 For mat laget på eget kjøkken (f.eks. bolognese, kake, ferdigretter)
               </p>
@@ -476,12 +477,12 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
           {formData.is_internal_production && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 border rounded-lg border-primary/30 bg-primary/5">
               <div className="space-y-2">
-                <Label htmlFor="produced_by">Laget av</Label>
+                <Label htmlFor="produced_by">{t("auto.laget_av")}</Label>
                 <Input
                   id="produced_by"
                   value={formData.produced_by}
                   onChange={(e) => setFormData({ ...formData, produced_by: e.target.value })}
-                  placeholder="Eks: Kari Nordmann"
+                  placeholder={t("auto.eks_kari_nordmann")}
                 />
               </div>
               <div className="space-y-2">
@@ -492,10 +493,10 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                   min="1"
                   value={formData.internal_shelf_life_days}
                   onChange={(e) => handleShelfLifeChange(e.target.value)}
-                  placeholder="Eks: 3"
+                  placeholder={t("auto.eks_3")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Beregner siste forbruksdag automatisk
+                  {t("auto.beregner_siste_forbruksdag_automatisk")}
                 </p>
               </div>
             </div>
@@ -503,7 +504,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
 
           {/* Supplier Selection */}
           <div className="space-y-2">
-            <Label>Leverandør *</Label>
+            <Label>{t("auto.leverandoer_2")}</Label>
             {suppliers.length > 0 ? (
               <div className="space-y-2">
                 <Select 
@@ -511,7 +512,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                   onValueChange={handleSupplierChange}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg leverandør" />
+                    <SelectValue placeholder={t("auto.velg_leverandoer")} />
                   </SelectTrigger>
                   <SelectContent>
                     {suppliers.map((supplier) => (
@@ -523,7 +524,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                       </SelectItem>
                     ))}
                     <SelectItem value="custom">
-                      <span className="text-muted-foreground">+ Annen leverandør</span>
+                      <span className="text-muted-foreground">{t("auto.annen_leverandoer")}</span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -531,7 +532,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                   <Input
                     value={formData.supplier_name}
                     onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
-                    placeholder="Skriv inn leverandørnavn"
+                    placeholder={t("auto.skriv_inn_leverandoernavn")}
                     required
                   />
                 )}
@@ -541,20 +542,20 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                 value={formData.supplier_name}
                 onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
                 required
-                placeholder="Navn på leverandør"
+                placeholder={t("auto.navn_paa_leverandoer")}
               />
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="product">Produktnavn *</Label>
+              <Label htmlFor="product">{t("auto.produktnavn")}</Label>
               <Input
                 id="product"
                 value={formData.product_name}
                 onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
                 required
-                placeholder="Navn på varen"
+                placeholder={t("auto.navn_paa_varen")}
               />
             </div>
             
@@ -569,7 +570,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                     onCheckedChange={(checked) => handleProductTypeChange("kjolevare", checked === true)}
                   />
                   <label htmlFor="type_kjolevare" className="text-sm cursor-pointer">
-                    Kjølevare
+                    {t("auto.kjoelevare")}
                   </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -579,7 +580,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                     onCheckedChange={(checked) => handleProductTypeChange("frysevare", checked === true)}
                   />
                   <label htmlFor="type_frysevare" className="text-sm cursor-pointer">
-                    Frysevare
+                    {t("auto.frysevare")}
                   </label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -589,34 +590,34 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                     onCheckedChange={(checked) => handleProductTypeChange("torrvar", checked === true)}
                   />
                   <label htmlFor="type_torrvar" className="text-sm cursor-pointer">
-                    Tørrvare
+                    {t("auto.toerrvare")}
                   </label>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="batch">Batch/partinummer</Label>
+              <Label htmlFor="batch">{t("auto.batch_partinummer")}</Label>
               <Input
                 id="batch"
                 value={formData.batch_number}
                 onChange={(e) => setFormData({ ...formData, batch_number: e.target.value })}
-                placeholder="Eks: LOT-12345"
+                placeholder={t("auto.eks_lot_12345")}
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="gtin">GTIN/Strekkode</Label>
+              <Label htmlFor="gtin">{t("auto.gtin_strekkode")}</Label>
               <Input
                 id="gtin"
                 value={formData.gtin}
                 onChange={(e) => setFormData({ ...formData, gtin: e.target.value })}
-                placeholder="Eks: 07020009908407"
+                placeholder={t("auto.eks_07020009908407")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="receipt_date">Mottaksdato *</Label>
+              <Label htmlFor="receipt_date">{t("auto.mottaksdato")}</Label>
               <Input
                 id="receipt_date"
                 type="date"
@@ -627,7 +628,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <Label>Holdbarhet</Label>
+              <Label>{t("auto.holdbarhet")}</Label>
               <RadioGroup
                 value={formData.expiry_type}
                 onValueChange={(v) => setFormData({ ...formData, expiry_type: v as "best_before" | "use_by" })}
@@ -635,11 +636,11 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="best_before" id="best_before" />
-                  <label htmlFor="best_before" className="text-sm cursor-pointer">Best før</label>
+                  <label htmlFor="best_before" className="text-sm cursor-pointer">{t("auto.best_foer")}</label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="use_by" id="use_by" />
-                  <label htmlFor="use_by" className="text-sm cursor-pointer">Siste forbruksdag</label>
+                  <label htmlFor="use_by" className="text-sm cursor-pointer">{t("auto.siste_forbruksdag")}</label>
                 </div>
               </RadioGroup>
               <Input
@@ -651,7 +652,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="production_date">Produksjonsdato</Label>
+              <Label htmlFor="production_date">{t("auto.produksjonsdato")}</Label>
               <Input
                 id="production_date"
                 type="date"
@@ -668,7 +669,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                 step="0.1"
                 value={formData.receipt_temperature}
                 onChange={(e) => setFormData({ ...formData, receipt_temperature: e.target.value })}
-                placeholder="Eks: 4.5"
+                placeholder={t("auto.eks_4_5")}
               />
             </div>
           </div>
@@ -680,7 +681,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
 
           {/* Quality Checks */}
           <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-            <Label className="text-sm font-medium">Kvalitetskontroll</Label>
+            <Label className="text-sm font-medium">{t("auto.kvalitetskontroll")}</Label>
             <div className="flex flex-col gap-3">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -691,7 +692,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                   }
                 />
                 <label htmlFor="packaging_ok" className="text-sm cursor-pointer">
-                  Emballasje er uskadet
+                  {t("auto.emballasje_er_uskadet")}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -703,14 +704,14 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                   }
                 />
                 <label htmlFor="temperature_ok" className="text-sm cursor-pointer">
-                  Temperatur ved mottak er akseptabel
+                  {t("auto.temperatur_ved_mottak_er_akseptabel")}
                 </label>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="document">Følgeseddel/faktura</Label>
+            <Label htmlFor="document">{t("auto.foelgeseddel_faktura")}</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="document"
@@ -731,15 +732,15 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              PDF, JPG eller PNG
+              {t("auto.pdf_jpg_eller_png")}
             </p>
           </div>
 
           {/* Allergens */}
           <div className="space-y-3 p-4 border rounded-lg">
-            <Label className="text-sm font-medium">Allergener</Label>
+            <Label className="text-sm font-medium">{t("auto.allergener")}</Label>
             <p className="text-xs text-muted-foreground -mt-1">
-              Velg de 14 lovpålagte allergenene som finnes i varen
+              {t("auto.velg_de_14_lovpaalagte_allergenene_som_f")}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {ALLERGEN_OPTIONS.map((allergen) => (
@@ -758,12 +759,12 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Merknader</Label>
+            <Label htmlFor="notes">{t("auto.merknader")}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Eventuell tilleggsinformasjon..."
+              placeholder={t("auto.eventuell_tilleggsinformasjon")}
               rows={3}
             />
           </div>

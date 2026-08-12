@@ -15,6 +15,7 @@ import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface NewSurveyDialogProps {
   open: boolean;
@@ -34,7 +35,7 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
 
   const handleSubmit = async () => {
     if (!company?.id || !title.trim()) {
-      toast.error("Vennligst fyll ut tittel");
+      toast.error(t("auto.vennligst_fyll_ut_tittel"));
       return;
     }
 
@@ -54,7 +55,7 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
 
       if (error) throw error;
 
-      toast.success("Undersøkelse opprettet!");
+      toast.success(t("auto.undersoekelse_opprettet"));
       onOpenChange(false);
       onSuccess();
       // Reset form
@@ -66,7 +67,7 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
       setEndDate(addDays(new Date(), 14));
     } catch (error) {
       console.error("Error creating survey:", error);
-      toast.error("Kunne ikke opprette undersøkelse");
+      toast.error(t("auto.kunne_ikke_opprette_undersoekelse"));
     } finally {
       setIsSubmitting(false);
     }
@@ -76,50 +77,50 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Ny medarbeiderundersøkelse</DialogTitle>
+          <DialogTitle>{t("auto.ny_medarbeiderundersoekelse")}</DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="flex-1 max-h-[60vh] pr-4">
           <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Tittel *</Label>
+            <Label htmlFor="title">{t("auto.tittel_2")}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="F.eks. Pulsmåling Q1 2026"
+              placeholder={t("auto.f_eks_pulsmaaling_q1_2026")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Beskrivelse</Label>
+            <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Kort beskrivelse av undersøkelsen..."
+              placeholder={t("auto.kort_beskrivelse_av_undersoekelsen")}
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Type undersøkelse</Label>
+            <Label>{t("auto.type_undersoekelse")}</Label>
             <Select value={surveyType} onValueChange={setSurveyType}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pulse">Pulsmåling</SelectItem>
-                <SelectItem value="engagement">Engasjementsundersøkelse</SelectItem>
-                <SelectItem value="satisfaction">Medarbeidertilfredshet</SelectItem>
-                <SelectItem value="custom">Egendefinert</SelectItem>
+                <SelectItem value="pulse">{t("auto.pulsmaaling")}</SelectItem>
+                <SelectItem value="engagement">{t("auto.engasjementsundersoekelse")}</SelectItem>
+                <SelectItem value="satisfaction">{t("auto.medarbeidertilfredshet")}</SelectItem>
+                <SelectItem value="custom">{t("auto.egendefinert")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Startdato</Label>
+              <Label>{t("auto.startdato")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -139,7 +140,7 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
             </div>
 
             <div className="space-y-2">
-              <Label>Sluttdato</Label>
+              <Label>{t("auto.sluttdato")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -161,9 +162,9 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Anonym undersøkelse</Label>
+              <Label>{t("auto.anonym_undersoekelse")}</Label>
               <p className="text-sm text-muted-foreground">
-                Svar kan ikke spores tilbake til enkeltpersoner
+                {t("auto.svar_kan_ikke_spores_tilbake_til_enkeltp")}
               </p>
             </div>
             <Switch checked={isAnonymous} onCheckedChange={setIsAnonymous} />
@@ -172,7 +173,7 @@ export function NewSurveyDialog({ open, onOpenChange, onSuccess }: NewSurveyDial
         </ScrollArea>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting || !title.trim()}>
             {isSubmitting ? "Oppretter..." : "Opprett undersøkelse"}

@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, X } from 'lucide-react';
+import { t } from "@/i18n/t";
 
 interface CreateChecklistDialogProps {
   open: boolean;
@@ -78,20 +79,20 @@ export const CreateChecklistDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Opprett ny sjekkliste</DialogTitle>
+          <DialogTitle>{t("auto.opprett_ny_sjekkliste")}</DialogTitle>
           <DialogDescription>
-            Lag en tilpasset sjekkliste for ditt behov
+            {t("auto.lag_en_tilpasset_sjekkliste_for_ditt_beh")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Navn på sjekkliste *</Label>
+            <Label htmlFor="name">{t("auto.navn_paa_sjekkliste")}</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="F.eks. Ukentlig kjøkkensjekk"
+              placeholder={t("auto.f_eks_ukentlig_kjoekkensjekk")}
             />
           </div>
 
@@ -101,14 +102,14 @@ export const CreateChecklistDialog = ({
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Beskriv hva sjekklisten brukes til..."
+              placeholder={t("auto.beskriv_hva_sjekklisten_brukes_til")}
               rows={2}
             />
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Kontrollpunkter *</Label>
+              <Label>{t("auto.kontrollpunkter")}</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -146,7 +147,7 @@ export const CreateChecklistDialog = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button
             onClick={handleSave}

@@ -15,6 +15,7 @@ import { RiskSummaryCard } from "@/components/ikmat/RiskSummaryCard";
 import { ActionPlanOverview } from "@/components/ikmat/ActionPlanOverview";
 import { ControlPlanOverview } from "@/components/ikmat/ControlPlanOverview";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { t } from "@/i18n/t";
 
 const IkMatRisikoOgTiltak = () => {
   const navigate = useNavigate();
@@ -251,7 +252,7 @@ const IkMatRisikoOgTiltak = () => {
               Risikovurdering & Tiltak
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              HACCP-basert fareanalyse med handlingsplan
+              {t("auto.haccp_basert_fareanalyse_med_handlingspl")}
             </p>
           </div>
           <Button 
@@ -303,10 +304,10 @@ const IkMatRisikoOgTiltak = () => {
               <div className="text-center py-12">
                 <ShieldCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                 <h3 className="font-medium text-muted-foreground mb-2">
-                  Ingen risikoer definert
+                  {t("auto.ingen_risikoer_definert")}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Start med å identifisere farer i din matproduksjon
+                  {t("auto.start_med_aa_identifisere_farer_i_din_ma")}
                 </p>
                 <Button onClick={handleAddRisk}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -331,8 +332,7 @@ const IkMatRisikoOgTiltak = () => {
               <Alert className="bg-muted/50 border-muted">
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-xs text-muted-foreground">
-                  Klikk på en risiko for å se detaljer, redigere og legge til tiltak. 
-                  Risikoer merket som KKP krever systematisk overvåking etter HACCP-prinsippene.
+                  {t("auto.klikk_paa_en_risiko_for_aa_se_detaljer_r")}
                 </AlertDescription>
               </Alert>
             )}

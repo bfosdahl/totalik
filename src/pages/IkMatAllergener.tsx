@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 import {
   Dialog,
   DialogContent,
@@ -226,7 +227,7 @@ const IkMatAllergener = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Laster...</p>
+            <p className="text-muted-foreground">{t("auto.laster")}</p>
           </div>
         </div>
       </AppLayout>
@@ -247,9 +248,9 @@ const IkMatAllergener = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Meny & Allergener</h1>
+            <h1 className="text-3xl font-bold mb-2">{t("auto.meny_allergener")}</h1>
             <p className="text-muted-foreground">
-              Legg til retter og marker hvilke av de 14 allergenene de inneholder
+              {t("auto.legg_til_retter_og_marker_hvilke_av_de_1")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -278,7 +279,7 @@ const IkMatAllergener = () => {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Du har ulagrede endringer. Husk å lagre før du forlater siden.
+              {t("auto.du_har_ulagrede_endringer_husk_aa_lagre_")}
             </AlertDescription>
           </Alert>
         )}
@@ -289,11 +290,9 @@ const IkMatAllergener = () => {
             <div className="flex flex-col sm:flex-row gap-4 items-start">
               <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-medium text-amber-900">14 merkepliktige allergener</p>
+                <p className="font-medium text-amber-900">{t("auto.14_merkepliktige_allergener")}</p>
                 <p className="text-sm text-amber-800">
-                  Alle ferdigpakket mat og serveringssteder må merke tydelig de 14 mest utbredte allergenene 
-                  i henhold til EU-forordning 1169/2011. Opp mot 25% av befolkningen har en eller annen form 
-                  for allergisk reaksjon på enkelte matvarer.
+                  {t("auto.alle_ferdigpakket_mat_og_serveringsstede")}
                 </p>
                 <div className="flex flex-wrap gap-1.5 pt-2">
                   {EU_ALLERGENS.map(allergen => (
@@ -322,7 +321,7 @@ const IkMatAllergener = () => {
                   Din meny
                 </CardTitle>
                 <CardDescription>
-                  Legg til retter og velg hvilke allergener de inneholder
+                  {t("auto.legg_til_retter_og_velg_hvilke_allergene")}
                 </CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -348,17 +347,17 @@ const IkMatAllergener = () => {
                         {editingItem ? 'Rediger rett' : 'Legg til ny rett'}
                       </DialogTitle>
                       <DialogDescription>
-                        Skriv inn navnet på retten og velg hvilke allergener den inneholder
+                        {t("auto.skriv_inn_navnet_paa_retten_og_velg_hvil")}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label htmlFor="itemName">Navn på rett</Label>
+                        <Label htmlFor="itemName">{t("auto.navn_paa_rett")}</Label>
                         <Input
                           id="itemName"
                           value={newItemName}
                           onChange={(e) => setNewItemName(e.target.value)}
-                          placeholder="F.eks. Pasta Carbonara"
+                          placeholder={t("auto.f_eks_pasta_carbonara")}
                           autoFocus
                         />
                       </div>
@@ -399,7 +398,7 @@ const IkMatAllergener = () => {
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={resetDialog}>
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                       <Button onClick={saveMenuItem}>
                         {editingItem ? 'Lagre endringer' : 'Legg til'}
@@ -414,10 +413,9 @@ const IkMatAllergener = () => {
             {menuItems.length === 0 ? (
               <div className="text-center py-16 border-2 border-dashed rounded-lg">
                 <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen retter lagt til</h3>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_retter_lagt_til")}</h3>
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Start med å legge til retter fra menyen din og marker hvilke allergener de inneholder.
-                  Du kan også laste inn en eksempel-meny for å komme raskt i gang.
+                  {t("auto.start_med_aa_legge_til_retter_fra_menyen")}
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button variant="outline" onClick={addExampleMenu}>
@@ -446,7 +444,7 @@ const IkMatAllergener = () => {
                         <h4 className="font-semibold text-lg">{item.name}</h4>
                         {itemAllergens.length > 0 ? (
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm text-muted-foreground">Inneholder:</span>
+                            <span className="text-sm text-muted-foreground">{t("auto.inneholder_2")}</span>
                             {itemAllergens.map((allergen) => (
                               <Badge 
                                 key={allergen!.id} 
@@ -460,7 +458,7 @@ const IkMatAllergener = () => {
                           </div>
                         ) : (
                           <p className="text-sm text-muted-foreground">
-                            Ingen allergener registrert
+                            {t("auto.ingen_allergener_registrert")}
                           </p>
                         )}
                       </div>
@@ -492,25 +490,25 @@ const IkMatAllergener = () => {
         {menuItems.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Oppsummering</CardTitle>
+              <CardTitle className="text-lg">{t("auto.oppsummering")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
                   <p className="text-3xl font-bold">{menuItems.length}</p>
-                  <p className="text-sm text-muted-foreground">Retter i menyen</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.retter_i_menyen")}</p>
                 </div>
                 <div className="text-center p-4 bg-muted/50 rounded-lg">
                   <p className="text-3xl font-bold">
                     {new Set(menuItems.flatMap(m => m.allergenIds)).size}
                   </p>
-                  <p className="text-sm text-muted-foreground">Unike allergener</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.unike_allergener")}</p>
                 </div>
                 <div className="text-center p-4 bg-muted/50 rounded-lg sm:col-span-2 lg:col-span-1">
                   <p className="text-3xl font-bold">
                     {menuItems.filter(m => m.allergenIds.length === 0).length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Allergenfrie retter</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.allergenfrie_retter")}</p>
                 </div>
               </div>
             </CardContent>

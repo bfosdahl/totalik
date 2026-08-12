@@ -36,6 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { t } from "@/i18n/t";
 
 const tripTypeLabels: Record<string, string> = {
   business: "Yrkeskjøring",
@@ -162,18 +163,18 @@ export default function MyDrivingLog() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">Kjørebok</h1>
+              <h1 className="text-3xl font-bold tracking-tight">{t("auto.kjoerebok")}</h1>
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="w-5 h-5 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Kjøreboken oppfyller kravene fra Skatteetaten for dokumentasjon av kjøring med firmabil og privat bil i yrkessammenheng.</p>
+                  <p>{t("auto.kjoereboken_oppfyller_kravene_fra_skatte")}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
             <p className="text-muted-foreground mt-1">
-              Dokumenter all kjøring i henhold til skattemyndighetenes krav
+              {t("auto.dokumenter_all_kjoering_i_henhold_til_sk")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -217,7 +218,7 @@ export default function MyDrivingLog() {
                     const userName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || "Ansatt";
                     exportDrivingLogToExcel(entries.data || [], userName);
                   }}>
-                    Alle år samlet
+                    {t("auto.alle_aar_samlet")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -326,10 +327,10 @@ export default function MyDrivingLog() {
         <div className="flex flex-wrap items-center gap-3">
           <Select value={yearFilter} onValueChange={(v) => { setYearFilter(v); setSelectedIds(new Set()); }}>
             <SelectTrigger className="w-32">
-              <SelectValue placeholder="År" />
+              <SelectValue placeholder={t("auto.aar")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle år</SelectItem>
+              <SelectItem value="all">{t("auto.alle_aar")}</SelectItem>
               {availableYears.map(y => (
                 <SelectItem key={y} value={String(y)}>{y}</SelectItem>
               ))}
@@ -337,10 +338,10 @@ export default function MyDrivingLog() {
           </Select>
           <Select value={monthFilter} onValueChange={(v) => { setMonthFilter(v); setSelectedIds(new Set()); }}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Måned" />
+              <SelectValue placeholder={t("auto.maaned")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle måneder</SelectItem>
+              <SelectItem value="all">{t("auto.alle_maaneder")}</SelectItem>
               {months.map(m => (
                 <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
               ))}
@@ -348,13 +349,13 @@ export default function MyDrivingLog() {
           </Select>
           <Select value={tripTypeFilter} onValueChange={(v) => { setTripTypeFilter(v); setSelectedIds(new Set()); }}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Turtype" />
+              <SelectValue placeholder={t("auto.turtype")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Alle turtyper</SelectItem>
-              <SelectItem value="business">Yrkeskjøring</SelectItem>
-              <SelectItem value="commute">Arbeidsreise</SelectItem>
-              <SelectItem value="private">Privat</SelectItem>
+              <SelectItem value="all">{t("auto.alle_turtyper")}</SelectItem>
+              <SelectItem value="business">{t("auto.yrkeskjoering")}</SelectItem>
+              <SelectItem value="commute">{t("auto.arbeidsreise")}</SelectItem>
+              <SelectItem value="private">{t("auto.privat")}</SelectItem>
             </SelectContent>
           </Select>
           <span className="text-sm text-muted-foreground">
@@ -410,8 +411,8 @@ export default function MyDrivingLog() {
             ) : filteredEntries.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground">
                 <Car className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">Ingen turer registrert</p>
-                <p className="text-sm mt-1">Klikk «Registrer tur» for å legge til din første kjøretur.</p>
+                <p className="font-medium">{t("auto.ingen_turer_registrert")}</p>
+                <p className="text-sm mt-1">{t("auto.klikk_registrer_tur_for_aa_legge_til_din")}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -422,17 +423,17 @@ export default function MyDrivingLog() {
                         <Checkbox
                           checked={allFilteredSelected}
                           onCheckedChange={toggleSelectAll}
-                          aria-label="Velg alle"
+                          aria-label={t("auto.velg_alle")}
                         />
                       </TableHead>
-                      <TableHead>Dato</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Formål</TableHead>
-                      <TableHead>Fra → Til</TableHead>
-                      <TableHead className="text-right">Km-start</TableHead>
-                      <TableHead className="text-right">Km-slutt</TableHead>
-                      <TableHead className="text-right">Distanse</TableHead>
-                      <TableHead>Bil</TableHead>
+                      <TableHead>{t("auto.dato")}</TableHead>
+                      <TableHead>{t("auto.type")}</TableHead>
+                      <TableHead>{t("auto.formaal")}</TableHead>
+                      <TableHead>{t("auto.fra_til_3")}</TableHead>
+                      <TableHead className="text-right">{t("auto.km_start")}</TableHead>
+                      <TableHead className="text-right">{t("auto.km_slutt")}</TableHead>
+                      <TableHead className="text-right">{t("auto.distanse")}</TableHead>
+                      <TableHead>{t("auto.bil")}</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -477,7 +478,7 @@ export default function MyDrivingLog() {
                                 size="icon"
                                 className="h-8 w-8"
                                 onClick={(e) => { e.stopPropagation(); setEditTrip(entry); }}
-                                title="Rediger tur"
+                                title={t("auto.rediger_tur")}
                               >
                                 <Pencil className="w-3.5 h-3.5" />
                               </Button>
@@ -517,8 +518,8 @@ export default function MyDrivingLog() {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-1">
-            <p>Elektronisk kjørebok skal inneholde: dato, formål, start- og sluttsted, kilometerstand ved start og slutt, og total kjørelengde.</p>
-            <p>Yrkeskjøring, arbeidsreise og privat kjøring skal føres separat. Kjøreboken skal oppdateres fortløpende.</p>
+            <p>{t("auto.elektronisk_kjoerebok_skal_inneholde_dat")}</p>
+            <p>{t("auto.yrkeskjoering_arbeidsreise_og_privat_kjo")}</p>
           </CardContent>
         </Card>
       </div>
@@ -560,13 +561,13 @@ export default function MyDrivingLog() {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett tur</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_tur")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne turen fra kjøreboken?
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne__2")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
@@ -589,7 +590,7 @@ export default function MyDrivingLog() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={bulkDeleting}>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel disabled={bulkDeleting}>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={handleBulkDelete}

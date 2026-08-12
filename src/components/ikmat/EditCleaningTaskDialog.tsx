@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { t } from "@/i18n/t";
 import {
   Select,
   SelectContent,
@@ -100,26 +101,26 @@ export const EditCleaningTaskDialog = ({
             {task ? 'Rediger renholdsoppgave' : 'Ny renholdsoppgave'}
           </DialogTitle>
           <DialogDescription>
-            Fyll ut informasjon om renholdsoppgaven
+            {t("auto.fyll_ut_informasjon_om_renholdsoppgaven")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="area">Område *</Label>
+            <Label htmlFor="area">{t("auto.omraade")}</Label>
             <Input
               id="area"
               value={area}
               onChange={(e) => setArea(e.target.value)}
-              placeholder="F.eks. Arbeidsbenker og overflater"
+              placeholder={t("auto.f_eks_arbeidsbenker_og_overflater")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="frequency">Frekvens *</Label>
+            <Label htmlFor="frequency">{t("auto.frekvens")}</Label>
             <Select value={frequency} onValueChange={setFrequency}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg frekvens" />
+                <SelectValue placeholder={t("auto.velg_frekvens")} />
               </SelectTrigger>
               <SelectContent>
                 {FREQUENCY_OPTIONS.map((option) => (
@@ -132,30 +133,30 @@ export const EditCleaningTaskDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="method">Metode *</Label>
+            <Label htmlFor="method">{t("auto.metode")}</Label>
             <Textarea
               id="method"
               value={method}
               onChange={(e) => setMethod(e.target.value)}
-              placeholder="Beskriv rengjøringsmetode..."
+              placeholder={t("auto.beskriv_rengjoeringsmetode")}
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="responsible">Ansvarlig *</Label>
+            <Label htmlFor="responsible">{t("auto.ansvarlig_3")}</Label>
             <Input
               id="responsible"
               value={responsible}
               onChange={(e) => setResponsible(e.target.value)}
-              placeholder="F.eks. Alle ansatte, Vaktansvarlig"
+              placeholder={t("auto.f_eks_alle_ansatte_vaktansvarlig")}
             />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button
             onClick={handleSave}

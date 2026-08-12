@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, FileText, X } from "lucide-react";
 import { useEmployeeDocuments } from "@/hooks/useEmployees";
+import { t } from "@/i18n/t";
 
 interface UploadDocumentDialogProps {
   open: boolean;
@@ -73,7 +74,7 @@ export function UploadDocumentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Last opp dokument</DialogTitle>
+          <DialogTitle>{t("auto.last_opp_dokument")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,7 +118,7 @@ export function UploadDocumentDialog({
               <>
                 <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
                 <p className="text-muted-foreground">
-                  Klikk eller dra og slipp fil her
+                  {t("auto.klikk_eller_dra_og_slipp_fil_her")}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   PDF, Word, Excel eller bilder (maks 10MB)
@@ -127,18 +128,18 @@ export function UploadDocumentDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Beskrivelse</Label>
+            <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
             <Input
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Kort beskrivelse av dokumentet..."
+              placeholder={t("auto.kort_beskrivelse_av_dokumentet_2")}
             />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={!selectedFile || uploadDocument.isPending}>
               {uploadDocument.isPending ? "Laster opp..." : "Last opp"}

@@ -8,6 +8,7 @@ import { useEmployeeAbsence } from "@/hooks/useEmployeeAbsence";
 import { RegisterAbsenceDialog } from "@/components/absence/RegisterAbsenceDialog";
 import { AbsenceList } from "@/components/absence/AbsenceList";
 import { Skeleton } from "@/components/ui/skeleton";
+import { t } from "@/i18n/t";
 
 export default function HrAbsence() {
   const { 
@@ -46,9 +47,9 @@ export default function HrAbsence() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Fravær</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("auto.fravaer")}</h1>
             <p className="text-muted-foreground mt-1">
-              Oversikt over sykefravær, egenmeldinger og permisjoner
+              {t("auto.oversikt_over_sykefravaer_egenmeldinger_")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -71,7 +72,7 @@ export default function HrAbsence() {
             ) : (
               <div className="text-2xl font-bold">{stats.totalDaysThisYear}</div>
             )}
-            <div className="text-sm text-muted-foreground">Totalt fravær i år</div>
+            <div className="text-sm text-muted-foreground">{t("auto.totalt_fravaer_i_aar")}</div>
           </Card>
           <Card className="p-4">
             {isLoading ? (
@@ -79,7 +80,7 @@ export default function HrAbsence() {
             ) : (
               <div className="text-2xl font-bold">{absencePercentage}%</div>
             )}
-            <div className="text-sm text-muted-foreground">Fraværsprosent</div>
+            <div className="text-sm text-muted-foreground">{t("auto.fravaersprosent")}</div>
           </Card>
           <Card className="p-4">
             {isLoading ? (
@@ -87,7 +88,7 @@ export default function HrAbsence() {
             ) : (
               <div className="text-2xl font-bold">{stats.activeAbsences}</div>
             )}
-            <div className="text-sm text-muted-foreground">Aktive sykemeldinger</div>
+            <div className="text-sm text-muted-foreground">{t("auto.aktive_sykemeldinger")}</div>
           </Card>
           <Card className="p-4">
             {isLoading ? (
@@ -95,7 +96,7 @@ export default function HrAbsence() {
             ) : (
               <div className="text-2xl font-bold">{pendingCount}</div>
             )}
-            <div className="text-sm text-muted-foreground">Ventende godkjenninger</div>
+            <div className="text-sm text-muted-foreground">{t("auto.ventende_godkjenninger")}</div>
           </Card>
         </div>
 
@@ -105,10 +106,10 @@ export default function HrAbsence() {
             <TabsTrigger value="pending">
               Til godkjenning {pendingCount > 0 && `(${pendingCount})`}
             </TabsTrigger>
-            <TabsTrigger value="all">Alle</TabsTrigger>
-            <TabsTrigger value="sykdom">Sykdom</TabsTrigger>
-            <TabsTrigger value="egenmelding">Egenmelding</TabsTrigger>
-            <TabsTrigger value="permisjon">Permisjon</TabsTrigger>
+            <TabsTrigger value="all">{t("auto.alle")}</TabsTrigger>
+            <TabsTrigger value="sykdom">{t("auto.sykdom")}</TabsTrigger>
+            <TabsTrigger value="egenmelding">{t("auto.egenmelding")}</TabsTrigger>
+            <TabsTrigger value="permisjon">{t("auto.permisjon")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pending" className="mt-4">
@@ -123,9 +124,9 @@ export default function HrAbsence() {
               <Card className="p-12">
                 <div className="flex flex-col items-center justify-center text-center">
                   <HeartPulse className="w-12 h-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Ingen ventende godkjenninger</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_ventende_godkjenninger")}</h3>
                   <p className="text-muted-foreground">
-                    Alle fraværsregistreringer er behandlet
+                    {t("auto.alle_fravaersregistreringer_er_behandlet")}
                   </p>
                 </div>
               </Card>

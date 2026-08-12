@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import { t } from "@/i18n/t";
 
 interface MeetingTemplate {
   id: string;
@@ -75,13 +76,13 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
 
       if (error) throw error;
 
-      toast({ title: "Suksess", description: "Samtale planlagt" });
+      toast({ title: t("auto.suksess"), description: t("auto.samtale_planlagt") });
       setOpen(false);
       resetForm();
       onCreated();
     } catch (error) {
       console.error("Error scheduling meeting:", error);
-      toast({ title: "Feil", description: "Kunne ikke planlegge samtale", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_planlegge_samtale"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -109,14 +110,14 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Planlegg medarbeidersamtale</DialogTitle>
+          <DialogTitle>{t("auto.planlegg_medarbeidersamtale")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Ansatt *</Label>
+            <Label>{t("auto.ansatt_2")}</Label>
             <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg ansatt" />
+                <SelectValue placeholder={t("auto.velg_ansatt")} />
               </SelectTrigger>
               <SelectContent>
                 {users.map((user) => (
@@ -129,29 +130,29 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
           </div>
 
           <div className="space-y-2">
-            <Label>Type samtale</Label>
+            <Label>{t("auto.type_samtale")}</Label>
             <Select value={meetingType} onValueChange={setMeetingType}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="medarbeidersamtale">Medarbeidersamtale</SelectItem>
-                <SelectItem value="utviklingssamtale">Utviklingssamtale</SelectItem>
-                <SelectItem value="oppfølging">Oppfølgingssamtale</SelectItem>
-                <SelectItem value="prøvetid">Prøvetidssamtale</SelectItem>
+                <SelectItem value="medarbeidersamtale">{t("auto.medarbeidersamtale")}</SelectItem>
+                <SelectItem value="utviklingssamtale">{t("auto.utviklingssamtale")}</SelectItem>
+                <SelectItem value="oppfølging">{t("auto.oppfoelgingssamtale")}</SelectItem>
+                <SelectItem value="prøvetid">{t("auto.proevetidssamtale")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {templates.length > 0 && (
             <div className="space-y-2">
-              <Label>Spørsmålsmal</Label>
+              <Label>{t("auto.spoersmaalsmal")}</Label>
               <Select value={templateId} onValueChange={setTemplateId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Velg mal (valgfritt)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Ingen mal</SelectItem>
+                  <SelectItem value="none">{t("auto.ingen_mal")}</SelectItem>
                   {templates.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.template_name}
@@ -164,7 +165,7 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Dato *</Label>
+              <Label>{t("auto.dato_2")}</Label>
               <Input
                 type="date"
                 value={scheduledDate}
@@ -173,7 +174,7 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
               />
             </div>
             <div className="space-y-2">
-              <Label>Klokkeslett</Label>
+              <Label>{t("auto.klokkeslett")}</Label>
               <Input
                 type="time"
                 value={scheduledTime}
@@ -183,27 +184,27 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
           </div>
 
           <div className="space-y-2">
-            <Label>Sted</Label>
+            <Label>{t("auto.sted")}</Label>
             <Input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Møterom, kontor etc."
+              placeholder={t("auto.moeterom_kontor_etc")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Notater</Label>
+            <Label>{t("auto.notater")}</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Eventuelle notater..."
+              placeholder={t("auto.eventuelle_notater")}
               rows={3}
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={saving || !selectedEmployeeId}>
               {saving ? "Lagrer..." : "Planlegg"}

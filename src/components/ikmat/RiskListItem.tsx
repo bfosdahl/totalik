@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { IkMatRisk, IkMatActionItem, getTrafficLight, getActionPlanStatus, getActionPlanStatusLabel } from "@/hooks/useIkMatContent";
 import { ChevronRight, AlertTriangle, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface RiskListItemProps {
   risk: IkMatRisk;
@@ -27,11 +28,11 @@ export const RiskListItem = ({ risk, actions, onClick, hasDeviation }: RiskListI
     const baseClasses = "text-xs font-normal";
     switch (trafficLight) {
       case 'green':
-        return <Badge variant="secondary" className={baseClasses}>Lav</Badge>;
+        return <Badge variant="secondary" className={baseClasses}>{t("auto.lav")}</Badge>;
       case 'yellow':
-        return <Badge variant="secondary" className={`${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400`}>Middels</Badge>;
+        return <Badge variant="secondary" className={`${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400`}>{t("auto.middels")}</Badge>;
       case 'red':
-        return <Badge variant="secondary" className={`${baseClasses} bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400`}>Høy</Badge>;
+        return <Badge variant="secondary" className={`${baseClasses} bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400`}>{t("auto.hoey")}</Badge>;
     }
   };
 

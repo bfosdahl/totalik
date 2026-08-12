@@ -14,6 +14,7 @@ import { LOCATIONS, ROLES } from "./ShiftCalendar";
 import { toast } from "sonner";
 import { AlertTriangle, Info } from "lucide-react";
 import { checkSundayConflictForEmployee, type SundayStatus } from "@/utils/sundayComplianceCheck";
+import { t } from "@/i18n/t";
 
 interface CreateShiftDialogProps {
   open: boolean;
@@ -181,14 +182,14 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
             <div className="space-y-4 py-4">
               {/* Employee */}
               <div className="space-y-2">
-                <Label htmlFor="employee">Ansatt *</Label>
+                <Label htmlFor="employee">{t("auto.ansatt_2")}</Label>
                 <Select
                   value={formData.employee_id}
                   onValueChange={handleEmployeeChange}
                   required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg ansatt" />
+                    <SelectValue placeholder={t("auto.velg_ansatt")} />
                   </SelectTrigger>
                   <SelectContent>
                     {users.map((user) => (
@@ -202,7 +203,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
 
               {/* Type */}
               <div className="space-y-2">
-                <Label htmlFor="schedule_type">Type</Label>
+                <Label htmlFor="schedule_type">{t("auto.type")}</Label>
                 <Select
                   value={formData.schedule_type}
                   onValueChange={(value: "planned" | "actual") => 
@@ -213,15 +214,15 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="planned">Planlagt</SelectItem>
-                    <SelectItem value="actual">Faktisk</SelectItem>
+                    <SelectItem value="planned">{t("auto.planlagt")}</SelectItem>
+                    <SelectItem value="actual">{t("auto.faktisk")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Date & Time */}
               <div className="space-y-2">
-                <Label htmlFor="schedule_date">Dato *</Label>
+                <Label htmlFor="schedule_date">{t("auto.dato_2")}</Label>
                 <Input
                   id="schedule_date"
                   type="date"
@@ -250,7 +251,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="start_time">Fra *</Label>
+                  <Label htmlFor="start_time">{t("auto.fra_2")}</Label>
                   <Input
                     id="start_time"
                     type="time"
@@ -260,7 +261,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_time">Til *</Label>
+                  <Label htmlFor="end_time">{t("auto.til_2")}</Label>
                   <Input
                     id="end_time"
                     type="time"
@@ -273,7 +274,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
 
               {/* Location */}
               <div className="space-y-2">
-                <Label htmlFor="location">Sted/område</Label>
+                <Label htmlFor="location">{t("auto.sted_omraade")}</Label>
                 <Select
                   value={formData.location || "__none__"}
                   onValueChange={(value) => 
@@ -281,10 +282,10 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg sted" />
+                    <SelectValue placeholder={t("auto.velg_sted")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">Ingen valgt</SelectItem>
+                    <SelectItem value="__none__">{t("auto.ingen_valgt")}</SelectItem>
                     {Object.entries(LOCATIONS).map(([key, loc]) => (
                       <SelectItem key={key} value={key}>
                         {loc.label}
@@ -296,7 +297,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
 
               {/* Role */}
               <div className="space-y-2">
-                <Label htmlFor="role">Rolle</Label>
+                <Label htmlFor="role">{t("auto.rolle")}</Label>
                 <Select
                   value={formData.shift_role || "__none__"}
                   onValueChange={(value) => 
@@ -304,10 +305,10 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg rolle" />
+                    <SelectValue placeholder={t("auto.velg_rolle")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">Ingen valgt</SelectItem>
+                    <SelectItem value="__none__">{t("auto.ingen_valgt")}</SelectItem>
                     {Object.entries(ROLES).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
                         {label}
@@ -334,10 +335,10 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
 
               {/* Notes */}
               <div className="space-y-2">
-                <Label htmlFor="notes">Notater</Label>
+                <Label htmlFor="notes">{t("auto.notater")}</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Skriv eventuelle notater..."
+                  placeholder={t("auto.skriv_eventuelle_notater")}
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 />
@@ -347,7 +348,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
 
           <DialogFooter className="mt-4 flex-shrink-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Lagrer..." : "Lagre vakt"}

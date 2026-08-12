@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Send, Inbox, ArrowUpFromLine, Clock, Check, CheckCheck, Trash2, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function MyMessages() {
   const { profile } = useAuth();
@@ -85,7 +86,7 @@ export default function MyMessages() {
               </span>
               <div className="flex items-center gap-1.5 shrink-0">
                 {!isSent && !msg.is_read && (
-                  <Badge variant="default" className="text-[10px] px-1.5 py-0">Ny</Badge>
+                  <Badge variant="default" className="text-[10px] px-1.5 py-0">{t("auto.ny")}</Badge>
                 )}
                 {isSent && (
                   msg.is_read
@@ -114,8 +115,8 @@ export default function MyMessages() {
           <div className="flex items-center gap-3">
             <Mail className="h-6 w-6 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold">Meldinger</h1>
-              <p className="text-sm text-muted-foreground">Send og motta meldinger til kollegaer</p>
+              <h1 className="text-2xl font-bold">{t("auto.meldinger")}</h1>
+              <p className="text-sm text-muted-foreground">{t("auto.send_og_motta_meldinger_til_kollegaer")}</p>
             </div>
           </div>
           <Button onClick={() => setComposeOpen(true)}>
@@ -141,12 +142,12 @@ export default function MyMessages() {
 
           <TabsContent value="inbox" className="mt-4 space-y-2">
             {isLoading ? (
-              <p className="text-muted-foreground text-center py-8">Laster meldinger...</p>
+              <p className="text-muted-foreground text-center py-8">{t("auto.laster_meldinger")}</p>
             ) : receivedMessages.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Inbox className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Ingen meldinger i innboksen</p>
+                  <p className="text-muted-foreground">{t("auto.ingen_meldinger_i_innboksen")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -156,12 +157,12 @@ export default function MyMessages() {
 
           <TabsContent value="sent" className="mt-4 space-y-2">
             {isLoading ? (
-              <p className="text-muted-foreground text-center py-8">Laster meldinger...</p>
+              <p className="text-muted-foreground text-center py-8">{t("auto.laster_meldinger")}</p>
             ) : sentMessages.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Send className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Du har ikke sendt noen meldinger ennå</p>
+                  <p className="text-muted-foreground">{t("auto.du_har_ikke_sendt_noen_meldinger_ennaa")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -181,10 +182,10 @@ export default function MyMessages() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Til</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("auto.til")}</label>
                 <Select value={recipientId} onValueChange={setRecipientId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg mottaker..." />
+                    <SelectValue placeholder={t("auto.velg_mottaker")} />
                   </SelectTrigger>
                   <SelectContent>
                     {otherUsers.map((user) => (
@@ -200,21 +201,21 @@ export default function MyMessages() {
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="F.eks. Påminnelse om møte"
+                  placeholder={t("auto.f_eks_paaminnelse_om_moete")}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Melding</label>
+                <label className="text-sm font-medium mb-1.5 block">{t("auto.melding")}</label>
                 <Textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Skriv meldingen din her..."
+                  placeholder={t("auto.skriv_meldingen_din_her")}
                   rows={4}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setComposeOpen(false)}>Avbryt</Button>
+              <Button variant="outline" onClick={() => setComposeOpen(false)}>{t("auto.avbryt")}</Button>
               <Button
                 onClick={handleSend}
                 disabled={!recipientId || !messageText.trim() || sendMessage.isPending}
@@ -283,7 +284,7 @@ export default function MyMessages() {
                       Slett
                     </Button>
                   )}
-                  <Button variant="outline" onClick={() => setSelectedMessage(null)}>Lukk</Button>
+                  <Button variant="outline" onClick={() => setSelectedMessage(null)}>{t("auto.lukk")}</Button>
                   {selectedMessage.sender_id !== profile?.id && (
                     <Button
                       onClick={() => {

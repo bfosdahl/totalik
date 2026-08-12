@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
 import { Download, Printer, QrCode, Route } from "lucide-react";
 import { downloadQrAsPng, printQr } from "@/utils/qrCodeExport";
+import { t } from "@/i18n/t";
 
 interface DailyRoundQrDialogProps {
   open: boolean;
@@ -35,7 +36,7 @@ export function DailyRoundQrDialog({
       svg,
       filename: `QR-Runde-${roundName}`,
       title: `🛣️ ${roundName}`,
-      subtitle: "Skann for å starte daglig runde",
+      subtitle: t("auto.skann_for_aa_starte_daglig_runde"),
     });
   };
 
@@ -45,7 +46,7 @@ export function DailyRoundQrDialog({
     printQr({
       svg,
       title: `🛣️ ${roundName}`,
-      subtitle: "Skann QR-koden og gjennomfør hele runden i én flyt",
+      subtitle: t("auto.skann_qr_koden_og_gjennomfoer_hele_runde"),
     });
   };
 
@@ -68,7 +69,7 @@ export function DailyRoundQrDialog({
               <Route className="h-5 w-5" /> {roundName}
             </p>
             <p className="text-sm text-muted-foreground">
-              Skriv ut og heng opp på kjøkkenet
+              {t("auto.skriv_ut_og_heng_opp_paa_kjoekkenet")}
             </p>
           </div>
           <p className="text-xs text-muted-foreground text-center max-w-[300px]">
@@ -79,7 +80,7 @@ export function DailyRoundQrDialog({
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Lukk
+            {t("auto.lukk")}
           </Button>
           <Button variant="outline" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" /> Skriv ut

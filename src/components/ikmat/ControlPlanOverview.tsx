@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IkMatRisk } from "@/hooks/useIkMatContent";
 import { Calendar, Thermometer, ClipboardCheck, ExternalLink, AlertTriangle } from "lucide-react";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { t } from "@/i18n/t";
 
 interface ControlPlanOverviewProps {
   risks: IkMatRisk[];
@@ -63,7 +64,7 @@ export const ControlPlanOverview = ({ risks, onOpenRisk }: ControlPlanOverviewPr
       <div className="text-center py-12">
         <ClipboardCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
         <h3 className="font-medium text-muted-foreground mb-2">
-          Ingen KKP-kontroller definert
+          {t("auto.ingen_kkp_kontroller_definert")}
         </h3>
         <p className="text-sm text-muted-foreground">
           Merk risikoer som kritiske kontrollpunkter (KKP) for å se dem her.
@@ -85,7 +86,7 @@ export const ControlPlanOverview = ({ risks, onOpenRisk }: ControlPlanOverviewPr
                   {groupedRisks.overdueRisks.length} kontroll(er) er forfalt
                 </p>
                 <p className="text-sm text-red-700 dark:text-red-400 mt-1">
-                  Disse kontrollene skulle vært utført og krever umiddelbar oppmerksomhet.
+                  {t("auto.disse_kontrollene_skulle_vaert_utfoert_o")}
                 </p>
               </div>
             </div>
@@ -112,7 +113,7 @@ export const ControlPlanOverview = ({ risks, onOpenRisk }: ControlPlanOverviewPr
         <TabsContent value="today" className="space-y-3 mt-4">
           {todaysControls.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">Ingen kontroller planlagt i dag</p>
+              <p className="text-sm">{t("auto.ingen_kontroller_planlagt_i_dag")}</p>
             </div>
           ) : (
             todaysControls.map((risk) => (
@@ -129,7 +130,7 @@ export const ControlPlanOverview = ({ risks, onOpenRisk }: ControlPlanOverviewPr
         <TabsContent value="week" className="space-y-3 mt-4">
           {groupedRisks.upcomingRisks.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p className="text-sm">Ingen kontroller planlagt denne uken</p>
+              <p className="text-sm">{t("auto.ingen_kontroller_planlagt_denne_uken")}</p>
             </div>
           ) : (
             groupedRisks.upcomingRisks.map((risk) => (
@@ -161,9 +162,7 @@ export const ControlPlanOverview = ({ risks, onOpenRisk }: ControlPlanOverviewPr
       <Card className="bg-muted/30 border-muted">
         <CardContent className="p-4">
           <p className="text-xs text-muted-foreground">
-            💡 Kontroller loggføres for å dokumentere at kritiske grenser overholdes. 
-            Ved avvik opprettes automatisk korrigerende tiltak i handlingsplanen.
-            Logg og historikk kan eksporteres for tilsyn fra Mattilsynet.
+            {t("auto.kontroller_loggfoeres_for_aa_dokumentere")}
           </p>
         </CardContent>
       </Card>
@@ -221,7 +220,7 @@ const ControlCard = ({ risk, onOpenRisk, showDate, showFrequency }: ControlCardP
                 )}
                 {isOverdue && (
                   <Badge variant="destructive" className="text-xs">
-                    Forfalt
+                    {t("auto.forfalt")}
                   </Badge>
                 )}
               </div>
