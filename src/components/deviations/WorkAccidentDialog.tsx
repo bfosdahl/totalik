@@ -31,6 +31,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertTriangle, ExternalLink, Loader2, HeartPulse } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { t } from "@/i18n/t";
 
 export interface WorkAccidentData {
   title: string;
@@ -53,10 +54,10 @@ interface WorkAccidentDialogProps {
 }
 
 const SEVERITY_OPTIONS = [
-  { value: "minor", label: "Mindre skade (førstehjelpsnivå)" },
-  { value: "moderate", label: "Moderat skade (legehjelp nødvendig)" },
-  { value: "serious", label: "Alvorlig skade (sykehusinnleggelse)" },
-  { value: "fatal", label: "Dødsfall" },
+  { value: "minor", label: t("auto.mindre_skade_foerstehjelpsnivaa") },
+  { value: "moderate", label: t("auto.moderat_skade_legehjelp_noedvendig") },
+  { value: "serious", label: t("auto.alvorlig_skade_sykehusinnleggelse") },
+  { value: "fatal", label: t("auto.doedsfall") },
 ];
 
 export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAccidentDialogProps) {
@@ -123,7 +124,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
       <Alert className="border-warning bg-warning/10">
         <AlertTriangle className="h-4 w-4 text-warning" />
         <AlertDescription className="text-sm">
-          <strong>Viktig:</strong> Alvorlige arbeidsulykker skal meldes til Arbeidstilsynet innen 24 timer.
+          <strong>{t("auto.viktig")}</strong> {t("auto.alvorlige_arbeidsulykker_skal_meldes_til")}
           <a
             href="https://dat.apps.altinn.no/dat/ulykkesvarsel/"
             target="_blank"
@@ -139,30 +140,30 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
       {/* Basic info */}
       <div className="space-y-4">
         <div>
-          <Label htmlFor="title">Tittel på ulykken *</Label>
+          <Label htmlFor="title">{t("auto.tittel_paa_ulykken")}</Label>
           <Input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Kort beskrivelse av ulykken"
+            placeholder={t("auto.kort_beskrivelse_av_ulykken")}
             className="mt-1"
           />
         </div>
 
         <div>
-          <Label htmlFor="description">Beskrivelse av hendelsen *</Label>
+          <Label htmlFor="description">{t("auto.beskrivelse_av_hendelsen")}</Label>
           <Textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Beskriv hva som skjedde, hvordan det skjedde, og omstendighetene rundt hendelsen"
+            placeholder={t("auto.beskriv_hva_som_skjedde_hvordan_det_skje")}
             className="mt-1 min-h-[100px]"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="incidentDate">Dato for ulykken</Label>
+            <Label htmlFor="incidentDate">{t("auto.dato_for_ulykken")}</Label>
             <Input
               id="incidentDate"
               type="date"
@@ -172,7 +173,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
             />
           </div>
           <div>
-            <Label htmlFor="incidentTime">Tidspunkt</Label>
+            <Label htmlFor="incidentTime">{t("auto.tidspunkt_2")}</Label>
             <Input
               id="incidentTime"
               type="time"
@@ -184,21 +185,21 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
         </div>
 
         <div>
-          <Label htmlFor="location">Sted for ulykken</Label>
+          <Label htmlFor="location">{t("auto.sted_for_ulykken")}</Label>
           <Input
             id="location"
             value={incidentLocation}
             onChange={(e) => setIncidentLocation(e.target.value)}
-            placeholder="F.eks. byggeplass, kontor, lager"
+            placeholder={t("auto.f_eks_byggeplass_kontor_lager")}
             className="mt-1"
           />
         </div>
 
         <div>
-          <Label htmlFor="severity">Alvorlighetsgrad *</Label>
+          <Label htmlFor="severity">{t("auto.alvorlighetsgrad_2")}</Label>
           <Select value={severity} onValueChange={setSeverity}>
             <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Velg alvorlighetsgrad" />
+              <SelectValue placeholder={t("auto.velg_alvorlighetsgrad")} />
             </SelectTrigger>
             <SelectContent>
               {SEVERITY_OPTIONS.map((option) => (
@@ -214,34 +215,34 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
       {/* People involved */}
       <div className="space-y-4">
         <div>
-          <Label htmlFor="involvedPersons">Involverte personer</Label>
+          <Label htmlFor="involvedPersons">{t("auto.involverte_personer_2")}</Label>
           <Textarea
             id="involvedPersons"
             value={involvedPersons}
             onChange={(e) => setInvolvedPersons(e.target.value)}
-            placeholder="Navn og rolle på personer som var involvert"
+            placeholder={t("auto.navn_og_rolle_paa_personer_som_var_invol")}
             className="mt-1"
           />
         </div>
 
         <div>
-          <Label htmlFor="consequences">Konsekvenser/skader</Label>
+          <Label htmlFor="consequences">{t("auto.konsekvenser_skader")}</Label>
           <Textarea
             id="consequences"
             value={consequences}
             onChange={(e) => setConsequences(e.target.value)}
-            placeholder="Beskriv skader på personer eller utstyr"
+            placeholder={t("auto.beskriv_skader_paa_personer_eller_utstyr")}
             className="mt-1"
           />
         </div>
 
         <div>
-          <Label htmlFor="immediateActions">Umiddelbare tiltak utført</Label>
+          <Label htmlFor="immediateActions">{t("auto.umiddelbare_tiltak_utfoert")}</Label>
           <Textarea
             id="immediateActions"
             value={immediateActions}
             onChange={(e) => setImmediateActions(e.target.value)}
-            placeholder="Beskriv hvilke tiltak som ble iverksatt umiddelbart"
+            placeholder={t("auto.beskriv_hvilke_tiltak_som_ble_iverksatt_")}
             className="mt-1"
           />
         </div>
@@ -249,7 +250,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
 
       {/* Notifications */}
       <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-        <h4 className="font-medium text-sm">Varsling</h4>
+        <h4 className="font-medium text-sm">{t("auto.varsling")}</h4>
         
         <div className="flex items-start space-x-3">
           <Checkbox
@@ -259,10 +260,10 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
           />
           <div className="space-y-1">
             <Label htmlFor="notifyArbeidstilsynet" className="cursor-pointer">
-              Skal meldes til Arbeidstilsynet
+              {t("auto.skal_meldes_til_arbeidstilsynet")}
             </Label>
             <p className="text-xs text-muted-foreground">
-              Alvorlige skader og dødsfall skal meldes innen 24 timer
+              {t("auto.alvorlige_skader_og_doedsfall_skal_melde")}
             </p>
           </div>
         </div>
@@ -275,10 +276,10 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
           />
           <div className="space-y-1">
             <Label htmlFor="notifyInsurance" className="cursor-pointer">
-              Skal meldes til forsikringsselskap
+              {t("auto.skal_meldes_til_forsikringsselskap")}
             </Label>
             <p className="text-xs text-muted-foreground">
-              Husk å melde skaden til yrkesskadeforsikringen
+              {t("auto.husk_aa_melde_skaden_til_yrkesskadeforsi")}
             </p>
           </div>
         </div>
@@ -289,9 +290,9 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
         <div className="flex items-start gap-3">
           <HeartPulse className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
           <div className="space-y-2">
-            <p className="text-sm font-medium">Offisiell rapportering til Arbeidstilsynet</p>
+            <p className="text-sm font-medium">{t("auto.offisiell_rapportering_til_arbeidstilsyn")}</p>
             <p className="text-xs text-muted-foreground">
-              Etter å ha registrert ulykken her, må alvorlige ulykker også meldes direkte til Arbeidstilsynet via Altinn.
+              {t("auto.etter_aa_ha_registrert_ulykken_her_maa_a")}
             </p>
             <Button
               variant="outline"
@@ -317,7 +318,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
   const footerButtons = (
     <>
       <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-        Avbryt
+        {t("auto.avbryt")}
       </Button>
       <Button onClick={handleSubmit} disabled={!isValid || isSubmitting} className="gap-2">
         {isSubmitting ? (
@@ -342,7 +343,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
               Meld arbeidsulykke
             </DrawerTitle>
             <DrawerDescription>
-              Registrer arbeidsulykke eller skade på arbeidsplass
+              {t("auto.registrer_arbeidsulykke_eller_skade_paa_")}
             </DrawerDescription>
           </DrawerHeader>
           <ScrollArea className="flex-1 px-4 overflow-y-auto max-h-[60vh]">
@@ -365,7 +366,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
             Meld arbeidsulykke
           </DialogTitle>
           <DialogDescription>
-            Registrer arbeidsulykke eller skade på arbeidsplass
+            {t("auto.registrer_arbeidsulykke_eller_skade_paa_")}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[60vh] pr-4">

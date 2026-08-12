@@ -6,6 +6,7 @@ import { useDeviationComments } from '@/hooks/useDeviationComments';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
+import { t } from "@/i18n/t";
 
 interface DeviationCommentsProps {
   deviationId: string;
@@ -50,7 +51,7 @@ export function DeviationComments({ deviationId }: DeviationCommentsProps) {
       ) : (
         <div className="space-y-3 max-h-[300px] overflow-y-auto">
           {comments.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">Ingen kommentarer ennå</p>
+            <p className="text-sm text-muted-foreground py-2">{t("auto.ingen_kommentarer_ennaa")}</p>
           ) : (
             comments.map((comment) => (
               <div key={comment.id} className="bg-muted/50 rounded-lg p-3 space-y-1">
@@ -81,7 +82,7 @@ export function DeviationComments({ deviationId }: DeviationCommentsProps) {
 
       <form onSubmit={handleSubmit} className="space-y-2">
         <Textarea
-          placeholder="Skriv en kommentar..."
+          placeholder={t("auto.skriv_en_kommentar")}
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           className="min-h-[80px] resize-none"

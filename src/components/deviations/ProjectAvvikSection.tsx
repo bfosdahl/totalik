@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, ExternalLink, FolderKanban, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { t } from "@/i18n/t";
 
 interface ProjectAvvikRow {
   id: string;
@@ -90,7 +91,7 @@ export function ProjectAvvikSection() {
             <AlertTriangle className="w-4 h-4 text-orange-500" />
             Prosjektavvik ({visible.length})
           </h2>
-          <p className="text-xs text-muted-foreground">Avvik registrert på KS Bygg-prosjekter</p>
+          <p className="text-xs text-muted-foreground">{t("auto.avvik_registrert_paa_ks_bygg_prosjekter")}</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setShowClosed((s) => !s)}>
           {showClosed ? "Skjul lukkede" : "Vis lukkede"}
@@ -123,7 +124,7 @@ export function ProjectAvvikSection() {
             </div>
             <Button asChild variant="outline" size="sm" className="flex-shrink-0">
               <Link to={`/ks/project/${r.project_id}/avvik`}>
-                Åpne <ExternalLink className="w-3.5 h-3.5 ml-1" />
+                {t("auto.aapne")} <ExternalLink className="w-3.5 h-3.5 ml-1" />
               </Link>
             </Button>
           </div>
