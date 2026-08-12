@@ -42,43 +42,44 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 const priorityConfig = {
-  low: { label: "Lav", color: "bg-muted text-muted-foreground" },
-  medium: { label: "Medium", color: "bg-warning/10 text-warning" },
-  high: { label: "Høy", color: "bg-destructive/10 text-destructive" },
-  critical: { label: "Kritisk", color: "bg-destructive text-destructive-foreground" },
+  low: { label: t("auto.lav"), color: "bg-muted text-muted-foreground" },
+  medium: { label: t("auto.medium"), color: "bg-warning/10 text-warning" },
+  high: { label: t("auto.hoey"), color: "bg-destructive/10 text-destructive" },
+  critical: { label: t("auto.kritisk"), color: "bg-destructive text-destructive-foreground" },
 };
 
 const statusConfig: Record<DeviationStatus, { label: string; color: string }> = {
-  open: { label: "Åpen", color: "bg-destructive/10 text-destructive" },
-  "in-progress": { label: "Under arbeid", color: "bg-warning/10 text-warning" },
-  resolved: { label: "Løst", color: "bg-success/10 text-success" },
-  closed: { label: "Lukket", color: "bg-success/10 text-success" },
+  open: { label: t("auto.aapen"), color: "bg-destructive/10 text-destructive" },
+  "in-progress": { label: t("auto.under_arbeid"), color: "bg-warning/10 text-warning" },
+  resolved: { label: t("auto.loest"), color: "bg-success/10 text-success" },
+  closed: { label: t("auto.lukket"), color: "bg-success/10 text-success" },
 };
 
 // Use the shared DeviationCategory type from useDeviations
 import type { DeviationCategory } from "@/hooks/useDeviations";
+import { t } from "@/i18n/t";
 
 const categoryConfig: Record<DeviationCategory, { label: string; color: string }> = {
-  safety: { label: "HMS / Sikkerhet", color: "bg-primary/10 text-primary" },
-  quality: { label: "Kvalitet", color: "bg-blue-500/10 text-blue-600" },
-  environment: { label: "Miljø", color: "bg-green-500/10 text-green-600" },
-  process: { label: "Prosess", color: "bg-purple-500/10 text-purple-600" },
-  equipment: { label: "Utstyr", color: "bg-orange-500/10 text-orange-600" },
-  personnel: { label: "Personell", color: "bg-pink-500/10 text-pink-600" },
-  documentation: { label: "Dokumentasjon", color: "bg-slate-500/10 text-slate-600" },
-  other: { label: "Annet", color: "bg-muted text-muted-foreground" },
-  temperature: { label: "Temperaturavvik", color: "bg-red-500/10 text-red-600" },
-  cleaning: { label: "Renhold", color: "bg-yellow-500/10 text-yellow-600" },
-  pest_control: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
-  allergen: { label: "Allergenhåndtering", color: "bg-purple-500/10 text-purple-600" },
-  traceability: { label: "Sporbarhet", color: "bg-cyan-500/10 text-cyan-600" },
-  hygiene: { label: "Hygiene", color: "bg-pink-500/10 text-pink-600" },
-  storage: { label: "Lagring", color: "bg-blue-500/10 text-blue-600" },
-  pests: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
-  expiry: { label: "Utgått holdbarhet", color: "bg-amber-500/10 text-amber-600" },
-  contamination: { label: "Krysskontaminering", color: "bg-rose-500/10 text-rose-600" },
-  receiving: { label: "Varemottak", color: "bg-teal-500/10 text-teal-600" },
-  other_food: { label: "Annet matsikkerhet", color: "bg-muted text-muted-foreground" },
+  safety: { label: t("auto.hms_sikkerhet"), color: "bg-primary/10 text-primary" },
+  quality: { label: t("auto.kvalitet"), color: "bg-blue-500/10 text-blue-600" },
+  environment: { label: t("auto.miljoe"), color: "bg-green-500/10 text-green-600" },
+  process: { label: t("auto.prosess"), color: "bg-purple-500/10 text-purple-600" },
+  equipment: { label: t("auto.utstyr"), color: "bg-orange-500/10 text-orange-600" },
+  personnel: { label: t("auto.personell"), color: "bg-pink-500/10 text-pink-600" },
+  documentation: { label: t("auto.dokumentasjon"), color: "bg-slate-500/10 text-slate-600" },
+  other: { label: t("auto.annet"), color: "bg-muted text-muted-foreground" },
+  temperature: { label: t("auto.temperaturavvik"), color: "bg-red-500/10 text-red-600" },
+  cleaning: { label: t("auto.renhold"), color: "bg-yellow-500/10 text-yellow-600" },
+  pest_control: { label: t("auto.skadedyr"), color: "bg-orange-500/10 text-orange-600" },
+  allergen: { label: t("auto.allergenhaandtering"), color: "bg-purple-500/10 text-purple-600" },
+  traceability: { label: t("auto.sporbarhet"), color: "bg-cyan-500/10 text-cyan-600" },
+  hygiene: { label: t("auto.hygiene"), color: "bg-pink-500/10 text-pink-600" },
+  storage: { label: t("auto.lagring"), color: "bg-blue-500/10 text-blue-600" },
+  pests: { label: t("auto.skadedyr"), color: "bg-orange-500/10 text-orange-600" },
+  expiry: { label: t("auto.utgaatt_holdbarhet"), color: "bg-amber-500/10 text-amber-600" },
+  contamination: { label: t("auto.krysskontaminering"), color: "bg-rose-500/10 text-rose-600" },
+  receiving: { label: t("auto.varemottak"), color: "bg-teal-500/10 text-teal-600" },
+  other_food: { label: t("auto.annet_matsikkerhet"), color: "bg-muted text-muted-foreground" },
 };
 
 // Helper type for the detail dialog - includes all RUH fields
@@ -219,7 +220,7 @@ const Deviations = () => {
     if (createdDeviation && input.pendingFiles && input.pendingFiles.length > 0) {
       await uploadFilesForDeviation(createdDeviation.id, input.pendingFiles);
       toast({
-        title: "Vedlegg lastet opp",
+        title: t("auto.vedlegg_lastet_opp"),
         description: `${input.pendingFiles.length} fil(er) ble lastet opp`,
       });
     }
@@ -267,7 +268,7 @@ const Deviations = () => {
     if (success) {
       setSelectedDeviation(prev => prev ? { ...prev, status: newStatus } : null);
       toast({
-        title: "Status oppdatert",
+        title: t("auto.status_oppdatert"),
         description: `Avviket er nå "${statusConfig[newStatus].label}"`,
       });
     }
@@ -289,7 +290,7 @@ const Deviations = () => {
     if (success) {
       setSelectedDeviation(prev => prev ? { ...prev, assignee: assigneeName } : null);
       toast({
-        title: "Ansvarlig oppdatert",
+        title: t("auto.ansvarlig_oppdatert"),
         description: assigneeUser?.email 
           ? `${assigneeName} vil motta en e-postvarsling`
           : `Avviket er nå tildelt "${assigneeName}"`,
@@ -368,9 +369,9 @@ const Deviations = () => {
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl md:text-2xl font-bold tracking-tight">Avvikshåndtering</h1>
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight">{t("auto.avvikshaandtering")}</h1>
               <p className="text-sm text-muted-foreground">
-                Registrer og følg opp avvik og hendelser
+                {t("auto.registrer_og_foelg_opp_avvik_og_hendelse")}
               </p>
             </div>
             <div className="flex gap-2">
@@ -378,7 +379,7 @@ const Deviations = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-1.5">
                     <Download className="w-4 h-4" />
-                    <span className="hidden sm:inline">Eksporter</span>
+                    <span className="hidden sm:inline">{t("auto.eksporter")}</span>
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -406,13 +407,13 @@ const Deviations = () => {
                 onClick={() => setIsWorkAccidentOpen(true)}
               >
                 <HeartPulse className="w-4 h-4" />
-                <span className="hidden sm:inline">Meld arbeidsulykke</span>
-                <span className="sm:hidden">Ulykke</span>
+                <span className="hidden sm:inline">{t("auto.meld_arbeidsulykke")}</span>
+                <span className="sm:hidden">{t("auto.ulykke")}</span>
               </Button>
               <Button size="sm" className="gap-1.5" onClick={() => setIsDialogOpen(true)}>
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Nytt avvik</span>
-                <span className="sm:hidden">Ny</span>
+                <span className="hidden sm:inline">{t("auto.nytt_avvik")}</span>
+                <span className="sm:hidden">{t("auto.ny")}</span>
               </Button>
             </div>
           </div>
@@ -426,10 +427,10 @@ const Deviations = () => {
           className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4"
         >
           {[
-            { label: "Totalt", value: stats.total, color: "text-foreground", bg: "bg-muted/50" },
-            { label: "Åpne", value: stats.open, color: "text-destructive", bg: "bg-destructive/5" },
-            { label: "Under arbeid", value: stats.inProgress, color: "text-warning", bg: "bg-warning/5" },
-            { label: "Løst", value: stats.resolved, color: "text-success", bg: "bg-success/5" },
+            { label: t("auto.totalt"), value: stats.total, color: "text-foreground", bg: "bg-muted/50" },
+            { label: t("auto.aapne"), value: stats.open, color: "text-destructive", bg: "bg-destructive/5" },
+            { label: t("auto.under_arbeid"), value: stats.inProgress, color: "text-warning", bg: "bg-warning/5" },
+            { label: t("auto.loest"), value: stats.resolved, color: "text-success", bg: "bg-success/5" },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -456,7 +457,7 @@ const Deviations = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Søk i avvik..."
+              placeholder={t("auto.soek_i_avvik")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-11"
@@ -501,19 +502,19 @@ const Deviations = () => {
               </div>
               {searchQuery || filterStatus ? (
                 <>
-                  <h3 className="text-lg font-semibold mb-2">Ingen avvik matcher søket</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_avvik_matcher_soeket")}</h3>
                   <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                    Prøv å endre søkeordet eller fjern statusfilteret.
+                    {t("auto.proev_aa_endre_soekeordet_eller_fjern_st")}
                   </p>
                   <Button variant="outline" size="sm" onClick={() => { setSearchQuery(""); setFilterStatus(null); }}>
-                    Nullstill filter
+                    {t("auto.nullstill_filter")}
                   </Button>
                 </>
               ) : (
                 <>
-                  <h3 className="text-lg font-semibold mb-2">Ingen avvik registrert ennå</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_avvik_registrert_ennaa")}</h3>
                   <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                    Registrer det første avviket for å starte oppfølging og forbedring i bedriften.
+                    {t("auto.registrer_det_foerste_avviket_for_aa_sta")}
                   </p>
                   <Button size="sm" className="gap-1.5" onClick={() => setIsDialogOpen(true)}>
                     <Plus className="w-4 h-4" />
@@ -677,7 +678,7 @@ const Deviations = () => {
           await createDeviation(newDeviation);
           
           toast({
-            title: "Arbeidsulykke registrert",
+            title: t("auto.arbeidsulykke_registrert"),
             description: data.notifyArbeidstilsynet 
               ? "Husk å melde ulykken til Arbeidstilsynet via Altinn"
               : "Ulykken er registrert i avvikssystemet",
