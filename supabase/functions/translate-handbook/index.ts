@@ -22,6 +22,7 @@ const languageNames: Record<string, string> = {
   pl: "Polish",
   lt: "Lithuanian", 
   en: "English",
+  lv: "Latvian",
   no: "Norwegian",
 };
 
