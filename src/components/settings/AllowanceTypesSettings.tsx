@@ -71,17 +71,17 @@ export function AllowanceTypesSettings({ onBack }: Props) {
         <Card><CardContent className="py-8 text-center text-muted-foreground">{t("auto.ingen_tilleggssatser_definert")}</CardContent></Card>
       ) : (
         <div className="grid gap-2">
-          {types.map((t) => (
-            <Card key={t.id} className={!t.is_active ? "opacity-60" : ""}>
+          {types.map((at) => (
+            <Card key={at.id} className={!at.is_active ? "opacity-60" : ""}>
               <CardContent className="flex items-center gap-3 p-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium">{t.name}</span>
-                    {t.is_default && <Badge variant="secondary" className="text-xs">{t("auto.standard")}</Badge>}
-                    {!t.is_active && <Badge variant="outline" className="text-xs">{t("auto.inaktiv")}</Badge>}
+                    <span className="font-medium">{at.name}</span>
+                    {at.is_default && <Badge variant="secondary" className="text-xs">{t("auto.standard")}</Badge>}
+                    {!at.is_active && <Badge variant="outline" className="text-xs">{t("auto.inaktiv")}</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {t.rate.toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr / {ALLOWANCE_UNIT_LABELS[t.unit]}
+                    {at.rate.toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr / {ALLOWANCE_UNIT_LABELS[at.unit]}
                   </p>
                 </div>
                 {canEdit && (
@@ -89,14 +89,14 @@ export function AllowanceTypesSettings({ onBack }: Props) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => updateType(t.id, { is_active: !t.is_active })}
-                      title={t.is_active ? "Deaktiver" : "Aktiver"}
+                      onClick={() => updateType(at.id, { is_active: !at.is_active })}
+                      title={at.is_active ? "Deaktiver" : "Aktiver"}
                     >
-                      {t.is_active ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                      {at.is_active ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setEditing(t)}>{t("auto.endre")}</Button>
-                    {!t.is_default && (
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(t)}>
+                    <Button variant="outline" size="sm" onClick={() => setEditing(at)}>{t("auto.endre")}</Button>
+                    {!at.is_default && (
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(at)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     )}

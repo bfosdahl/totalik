@@ -493,53 +493,53 @@ export default function AdminRoutineMaker() {
           </Card>
         ) : (
           <div className="grid gap-3">
-            {filtered.map(t => (
-              <Card key={t.id} className="hover:shadow-md transition-shadow">
+            {filtered.map(tpl => (
+              <Card key={tpl.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="flex items-start justify-between gap-4 p-4">
                   <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {t.template_number && (
-                        <span className="text-xs font-mono font-semibold text-primary shrink-0">{t.template_number}</span>
+                      {tpl.template_number && (
+                        <span className="text-xs font-mono font-semibold text-primary shrink-0">{tpl.template_number}</span>
                       )}
-                      <h3 className="font-semibold truncate max-w-[300px] sm:max-w-[400px] lg:max-w-none">{t.title}</h3>
-                      {getStatusBadge(t.status)}
-                      <Badge variant="outline">{getModuleLabel(t.module)}</Badge>
-                      {t.is_global_default && <Badge variant="default" className="text-xs">{t("auto.standard")}</Badge>}
-                      <span className="text-xs text-muted-foreground">v{t.version}</span>
+                      <h3 className="font-semibold truncate max-w-[300px] sm:max-w-[400px] lg:max-w-none">{tpl.title}</h3>
+                      {getStatusBadge(tpl.status)}
+                      <Badge variant="outline">{getModuleLabel(tpl.module)}</Badge>
+                      {tpl.is_global_default && <Badge variant="default" className="text-xs">{t("auto.standard")}</Badge>}
+                      <span className="text-xs text-muted-foreground">v{tpl.version}</span>
                     </div>
-                    {t.description && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{t.description}</p>
+                    {tpl.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{tpl.description}</p>
                     )}
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      <span>{FREQUENCIES.find(f => f.value === t.frequency)?.label || t.frequency}</span>
-                      {t.subcategory && <span>• {t.subcategory}</span>}
-                      <span>• Oppdatert {format(new Date(t.updated_at), "dd.MM.yyyy", { locale: nb })}</span>
+                      <span>{FREQUENCIES.find(f => f.value === tpl.frequency)?.label || tpl.frequency}</span>
+                      {tpl.subcategory && <span>• {tpl.subcategory}</span>}
+                      <span>• Oppdatert {format(new Date(tpl.updated_at), "dd.MM.yyyy", { locale: nb })}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 ml-4 shrink-0">
-                    <Button variant="ghost" size="icon" onClick={() => setShowPreview(t)}>
+                    <Button variant="ghost" size="icon" onClick={() => setShowPreview(tpl)}>
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openEditor(t)}>
+                    <Button variant="ghost" size="icon" onClick={() => openEditor(tpl)}>
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => duplicateMutation.mutate(t)}>
+                    <Button variant="ghost" size="icon" onClick={() => duplicateMutation.mutate(tpl)}>
                       <Copy className="w-4 h-4" />
                     </Button>
-                    {t.status === "draft" && (
+                    {tpl.status === "draft" && (
                       <Button variant="ghost" size="icon"
-                        onClick={() => statusMutation.mutate({ id: t.id, status: "published" })}>
+                        onClick={() => statusMutation.mutate({ id: tpl.id, status: "published" })}>
                         <Send className="w-4 h-4 text-primary" />
                       </Button>
                     )}
-                    {t.status === "published" && (
+                    {tpl.status === "published" && (
                       <Button variant="ghost" size="icon"
-                        onClick={() => statusMutation.mutate({ id: t.id, status: "archived" })}>
+                        onClick={() => statusMutation.mutate({ id: tpl.id, status: "archived" })}>
                         <Archive className="w-4 h-4" />
                       </Button>
                     )}
                     <Button variant="ghost" size="icon"
-                      onClick={() => { if (confirm("Slette denne rutinen?")) deleteMutation.mutate(t.id); }}>
+                      onClick={() => { if (confirm("Slette denne rutinen?")) deleteMutation.mutate(tpl.id); }}>
                       <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
                   </div>

@@ -120,28 +120,28 @@ export function KsBygChecklistOverview() {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="ml-6 space-y-1 pb-1">
-                      {templates.map((t) => (
+                      {templates.map((tpl) => (
                         <div
-                          key={t.id}
+                          key={tpl.id}
                           className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/40 group text-sm"
                         >
                           <FileCheck className="h-4 w-4 text-blue-400 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{t.template_name}</p>
+                            <p className="font-medium truncate">{tpl.template_name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {t.checkpoints?.length || 0} sjekkpunkter
-                              {t.version && ` • v${t.version}`}
-                              {t.created_at &&
-                                ` • ${format(new Date(t.created_at), "d. MMM yyyy", { locale: nb })}`}
+                              {tpl.checkpoints?.length || 0} sjekkpunkter
+                              {tpl.version && ` • v${tpl.version}`}
+                              {tpl.created_at &&
+                                ` • ${format(new Date(tpl.created_at), "d. MMM yyyy", { locale: nb })}`}
                             </p>
                           </div>
                           <div className="flex items-center gap-1">
-                            {t.is_mandatory && (
+                            {tpl.is_mandatory && (
                               <Badge variant="destructive" className="text-[10px] h-4 px-1.5">
                                 {t("auto.obligatorisk")}
                               </Badge>
                             )}
-                            {t.is_active ? (
+                            {tpl.is_active ? (
                               <Badge className="bg-green-100 text-green-700 text-[10px] h-4 px-1.5">
                                 {t("auto.aktiv")}
                               </Badge>
@@ -155,7 +155,7 @@ export function KsBygChecklistOverview() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 opacity-0 group-hover:opacity-100"
-                            onClick={() => setEditTemplate(t)}
+                            onClick={() => setEditTemplate(tpl)}
                           >
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
@@ -163,7 +163,7 @@ export function KsBygChecklistOverview() {
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive"
-                            onClick={() => setDeleteId(t.id)}
+                            onClick={() => setDeleteId(tpl.id)}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
