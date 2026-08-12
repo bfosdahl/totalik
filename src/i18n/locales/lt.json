@@ -165,7 +165,8 @@
     "expand": "Išplėsti",
     "orderModule": "Užsakyti modulį",
     "lockedModule": "Užrakintas modulis",
-    "collapse": "Suskleisti"
+    "collapse": "Suskleisti",
+    "kitchenLayout": "Virtuvės planas"
   },
   "dashboard": {
     "welcome": "Sveiki",
@@ -371,6 +372,49 @@
     "forbidden": "Prieiga uždrausta",
     "serverError": "Serverio klaida",
     "networkError": "Tinklo klaida",
-    "validationError": "Validacijos klaida"
+    "validationError": "Validacijos klaida",
+    "loadFailed": "Nepavyko įkelti duomenų",
+    "saveFailed": "Nepavyko išsaugoti",
+    "deleteFailed": "Nepavyko ištrinti",
+    "uploadFailed": "Įkėlimas nepavyko",
+    "downloadFailed": "Atsisiuntimas nepavyko",
+    "sessionExpired": "Sesija baigėsi. Prisijunkite iš naujo.",
+    "noAccessCompany": "Neturite prieigos prie šios įmonės",
+    "noCompanyLinked": "Su jūsų paskyra nesusieta jokia įmonė",
+    "offline": "Esate neprisijungę. Patikrinkite interneto ryšį.",
+    "timeout": "Baigėsi užklausos laikas",
+    "fileTooLarge": "Failas per didelis",
+    "invalidFileType": "Netinkamas failo tipas",
+    "duplicateEntry": "Įrašas jau egzistuoja",
+    "contactSupport": "Jei problema kartojasi, kreipkitės į pagalbą"
+  },
+  "validation": {
+    "required": "Šis laukas privalomas",
+    "invalidEmail": "Neteisingas el. pašto adresas",
+    "invalidPhone": "Neteisingas telefono numeris",
+    "invalidDate": "Neteisinga data",
+    "invalidNumber": "Neteisingas skaičius",
+    "invalidOrgNumber": "Neteisingas įmonės kodas",
+    "minLength": "Bent {{count}} simbolių",
+    "maxLength": "Daugiausia {{count}} simbolių",
+    "passwordsDoNotMatch": "Slaptažodžiai nesutampa",
+    "selectAtLeastOne": "Pasirinkite bent vieną parinktį",
+    "endDateBeforeStart": "Pabaigos data negali būti ankstesnė už pradžios datą",
+    "futureDateNotAllowed": "Data negali būti ateityje"
+  },
+  "toast": {
+    "saved": "Išsaugota",
+    "deleted": "Ištrinta",
+    "created": "Sukurta",
+    "updated": "Atnaujinta",
+    "copied": "Nukopijuota",
+    "sent": "Išsiųsta",
+    "uploaded": "Įkelta",
+    "signed": "Pasirašyta",
+    "approved": "Patvirtinta",
+    "rejected": "Atmesta",
+    "restored": "Atkurta",
+    "noChanges": "Nėra pakeitimų, kuriuos reikia išsaugoti",
+    "confirmDelete": "Ar tikrai norite ištrinti?"
   }
 }

@@ -165,7 +165,8 @@
     "expand": "Rozwiń",
     "orderModule": "Zamów moduł",
     "lockedModule": "Zablokowany moduł",
-    "collapse": "Zwiń"
+    "collapse": "Zwiń",
+    "kitchenLayout": "Układ kuchni"
   },
   "dashboard": {
     "welcome": "Witaj",
@@ -371,6 +372,49 @@
     "forbidden": "Brak dostępu",
     "serverError": "Błąd serwera",
     "networkError": "Błąd sieci",
-    "validationError": "Błąd walidacji"
+    "validationError": "Błąd walidacji",
+    "loadFailed": "Nie udało się wczytać danych",
+    "saveFailed": "Nie udało się zapisać",
+    "deleteFailed": "Nie udało się usunąć",
+    "uploadFailed": "Przesyłanie nie powiodło się",
+    "downloadFailed": "Pobieranie nie powiodło się",
+    "sessionExpired": "Sesja wygasła. Zaloguj się ponownie.",
+    "noAccessCompany": "Nie masz dostępu do tej firmy",
+    "noCompanyLinked": "Do Twojego konta nie przypisano firmy",
+    "offline": "Jesteś offline. Sprawdź połączenie internetowe.",
+    "timeout": "Przekroczono limit czasu żądania",
+    "fileTooLarge": "Plik jest za duży",
+    "invalidFileType": "Nieprawidłowy typ pliku",
+    "duplicateEntry": "Wpis już istnieje",
+    "contactSupport": "Skontaktuj się z pomocą techniczną, jeśli problem się powtarza"
+  },
+  "validation": {
+    "required": "To pole jest wymagane",
+    "invalidEmail": "Nieprawidłowy adres e-mail",
+    "invalidPhone": "Nieprawidłowy numer telefonu",
+    "invalidDate": "Nieprawidłowa data",
+    "invalidNumber": "Nieprawidłowa liczba",
+    "invalidOrgNumber": "Nieprawidłowy numer organizacji",
+    "minLength": "Co najmniej {{count}} znaków",
+    "maxLength": "Maksymalnie {{count}} znaków",
+    "passwordsDoNotMatch": "Hasła nie są zgodne",
+    "selectAtLeastOne": "Wybierz co najmniej jedną opcję",
+    "endDateBeforeStart": "Data zakończenia nie może być wcześniejsza niż data rozpoczęcia",
+    "futureDateNotAllowed": "Data nie może być w przyszłości"
+  },
+  "toast": {
+    "saved": "Zapisano",
+    "deleted": "Usunięto",
+    "created": "Utworzono",
+    "updated": "Zaktualizowano",
+    "copied": "Skopiowano",
+    "sent": "Wysłano",
+    "uploaded": "Przesłano",
+    "signed": "Podpisano",
+    "approved": "Zatwierdzono",
+    "rejected": "Odrzucono",
+    "restored": "Przywrócono",
+    "noChanges": "Brak zmian do zapisania",
+    "confirmDelete": "Czy na pewno chcesz usunąć?"
   }
 }
