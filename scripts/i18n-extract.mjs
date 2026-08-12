@@ -75,7 +75,18 @@ for (const file of process.argv.slice(2)) {
   const propRe = new RegExp(`\\b(${PROPS.join("|")})="([^"\\n]+)"`, "g");
   src = src.replace(propRe, (m, prop, text) => (isUiText(text) ? `${prop}={${wrap(text)}}` : m));
 
-  // 3. toast / alerts
+  // 3. Object-literal UI copy: { label: "Ny avviksmelding", description: "..." }
+  //    Skipped near DB writes so stored data is never translated.
+  const OBJ_KEYS = ["label", "title", "description", "heading", "subtitle", "helpText", "emptyText"];
+  const objRe = new RegExp(`\\b(${OBJ_KEYS.join("|")}):\\s*"([^"\\n]+)"`, "g");
+  src = src.replace(objRe, (m, key, text, offset) => {
+    if (!isUiText(text)) return m;
+    const around = src.slice(Math.max(0, offset - 400), offset + 200);
+    if (/\.(insert|update|upsert|rpc)\(|supabase\s*$/.test(around)) return m;
+    return `${key}: ${wrap(text)}`;
+  });
+
+  // 4. toast / alerts
   src = src.replace(/\b(toast\.(?:success|error|info|warning)|toast)\(\s*"([^"\n]+)"/g, (m, fn, text) =>
     isUiText(text) ? `${fn}(${wrap(text)}` : m
   );

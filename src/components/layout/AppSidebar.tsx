@@ -66,14 +66,14 @@ const ikHmsItems: NavItem[] = [
 ];
 
 const ikMatItems: NavItem[] = [
-  { icon: Wand2, label: "Oppsett (AI-veiviser)", path: "/ik-mat/oppsett", color: "text-violet-500" },
+  { icon: Wand2, label: t("auto.oppsett_ai_veiviser"), path: "/ik-mat/oppsett", color: "text-violet-500" },
   { icon: BookOpen, labelKey: "nav.handbookIkMat", path: "/ik-mat/handbok", color: "text-cyan-500" },
   { icon: Target, labelKey: "nav.targetSetting", path: "/ik-mat/maal", color: "text-yellow-500" },
   { icon: Building2, labelKey: "nav.orgChart", path: "/ik-mat/organisasjon", color: "text-sky-500" },
   { icon: AlertTriangle, labelKey: "nav.riskAndMeasures", path: "/ik-mat/risiko-og-tiltak", color: "text-orange-500" },
   { icon: ListChecks, labelKey: "nav.routines", path: "/ik-mat/rutiner", color: "text-teal-500" },
   { icon: ClipboardCheck, labelKey: "nav.control", path: "/ik-mat/kontroll", color: "text-emerald-500" },
-  { icon: Radio, label: "Sensorer", path: "/ik-mat/sensorer", color: "text-blue-500" },
+  { icon: Radio, label: t("auto.sensorer"), path: "/ik-mat/sensorer", color: "text-blue-500" },
   { icon: AlertTriangle, labelKey: "nav.deviations", path: "/ik-mat/avvik", color: "text-red-500" },
   { icon: Wheat, labelKey: "nav.allergens", path: "/ik-mat/allergener", color: "text-amber-500" },
   { icon: LayoutGrid, labelKey: "nav.kitchenLayout", path: "/ik-mat/kjokkenplan", color: "text-cyan-500" },
@@ -87,56 +87,56 @@ const ikAlkoholItems: NavItem[] = [
   { labelKey: "nav.organization", path: "/ik-alkohol/organisering" },
   { labelKey: "nav.targetSetting", path: "/ik-alkohol/maal" },
   { labelKey: "nav.riskAnalysis", path: "/ik-alkohol/risikoanalyse" },
-  { label: "Internkontroll", path: "/ik-alkohol/internkontroll" },
+  { label: t("auto.internkontroll"), path: "/ik-alkohol/internkontroll" },
   { labelKey: "nav.control", path: "/ik-alkohol/kontroll" },
-  { label: "Hendelser", path: "/ik-alkohol/hendelser" },
-  { label: "Lovverk", path: "/ik-alkohol/lovverk" },
+  { label: t("auto.hendelser"), path: "/ik-alkohol/hendelser" },
+  { label: t("auto.lovverk"), path: "/ik-alkohol/lovverk" },
   { labelKey: "nav.documentCenter", path: "/ik-alkohol/dokumentsenter" },
   { labelKey: "nav.handbook", path: "/ik-alkohol/handbok" },
 ];
 
 const ikKsGrunnlagItems: NavItem[] = [
-  { label: "Målsetting & Kvalitetsmål", path: "/ks/ik-ks/maalsetting" },
-  { label: "Organisasjonsplan", path: "/ks/ik-ks/organisering" },
-  { label: "Rutiner", path: "/ks/ik-ks/rutiner" },
-  { label: "Dokumentsenter", path: "/ks/ik-ks/dokumenter" },
-  { label: "Sjekklistemaler", path: "/ks/ik-ks/sjekklister" },
-  { label: "Egenerklæring", path: "/ks/ik-ks/egenerklaering" },
-  { label: "KS Håndbok", path: "/ks/ik-ks/handbok" },
+  { label: t("auto.maalsetting_kvalitetsmaal"), path: "/ks/ik-ks/maalsetting" },
+  { label: t("auto.organisasjonsplan"), path: "/ks/ik-ks/organisering" },
+  { label: t("auto.rutiner"), path: "/ks/ik-ks/rutiner" },
+  { label: t("auto.dokumentsenter"), path: "/ks/ik-ks/dokumenter" },
+  { label: t("auto.sjekklistemaler"), path: "/ks/ik-ks/sjekklister" },
+  { label: t("auto.egenerklaering"), path: "/ks/ik-ks/egenerklaering" },
+  { label: t("auto.ks_haandbok"), path: "/ks/ik-ks/handbok" },
 ];
 
 const ksByggItems: NavItem[] = [
-  { label: "Mine prosjekter", path: "/ks" },
-  { label: "Oppsett-hjelper", path: "/ks/oppsett" },
-  { label: "Utfylte sjekklister", path: "/ks/utfylte-sjekklister" },
-  { label: "Befaring", path: "/ks/befaring" },
-  { label: "Kalkyler", path: "/ks/kalkyler" },
+  { label: t("auto.mine_prosjekter"), path: "/ks" },
+  { label: t("auto.oppsett_hjelper"), path: "/ks/oppsett" },
+  { label: t("auto.utfylte_sjekklister"), path: "/ks/utfylte-sjekklister" },
+  { label: t("auto.befaring"), path: "/ks/befaring" },
+  { label: t("auto.kalkyler"), path: "/ks/kalkyler" },
 ];
 
 const fdvItems: NavItem[] = [
   { labelKey: "nav.dashboard", path: "/fdv" },
-  { label: "Bygg & Eiendommer", path: "/fdv/bygg" },
-  { label: "Kontroller", path: "/fdv/kontroller" },
-  { label: "Risikovurdering", path: "/fdv/risiko" },
-  { label: "Regelverk", path: "/fdv/regelverk" },
-  { label: "Etasjeplaner", path: "/fdv/etasjeplaner" },
+  { label: t("auto.bygg_eiendommer"), path: "/fdv/bygg" },
+  { label: t("auto.kontroller"), path: "/fdv/kontroller" },
+  { label: t("auto.risikovurdering"), path: "/fdv/risiko" },
+  { label: t("auto.regelverk"), path: "/fdv/regelverk" },
+  { label: t("auto.etasjeplaner"), path: "/fdv/etasjeplaner" },
 ];
 
 const gdprItems: NavItem[] = [
-  { label: "Oversikt", path: "/gdpr/oversikt" },
-  { label: "Dokumentasjon", path: "/gdpr/dokumentasjon" },
-  { label: "Sjekkliste", path: "/gdpr/sjekkliste" },
+  { label: t("auto.oversikt"), path: "/gdpr/oversikt" },
+  { label: t("auto.dokumentasjon"), path: "/gdpr/dokumentasjon" },
+  { label: t("auto.sjekkliste"), path: "/gdpr/sjekkliste" },
 ];
 
 const apenhetItems: NavItem[] = [
-  { label: "Oversikt", path: "/apenhetsloven/oversikt" },
-  { label: "Aktsomhetsvurdering", path: "/apenhetsloven/aktsomhetsvurdering" },
-  { label: "Innsyn forespørsler", path: "/apenhetsloven/innsyn" },
-  { label: "Årlig redegjørelse", path: "/apenhetsloven/redegjoerelse" },
+  { label: t("auto.oversikt"), path: "/apenhetsloven/oversikt" },
+  { label: t("auto.aktsomhetsvurdering"), path: "/apenhetsloven/aktsomhetsvurdering" },
+  { label: t("auto.innsyn_forespoersler"), path: "/apenhetsloven/innsyn" },
+  { label: t("auto.aarlig_redegjoerelse"), path: "/apenhetsloven/redegjoerelse" },
 ];
 
 const personalhandbokItems: NavItem[] = [
-  { label: "Personalhåndbok", path: "/personalhandbok" },
+  { label: t("auto.personalhaandbok"), path: "/personalhandbok" },
 ];
 
 const personaladministrasjonItems = {
@@ -148,9 +148,9 @@ const personaladministrasjonItems = {
     { icon: BarChart3, labelKey: "nav.surveys", path: "/hr/surveys", color: "text-purple-500" },
     { icon: CalendarDays, labelKey: "nav.approveVacation", path: "/time-off?view=admin", color: "text-orange-500" },
     { icon: Calendar, labelKey: "nav.workSchedule", path: "/work-schedule", color: "text-cyan-500" },
-    { icon: CalendarDays, label: "Søndagsrapport (AML §10-8)", path: "/hr/sondagsrapport", color: "text-amber-600" },
+    { icon: CalendarDays, label: t("auto.soendagsrapport_aml_10_8"), path: "/hr/sondagsrapport", color: "text-amber-600" },
     { icon: Clock, labelKey: "nav.approveHours", path: "/time-registration?view=admin", color: "text-indigo-500" },
-    { icon: ShieldCheck, label: "Personalliste (Skatteetaten)", path: "/personalliste", color: "text-teal-600" },
+    { icon: ShieldCheck, label: t("auto.personalliste_skatteetaten"), path: "/personalliste", color: "text-teal-600" },
     { icon: ShieldAlert, labelKey: "nav.anonymousMessages", path: "/anonymous-messages", color: "text-amber-500" },
   ] as NavItem[],
   mittArbeidsforhold: [
@@ -424,24 +424,24 @@ const EmployeeSimpleNav = memo(function EmployeeSimpleNav({
   onAnonymous: () => void;
 }) {
   const items: NavItem[] = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/", color: "text-sky-500" },
-    { icon: Clock, label: "Mine timer", path: "/time-registration", color: "text-indigo-500" },
-    { icon: CalendarDays, label: "Min ferie", path: "/time-off", color: "text-orange-500" },
-    { icon: HeartPulse, label: "Mitt fravær", path: "/my/absence", color: "text-rose-500" },
-    { icon: Car, label: "Min kjørebok", path: "/my/driving-log", color: "text-emerald-500" },
-    { icon: FileText, label: "Min kontrakt", path: "/my/contract", color: "text-slate-500" },
-    { icon: Mail, label: "Meldinger", path: "/my/messages", color: "text-blue-500" },
-    { icon: IdCard, label: "Mitt ansattkort", path: "/my/employee-card", color: "text-amber-500" },
-    { icon: AlertTriangle, label: "Avvik", path: "/deviations", color: "text-red-500" },
+    { icon: LayoutDashboard, label: t("auto.dashboard"), path: "/", color: "text-sky-500" },
+    { icon: Clock, label: t("auto.mine_timer"), path: "/time-registration", color: "text-indigo-500" },
+    { icon: CalendarDays, label: t("auto.min_ferie"), path: "/time-off", color: "text-orange-500" },
+    { icon: HeartPulse, label: t("auto.mitt_fravaer"), path: "/my/absence", color: "text-rose-500" },
+    { icon: Car, label: t("auto.min_kjoerebok"), path: "/my/driving-log", color: "text-emerald-500" },
+    { icon: FileText, label: t("auto.min_kontrakt"), path: "/my/contract", color: "text-slate-500" },
+    { icon: Mail, label: t("auto.meldinger"), path: "/my/messages", color: "text-blue-500" },
+    { icon: IdCard, label: t("auto.mitt_ansattkort"), path: "/my/employee-card", color: "text-amber-500" },
+    { icon: AlertTriangle, label: t("auto.avvik"), path: "/deviations", color: "text-red-500" },
     { icon: FileCheck, label: "SJA", path: "/risikoanalyse?tab=sja", color: "text-blue-500" },
-    { icon: ListChecks, label: "Rutiner", path: "/rutiner", color: "text-teal-500" },
-    { icon: FlaskConical, label: "Stoffkartotek", path: "/stoffkartotek", color: "text-purple-500" },
+    { icon: ListChecks, label: t("auto.rutiner"), path: "/rutiner", color: "text-teal-500" },
+    { icon: FlaskConical, label: t("auto.stoffkartotek"), path: "/stoffkartotek", color: "text-purple-500" },
   ];
   if (hasKsBygg) {
-    items.splice(1, 0, { icon: HardHat, label: "Mine prosjekter", path: "/ks", color: "text-purple-500" });
+    items.splice(1, 0, { icon: HardHat, label: t("auto.mine_prosjekter"), path: "/ks", color: "text-purple-500" });
   }
   if (hasIkMat) {
-    items.push({ icon: ClipboardCheck, label: "IK-Mat kontroll", path: "/ik-mat/kontroll", color: "text-emerald-500" });
+    items.push({ icon: ClipboardCheck, label: t("auto.ik_mat_kontroll"), path: "/ik-mat/kontroll", color: "text-emerald-500" });
   }
 
   return (
@@ -839,7 +839,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             <NavItemList items={ksByggItems} locationPathname={pathname} locationSearch={search} navigate={navigate} t={t} />
             {(isSystemAdmin || isCompanyAdmin) && (
               <NavItemList
-                items={[{ label: "Dagsrapporter (admin)", path: "/ks/dagsrapport-oversikt" }]}
+                items={[{ label: t("auto.dagsrapporter_admin"), path: "/ks/dagsrapport-oversikt" }]}
                 locationPathname={pathname}
                 locationSearch={search}
                 navigate={navigate}

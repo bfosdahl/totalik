@@ -10,10 +10,10 @@ import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import { t } from "@/i18n/t";
 
 const DAYS_OPTIONS = [
-  { value: 14, label: "14 dager" },
-  { value: 7, label: "7 dager" },
-  { value: 3, label: "3 dager" },
-  { value: 1, label: "1 dag" },
+  { value: 14, label: t("auto.14_dager") },
+  { value: 7, label: t("auto.7_dager") },
+  { value: 3, label: t("auto.3_dager") },
+  { value: 1, label: t("auto.1_dag") },
 ];
 
 export function NotificationSettingsCard() {

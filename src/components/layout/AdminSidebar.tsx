@@ -28,19 +28,19 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { t } from "@/i18n/t";
 
 const adminNavItems = [
-  { icon: LayoutDashboard, label: "Oversikt", path: "/admin", color: undefined },
-  { icon: Building2, label: "Bedrifter", path: "/admin/companies", color: undefined },
-  { icon: Users, label: "Brukere", path: "/admin/users", color: undefined },
-  { icon: Sparkles, label: "AI Import", path: "/admin/customer-import", color: "text-primary" },
-  { icon: CreditCard, label: "HMS-kort", path: "/admin/hms-requests", color: undefined },
-  { icon: Award, label: "SG Register", path: "/admin/sg-register", color: undefined },
-  { icon: FolderOpen, label: "Dokumentsenter", path: "/admin/documents", color: "text-primary" },
-  { icon: Leaf, label: "Stoffkartotek", path: "/admin/stoffkartotek", color: "text-primary" },
-  { icon: BookOpen, label: "Rutine Maker", path: "/admin/routine-maker", color: "text-primary" },
-  { icon: Mail, label: "E-postlogg", path: "/admin/email-log", color: undefined },
-  { icon: Activity, label: "Monitoring", path: "/admin/monitoring", color: "text-warning" },
-  { icon: UserCheck, label: "Selgere", path: "/admin/sellers", color: "text-accent" },
-  { icon: Trash2, label: "Papirkurv", path: "/admin/trash", color: "text-destructive" },
+  { icon: LayoutDashboard, label: t("auto.oversikt"), path: "/admin", color: undefined },
+  { icon: Building2, label: t("auto.bedrifter"), path: "/admin/companies", color: undefined },
+  { icon: Users, label: t("auto.brukere"), path: "/admin/users", color: undefined },
+  { icon: Sparkles, label: t("auto.ai_import"), path: "/admin/customer-import", color: "text-primary" },
+  { icon: CreditCard, label: t("auto.hms_kort"), path: "/admin/hms-requests", color: undefined },
+  { icon: Award, label: t("auto.sg_register"), path: "/admin/sg-register", color: undefined },
+  { icon: FolderOpen, label: t("auto.dokumentsenter"), path: "/admin/documents", color: "text-primary" },
+  { icon: Leaf, label: t("auto.stoffkartotek"), path: "/admin/stoffkartotek", color: "text-primary" },
+  { icon: BookOpen, label: t("auto.rutine_maker"), path: "/admin/routine-maker", color: "text-primary" },
+  { icon: Mail, label: t("auto.e_postlogg"), path: "/admin/email-log", color: undefined },
+  { icon: Activity, label: t("auto.monitoring"), path: "/admin/monitoring", color: "text-warning" },
+  { icon: UserCheck, label: t("auto.selgere"), path: "/admin/sellers", color: "text-accent" },
+  { icon: Trash2, label: t("auto.papirkurv"), path: "/admin/trash", color: "text-destructive" },
 ];
 
 interface SidebarContentProps {
