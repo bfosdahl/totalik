@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 interface SimpleProjectDocumentsProps {
   projectId: string;
@@ -22,8 +23,8 @@ export function SimpleProjectDocuments({ projectId }: SimpleProjectDocumentsProp
       <CardContent>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <FileText className="w-12 h-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Dokumenthåndtering kommer snart</p>
-          <p className="text-sm text-muted-foreground">Last opp tegninger, HMS-plan, SHA-plan og annen dokumentasjon</p>
+          <p className="text-muted-foreground">{t("auto.dokumenthaandtering_kommer_snart")}</p>
+          <p className="text-sm text-muted-foreground">{t("auto.last_opp_tegninger_hms_plan_sha_plan_og_")}</p>
         </div>
       </CardContent>
     </Card>

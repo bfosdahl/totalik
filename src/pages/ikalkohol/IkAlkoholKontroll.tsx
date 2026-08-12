@@ -19,11 +19,12 @@ import {
 } from "@/hooks/useIkAlkoholControls";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const REGELVERK = [
-  { name: "Alkoholloven", description: "Lov om omsetning av alkoholholdig drikk m.v.", link: "https://lovdata.no/dokument/NL/lov/1989-06-02-27" },
-  { name: "Alkoholforskriften", description: "Forskrift om omsetning av alkoholholdig drikk mv.", link: "https://lovdata.no/dokument/SF/forskrift/2005-06-08-538" },
-  { name: "Serveringsforskriften", description: "Forskrift om serveringsvirksomhet", link: "https://lovdata.no/dokument/SF/forskrift/1983-07-08-1252" },
+  { name: "Alkoholloven", description: t("auto.lov_om_omsetning_av_alkoholholdig_drikk_"), link: "https://lovdata.no/dokument/NL/lov/1989-06-02-27" },
+  { name: "Alkoholforskriften", description: t("auto.forskrift_om_omsetning_av_alkoholholdig_"), link: "https://lovdata.no/dokument/SF/forskrift/2005-06-08-538" },
+  { name: "Serveringsforskriften", description: t("auto.forskrift_om_serveringsvirksomhet"), link: "https://lovdata.no/dokument/SF/forskrift/1983-07-08-1252" },
 ];
 
 export default function IkAlkoholKontroll() {
@@ -116,10 +117,10 @@ export default function IkAlkoholKontroll() {
 
   const renderHistory = (type: string) => {
     const entries = getControlsForType(type);
-    if (entries.length === 0) return <p className="text-muted-foreground text-sm py-4">Ingen kontroller registrert ennå.</p>;
+    if (entries.length === 0) return <p className="text-muted-foreground text-sm py-4">{t("auto.ingen_kontroller_registrert_ennaa")}</p>;
     return (
       <div className="space-y-2 mt-4">
-        <h3 className="text-sm font-semibold text-muted-foreground">Utførte kontroller</h3>
+        <h3 className="text-sm font-semibold text-muted-foreground">{t("auto.utfoerte_kontroller")}</h3>
         {entries.slice(0, 10).map(entry => {
           const items = (entry.checklist_items || []) as ChecklistItem[];
           const checked = items.filter(i => i.checked).length;
@@ -157,8 +158,8 @@ export default function IkAlkoholKontroll() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Kontroll</h1>
-          <p className="text-muted-foreground mt-1">Dokumenter daglige, månedlige og årlige kontroller</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.kontroll")}</h1>
+          <p className="text-muted-foreground mt-1">{t("auto.dokumenter_daglige_maanedlige_og_aarlige")}</p>
         </div>
       </div>
 
@@ -166,26 +167,26 @@ export default function IkAlkoholKontroll() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="daglig" className="gap-1.5">
             <ClipboardCheck className="h-4 w-4" />
-            <span className="hidden sm:inline">Daglig</span>
+            <span className="hidden sm:inline">{t("auto.daglig")}</span>
           </TabsTrigger>
           <TabsTrigger value="maanedlig" className="gap-1.5">
             <CalendarDays className="h-4 w-4" />
-            <span className="hidden sm:inline">Månedlig</span>
+            <span className="hidden sm:inline">{t("auto.maanedlig")}</span>
           </TabsTrigger>
           <TabsTrigger value="aarlig" className="gap-1.5">
             <CalendarClock className="h-4 w-4" />
-            <span className="hidden sm:inline">Årlig</span>
+            <span className="hidden sm:inline">{t("auto.aarlig")}</span>
           </TabsTrigger>
           <TabsTrigger value="regelverk" className="gap-1.5">
             <Scale className="h-4 w-4" />
-            <span className="hidden sm:inline">Regelverk</span>
+            <span className="hidden sm:inline">{t("auto.regelverk")}</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="daglig" className="mt-6 space-y-6">
           <div>
-            <h2 className="text-lg font-semibold mb-1">📅 Daglige kontroller</h2>
-            <p className="text-sm text-muted-foreground mb-4">Driftskontroll – dette er det kommunen forventer at virksomheten følger opp i praksis.</p>
+            <h2 className="text-lg font-semibold mb-1">{t("auto.daglige_kontroller_2")}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{t("auto.driftskontroll_dette_er_det_kommunen_for")}</p>
           </div>
           {renderCategoryCards(DAILY_CHECKLISTS, 'daily')}
           {renderHistory('daily')}
@@ -193,8 +194,8 @@ export default function IkAlkoholKontroll() {
 
         <TabsContent value="maanedlig" className="mt-6 space-y-6">
           <div>
-            <h2 className="text-lg font-semibold mb-1">📆 Månedlige kontroller</h2>
-            <p className="text-sm text-muted-foreground mb-4">Internkontroll – systematisk oppfølging av IK-systemet.</p>
+            <h2 className="text-lg font-semibold mb-1">{t("auto.maanedlige_kontroller_2")}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{t("auto.internkontroll_systematisk_oppfoelging_a")}</p>
           </div>
           {renderCategoryCards(MONTHLY_CHECKLISTS, 'monthly')}
           {renderHistory('monthly')}
@@ -202,8 +203,8 @@ export default function IkAlkoholKontroll() {
 
         <TabsContent value="aarlig" className="mt-6 space-y-6">
           <div>
-            <h2 className="text-lg font-semibold mb-1">📑 Årlige / periodiske krav</h2>
-            <p className="text-sm text-muted-foreground mb-4">Krav som skal oppfylles årlig eller ved endringer.</p>
+            <h2 className="text-lg font-semibold mb-1">{t("auto.aarlige_periodiske_krav")}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{t("auto.krav_som_skal_oppfylles_aarlig_eller_ved")}</p>
           </div>
           {renderCategoryCards(YEARLY_CHECKLISTS, 'yearly')}
           {renderHistory('yearly')}
@@ -211,8 +212,8 @@ export default function IkAlkoholKontroll() {
 
         <TabsContent value="regelverk" className="mt-6">
           <div>
-            <h2 className="text-lg font-semibold mb-1">⚖️ Relevant regelverk</h2>
-            <p className="text-sm text-muted-foreground mb-4">Regelverket som IK-Alkohol bygger på.</p>
+            <h2 className="text-lg font-semibold mb-1">{t("auto.relevant_regelverk")}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{t("auto.regelverket_som_ik_alkohol_bygger_paa")}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {REGELVERK.map(r => (
@@ -223,7 +224,7 @@ export default function IkAlkoholKontroll() {
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" size="sm" asChild>
-                    <a href={r.link} target="_blank" rel="noopener noreferrer">Åpne i Lovdata ↗</a>
+                    <a href={r.link} target="_blank" rel="noopener noreferrer">{t("auto.aapne_i_lovdata")}</a>
                   </Button>
                 </CardContent>
               </Card>
@@ -232,17 +233,17 @@ export default function IkAlkoholKontroll() {
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle className="text-base">🔎 Hva kommunen ser etter ved tilsyn</CardTitle>
+              <CardTitle className="text-base">{t("auto.hva_kommunen_ser_etter_ved_tilsyn")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Internkontrollsystem</li>
-                <li>Risikoanalyse</li>
-                <li>Opplæringsdokumentasjon</li>
-                <li>Avvikssystem</li>
-                <li>Rutiner for alderskontroll</li>
-                <li>Rutiner for håndtering av berusede</li>
-                <li>Dokumentasjon på årlig gjennomgang</li>
+                <li>{t("auto.internkontrollsystem")}</li>
+                <li>{t("auto.risikoanalyse")}</li>
+                <li>{t("auto.opplaeringsdokumentasjon")}</li>
+                <li>{t("auto.avvikssystem")}</li>
+                <li>{t("auto.rutiner_for_alderskontroll")}</li>
+                <li>{t("auto.rutiner_for_haandtering_av_berusede")}</li>
+                <li>{t("auto.dokumentasjon_paa_aarlig_gjennomgang")}</li>
               </ul>
             </CardContent>
           </Card>
@@ -279,9 +280,9 @@ export default function IkAlkoholKontroll() {
             ))}
 
             <div>
-              <label className="text-sm font-medium">Notater</label>
+              <label className="text-sm font-medium">{t("auto.notater")}</label>
               <Textarea
-                placeholder="Generelle notater..."
+                placeholder={t("auto.generelle_notater_2")}
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 className="min-h-[80px] mt-1"
@@ -289,12 +290,12 @@ export default function IkAlkoholKontroll() {
             </div>
 
             <div className="flex gap-2 justify-end pt-2 border-t">
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Avbryt</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>{t("auto.avbryt")}</Button>
               <Button variant="outline" onClick={() => handleSave('draft')} disabled={saveControl.isPending}>
-                Lagre utkast
+                {t("auto.lagre_utkast")}
               </Button>
               <Button onClick={() => handleSave('completed')} disabled={saveControl.isPending}>
-                Fullfør kontroll
+                {t("auto.fullfoer_kontroll")}
               </Button>
             </div>
           </div>

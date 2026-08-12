@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { RoutineTemplate, RoutineLibraryModule } from "@/hooks/useRoutineLibrary";
 import { adoptRoutineTemplateToVisibleSystem } from "@/lib/adoptRoutineTemplate";
+import { t } from "@/i18n/t";
 
 interface AiRoutineDialogProps {
   module: RoutineLibraryModule;
@@ -87,7 +88,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
 
   const handleGenerate = async () => {
     if (!tema.trim()) {
-      toast.error("Skriv inn tema for rutinen");
+      toast.error(t("auto.skriv_inn_tema_for_rutinen"));
       return;
     }
     setIsGenerating(true);
@@ -98,7 +99,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setResult(data.routine);
-      toast.success("Rutine generert");
+      toast.success(t("auto.rutine_generert"));
     } catch (err: any) {
       console.error("AI routine error:", err);
       toast.error(err.message || "Kunne ikke generere rutine");
@@ -137,7 +138,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
         if (!profile?.company_id) throw new Error("Mangler bedrift");
         await adoptRoutineTemplateToVisibleSystem(template, profile.company_id);
         queryClient.invalidateQueries({ queryKey: ["customer-routine-instances"] });
-        toast.success("AI-rutine lagret");
+        toast.success(t("auto.ai_rutine_lagret"));
       }
       reset();
       setOpen(false);
@@ -230,9 +231,9 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
           {!result ? (
             <div className="space-y-4 pb-4">
               <div>
-                <Label>Tema *</Label>
+                <Label>{t("auto.tema")}</Label>
                 <Input
-                  placeholder="F.eks. Vernerunde på byggeplass"
+                  placeholder={t("auto.f_eks_vernerunde_paa_byggeplass")}
                   value={tema}
                   onChange={(e) => setTema(e.target.value)}
                 />
@@ -240,13 +241,13 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
               <div>
                 <Label>Bransje / kontekst (valgfritt)</Label>
                 <Input
-                  placeholder="F.eks. Tømrer, restaurant, byggherre"
+                  placeholder={t("auto.f_eks_toemrer_restaurant_byggherre")}
                   value={bransje}
                   onChange={(e) => setBransje(e.target.value)}
                 />
               </div>
               <div>
-                <Label>Detaljnivå</Label>
+                <Label>{t("auto.detaljnivaa")}</Label>
                 <Select value={nivaa} onValueChange={(v: any) => setNivaa(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -272,7 +273,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
             <div className="space-y-4 pb-4">
               <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-4 space-y-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Tittel</Label>
+                  <Label className="text-xs text-muted-foreground">{t("auto.tittel")}</Label>
                   <Input
                     value={result.title || ""}
                     onChange={(e) => setResult({ ...result, title: e.target.value })}
@@ -280,7 +281,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Beskrivelse</Label>
+                  <Label className="text-xs text-muted-foreground">{t("auto.beskrivelse")}</Label>
                   <Textarea
                     value={result.description || ""}
                     onChange={(e) => setResult({ ...result, description: e.target.value })}
@@ -288,7 +289,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Formål</Label>
+                  <Label className="text-xs text-muted-foreground">{t("auto.formaal")}</Label>
                   <Textarea
                     value={result.purpose || ""}
                     onChange={(e) => setResult({ ...result, purpose: e.target.value })}
@@ -327,7 +328,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
 
               {result.legal_refs?.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-semibold mb-1">Lovreferanser</h4>
+                  <h4 className="text-sm font-semibold mb-1">{t("auto.lovreferanser")}</h4>
                   <div className="flex gap-1 flex-wrap">
                     {result.legal_refs.map((r: string, i: number) => (
                       <Badge key={i} variant="outline" className="text-xs">{r}</Badge>

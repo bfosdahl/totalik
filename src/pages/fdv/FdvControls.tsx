@@ -28,6 +28,7 @@ import { FdvCompleteControlDialog } from "@/components/fdv/FdvCompleteControlDia
 import { FdvControl, FDV_CONTROL_TYPE_LABELS } from "@/types/fdv";
 import { format, differenceInDays, isBefore, startOfDay } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function FdvControls() {
   const { controls, overdueControls, isLoading, createControl, updateControl, completeControl, deleteControl } = useFdvControls();
@@ -87,24 +88,24 @@ export default function FdvControls() {
   const today = startOfDay(new Date());
   
   const getStatusBadge = (control: FdvControl) => {
-    if (!control.next_due_date) return <Badge variant="outline">Ikke planlagt</Badge>;
+    if (!control.next_due_date) return <Badge variant="outline">{t("auto.ikke_planlagt")}</Badge>;
     
     const dueDate = new Date(control.next_due_date);
     const daysUntil = differenceInDays(dueDate, today);
     
     if (control.status === 'avvik') {
-      return <Badge variant="destructive">Avvik</Badge>;
+      return <Badge variant="destructive">{t("auto.avvik")}</Badge>;
     }
     if (isBefore(dueDate, today)) {
-      return <Badge variant="destructive">Forfalt</Badge>;
+      return <Badge variant="destructive">{t("auto.forfalt")}</Badge>;
     }
     if (daysUntil <= 14) {
-      return <Badge variant="secondary" className="bg-warning/20 text-warning-foreground">Snart</Badge>;
+      return <Badge variant="secondary" className="bg-warning/20 text-warning-foreground">{t("auto.snart")}</Badge>;
     }
     if (control.status === 'utfort') {
-      return <Badge variant="default" className="bg-green-500">Utført</Badge>;
+      return <Badge variant="default" className="bg-green-500">{t("auto.utfoert")}</Badge>;
     }
-    return <Badge variant="outline">Planlagt</Badge>;
+    return <Badge variant="outline">{t("auto.planlagt")}</Badge>;
   };
 
   const getBuildingName = (buildingId: string) => {
@@ -176,7 +177,7 @@ export default function FdvControls() {
               Kontroller og vedlikehold
             </h1>
             <p className="text-muted-foreground mt-1">
-              Administrer lovpålagte og anbefalte kontroller
+              {t("auto.administrer_lovpaalagte_og_anbefalte_kon")}
             </p>
           </div>
           <Button onClick={handleCreate} className="gap-2">
@@ -195,7 +196,7 @@ export default function FdvControls() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{controls.length}</p>
-                  <p className="text-sm text-muted-foreground">Totalt</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.totalt")}</p>
                 </div>
               </div>
             </CardContent>
@@ -208,7 +209,7 @@ export default function FdvControls() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{overdueControls.length}</p>
-                  <p className="text-sm text-muted-foreground">Forfalt</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.forfalt")}</p>
                 </div>
               </div>
             </CardContent>
@@ -227,7 +228,7 @@ export default function FdvControls() {
                       return days > 0 && days <= 30;
                     }).length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Neste 30 dager</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.neste_30_dager")}</p>
                 </div>
               </div>
             </CardContent>
@@ -242,7 +243,7 @@ export default function FdvControls() {
                   <p className="text-2xl font-bold">
                     {controls.filter(c => c.status === 'utfort').length}
                   </p>
-                  <p className="text-sm text-muted-foreground">Utført</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.utfoert")}</p>
                 </div>
               </div>
             </CardContent>
@@ -256,18 +257,18 @@ export default function FdvControls() {
             <TabsTrigger value="overdue" className="text-destructive">
               Forfalt ({overdueControls.length})
             </TabsTrigger>
-            <TabsTrigger value="upcoming">Kommende</TabsTrigger>
+            <TabsTrigger value="upcoming">{t("auto.kommende")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-4 mt-4">
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Laster kontroller...</div>
+              <div className="text-center py-8 text-muted-foreground">{t("auto.laster_kontroller")}</div>
             ) : controls.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <ClipboardCheck className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Ingen kontroller registrert</h3>
-                  <p className="text-muted-foreground mb-4">Legg til kontroller for dine bygg</p>
+                  <h3 className="text-lg font-medium mb-2">{t("auto.ingen_kontroller_registrert")}</h3>
+                  <p className="text-muted-foreground mb-4">{t("auto.legg_til_kontroller_for_dine_bygg")}</p>
                   <Button onClick={handleCreate} className="gap-2">
                     <Plus className="h-4 w-4" />
                     Ny kontroll
@@ -281,7 +282,7 @@ export default function FdvControls() {
 
           <TabsContent value="overdue" className="space-y-4 mt-4">
             {overdueControls.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">Ingen forfalt kontroller</div>
+              <div className="text-center py-8 text-muted-foreground">{t("auto.ingen_forfalt_kontroller")}</div>
             ) : (
               overdueControls.map((control) => <ControlCard key={control.id} control={control} />)
             )}
@@ -289,7 +290,7 @@ export default function FdvControls() {
 
           <TabsContent value="upcoming" className="space-y-4 mt-4">
             {controls.filter(c => c.next_due_date && !isBefore(new Date(c.next_due_date), today)).length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">Ingen kommende kontroller</div>
+              <div className="text-center py-8 text-muted-foreground">{t("auto.ingen_kommende_kontroller")}</div>
             ) : (
               controls
                 .filter(c => c.next_due_date && !isBefore(new Date(c.next_due_date), today))
@@ -317,16 +318,16 @@ export default function FdvControls() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett kontroll</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_kontroll")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{controlToDelete?.name}"?
               Denne handlingen kan ikke angres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -25,6 +25,7 @@ import { HmsSja, useHmsSja } from "@/hooks/useHmsSja";
 import { useHmsSjaTemplates } from "@/hooks/useHmsSjaTemplates";
 import { useAuth } from "@/contexts/AuthContext";
 import SignatureCanvas from "react-signature-canvas";
+import { t } from "@/i18n/t";
 
 interface SjaRow {
   id: string;
@@ -154,9 +155,9 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
         work_description: rows.map((r) => r.activity).filter(Boolean).join("; "),
         status: "active",
       });
-      toast.success("SJA lagret");
+      toast.success(t("auto.sja_lagret"));
     } catch {
-      toast.error("Kunne ikke lagre");
+      toast.error(t("auto.kunne_ikke_lagre_2"));
     } finally {
       setIsSaving(false);
     }
@@ -164,7 +165,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
 
   const handleComplete = async () => {
     if (!sigCanvasRef.current || sigCanvasRef.current.isEmpty()) {
-      toast.error("Signatur er påkrevd");
+      toast.error(t("auto.signatur_er_paakrevd"));
       return;
     }
 
@@ -180,7 +181,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
         work_description: rows.map((r) => r.activity).filter(Boolean).join("; "),
       });
     } catch {
-      toast.error("Kunne ikke lagre data");
+      toast.error(t("auto.kunne_ikke_lagre_data"));
       return;
     }
 
@@ -196,7 +197,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
       });
       onClose();
     } catch {
-      toast.error("Kunne ikke fullføre SJA");
+      toast.error(t("auto.kunne_ikke_fullfoere_sja"));
     }
   };
 
@@ -212,7 +213,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
             <div className="flex items-center gap-2">
               <Badge variant="outline">{sja.sja_number}</Badge>
               {isCompleted && (
-                <Badge className="bg-green-100 text-green-700">Fullført</Badge>
+                <Badge className="bg-green-100 text-green-700">{t("auto.fullfoert")}</Badge>
               )}
             </div>
             <h1 className="text-xl font-bold">{sja.title}</h1>
@@ -225,7 +226,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
               onClick={() => {
                 const filled = rows.filter((r) => r.activity || r.risk || r.measure);
                 if (filled.length === 0) {
-                  toast.error("Fyll inn minst én rad før du lagrer som mal");
+                  toast.error(t("auto.fyll_inn_minst_n_rad_foer_du_lagrer_som_"));
                   return;
                 }
                 setTemplateName(sja.title || "");
@@ -250,7 +251,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
       {/* Simple table form */}
       <Card>
         <CardContent className="p-4 sm:p-6">
-          <h2 className="text-lg font-semibold mb-4">Sikker Jobb Analyse</h2>
+          <h2 className="text-lg font-semibold mb-4">{t("auto.sikker_jobb_analyse")}</h2>
 
           {/* Table header */}
           <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_1fr_40px] gap-3 mb-3 px-1">
@@ -275,10 +276,10 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
               >
                 <div>
                   <label className="text-sm font-semibold text-foreground sm:hidden mb-1 block">
-                    Aktivitet
+                    {t("auto.aktivitet")}
                   </label>
                   <Textarea
-                    placeholder="Beskriv aktiviteten..."
+                    placeholder={t("auto.beskriv_aktiviteten")}
                     value={row.activity}
                     onChange={(e) => updateRow(row.id, "activity", e.target.value)}
                     className="min-h-[120px] text-base leading-relaxed"
@@ -287,10 +288,10 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
                 </div>
                 <div>
                   <label className="text-sm font-semibold text-foreground sm:hidden mb-1 block">
-                    Risiko
+                    {t("auto.risiko")}
                   </label>
                   <Textarea
-                    placeholder="Hva kan gå galt?"
+                    placeholder={t("auto.hva_kan_gaa_galt")}
                     value={row.risk}
                     onChange={(e) => updateRow(row.id, "risk", e.target.value)}
                     className="min-h-[120px] text-base leading-relaxed"
@@ -299,10 +300,10 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
                 </div>
                 <div>
                   <label className="text-sm font-semibold text-foreground sm:hidden mb-1 block">
-                    Tiltak
+                    {t("auto.tiltak")}
                   </label>
                   <Textarea
-                    placeholder="Risikoreduserende tiltak..."
+                    placeholder={t("auto.risikoreduserende_tiltak")}
                     value={row.measure}
                     onChange={(e) => updateRow(row.id, "measure", e.target.value)}
                     className="min-h-[120px] text-base leading-relaxed"
@@ -346,7 +347,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
             Deltakere (hvem skal utføre arbeidet)
           </label>
           <Input
-            placeholder="F.eks. Ola Nordmann, Kari Hansen"
+            placeholder={t("auto.f_eks_ola_nordmann_kari_hansen")}
             value={participants}
             onChange={(e) => setParticipants(e.target.value)}
             disabled={isCompleted}
@@ -361,7 +362,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
             <div className="p-4 bg-green-50 rounded-lg border border-green-200">
               <div className="flex items-center gap-2 text-green-700 mb-2">
                 <CheckCircle2 className="h-5 w-5" />
-                <span className="font-medium">SJA er fullført og signert</span>
+                <span className="font-medium">{t("auto.sja_er_fullfoert_og_signert")}</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Signert av {sja.completed_by_name} den{" "}
@@ -371,7 +372,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
             </div>
             {sja.leader_signature && (
               <div className="mt-4">
-                <label className="text-sm font-medium">Signatur</label>
+                <label className="text-sm font-medium">{t("auto.signatur")}</label>
                 <img
                   src={sja.leader_signature}
                   alt="Signatur"
@@ -395,12 +396,11 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
             ) : (
               <div className="space-y-4">
                 <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-sm">
-                  Ved å signere bekrefter du at alle har forstått risikoene og
-                  tiltakene som er beskrevet i denne SJA-en.
+                  {t("auto.ved_aa_signere_bekrefter_du_at_alle_har_")}
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Din signatur *</label>
+                  <label className="text-sm font-medium">{t("auto.din_signatur_2")}</label>
                   <div className="border rounded-lg bg-white mt-1">
                     <SignatureCanvas
                       ref={sigCanvasRef}
@@ -456,13 +456,13 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
       <Dialog open={showSaveTemplate} onOpenChange={setShowSaveTemplate}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Lagre som SJA-mal</DialogTitle>
+            <DialogTitle>{t("auto.lagre_som_sja_mal")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Navn på mal *</label>
+              <label className="text-sm font-medium">{t("auto.navn_paa_mal")}</label>
               <Input
-                placeholder="F.eks. Kranoperasjon"
+                placeholder={t("auto.f_eks_kranoperasjon")}
                 value={templateName}
                 onChange={(e) => setTemplateName(e.target.value)}
               />
@@ -470,18 +470,18 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
             <div>
               <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
               <Textarea
-                placeholder="Når brukes denne malen?"
+                placeholder={t("auto.naar_brukes_denne_malen")}
                 value={templateDesc}
                 onChange={(e) => setTemplateDesc(e.target.value)}
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Aktivitet, risiko og tiltak fra denne SJA-en lagres som en gjenbrukbar mal.
+              {t("auto.aktivitet_risiko_og_tiltak_fra_denne_sja")}
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSaveTemplate(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               disabled={!templateName.trim() || createTemplate.isPending}

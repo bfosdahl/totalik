@@ -10,6 +10,7 @@ import { useSimpleProjects, SimpleProject } from "@/hooks/useSimpleProjects";
 import { NewSimpleProjectDialog } from "@/components/mineprosjekter/NewSimpleProjectDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const statusLabels: Record<string, string> = {
   planned: "Planlagt",
@@ -79,9 +80,9 @@ export default function MineProsjekterDashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Småprosjekter</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.smaaprosjekter")}</h1>
             <p className="text-muted-foreground mt-1">
-              Enkel prosjektstyring for mindre jobber
+              {t("auto.enkel_prosjektstyring_for_mindre_jobber")}
             </p>
           </div>
           <Button onClick={() => setDialogOpen(true)} className="gap-2">
@@ -95,7 +96,7 @@ export default function MineProsjekterDashboard() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Søk etter prosjekt..."
+              placeholder={t("auto.soek_etter_prosjekt")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -126,9 +127,9 @@ export default function MineProsjekterDashboard() {
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
                 <FolderOpen className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Ingen prosjekter ennå</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_prosjekter_ennaa")}</h3>
               <p className="text-muted-foreground mb-6 max-w-md">
-                Opprett ditt første prosjekt for å komme i gang med enkel prosjektstyring.
+                {t("auto.opprett_ditt_foerste_prosjekt_for_aa_kom")}
               </p>
               <Button onClick={() => setDialogOpen(true)} className="gap-2">
                 <Plus className="w-4 h-4" />

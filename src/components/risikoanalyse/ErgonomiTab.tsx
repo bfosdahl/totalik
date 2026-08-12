@@ -38,6 +38,7 @@ import { nb } from "date-fns/locale";
 import { ErgonomicAssessmentDialog } from "./ergonomi/ErgonomicAssessmentDialog";
 import { NewErgonomicAssessmentDialog } from "./ergonomi/NewErgonomicAssessmentDialog";
 import { EquipmentAssessment } from "./ergonomi/EquipmentAssessment";
+import { t } from "@/i18n/t";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,21 +57,21 @@ const ASSESSMENT_TYPE_CONFIG: Record<ErgonomicAssessmentType, {
   color: string;
 }> = {
   muskel_skjelett: {
-    label: "Muskel- og skjelett",
+    label: t("auto.muskel_og_skjelett"),
     icon: Activity,
-    description: "Belastningsskader, tunge løft, arbeidsstillinger",
+    description: t("auto.belastningsskader_tunge_loeft_arbeidssti"),
     color: "text-blue-600",
   },
   vibrasjon: {
-    label: "Vibrasjoner",
+    label: t("auto.vibrasjoner"),
     icon: Vibrate,
-    description: "Hånd-arm og helkroppsvibrasjoner",
+    description: t("auto.haand_arm_og_helkroppsvibrasjoner"),
     color: "text-purple-600",
   },
   stoy: {
-    label: "Støy",
+    label: t("auto.stoey"),
     icon: Volume2,
-    description: "Støyeksponering og hørselvern",
+    description: t("auto.stoeyeksponering_og_hoerselvern"),
     color: "text-orange-600",
   },
 };
@@ -228,7 +229,7 @@ export function ErgonomiTab() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold">{totalCount}</p>
-                    <p className="text-sm text-muted-foreground">Totalt vurdert</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.totalt_vurdert")}</p>
                   </div>
                   <Activity className="h-8 w-8 text-muted-foreground" />
                 </div>
@@ -239,7 +240,7 @@ export function ErgonomiTab() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold text-green-600">{completedCount}</p>
-                    <p className="text-sm text-muted-foreground">Fullført</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.fullfoert")}</p>
                   </div>
                   <CheckCircle2 className="h-8 w-8 text-green-600" />
                 </div>
@@ -250,7 +251,7 @@ export function ErgonomiTab() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold text-blue-600">{inProgressCount}</p>
-                    <p className="text-sm text-muted-foreground">Pågående</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.paagaaende")}</p>
                   </div>
                   <Clock className="h-8 w-8 text-blue-600" />
                 </div>
@@ -261,7 +262,7 @@ export function ErgonomiTab() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold text-red-600">{highRiskCount}</p>
-                    <p className="text-sm text-muted-foreground">Høy risiko</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.hoey_risiko")}</p>
                   </div>
                   <AlertTriangle className="h-8 w-8 text-red-600" />
                 </div>
@@ -279,7 +280,7 @@ export function ErgonomiTab() {
                     Ergonomisk risikovurdering
                   </CardTitle>
                   <CardDescription>
-                    Muskel- og skjelettplager, arbeidsstillinger og belastningsskader
+                    {t("auto.muskel_og_skjelettplager_arbeidsstilling")}
                   </CardDescription>
                 </div>
                 <Button onClick={() => setShowNewDialog(true)}>
@@ -293,18 +294,18 @@ export function ErgonomiTab() {
               {/* Sub-tabs for assessment types */}
               <Tabs value={activeSubTab} onValueChange={(v) => setActiveSubTab(v as ErgonomicAssessmentType | "all")}>
                 <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="all">Alle</TabsTrigger>
+                  <TabsTrigger value="all">{t("auto.alle")}</TabsTrigger>
                   <TabsTrigger value="muskel_skjelett" className="gap-1">
                     <Activity className="h-4 w-4" />
-                    <span className="hidden sm:inline">Muskel-skjelett</span>
+                    <span className="hidden sm:inline">{t("auto.muskel_skjelett")}</span>
                   </TabsTrigger>
                   <TabsTrigger value="vibrasjon" className="gap-1">
                     <Vibrate className="h-4 w-4" />
-                    <span className="hidden sm:inline">Vibrasjon</span>
+                    <span className="hidden sm:inline">{t("auto.vibrasjon")}</span>
                   </TabsTrigger>
                   <TabsTrigger value="stoy" className="gap-1">
                     <Volume2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Støy</span>
+                    <span className="hidden sm:inline">{t("auto.stoey")}</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -314,7 +315,7 @@ export function ErgonomiTab() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Søk etter vurdering..."
+                    placeholder={t("auto.soek_etter_vurdering")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -326,9 +327,9 @@ export function ErgonomiTab() {
               {assessments.length === 0 ? (
                 <div className="text-center py-12">
                   <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Ingen ergonomiske risikovurderinger</h3>
+                  <h3 className="text-lg font-medium mb-2">{t("auto.ingen_ergonomiske_risikovurderinger")}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Opprett din første vurdering for muskel-skjelett, vibrasjon eller støy
+                    {t("auto.opprett_din_foerste_vurdering_for_muskel")}
                   </p>
                   <Button onClick={() => setShowNewDialog(true)}>
                     <Plus className="h-4 w-4 mr-2" />
@@ -339,7 +340,7 @@ export function ErgonomiTab() {
                 <div className="text-center py-8">
                   <Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
                   <p className="text-sm text-muted-foreground">
-                    Ingen vurderinger matcher søket
+                    {t("auto.ingen_vurderinger_matcher_soeket")}
                   </p>
                 </div>
               ) : (
@@ -347,12 +348,12 @@ export function ErgonomiTab() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Tittel</TableHead>
-                        <TableHead>Område</TableHead>
-                        <TableHead>Risikonivå</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Sist oppdatert</TableHead>
+                        <TableHead>{t("auto.type")}</TableHead>
+                        <TableHead>{t("auto.tittel")}</TableHead>
+                        <TableHead>{t("auto.omraade_2")}</TableHead>
+                        <TableHead>{t("auto.risikonivaa")}</TableHead>
+                        <TableHead>{t("auto.status_2")}</TableHead>
+                        <TableHead>{t("auto.sist_oppdatert")}</TableHead>
                         <TableHead className="w-[100px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -418,13 +419,11 @@ export function ErgonomiTab() {
           {/* Info Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Om ergonomisk risikovurdering</CardTitle>
+              <CardTitle className="text-base">{t("auto.om_ergonomisk_risikovurdering")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Ergonomisk risikovurdering følger Arbeidstilsynets metodikk for kartlegging og vurdering
-                av fysiske belastninger i arbeidsmiljøet. Vurderingene dekker muskel- og skjelettplager,
-                tunge løft, arbeidsstillinger og belastningsskader.
+                {t("auto.ergonomisk_risikovurdering_foelger_arbei")}
               </p>
               <p>
                 For vurdering av vibrasjon og støy fra verktøy og utstyr, bruk fanen{" "}
@@ -461,13 +460,13 @@ export function ErgonomiTab() {
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett risikovurdering?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_risikovurdering")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne risikovurderingen? Handlingen kan ikke angres.
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne__5")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? "Sletter..." : "Slett"}
             </AlertDialogAction>

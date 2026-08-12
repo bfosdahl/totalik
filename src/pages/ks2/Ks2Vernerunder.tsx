@@ -27,6 +27,7 @@ import { useKsModule2VernerundeTemplates, VernerundeTemplate } from "@/hooks/use
 import Ks2VernerundeWizard from "@/components/ks2/Ks2VernerundeWizard";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function Ks2Vernerunder() {
   const { projectId } = useParams();
@@ -86,11 +87,11 @@ export default function Ks2Vernerunder() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600">Fullført</Badge>;
+        return <Badge className="bg-emerald-500 hover:bg-emerald-600">{t("auto.fullfoert")}</Badge>;
       case "in_progress":
-        return <Badge>Pågår</Badge>;
+        return <Badge>{t("auto.paagaar")}</Badge>;
       case "planned":
-        return <Badge variant="secondary">Planlagt</Badge>;
+        return <Badge variant="secondary">{t("auto.planlagt")}</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -265,8 +266,8 @@ export default function Ks2Vernerunder() {
             <HardHat className="h-6 w-6 text-emerald-500" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Vernerunder & RUH</h2>
-            <p className="text-muted-foreground">Planlegg og gjennomfør vernerunder</p>
+            <h2 className="text-2xl font-bold">{t("auto.vernerunder_ruh")}</h2>
+            <p className="text-muted-foreground">{t("auto.planlegg_og_gjennomfoer_vernerunder")}</p>
           </div>
         </div>
         <Button 
@@ -282,25 +283,25 @@ export default function Ks2Vernerunder() {
       <div className="grid gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Gjennomført</CardDescription>
+            <CardDescription>{t("auto.gjennomfoert")}</CardDescription>
             <CardTitle className="text-2xl text-emerald-500">{completed.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Pågår</CardDescription>
+            <CardDescription>{t("auto.paagaar")}</CardDescription>
             <CardTitle className="text-2xl text-blue-500">{inProgress.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Planlagt</CardDescription>
+            <CardDescription>{t("auto.planlagt")}</CardDescription>
             <CardTitle className="text-2xl">{planned.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Åpne funn</CardDescription>
+            <CardDescription>{t("auto.aapne_funn")}</CardDescription>
             <CardTitle className="text-2xl text-amber-500">{openFindings}</CardTitle>
           </CardHeader>
         </Card>
@@ -322,9 +323,9 @@ export default function Ks2Vernerunder() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <HardHat className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Ingen vernerunder</h3>
+                <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_vernerunder")}</h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  Planlegg din første vernerunde for dette prosjektet
+                  {t("auto.planlegg_din_foerste_vernerunde_for_dett")}
                 </p>
                 <Button 
                   className="bg-emerald-500 hover:bg-emerald-600"
@@ -344,7 +345,7 @@ export default function Ks2Vernerunder() {
           ) : (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                Ingen pågående vernerunder
+                {t("auto.ingen_paagaaende_vernerunder")}
               </CardContent>
             </Card>
           )}
@@ -356,7 +357,7 @@ export default function Ks2Vernerunder() {
           ) : (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                Ingen planlagte vernerunder
+                {t("auto.ingen_planlagte_vernerunder")}
               </CardContent>
             </Card>
           )}
@@ -368,7 +369,7 @@ export default function Ks2Vernerunder() {
           ) : (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                Ingen fullførte vernerunder
+                {t("auto.ingen_fullfoerte_vernerunder")}
               </CardContent>
             </Card>
           )}
@@ -384,23 +385,23 @@ export default function Ks2Vernerunder() {
               Planlegg vernerunde
             </DialogTitle>
             <DialogDescription>
-              Opprett en ny planlagt vernerunde for prosjektet
+              {t("auto.opprett_en_ny_planlagt_vernerunde_for_pr")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Tittel *</Label>
+              <Label htmlFor="title">{t("auto.tittel_2")}</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="F.eks. Vernerunde uke 50"
+                placeholder={t("auto.f_eks_vernerunde_uke_50")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="template">Sjekkliste-mal</Label>
+              <Label htmlFor="template">{t("auto.sjekkliste_mal")}</Label>
               <Select
                 value={formData.template_id}
                 onValueChange={(value) => setFormData({ ...formData, template_id: value })}
@@ -415,11 +416,11 @@ export default function Ks2Vernerunder() {
                     </div>
                   ) : (
                     <>
-                      <SelectItem value="none">Ingen mal</SelectItem>
+                      <SelectItem value="none">{t("auto.ingen_mal")}</SelectItem>
                       {templates.filter(t => t.is_system_template).length > 0 && (
                         <>
                           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                            System-maler
+                            {t("auto.system_maler")}
                           </div>
                           {templates.filter(t => t.is_system_template).map(t => (
                             <SelectItem key={t.id} value={t.id}>
@@ -431,7 +432,7 @@ export default function Ks2Vernerunder() {
                       {templates.filter(t => !t.is_system_template).length > 0 && (
                         <>
                           <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                            Egne maler
+                            {t("auto.egne_maler")}
                           </div>
                           {templates.filter(t => !t.is_system_template).map(t => (
                             <SelectItem key={t.id} value={t.id}>
@@ -447,7 +448,7 @@ export default function Ks2Vernerunder() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="scheduled_date">Planlagt dato *</Label>
+              <Label htmlFor="scheduled_date">{t("auto.planlagt_dato_3")}</Label>
               <Input
                 id="scheduled_date"
                 type="date"
@@ -457,19 +458,19 @@ export default function Ks2Vernerunder() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="responsible_name">Ansvarlig *</Label>
+              <Label htmlFor="responsible_name">{t("auto.ansvarlig_3")}</Label>
               <Input
                 id="responsible_name"
                 value={formData.responsible_name}
                 onChange={(e) => setFormData({ ...formData, responsible_name: e.target.value })}
-                placeholder="Navn på ansvarlig person"
+                placeholder={t("auto.navn_paa_ansvarlig_person")}
               />
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               className="bg-emerald-500 hover:bg-emerald-600"

@@ -11,6 +11,7 @@ import { useRoutineLibrary, RoutineLibraryModule, RoutineTemplate } from "@/hook
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const FREQUENCY_LABELS: Record<string, string> = {
   daglig: "Daglig",
@@ -64,7 +65,7 @@ export function RoutineLibraryDialog({
       }
       setLocalAdopted(prev => new Set([...prev, template.id]));
     } catch {
-      toast.error("Kunne ikke legge til rutine");
+      toast.error(t("auto.kunne_ikke_legge_til_rutine"));
     } finally {
       setAdopting(false);
     }
@@ -89,7 +90,7 @@ export function RoutineLibraryDialog({
             </DialogTitle>
           </DialogHeader>
           <p className="text-center text-muted-foreground py-8">
-            Ingen rutiner tilgjengelig i biblioteket ennå. Kontakt systemadministrator for å publisere maler.
+            {t("auto.ingen_rutiner_tilgjengelig_i_biblioteket")}
           </p>
         </DialogContent>
       </Dialog>
@@ -117,7 +118,7 @@ export function RoutineLibraryDialog({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Søk i rutiner..."
+            placeholder={t("auto.soek_i_rutiner")}
             className="pl-9"
           />
         </div>
@@ -183,13 +184,13 @@ export function RoutineLibraryDialog({
                       <div className="ml-6 pl-4 border-l space-y-3 py-3 mb-2">
                         {template.purpose && (
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Formål</p>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">{t("auto.formaal")}</p>
                             <p className="text-sm">{template.purpose}</p>
                           </div>
                         )}
                         {steps.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Sjekkliste</p>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">{t("auto.sjekkliste")}</p>
                             <ul className="space-y-1">
                               {steps.map((step: any, i: number) => (
                                 <li key={i} className="flex items-start gap-2 text-sm">

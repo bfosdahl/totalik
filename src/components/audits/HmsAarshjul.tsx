@@ -33,6 +33,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AarshjulEditDialog from "./AarshjulEditDialog";
+import { t } from "@/i18n/t";
 
 // Map activity IDs to their corresponding routes/form types
 const activityRoutes: Record<string, { route: string; formType?: string }> = {
@@ -65,7 +66,7 @@ const defaultActivities: Activity[] = [
   {
     id: "annual-review",
     name: "Årlig HMS-revisjon",
-    description: "Gjennomgang av hele HMS-systemet",
+    description: t("auto.gjennomgang_av_hele_hms_systemet"),
     icon: <ClipboardCheck className="w-4 h-4" />,
     color: "bg-primary text-primary-foreground",
     months: [1],
@@ -75,7 +76,7 @@ const defaultActivities: Activity[] = [
   {
     id: "vernerunde-q1",
     name: "Vernerunde Q1",
-    description: "Kvartalsvis vernerunde",
+    description: t("auto.kvartalsvis_vernerunde"),
     icon: <Shield className="w-4 h-4" />,
     color: "bg-emerald-500 text-white",
     months: [3],
@@ -85,7 +86,7 @@ const defaultActivities: Activity[] = [
   {
     id: "vernerunde-q2",
     name: "Vernerunde Q2",
-    description: "Kvartalsvis vernerunde",
+    description: t("auto.kvartalsvis_vernerunde"),
     icon: <Shield className="w-4 h-4" />,
     color: "bg-emerald-500 text-white",
     months: [6],
@@ -95,7 +96,7 @@ const defaultActivities: Activity[] = [
   {
     id: "vernerunde-q3",
     name: "Vernerunde Q3",
-    description: "Kvartalsvis vernerunde",
+    description: t("auto.kvartalsvis_vernerunde"),
     icon: <Shield className="w-4 h-4" />,
     color: "bg-emerald-500 text-white",
     months: [9],
@@ -105,7 +106,7 @@ const defaultActivities: Activity[] = [
   {
     id: "vernerunde-q4",
     name: "Vernerunde Q4",
-    description: "Kvartalsvis vernerunde",
+    description: t("auto.kvartalsvis_vernerunde"),
     icon: <Shield className="w-4 h-4" />,
     color: "bg-emerald-500 text-white",
     months: [12],
@@ -115,7 +116,7 @@ const defaultActivities: Activity[] = [
   {
     id: "el-kontroll",
     name: "El-kontroll",
-    description: "Elektrisk sikkerhetskontroll",
+    description: t("auto.elektrisk_sikkerhetskontroll"),
     icon: <Zap className="w-4 h-4" />,
     color: "bg-warning text-warning-foreground",
     months: [5],
@@ -125,7 +126,7 @@ const defaultActivities: Activity[] = [
   {
     id: "brannvern",
     name: "Brannvernøvelse",
-    description: "Evakueringsøvelse og brannslukking",
+    description: t("auto.evakueringsoevelse_og_brannslukking"),
     icon: <Flame className="w-4 h-4" />,
     color: "bg-destructive text-destructive-foreground",
     months: [4, 10],
@@ -135,7 +136,7 @@ const defaultActivities: Activity[] = [
   {
     id: "fysiske-forhold",
     name: "Fysiske arbeidsforhold",
-    description: "Gjennomgang av lokaler og utstyr",
+    description: t("auto.gjennomgang_av_lokaler_og_utstyr"),
     icon: <Building2 className="w-4 h-4" />,
     color: "bg-info text-info-foreground",
     months: [2],
@@ -145,7 +146,7 @@ const defaultActivities: Activity[] = [
   {
     id: "stoffkartotek",
     name: "Stoffkartotek-gjennomgang",
-    description: "Oppdatering av kjemikalieregister",
+    description: t("auto.oppdatering_av_kjemikalieregister"),
     icon: <FlaskConical className="w-4 h-4" />,
     color: "bg-purple-500 text-white",
     months: [8],
@@ -155,7 +156,7 @@ const defaultActivities: Activity[] = [
   {
     id: "risikovurdering",
     name: "Risikovurdering",
-    description: "Revisjon av risikovurderinger",
+    description: t("auto.revisjon_av_risikovurderinger"),
     icon: <AlertTriangle className="w-4 h-4" />,
     color: "bg-orange-500 text-white",
     months: [11],
@@ -165,7 +166,7 @@ const defaultActivities: Activity[] = [
   {
     id: "hms-opplaering",
     name: "HMS-opplæring",
-    description: "Opplæring av ansatte i HMS",
+    description: t("auto.opplaering_av_ansatte_i_hms"),
     icon: <BookOpen className="w-4 h-4" />,
     color: "bg-cyan-500 text-white",
     months: [1, 7],
@@ -175,7 +176,7 @@ const defaultActivities: Activity[] = [
   {
     id: "medarbeidersamtaler",
     name: "Medarbeidersamtaler",
-    description: "Årlige utviklingssamtaler",
+    description: t("auto.aarlige_utviklingssamtaler"),
     icon: <Users className="w-4 h-4" />,
     color: "bg-pink-500 text-white",
     months: [3, 9],
@@ -341,9 +342,9 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       .from("company_aarshjul_hidden_defaults")
       .insert({ company_id: company.id, department_id: filterDepartmentId, activity_id: activityId });
     if (error) {
-      toast.error("Kunne ikke skjule aktiviteten");
+      toast.error(t("auto.kunne_ikke_skjule_aktiviteten"));
     } else {
-      toast.success("Aktivitet skjult fra årshjulet");
+      toast.success(t("auto.aktivitet_skjult_fra_aarshjulet"));
       setHiddenDefaults((prev) => [...prev, activityId]);
     }
   };
@@ -359,9 +360,9 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     q = filterDepartmentId ? q.eq("department_id", filterDepartmentId) : q.is("department_id", null);
     const { error } = await q;
     if (error) {
-      toast.error("Kunne ikke gjenopprette aktiviteten");
+      toast.error(t("auto.kunne_ikke_gjenopprette_aktiviteten"));
     } else {
-      toast.success("Aktivitet gjenopprettet i årshjulet");
+      toast.success(t("auto.aktivitet_gjenopprettet_i_aarshjulet"));
       setHiddenDefaults((prev) => prev.filter((id) => id !== activityId));
     }
   };
@@ -462,7 +463,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
             <div className="p-1.5 bg-primary/10 rounded-lg">
               <Calendar className="w-4 h-4 text-primary" />
             </div>
-            <CardTitle className="text-base">HMS Årshjul</CardTitle>
+            <CardTitle className="text-base">{t("auto.hms_aarshjul")}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="pt-0">
@@ -600,7 +601,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                     </div>
                     {completed ? (
                       <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-success/20 text-success border-0">
-                        Utført
+                        {t("auto.utfoert")}
                       </Badge>
                     ) : (
                       <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
@@ -612,7 +613,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
 
             <Button variant="ghost" size="sm" className="mt-3 text-xs w-full" asChild>
               <a href="/audits">
-                Se alle aktiviteter
+                {t("auto.se_alle_aktiviteter")}
                 <ChevronRight className="w-3 h-3 ml-1" />
               </a>
             </Button>
@@ -633,9 +634,9 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                 <Calendar className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <CardTitle>HMS Årshjul</CardTitle>
+                <CardTitle>{t("auto.hms_aarshjul")}</CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Planlagte HMS-aktiviteter gjennom året
+                  {t("auto.planlagte_hms_aktiviteter_gjennom_aaret")}
                 </p>
               </div>
             </div>
@@ -777,7 +778,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   </Button>
                 )}
                 {isMobile && !selectedMonth && (
-                  <p className="text-xs text-muted-foreground mt-2">Trykk på en måned for å se aktiviteter</p>
+                  <p className="text-xs text-muted-foreground mt-2">{t("auto.trykk_paa_en_maaned_for_aa_se_aktivitete")}</p>
                 )}
               </div>
 
@@ -827,7 +828,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                   <h4 className="font-medium text-sm">{activity.name}</h4>
                                   {completed && (
                                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-success/20 text-success border-0">
-                                      Utført
+                                      {t("auto.utfoert")}
                                     </Badge>
                                   )}
                                 </div>
@@ -852,7 +853,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                   variant="ghost"
                                   size="icon"
                                   className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                  title="Fjern fra årshjulet"
+                                  title={t("auto.fjern_fra_aarshjulet")}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (activity.id.startsWith("custom-")) {
@@ -873,7 +874,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
                         <Calendar className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Ingen planlagte aktiviteter denne måneden</p>
+                        <p className="text-sm">{t("auto.ingen_planlagte_aktiviteter_denne_maaned")}</p>
                         <Button
                           variant="outline"
                           size="sm"
@@ -888,7 +889,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   </>
                 ) : (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Alle aktiviteter</h3>
+                    <h3 className="text-lg font-semibold">{t("auto.alle_aktiviteter")}</h3>
                     <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                       {defaultActivities.filter(a => !hiddenDefaults.includes(a.id)).map((activity) => {
                         const completed = isActivityCompleted(activity.id);
@@ -913,7 +914,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                                 <p className="text-sm font-medium truncate">{activity.name}</p>
                                 {completed && (
                                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-success/20 text-success border-0">
-                                    Utført
+                                    {t("auto.utfoert")}
                                   </Badge>
                                 )}
                               </div>
@@ -925,7 +926,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                              title="Fjern fra årshjulet"
+                              title={t("auto.fjern_fra_aarshjulet")}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleHideDefault(activity.id);
@@ -982,17 +983,17 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       {/* Quick legend */}
       <Card>
         <CardContent className="pt-6">
-          <h3 className="font-semibold mb-4">Aktivitetstyper</h3>
+          <h3 className="font-semibold mb-4">{t("auto.aktivitetstyper")}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {[
-              { color: "bg-primary", label: "HMS-revisjon" },
-              { color: "bg-emerald-500", label: "Vernerunder" },
-              { color: "bg-warning", label: "El-kontroll" },
-              { color: "bg-destructive", label: "Brannvern" },
-              { color: "bg-info", label: "Fysiske forhold" },
-              { color: "bg-purple-500", label: "Stoffkartotek" },
-              { color: "bg-orange-500", label: "Risikovurdering" },
-              { color: "bg-cyan-500", label: "Opplæring" },
+              { color: "bg-primary", label: t("auto.hms_revisjon") },
+              { color: "bg-emerald-500", label: t("auto.vernerunder") },
+              { color: "bg-warning", label: t("auto.el_kontroll_2") },
+              { color: "bg-destructive", label: t("auto.brannvern") },
+              { color: "bg-info", label: t("auto.fysiske_forhold") },
+              { color: "bg-purple-500", label: t("auto.stoffkartotek") },
+              { color: "bg-orange-500", label: t("auto.risikovurdering") },
+              { color: "bg-cyan-500", label: t("auto.opplaering") },
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-2">
                 <div className={cn("w-3 h-3 rounded-full", item.color)} />

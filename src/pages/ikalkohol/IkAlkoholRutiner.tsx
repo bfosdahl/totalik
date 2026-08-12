@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { RoutineTemplate } from "@/hooks/useRoutineLibrary";
+import { t } from "@/i18n/t";
 
 const IkAlkoholRutiner = () => {
   const navigate = useNavigate();
@@ -122,8 +123,8 @@ const IkAlkoholRutiner = () => {
       <div className="container max-w-6xl mx-auto py-6 px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Rutiner</h1>
-            <p className="text-muted-foreground">Rutinebibliotek for alkoholkontroll</p>
+            <h1 className="text-2xl font-bold">{t("auto.rutiner")}</h1>
+            <p className="text-muted-foreground">{t("auto.rutinebibliotek_for_alkoholkontroll")}</p>
           </div>
           <div className="flex gap-2">
             <AiRoutineDialog module="ik_alkohol" onAdopt={handleAdoptFromLibrary} />
@@ -141,7 +142,7 @@ const IkAlkoholRutiner = () => {
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
           <TabsList className="flex flex-wrap h-auto gap-1 mb-6">
             <TabsTrigger value="alle" className="text-xs sm:text-sm">
-              Alle
+              {t("auto.alle")}
             </TabsTrigger>
             {allCategories.map(cat => (
               <TabsTrigger key={cat.value} value={cat.value} className="text-xs sm:text-sm">
@@ -156,7 +157,7 @@ const IkAlkoholRutiner = () => {
             ) : routines.length === 0 ? (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  Ingen rutiner ennå
+                  {t("auto.ingen_rutiner_ennaa")}
                 </CardContent>
               </Card>
             ) : (
@@ -186,7 +187,7 @@ const IkAlkoholRutiner = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{allCategories.find(c => c.value === routine.category)?.label || routine.category}</Badge>
-                            {routine.is_mandatory && <Badge variant="secondary">Obligatorisk</Badge>}
+                            {routine.is_mandatory && <Badge variant="secondary">{t("auto.obligatorisk")}</Badge>}
                             {routine.venue_type && <Badge variant="outline">{VENUE_TYPES.find(v => v.value === routine.venue_type)?.label}</Badge>}
                             <ChevronDown className="h-4 w-4" />
                           </div>
@@ -241,7 +242,7 @@ const IkAlkoholRutiner = () => {
               ) : filteredRoutines.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
-                    Ingen rutiner i denne kategorien
+                    {t("auto.ingen_rutiner_i_denne_kategorien")}
                   </CardContent>
                 </Card>
               ) : (
@@ -270,7 +271,7 @@ const IkAlkoholRutiner = () => {
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              {routine.is_mandatory && <Badge variant="secondary">Obligatorisk</Badge>}
+                              {routine.is_mandatory && <Badge variant="secondary">{t("auto.obligatorisk")}</Badge>}
                               {routine.venue_type && <Badge variant="outline">{VENUE_TYPES.find(v => v.value === routine.venue_type)?.label}</Badge>}
                               <ChevronDown className="h-4 w-4" />
                             </div>
@@ -328,7 +329,7 @@ const IkAlkoholRutiner = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                  <div>
-                   <label className="text-sm font-medium">Kategori</label>
+                   <label className="text-sm font-medium">{t("auto.kategori")}</label>
                    <Select value={formData.category} onValueChange={(v) => {
                      setFormData({ ...formData, category: v });
                      if (v !== CUSTOM_CATEGORY_VALUE) setCustomCategoryInput('');
@@ -341,13 +342,13 @@ const IkAlkoholRutiner = () => {
                        {customCategories.map(c => (
                          <SelectItem key={c} value={c}>{c}</SelectItem>
                        ))}
-                       <SelectItem value={CUSTOM_CATEGORY_VALUE}>+ Egendefinert kategori</SelectItem>
+                       <SelectItem value={CUSTOM_CATEGORY_VALUE}>{t("auto.egendefinert_kategori")}</SelectItem>
                      </SelectContent>
                    </Select>
                    {isCustomSelected && (
                      <Input 
                        className="mt-2" 
-                       placeholder="Skriv inn kategorinavn, f.eks. Opplæring" 
+                       placeholder={t("auto.skriv_inn_kategorinavn_f_eks_opplaering")} 
                        value={customCategoryInput} 
                        onChange={(e) => setCustomCategoryInput(e.target.value)} 
                      />
@@ -356,9 +357,9 @@ const IkAlkoholRutiner = () => {
                 <div>
                   <label className="text-sm font-medium">Stedstype (valgfritt)</label>
                   <Select value={formData.venue_type || '_all'} onValueChange={(v) => setFormData({ ...formData, venue_type: v === '_all' ? '' : v })}>
-                    <SelectTrigger><SelectValue placeholder="Alle stedstyper" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={t("auto.alle_stedstyper")} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="_all">Alle stedstyper</SelectItem>
+                      <SelectItem value="_all">{t("auto.alle_stedstyper")}</SelectItem>
                       {VENUE_TYPES.map(v => (
                         <SelectItem key={v.value} value={v.value}>{v.label}</SelectItem>
                       ))}
@@ -367,21 +368,21 @@ const IkAlkoholRutiner = () => {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Rutinenavn *</label>
+                <label className="text-sm font-medium">{t("auto.rutinenavn")}</label>
                 <Input value={formData.routine_name} onChange={(e) => setFormData({ ...formData, routine_name: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium">Kort beskrivelse</label>
+                <label className="text-sm font-medium">{t("auto.kort_beskrivelse")}</label>
                 <Input value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium">Innhold *</label>
+                <label className="text-sm font-medium">{t("auto.innhold_2")}</label>
                 <Textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={12} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Avbryt</Button>
-              <Button onClick={handleSave} disabled={createRoutine.isPending || updateRoutine.isPending}>Lagre</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>{t("auto.avbryt")}</Button>
+              <Button onClick={handleSave} disabled={createRoutine.isPending || updateRoutine.isPending}>{t("auto.lagre")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

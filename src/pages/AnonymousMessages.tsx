@@ -35,6 +35,7 @@ import {
   AnonymousMessage 
 } from "@/hooks/useAnonymousMessages";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const categoryLabels: Record<string, string> = {
   arbeidsmiljo: "Arbeidsmiljø",
@@ -47,9 +48,9 @@ const categoryLabels: Record<string, string> = {
 };
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  new: { label: "Ny", color: "bg-blue-500", icon: <Clock className="h-3 w-3" /> },
-  in_progress: { label: "Under behandling", color: "bg-amber-500", icon: <AlertTriangle className="h-3 w-3" /> },
-  resolved: { label: "Løst", color: "bg-emerald-500", icon: <CheckCircle2 className="h-3 w-3" /> },
+  new: { label: t("auto.ny"), color: "bg-blue-500", icon: <Clock className="h-3 w-3" /> },
+  in_progress: { label: t("auto.under_behandling"), color: "bg-amber-500", icon: <AlertTriangle className="h-3 w-3" /> },
+  resolved: { label: t("auto.loest"), color: "bg-emerald-500", icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
 type SortOption = "newest" | "oldest" | "status";
@@ -163,7 +164,7 @@ export default function AnonymousMessages() {
             Anonyme meldinger
           </h1>
           <p className="text-muted-foreground mt-1">
-            Meldinger sendt anonymt fra ansatte. Kun ledere og verneombud har tilgang.
+            {t("auto.meldinger_sendt_anonymt_fra_ansatte_kun_")}
           </p>
         </div>
 
@@ -177,7 +178,7 @@ export default function AnonymousMessages() {
                 </div>
                 <div>
                   <p className="text-xl font-bold">{newCount}</p>
-                  <p className="text-xs text-muted-foreground">Nye</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.nye")}</p>
                 </div>
               </div>
             </CardContent>
@@ -190,7 +191,7 @@ export default function AnonymousMessages() {
                 </div>
                 <div>
                   <p className="text-xl font-bold">{inProgressCount}</p>
-                  <p className="text-xs text-muted-foreground">Under behandling</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.under_behandling")}</p>
                 </div>
               </div>
             </CardContent>
@@ -203,7 +204,7 @@ export default function AnonymousMessages() {
                 </div>
                 <div>
                   <p className="text-xl font-bold">{archivedMessages.length}</p>
-                  <p className="text-xs text-muted-foreground">Løst</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.loest")}</p>
                 </div>
               </div>
             </CardContent>
@@ -216,7 +217,7 @@ export default function AnonymousMessages() {
                 </div>
                 <div>
                   <p className="text-xl font-bold">{messages.length}</p>
-                  <p className="text-xs text-muted-foreground">Totalt</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.totalt")}</p>
                 </div>
               </div>
             </CardContent>
@@ -229,7 +230,7 @@ export default function AnonymousMessages() {
             <Info className="h-4 w-4 text-amber-600" />
             <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span>
-                <strong>{expiredMessages.length} meldinger</strong> er eldre enn 2 år og kan slettes for å overholde personvernrutiner.
+                <strong>{expiredMessages.length} meldinger</strong> {t("auto.er_eldre_enn_2_aar_og_kan_slettes_for_aa")}
               </span>
               <Button 
                 variant="outline" 
@@ -269,7 +270,7 @@ export default function AnonymousMessages() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Søk på emne, innhold eller meldingsnummer..."
+                      placeholder={t("auto.soek_paa_emne_innhold_eller_meldingsnumm")}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-9"
@@ -278,21 +279,21 @@ export default function AnonymousMessages() {
                   <div className="flex flex-wrap gap-2">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                       <SelectTrigger className="w-full sm:w-40">
-                        <SelectValue placeholder="Status" />
+                        <SelectValue placeholder={t("auto.status_2")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Alle statuser</SelectItem>
-                        <SelectItem value="new">Nye</SelectItem>
-                        <SelectItem value="in_progress">Under behandling</SelectItem>
-                        <SelectItem value="resolved">Løst</SelectItem>
+                        <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+                        <SelectItem value="new">{t("auto.nye")}</SelectItem>
+                        <SelectItem value="in_progress">{t("auto.under_behandling")}</SelectItem>
+                        <SelectItem value="resolved">{t("auto.loest")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                       <SelectTrigger className="w-full sm:w-40">
-                        <SelectValue placeholder="Kategori" />
+                        <SelectValue placeholder={t("auto.kategori")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Alle kategorier</SelectItem>
+                        <SelectItem value="all">{t("auto.alle_kategorier")}</SelectItem>
                         {uniqueCategories.map((cat) => (
                           <SelectItem key={cat} value={cat}>
                             {categoryLabels[cat] || cat}
@@ -303,12 +304,12 @@ export default function AnonymousMessages() {
                     <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
                       <SelectTrigger className="w-full sm:w-40">
                         <ArrowUpDown className="h-4 w-4 mr-2" />
-                        <SelectValue placeholder="Sorter" />
+                        <SelectValue placeholder={t("auto.sorter")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="newest">Nyeste først</SelectItem>
-                        <SelectItem value="oldest">Eldste først</SelectItem>
-                        <SelectItem value="status">Etter status</SelectItem>
+                        <SelectItem value="newest">{t("auto.nyeste_foerst")}</SelectItem>
+                        <SelectItem value="oldest">{t("auto.eldste_foerst")}</SelectItem>
+                        <SelectItem value="status">{t("auto.etter_status")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -321,7 +322,7 @@ export default function AnonymousMessages() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <ShieldCheck className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-medium text-lg">Ingen meldinger</h3>
+                  <h3 className="font-medium text-lg">{t("auto.ingen_meldinger")}</h3>
                   <p className="text-muted-foreground">
                     {searchTerm || statusFilter !== "all" || categoryFilter !== "all"
                       ? "Ingen meldinger matcher filteret"
@@ -412,7 +413,7 @@ export default function AnonymousMessages() {
               deleteMessage.mutate(selectedMessage.id, {
                 onSuccess: () => {
                   setSelectedMessage(null);
-                  toast.success("Melding slettet");
+                  toast.success(t("auto.melding_slettet"));
                 }
               });
             }
@@ -465,7 +466,7 @@ function MessageDetailDialog({
               <Alert className="border-amber-500/50 bg-amber-500/10">
                 <Calendar className="h-4 w-4 text-amber-600" />
                 <AlertDescription>
-                  Denne meldingen er over 2 år gammel og bør vurderes for sletting.
+                  {t("auto.denne_meldingen_er_over_2_aar_gammel_og_")}
                 </AlertDescription>
               </Alert>
             )}
@@ -484,9 +485,9 @@ function MessageDetailDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="new">Ny</SelectItem>
-                    <SelectItem value="in_progress">Under behandling</SelectItem>
-                    <SelectItem value="resolved">Løst</SelectItem>
+                    <SelectItem value="new">{t("auto.ny")}</SelectItem>
+                    <SelectItem value="in_progress">{t("auto.under_behandling")}</SelectItem>
+                    <SelectItem value="resolved">{t("auto.loest")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -504,7 +505,7 @@ function MessageDetailDialog({
               <Alert className="border-primary/30 bg-primary/5">
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 <AlertDescription className="text-sm">
-                  Denne meldingen er sendt anonymt. Avsenders identitet er ikke kjent.
+                  {t("auto.denne_meldingen_er_sendt_anonymt_avsende")}
                 </AlertDescription>
               </Alert>
 
@@ -528,7 +529,7 @@ function MessageDetailDialog({
                 </div>
               ) : discussions.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Ingen kommentarer ennå. Start diskusjonen nedenfor.
+                  {t("auto.ingen_kommentarer_ennaa_start_diskusjone")}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -550,7 +551,7 @@ function MessageDetailDialog({
                 <Textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Skriv en intern kommentar..."
+                  placeholder={t("auto.skriv_en_intern_kommentar")}
                   rows={2}
                   className="flex-1 resize-none"
                 />

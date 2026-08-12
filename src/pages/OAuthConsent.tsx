@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldCheck } from "lucide-react";
+import { t } from "@/i18n/t";
 
 type OAuthNamespace = {
   getAuthorizationDetails: (id: string) => Promise<{ data: any; error: any }>;
@@ -79,14 +80,14 @@ export default function OAuthConsent() {
         {error ? (
           <>
             <CardHeader>
-              <CardTitle>Kunne ikke laste forespørselen</CardTitle>
+              <CardTitle>{t("auto.kunne_ikke_laste_forespoerselen")}</CardTitle>
               <CardDescription>{error}</CardDescription>
             </CardHeader>
           </>
         ) : !details ? (
           <CardContent className="py-12 flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="h-6 w-6 animate-spin" />
-            <p>Laster…</p>
+            <p>{t("auto.laster_2")}</p>
           </CardContent>
         ) : (
           <>
@@ -105,7 +106,7 @@ export default function OAuthConsent() {
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Godkjenn"}
               </Button>
               <Button disabled={busy} variant="outline" onClick={() => decide(false)} className="flex-1">
-                Avslå
+                {t("auto.avslaa")}
               </Button>
             </CardContent>
           </>

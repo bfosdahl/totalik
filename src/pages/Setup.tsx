@@ -45,6 +45,7 @@ import { SubscriptionAcceptDialog } from "@/components/setup/SubscriptionAcceptD
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { t } from "@/i18n/t";
 
 const VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT = 5;
 
@@ -58,38 +59,38 @@ interface SetupStep {
 const steps: SetupStep[] = [
   {
     id: "goals",
-    title: "Mål for internkontroll",
-    description: "Definer bedriftens HMS-mål og formål",
+    title: t("auto.maal_for_internkontroll_2"),
+    description: t("auto.definer_bedriftens_hms_maal_og_formaal"),
     icon: Target,
   },
   {
     id: "organization",
-    title: "Organisering",
-    description: "Dokumenter organisasjonsstruktur og ansvar",
+    title: t("auto.organisering"),
+    description: t("auto.dokumenter_organisasjonsstruktur_og_ansv"),
     icon: Building2,
   },
   {
     id: "risk",
-    title: "Risikovurdering",
-    description: "Kartlegg farer og vurder risiko",
+    title: t("auto.risikovurdering"),
+    description: t("auto.kartlegg_farer_og_vurder_risiko"),
     icon: AlertTriangle,
   },
   {
     id: "actions",
-    title: "Handlingsplan",
-    description: "Planlegg tiltak basert på risikovurdering",
+    title: t("auto.handlingsplan"),
+    description: t("auto.planlegg_tiltak_basert_paa_risikovurderi"),
     icon: ListChecks,
   },
   {
     id: "routines",
-    title: "Rutiner",
-    description: "Etabler og dokumenter arbeidsrutiner",
+    title: t("auto.rutiner"),
+    description: t("auto.etabler_og_dokumenter_arbeidsrutiner"),
     icon: FileText,
   },
   {
     id: "handbook",
-    title: "Handbok",
-    description: "Generer din IK-dokumentasjon",
+    title: t("auto.handbok"),
+    description: t("auto.generer_din_ik_dokumentasjon"),
     icon: BookOpen,
   },
 ];
@@ -116,10 +117,9 @@ function NoCompanyMessage() {
       <div className="p-4 rounded-2xl bg-primary/10 mb-4">
         <Building2 className="w-8 h-8 text-primary" />
       </div>
-      <h3 className="text-xl font-semibold mb-2">Velkommen til Total-IK!</h3>
+      <h3 className="text-xl font-semibold mb-2">{t("auto.velkommen_til_total_ik")}</h3>
       <p className="text-muted-foreground max-w-md mb-6">
-        For å komme i gang må du først opprette din bedrift. 
-        Dette tar bare noen minutter.
+        {t("auto.for_aa_komme_i_gang_maa_du_foerst_oppret")}
       </p>
       <Button onClick={() => navigate("/settings?tab=company&create=true")} className="gap-2">
         <Building2 className="w-4 h-4" />
@@ -405,7 +405,7 @@ const Setup = () => {
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="sr-only">Laster autentisering...</span>
+          <span className="sr-only">{t("auto.laster_autentisering")}</span>
         </div>
       </AppLayout>
     );
@@ -418,7 +418,7 @@ const Setup = () => {
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="sr-only">Laster brukerdata...</span>
+          <span className="sr-only">{t("auto.laster_brukerdata")}</span>
         </div>
       </AppLayout>
     );
@@ -432,12 +432,12 @@ const Setup = () => {
           <div className="p-4 rounded-2xl bg-muted mb-4">
             <Building2 className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">Ikke innlogget</h3>
+          <h3 className="text-xl font-semibold mb-2">{t("auto.ikke_innlogget")}</h3>
           <p className="text-muted-foreground max-w-md mb-6">
-            Du må være innlogget for å bruke oppsettveiviseren.
+            {t("auto.du_maa_vaere_innlogget_for_aa_bruke_opps")}
           </p>
           <Button onClick={() => navigate("/auth")} variant="outline">
-            Logg inn
+            {t("auto.logg_inn")}
           </Button>
         </div>
       </AppLayout>
@@ -459,7 +459,7 @@ const Setup = () => {
       <AppLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="sr-only">Laster data...</span>
+          <span className="sr-only">{t("auto.laster_data")}</span>
         </div>
       </AppLayout>
     );
@@ -481,19 +481,19 @@ const Setup = () => {
           <div className="p-4 rounded-2xl bg-primary/10 mb-4">
             <CreditCard className="w-8 h-8 text-primary" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">Aktiver IK/HMS-abonnement</h3>
+          <h3 className="text-xl font-semibold mb-2">{t("auto.aktiver_ik_hms_abonnement")}</h3>
           <p className="text-muted-foreground mb-6">
-            For å bruke oppsettveiviseren og få tilgang til komplett HMS-system må du først aktivere IK/HMS-abonnementet.
+            {t("auto.for_aa_bruke_oppsettveiviseren_og_faa_ti")}
           </p>
           <div className="bg-muted/50 rounded-lg p-4 mb-6 text-left w-full">
             <div className="flex items-baseline justify-between mb-2">
-              <span className="font-medium">IK/HMS Internkontrollsystem</span>
-              <span className="text-lg font-bold text-primary">3 990,-/år</span>
+              <span className="font-medium">{t("auto.ik_hms_internkontrollsystem")}</span>
+              <span className="text-lg font-bold text-primary">{t("auto.3_990_aar")}</span>
             </div>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• 12 måneders bindingstid</li>
-              <li>• 6 måneders oppsigelsesfrist</li>
-              <li>• Ubegrenset antall brukere</li>
+              <li>{t("auto.12_maaneders_bindingstid")}</li>
+              <li>{t("auto.6_maaneders_oppsigelsesfrist")}</li>
+              <li>{t("auto.ubegrenset_antall_brukere")}</li>
             </ul>
           </div>
           <Button onClick={() => setShowSubscriptionDialog(true)} className="gap-2">
@@ -524,9 +524,9 @@ const Setup = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col gap-1"
           >
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Oppsett av internkontroll</h1>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("auto.oppsett_av_internkontroll")}</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Velg hvordan du vil sette opp ditt HMS-system
+              {t("auto.velg_hvordan_du_vil_sette_opp_ditt_hms_s")}
             </p>
           </motion.div>
 
@@ -546,28 +546,27 @@ const Setup = () => {
                   <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary-foreground" />
                 </div>
                 <div className="text-center space-y-1 sm:space-y-2">
-                  <h3 className="text-lg sm:text-xl font-semibold">AI-assistert oppsett</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold">{t("auto.ai_assistert_oppsett")}</h3>
                   <p className="text-muted-foreground text-xs sm:text-sm">
-                    La vår AI-veileder hjelpe deg gjennom oppsettet. Besvarer spørsmål og får 
-                    skreddersydd HMS-system på 5-10 minutter.
+                    {t("auto.la_vaar_ai_veileder_hjelpe_deg_gjennom_o")}
                   </p>
                 </div>
                 <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-                    <span>Rask og enkel veiledning</span>
+                    <span>{t("auto.rask_og_enkel_veiledning")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-                    <span>Skreddersydd til din bransje</span>
+                    <span>{t("auto.skreddersydd_til_din_bransje")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-                    <span>Forslag basert på beste praksis</span>
+                    <span>{t("auto.forslag_basert_paa_beste_praksis")}</span>
                   </div>
                 </div>
                 <Button className="w-full group-hover:bg-primary/90">
-                  Start AI-oppsett
+                  {t("auto.start_ai_oppsett")}
                   <Sparkles className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -586,28 +585,27 @@ const Setup = () => {
                   <Edit className="w-6 h-6 sm:w-8 sm:h-8 text-foreground" />
                 </div>
                 <div className="text-center space-y-1 sm:space-y-2">
-                  <h3 className="text-lg sm:text-xl font-semibold">Manuelt oppsett</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold">{t("auto.manuelt_oppsett")}</h3>
                   <p className="text-muted-foreground text-xs sm:text-sm">
-                    Gå gjennom en strukturert 6-stegs veiviser hvor du selv fyller inn 
-                    all informasjon og får full kontroll.
+                    {t("auto.gaa_gjennom_en_strukturert_6_stegs_veivi")}
                   </p>
                 </div>
                 <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-                    <span>Full kontroll over innhold</span>
+                    <span>{t("auto.full_kontroll_over_innhold")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-                    <span>Steg-for-steg struktur</span>
+                    <span>{t("auto.steg_for_steg_struktur")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
-                    <span>Maler og eksempler inkludert</span>
+                    <span>{t("auto.maler_og_eksempler_inkludert")}</span>
                   </div>
                 </div>
                 <Button variant="outline" className="w-full group-hover:bg-muted">
-                  Start manuelt oppsett
+                  {t("auto.start_manuelt_oppsett")}
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -621,9 +619,9 @@ const Setup = () => {
             transition={{ delay: 0.2 }}
             className="space-y-4"
           >
-            <h2 className="text-lg font-semibold">Lovpålagte erklæringer</h2>
+            <h2 className="text-lg font-semibold">{t("auto.lovpaalagte_erklaeringer")}</h2>
             <p className="text-sm text-muted-foreground">
-              Disse erklæringene kan signeres uavhengig av hvilket oppsett du velger.
+              {t("auto.disse_erklaeringene_kan_signeres_uavheng")}
             </p>
             
             <div className="grid sm:grid-cols-2 gap-4">
@@ -637,9 +635,9 @@ const Setup = () => {
                     <Shield className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium">Egenerklæring om HMS</h3>
+                    <h3 className="font-medium">{t("auto.egenerklaering_om_hms")}</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Bekreftelse på at virksomheten arbeider systematisk med HMS
+                      {t("auto.bekreftelse_paa_at_virksomheten_arbeider")}
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -665,7 +663,7 @@ const Setup = () => {
                     <Users className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium">Fritak fra verneombud</h3>
+                    <h3 className="font-medium">{t("auto.fritak_fra_verneombud_2")}</h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       {(company.employee_count || 1) < VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT
                         ? "For virksomheter med færre enn 5 ansatte"
@@ -757,9 +755,9 @@ const Setup = () => {
           className="flex items-start justify-between gap-4"
         >
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold tracking-tight">Oppsett av internkontroll</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.oppsett_av_internkontroll")}</h1>
             <p className="text-muted-foreground">
-              Følg veiviseren for å etablere din bedrifts internkontrollsystem
+              {t("auto.foelg_veiviseren_for_aa_etablere_din_bed")}
             </p>
           </div>
           <Button
@@ -769,7 +767,7 @@ const Setup = () => {
             className="flex items-center gap-2 shrink-0"
           >
             <Sparkles className="w-4 h-4" />
-            <span className="hidden sm:inline">Oppsett-hjelperen</span>
+            <span className="hidden sm:inline">{t("auto.oppsett_hjelperen")}</span>
           </Button>
         </motion.div>
 

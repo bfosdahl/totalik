@@ -23,26 +23,27 @@ import { useIkAlkohol, AlkoholIncident } from "@/hooks/useIkAlkohol";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const INCIDENT_TYPES = [
-  { value: "nekting", label: "Nekting av salg/skjenking" },
-  { value: "bortvisning", label: "Bortvisning" },
-  { value: "falsk_id", label: "Falsk ID" },
-  { value: "ruspavirket", label: "Ruspåvirket gjest" },
-  { value: "konflikt", label: "Konflikt/Bråk" },
-  { value: "annet", label: "Annet" },
+  { value: "nekting", label: t("auto.nekting_av_salg_skjenking") },
+  { value: "bortvisning", label: t("auto.bortvisning") },
+  { value: "falsk_id", label: t("auto.falsk_id") },
+  { value: "ruspavirket", label: t("auto.ruspaavirket_gjest") },
+  { value: "konflikt", label: t("auto.konflikt_braak") },
+  { value: "annet", label: t("auto.annet") },
 ];
 
 const SEVERITY_OPTIONS = [
-  { value: "Lav", label: "Lav", color: "bg-yellow-100 text-yellow-800" },
-  { value: "Medium", label: "Medium", color: "bg-orange-100 text-orange-800" },
-  { value: "Høy", label: "Høy", color: "bg-red-100 text-red-800" },
+  { value: "Lav", label: t("auto.lav"), color: "bg-yellow-100 text-yellow-800" },
+  { value: "Medium", label: t("auto.medium"), color: "bg-orange-100 text-orange-800" },
+  { value: "Høy", label: t("auto.hoey"), color: "bg-red-100 text-red-800" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: "Ny", label: "Ny", color: "bg-blue-100 text-blue-800" },
-  { value: "Under behandling", label: "Under behandling", color: "bg-yellow-100 text-yellow-800" },
-  { value: "Lukket", label: "Lukket", color: "bg-green-100 text-green-800" },
+  { value: "Ny", label: t("auto.ny"), color: "bg-blue-100 text-blue-800" },
+  { value: "Under behandling", label: t("auto.under_behandling"), color: "bg-yellow-100 text-yellow-800" },
+  { value: "Lukket", label: t("auto.lukket"), color: "bg-green-100 text-green-800" },
 ];
 
 export default function IkAlkoholHendelser() {
@@ -126,7 +127,7 @@ export default function IkAlkoholHendelser() {
               Hendelseslogg
             </h1>
             <p className="text-muted-foreground mt-1">
-              Registrer og følg opp hendelser knyttet til alkoholhåndtering
+              {t("auto.registrer_og_foelg_opp_hendelser_knyttet")}
             </p>
           </div>
           <Button onClick={() => {
@@ -156,7 +157,7 @@ export default function IkAlkoholHendelser() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk i hendelser..."
+                  placeholder={t("auto.soek_i_hendelser")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -165,10 +166,10 @@ export default function IkAlkoholHendelser() {
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t("auto.status_2")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Alle statuser</SelectItem>
+                  <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
                   {STATUS_OPTIONS.map((status) => (
                     <SelectItem key={status.value} value={status.value}>
                       {status.label}
@@ -198,12 +199,12 @@ export default function IkAlkoholHendelser() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nr.</TableHead>
-                      <TableHead>Dato</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead className="hidden md:table-cell">Beskrivelse</TableHead>
-                      <TableHead>Alvorlighet</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t("auto.nr_2")}</TableHead>
+                      <TableHead>{t("auto.dato")}</TableHead>
+                      <TableHead>{t("auto.type")}</TableHead>
+                      <TableHead className="hidden md:table-cell">{t("auto.beskrivelse")}</TableHead>
+                      <TableHead>{t("auto.alvorlighet")}</TableHead>
+                      <TableHead>{t("auto.status_2")}</TableHead>
                       <TableHead className="w-[80px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -272,7 +273,7 @@ export default function IkAlkoholHendelser() {
             <div className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Dato *</Label>
+                  <Label>{t("auto.dato_2")}</Label>
                   <Input
                     type="date"
                     value={editingIncident.incident_date || ""}
@@ -280,7 +281,7 @@ export default function IkAlkoholHendelser() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Klokkeslett</Label>
+                  <Label>{t("auto.klokkeslett")}</Label>
                   <Input
                     type="time"
                     value={editingIncident.incident_time || ""}
@@ -291,13 +292,13 @@ export default function IkAlkoholHendelser() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Type hendelse *</Label>
+                  <Label>{t("auto.type_hendelse")}</Label>
                   <Select
                     value={editingIncident.incident_type || ""}
                     onValueChange={(value) => setEditingIncident({ ...editingIncident, incident_type: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg type" />
+                      <SelectValue placeholder={t("auto.velg_type")} />
                     </SelectTrigger>
                     <SelectContent>
                       {INCIDENT_TYPES.map((type) => (
@@ -309,7 +310,7 @@ export default function IkAlkoholHendelser() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Alvorlighetsgrad</Label>
+                  <Label>{t("auto.alvorlighetsgrad_3")}</Label>
                   <Select
                     value={editingIncident.severity || "Lav"}
                     onValueChange={(value) => setEditingIncident({ ...editingIncident, severity: value })}
@@ -329,47 +330,47 @@ export default function IkAlkoholHendelser() {
               </div>
 
               <div className="space-y-2">
-                <Label>Hva skjedde? *</Label>
+                <Label>{t("auto.hva_skjedde")}</Label>
                 <Textarea
                   value={editingIncident.description || ""}
                   onChange={(e) => setEditingIncident({ ...editingIncident, description: e.target.value })}
-                  placeholder="Beskriv hendelsen..."
+                  placeholder={t("auto.beskriv_hendelsen")}
                   rows={3}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Hvordan ble det håndtert?</Label>
+                <Label>{t("auto.hvordan_ble_det_haandtert")}</Label>
                 <Textarea
                   value={editingIncident.handling || ""}
                   onChange={(e) => setEditingIncident({ ...editingIncident, handling: e.target.value })}
-                  placeholder="Beskriv håndteringen..."
+                  placeholder={t("auto.beskriv_haandteringen")}
                   rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Hvem var involvert?</Label>
+                <Label>{t("auto.hvem_var_involvert")}</Label>
                 <Input
                   value={editingIncident.involved_parties || ""}
                   onChange={(e) => setEditingIncident({ ...editingIncident, involved_parties: e.target.value })}
-                  placeholder="Ansatte, gjester, vakter..."
+                  placeholder={t("auto.ansatte_gjester_vakter")}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Læring/forbedring</Label>
+                <Label>{t("auto.laering_forbedring")}</Label>
                 <Textarea
                   value={editingIncident.learning_improvement || ""}
                   onChange={(e) => setEditingIncident({ ...editingIncident, learning_improvement: e.target.value })}
-                  placeholder="Hva kan vi lære av dette? Tiltak for å unngå lignende hendelser..."
+                  placeholder={t("auto.hva_kan_vi_laere_av_dette_tiltak_for_aa_")}
                   rows={2}
                 />
               </div>
 
               {editingIncident.id && (
                 <div className="space-y-2">
-                  <Label>Status</Label>
+                  <Label>{t("auto.status_2")}</Label>
                   <Select
                     value={editingIncident.status || "Ny"}
                     onValueChange={(value) => setEditingIncident({ ...editingIncident, status: value })}
@@ -389,11 +390,11 @@ export default function IkAlkoholHendelser() {
               )}
 
               <div className="space-y-2">
-                <Label>Rapportert av</Label>
+                <Label>{t("auto.rapportert_av_2")}</Label>
                 <Input
                   value={editingIncident.reported_by_name || ""}
                   onChange={(e) => setEditingIncident({ ...editingIncident, reported_by_name: e.target.value })}
-                  placeholder="Navn"
+                  placeholder={t("auto.navn_2")}
                 />
               </div>
             </div>
@@ -403,7 +404,7 @@ export default function IkAlkoholHendelser() {
               setShowDialog(false);
               setEditingIncident(null);
             }}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleSaveIncident} 

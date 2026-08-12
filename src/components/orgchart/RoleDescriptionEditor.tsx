@@ -3,6 +3,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Save, Loader2 } from "lucide-react";
 import type { OrgChartNode } from "@/hooks/useOrgChart";
+import { t } from "@/i18n/t";
 
 interface RoleDescriptionEditorProps {
   node: OrgChartNode;
@@ -71,7 +72,7 @@ export const RoleDescriptionEditor = ({ node, index, onSave }: RoleDescriptionEd
       <Textarea
         value={localValue}
         onChange={(e) => handleChange(e.target.value)}
-        placeholder="Beskriv ansvarsområder og oppgaver for denne rollen..."
+        placeholder={t("auto.beskriv_ansvarsomraader_og_oppgaver_for_")}
         rows={2}
         className="text-sm"
       />

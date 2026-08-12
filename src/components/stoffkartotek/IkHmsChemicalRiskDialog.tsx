@@ -33,6 +33,7 @@ import {
   ProtectiveMeasure,
 } from "@/hooks/useChemicalRiskAssessment";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 export interface AiRiskSuggestion {
   exposure_types: string[];
@@ -58,16 +59,16 @@ interface IkHmsChemicalRiskDialogProps {
 }
 
 const EXPOSURE_TYPES = [
-  { value: "innånding", label: "Innånding", description: "Gasser, damper, støv" },
-  { value: "hudkontakt", label: "Hudkontakt", description: "Direkte eller sprut" },
-  { value: "svelging", label: "Svelging", description: "Forurensede hender, mat" },
-  { value: "øyekontakt", label: "Øyekontakt", description: "Sprut, damp" },
+  { value: "innånding", label: t("auto.innaanding"), description: t("auto.gasser_damper_stoev") },
+  { value: "hudkontakt", label: t("auto.hudkontakt"), description: t("auto.direkte_eller_sprut") },
+  { value: "svelging", label: t("auto.svelging"), description: t("auto.forurensede_hender_mat") },
+  { value: "øyekontakt", label: t("auto.oeyekontakt"), description: t("auto.sprut_damp") },
 ];
 
 const EXPOSURE_LEVELS = [
-  { value: "lav", label: "Lav", description: "Minimal eksponering" },
-  { value: "middels", label: "Middels", description: "Periodisk eksponering" },
-  { value: "høy", label: "Høy", description: "Hyppig eksponering" },
+  { value: "lav", label: t("auto.lav"), description: t("auto.minimal_eksponering") },
+  { value: "middels", label: t("auto.middels"), description: t("auto.periodisk_eksponering") },
+  { value: "høy", label: t("auto.hoey"), description: t("auto.hyppig_eksponering") },
 ];
 
 const EXPOSURE_DURATIONS = [
@@ -77,19 +78,19 @@ const EXPOSURE_DURATIONS = [
 ];
 
 const SEVERITY_LEVELS = [
-  { value: 1, label: "1 - Ubetydelig" },
-  { value: 2, label: "2 - Mindre" },
-  { value: 3, label: "3 - Moderat" },
-  { value: 4, label: "4 - Alvorlig" },
-  { value: 5, label: "5 - Kritisk" },
+  { value: 1, label: t("auto.1_ubetydelig") },
+  { value: 2, label: t("auto.2_mindre") },
+  { value: 3, label: t("auto.3_moderat") },
+  { value: 4, label: t("auto.4_alvorlig") },
+  { value: 5, label: t("auto.5_kritisk") },
 ];
 
 const PROBABILITY_LEVELS = [
-  { value: 1, label: "1 - Svært lite" },
-  { value: 2, label: "2 - Lite" },
-  { value: 3, label: "3 - Mulig" },
-  { value: 4, label: "4 - Sannsynlig" },
-  { value: 5, label: "5 - Svært sannsynlig" },
+  { value: 1, label: t("auto.1_svaert_lite") },
+  { value: 2, label: t("auto.2_lite") },
+  { value: 3, label: t("auto.3_mulig") },
+  { value: 4, label: t("auto.4_sannsynlig") },
+  { value: 5, label: t("auto.5_svaert_sannsynlig") },
 ];
 
 const PPE_OPTIONS = [
@@ -271,14 +272,14 @@ export function IkHmsChemicalRiskDialog({
             Risikovurdering: {chemical.product_name}
           </DialogTitle>
           <DialogDescription>
-            Vurdering av helsefare og eksponering
+            {t("auto.vurdering_av_helsefare_og_eksponering")}
           </DialogDescription>
         </DialogHeader>
 
         {/* Progress indicator */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Fremgang</span>
+            <span className="text-sm font-medium">{t("auto.fremgang")}</span>
             <span className="text-sm text-muted-foreground">{getProgressPercent()}%</span>
           </div>
           <Progress value={getProgressPercent()} className="h-2" />
@@ -289,7 +290,7 @@ export function IkHmsChemicalRiskDialog({
           <Alert className="mb-4 border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
             <Shield className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800 dark:text-blue-300">
-              AI har foreslått en risikovurdering basert på sikkerhetsdatabladet. Gjennomgå og juster verdiene etter behov og bruk før du lagrer.
+              {t("auto.ai_har_foreslaatt_en_risikovurdering_bas")}
             </AlertDescription>
           </Alert>
         )}
@@ -337,7 +338,7 @@ export function IkHmsChemicalRiskDialog({
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <Label className="mb-2 block">Eksponeringstype</Label>
+                  <Label className="mb-2 block">{t("auto.eksponeringstype")}</Label>
                   <div className="space-y-2">
                     {EXPOSURE_TYPES.map((t) => (
                       <div key={t.value} className="flex items-center space-x-2">
@@ -360,10 +361,10 @@ export function IkHmsChemicalRiskDialog({
                   </div>
                 </div>
                 <div>
-                  <Label>Eksponeringsnivå</Label>
+                  <Label>{t("auto.eksponeringsnivaa")}</Label>
                   <Select value={exposureLevel} onValueChange={setExposureLevel}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg nivå" />
+                      <SelectValue placeholder={t("auto.velg_nivaa")} />
                     </SelectTrigger>
                     <SelectContent>
                       {EXPOSURE_LEVELS.map((l) => (
@@ -378,10 +379,10 @@ export function IkHmsChemicalRiskDialog({
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <Label>Varighet</Label>
+                  <Label>{t("auto.varighet")}</Label>
                   <Select value={exposureDuration} onValueChange={setExposureDuration}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg varighet" />
+                      <SelectValue placeholder={t("auto.velg_varighet")} />
                     </SelectTrigger>
                     <SelectContent>
                       {EXPOSURE_DURATIONS.map((d) => (
@@ -393,7 +394,7 @@ export function IkHmsChemicalRiskDialog({
                   </Select>
                 </div>
                 <div>
-                  <Label>Antall eksponerte</Label>
+                  <Label>{t("auto.antall_eksponerte")}</Label>
                   <Input
                     type="number"
                     min={1}
@@ -413,7 +414,7 @@ export function IkHmsChemicalRiskDialog({
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <Label>Alvorlighet</Label>
+                  <Label>{t("auto.alvorlighet")}</Label>
                   <Select value={hazardSeverity.toString()} onValueChange={(v) => setHazardSeverity(parseInt(v))}>
                     <SelectTrigger>
                       <SelectValue />
@@ -428,7 +429,7 @@ export function IkHmsChemicalRiskDialog({
                   </Select>
                 </div>
                 <div>
-                  <Label>Sannsynlighet</Label>
+                  <Label>{t("auto.sannsynlighet_4")}</Label>
                   <Select value={exposureProbability.toString()} onValueChange={(v) => setExposureProbability(parseInt(v))}>
                     <SelectTrigger>
                       <SelectValue />
@@ -450,7 +451,7 @@ export function IkHmsChemicalRiskDialog({
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Arbeidsoppgaver</CardTitle>
+                <CardTitle className="text-base">{t("auto.arbeidsoppgaver")}</CardTitle>
                 <Button variant="outline" size="sm" onClick={addWorkTask}>
                   <Plus className="h-4 w-4 mr-1" />
                   Legg til
@@ -460,14 +461,14 @@ export function IkHmsChemicalRiskDialog({
             <CardContent>
               {workTasks.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Ingen arbeidsoppgaver registrert
+                  {t("auto.ingen_arbeidsoppgaver_registrert")}
                 </p>
               ) : (
                 <div className="space-y-2">
                   {workTasks.map((task) => (
                     <div key={task.id} className="flex items-center gap-2 p-2 border rounded">
                       <Input
-                        placeholder="Beskrivelse"
+                        placeholder={t("auto.beskrivelse")}
                         value={task.description}
                         onChange={(e) => updateWorkTask(task.id, "description", e.target.value)}
                         className="flex-1"
@@ -505,11 +506,11 @@ export function IkHmsChemicalRiskDialog({
 
           {/* Conclusion */}
           <div>
-            <Label>Konklusjon</Label>
+            <Label>{t("auto.konklusjon")}</Label>
             <Textarea
               value={phase1Conclusion}
               onChange={(e) => setPhase1Conclusion(e.target.value)}
-              placeholder="Oppsummer vurderingen og eventuelle tiltak som må iverksettes..."
+              placeholder={t("auto.oppsummer_vurderingen_og_eventuelle_tilt")}
               rows={3}
             />
           </div>
@@ -531,7 +532,7 @@ export function IkHmsChemicalRiskDialog({
               {isUpdating ? "Lagrer..." : "Fullfør vurdering"}
             </Button>
             <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
           </div>
         </div>

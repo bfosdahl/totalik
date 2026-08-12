@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompanyKsGoals, CompanyKsGoal } from "@/hooks/useCompanyKsGoals";
+import { t } from "@/i18n/t";
 
 interface KsSystemGoal {
   id: string;
@@ -42,17 +43,17 @@ const DEFAULT_KS_GOALS = [
   {
     type: "ks_handbook",
     text: "Sikre at alle prosjekter gjennomføres i henhold til gjeldende krav og standarder",
-    description: "KS-håndboken skal være et verktøy for å dokumentere og sikre kvalitet i alle faser av prosjektet."
+    description: t("auto.ks_haandboken_skal_vaere_et_verktoey_for")
   },
   {
     type: "ks_handbook",
     text: "Etablere rutiner for systematisk kvalitetssikring",
-    description: "Bedriften skal ha dokumenterte rutiner som følges i alle prosjekter."
+    description: t("auto.bedriften_skal_ha_dokumenterte_rutiner_s")
   },
   {
     type: "ks_system",
     text: "Kontinuerlig forbedring av kvalitetssystemet",
-    description: "KS-systemet skal evalueres og forbedres basert på erfaringer fra prosjekter."
+    description: t("auto.ks_systemet_skal_evalueres_og_forbedres_")
   },
 ];
 
@@ -60,17 +61,17 @@ const DEFAULT_HMS_PROJECT_GOALS = [
   {
     type: "hms_project",
     text: "Null skader på personer og materiell",
-    description: "Alle prosjekter skal gjennomføres uten personskader eller vesentlige materialskader."
+    description: t("auto.alle_prosjekter_skal_gjennomfoeres_uten_")
   },
   {
     type: "hms_project",
     text: "Sikre trygge arbeidsforhold for alle på byggeplass",
-    description: "HMS-plan og SHA-plan skal være etablert før oppstart av alle prosjekter."
+    description: t("auto.hms_plan_og_sha_plan_skal_vaere_etablert")
   },
   {
     type: "hms_project",
     text: "Gjennomføre systematiske vernerunder",
-    description: "Vernerunder skal gjennomføres regelmessig og avvik skal lukkes innen avtalt frist."
+    description: t("auto.vernerunder_skal_gjennomfoeres_regelmess")
   },
 ];
 
@@ -112,7 +113,7 @@ export default function IkKsMaalsetting() {
         setGoals(data || []);
       } catch (error) {
         console.error("Error fetching goals:", error);
-        toast.error("Kunne ikke laste målsettinger");
+        toast.error(t("auto.kunne_ikke_laste_maalsettinger"));
       } finally {
         setIsLoading(false);
       }
@@ -143,10 +144,10 @@ export default function IkKsMaalsetting() {
       setGoals([...goals, data]);
       setNewGoal({ goal_text: "", description: "", goal_type: "ks_handbook" });
       setShowNewDialog(false);
-      toast.success("Mål lagt til");
+      toast.success(t("auto.maal_lagt_til"));
     } catch (error) {
       console.error("Error creating goal:", error);
-      toast.error("Kunne ikke opprette mål");
+      toast.error(t("auto.kunne_ikke_opprette_maal"));
     } finally {
       setIsSaving(false);
     }
@@ -172,10 +173,10 @@ export default function IkKsMaalsetting() {
       if (error) throw error;
       
       setGoals([...goals, data]);
-      toast.success("Mål lagt til");
+      toast.success(t("auto.maal_lagt_til"));
     } catch (error) {
       console.error("Error creating goal:", error);
-      toast.error("Kunne ikke opprette mål");
+      toast.error(t("auto.kunne_ikke_opprette_maal"));
     } finally {
       setIsSaving(false);
     }
@@ -193,10 +194,10 @@ export default function IkKsMaalsetting() {
       
       setGoals(goals.map(g => g.id === id ? { ...g, ...updates } : g));
       setEditingId(null);
-      toast.success("Mål oppdatert");
+      toast.success(t("auto.maal_oppdatert"));
     } catch (error) {
       console.error("Error updating goal:", error);
-      toast.error("Kunne ikke oppdatere mål");
+      toast.error(t("auto.kunne_ikke_oppdatere_maal"));
     } finally {
       setIsSaving(false);
     }
@@ -213,10 +214,10 @@ export default function IkKsMaalsetting() {
       if (error) throw error;
       
       setGoals(goals.filter(g => g.id !== id));
-      toast.success("Mål slettet");
+      toast.success(t("auto.maal_slettet"));
     } catch (error) {
       console.error("Error deleting goal:", error);
-      toast.error("Kunne ikke slette mål");
+      toast.error(t("auto.kunne_ikke_slette_maal"));
     } finally {
       setIsSaving(false);
     }
@@ -242,7 +243,7 @@ export default function IkKsMaalsetting() {
               Målsetting & Kvalitetsmål
             </h1>
             <p className="text-muted-foreground mt-1">
-              Mål for KS-håndbok, KS-system, HMS i prosjekter og overordnede kvalitetsmål
+              {t("auto.maal_for_ks_haandbok_ks_system_hms_i_pro")}
             </p>
           </div>
           
@@ -255,27 +256,27 @@ export default function IkKsMaalsetting() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Legg til målsetting</DialogTitle>
+                <DialogTitle>{t("auto.legg_til_maalsetting")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>
-                  <label className="text-sm font-medium">Type</label>
+                  <label className="text-sm font-medium">{t("auto.type")}</label>
                   <select
                     className="w-full mt-1 p-2 border rounded-md bg-background"
                     value={newGoal.goal_type}
                     onChange={(e) => setNewGoal({ ...newGoal, goal_type: e.target.value })}
                   >
-                    <option value="ks_handbook">KS-håndbok mål</option>
-                    <option value="ks_system">KS-system mål</option>
-                    <option value="hms_project">HMS prosjektmål</option>
+                    <option value="ks_handbook">{t("auto.ks_haandbok_maal")}</option>
+                    <option value="ks_system">{t("auto.ks_system_maal")}</option>
+                    <option value="hms_project">{t("auto.hms_prosjektmaal")}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Mål</label>
+                  <label className="text-sm font-medium">{t("auto.maal")}</label>
                   <Input
                     value={newGoal.goal_text}
                     onChange={(e) => setNewGoal({ ...newGoal, goal_text: e.target.value })}
-                    placeholder="Beskriv målsettingen..."
+                    placeholder={t("auto.beskriv_maalsettingen")}
                   />
                 </div>
                 <div>
@@ -283,13 +284,13 @@ export default function IkKsMaalsetting() {
                   <Textarea
                     value={newGoal.description}
                     onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
-                    placeholder="Utdypende beskrivelse..."
+                    placeholder={t("auto.utdypende_beskrivelse")}
                     rows={3}
                   />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setShowNewDialog(false)}>
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button onClick={handleCreate} disabled={isSaving || !newGoal.goal_text.trim()}>
                     {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -304,17 +305,16 @@ export default function IkKsMaalsetting() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Målsettinger for KS-håndboken og KS-systemet blir del av bedriftens kvalitetsdokumentasjon. 
-            HMS prosjektmål overføres til HMS-planen når du oppretter nye prosjekter.
+            {t("auto.maalsettinger_for_ks_haandboken_og_ks_sy")}
           </AlertDescription>
         </Alert>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="ks_handbook">KS-håndbok</TabsTrigger>
-            <TabsTrigger value="ks_system">KS-system</TabsTrigger>
-            <TabsTrigger value="hms_project">HMS prosjekt</TabsTrigger>
-            <TabsTrigger value="kvalitetsmal">Kvalitetsmål</TabsTrigger>
+            <TabsTrigger value="ks_handbook">{t("auto.ks_haandbok_2")}</TabsTrigger>
+            <TabsTrigger value="ks_system">{t("auto.ks_system")}</TabsTrigger>
+            <TabsTrigger value="hms_project">{t("auto.hms_prosjekt")}</TabsTrigger>
+            <TabsTrigger value="kvalitetsmal">{t("auto.kvalitetsmaal")}</TabsTrigger>
           </TabsList>
 
           {/* KS/HMS tabs */}
@@ -323,8 +323,8 @@ export default function IkKsMaalsetting() {
               {goals.filter(g => g.goal_type === tabKey).length === 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Foreslåtte mål</CardTitle>
-                    <CardDescription>Klikk for å legge til et foreslått mål</CardDescription>
+                    <CardTitle className="text-base">{t("auto.foreslaatte_maal")}</CardTitle>
+                    <CardDescription>{t("auto.klikk_for_aa_legge_til_et_foreslaatt_maa_2")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
@@ -349,7 +349,7 @@ export default function IkKsMaalsetting() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Target className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <h3 className="font-medium text-lg mb-2">Ingen mål definert</h3>
+                    <h3 className="font-medium text-lg mb-2">{t("auto.ingen_maal_definert_2")}</h3>
                     <p className="text-muted-foreground mb-4">
                       Legg til mål for {tabKey === "ks_handbook" ? "KS-håndboken" : tabKey === "ks_system" ? "KS-systemet" : "HMS i prosjekter"}
                     </p>
@@ -398,11 +398,11 @@ export default function IkKsMaalsetting() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Legg til kvalitetsmål</DialogTitle>
+                    <DialogTitle>{t("auto.legg_til_kvalitetsmaal")}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 mt-4">
                     <div>
-                      <label className="text-sm font-medium">Mål</label>
+                      <label className="text-sm font-medium">{t("auto.maal")}</label>
                       <Input
                         value={newKvalitetGoal.goal_text}
                         onChange={(e) => setNewKvalitetGoal({ ...newKvalitetGoal, goal_text: e.target.value })}
@@ -414,13 +414,13 @@ export default function IkKsMaalsetting() {
                       <Textarea
                         value={newKvalitetGoal.description}
                         onChange={(e) => setNewKvalitetGoal({ ...newKvalitetGoal, description: e.target.value })}
-                        placeholder="Utdypende beskrivelse..."
+                        placeholder={t("auto.utdypende_beskrivelse")}
                         rows={3}
                       />
                     </div>
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setShowNewKvalitetDialog(false)}>
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                       <Button 
                         onClick={async () => {
@@ -443,7 +443,7 @@ export default function IkKsMaalsetting() {
             {kvalitetsGoals.length === 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Foreslåtte kvalitetsmål</CardTitle>
+                  <CardTitle className="text-base">{t("auto.foreslaatte_kvalitetsmaal")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -474,9 +474,9 @@ export default function IkKsMaalsetting() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Target className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                  <h3 className="font-medium text-lg mb-2">Ingen kvalitetsmål ennå</h3>
+                  <h3 className="font-medium text-lg mb-2">{t("auto.ingen_kvalitetsmaal_ennaa")}</h3>
                   <p className="text-muted-foreground mb-4">
-                    Legg til bedriftens overordnede kvalitetsmål
+                    {t("auto.legg_til_bedriftens_overordnede_kvalitet")}
                   </p>
                 </CardContent>
               </Card>
@@ -550,11 +550,11 @@ function KvalitetGoalCard({
         <CardContent className="pt-6">
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Mål</label>
+              <label className="text-sm font-medium">{t("auto.maal")}</label>
               <Input value={editData.goal_text} onChange={(e) => setEditData({ ...editData, goal_text: e.target.value })} />
             </div>
             <div>
-              <label className="text-sm font-medium">Beskrivelse</label>
+              <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
               <Textarea value={editData.description} onChange={(e) => setEditData({ ...editData, description: e.target.value })} rows={2} />
             </div>
             <div className="flex justify-end gap-2">
@@ -623,14 +623,14 @@ function GoalCard({
         <CardContent className="pt-6">
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Mål</label>
+              <label className="text-sm font-medium">{t("auto.maal")}</label>
               <Input
                 value={editData.goal_text}
                 onChange={(e) => setEditData({ ...editData, goal_text: e.target.value })}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Beskrivelse</label>
+              <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
               <Textarea
                 value={editData.description}
                 onChange={(e) => setEditData({ ...editData, description: e.target.value })}

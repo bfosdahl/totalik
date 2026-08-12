@@ -12,6 +12,7 @@ import { useFdvRiskAssessments } from "@/hooks/useFdvRiskAssessments";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { format, differenceInDays } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function FdvDashboard() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function FdvDashboard() {
               IK/FDV – Forvaltning, Drift og Vedlikehold
             </h1>
             <p className="text-muted-foreground mt-1">
-              Oversikt over bygg, kontroller og vedlikehold
+              {t("auto.oversikt_over_bygg_kontroller_og_vedlike")}
             </p>
           </div>
           <Button onClick={() => navigate("/fdv/bygg")} className="gap-2">
@@ -69,7 +70,7 @@ export default function FdvDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/fdv/bygg")}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Bygg</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.bygg_2")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -84,7 +85,7 @@ export default function FdvDashboard() {
 
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/fdv/kontroller")}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Kontroller</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.kontroller")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -101,7 +102,7 @@ export default function FdvDashboard() {
 
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/fdv/risiko")}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Aktive risikoer</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.aktive_risikoer")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -121,7 +122,7 @@ export default function FdvDashboard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Etterlevelse</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t("auto.etterlevelse")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between mb-2">
@@ -142,14 +143,14 @@ export default function FdvDashboard() {
                 <Calendar className="h-5 w-5" />
                 Kommende kontroller
               </CardTitle>
-              <CardDescription>Kontroller som forfaller de neste 30 dagene</CardDescription>
+              <CardDescription>{t("auto.kontroller_som_forfaller_de_neste_30_dag")}</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-center py-4 text-muted-foreground">Laster...</div>
+                <div className="text-center py-4 text-muted-foreground">{t("auto.laster")}</div>
               ) : upcomingIn30Days.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
-                  Ingen kontroller forfaller de neste 30 dagene
+                  {t("auto.ingen_kontroller_forfaller_de_neste_30_d")}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -181,14 +182,14 @@ export default function FdvDashboard() {
                 <AlertTriangle className="h-5 w-5 text-destructive" />
                 Høyrisiko
               </CardTitle>
-              <CardDescription>Risikoer som krever oppmerksomhet</CardDescription>
+              <CardDescription>{t("auto.risikoer_som_krever_oppmerksomhet")}</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-center py-4 text-muted-foreground">Laster...</div>
+                <div className="text-center py-4 text-muted-foreground">{t("auto.laster")}</div>
               ) : highRisks.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
-                  Ingen høyrisiko-elementer
+                  {t("auto.ingen_hoeyrisiko_elementer")}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -217,33 +218,33 @@ export default function FdvDashboard() {
         {/* Quick Links */}
         <Card>
           <CardHeader>
-            <CardTitle>Hurtiglenker</CardTitle>
+            <CardTitle>{t("auto.hurtiglenker")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={() => navigate("/fdv/bygg")}>
                 <Building2 className="h-6 w-6" />
-                <span>Byggoversikt</span>
+                <span>{t("auto.byggoversikt")}</span>
               </Button>
               <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={() => navigate("/fdv/ansvar")}>
                 <Users className="h-6 w-6" />
-                <span>Ansvar og roller</span>
+                <span>{t("auto.ansvar_og_roller")}</span>
               </Button>
               <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={() => navigate("/fdv/risiko")}>
                 <AlertTriangle className="h-6 w-6" />
-                <span>Risikoanalyse</span>
+                <span>{t("auto.risikoanalyse")}</span>
               </Button>
               <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={() => navigate("/fdv/kontroller")}>
                 <ClipboardCheck className="h-6 w-6" />
-                <span>Kontroller</span>
+                <span>{t("auto.kontroller")}</span>
               </Button>
               <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={() => navigate("/fdv/avvik")}>
                 <AlertTriangle className="h-6 w-6" />
-                <span>Avvik</span>
+                <span>{t("auto.avvik")}</span>
               </Button>
               <Button variant="outline" className="h-auto py-4 flex-col gap-2" onClick={() => navigate("/fdv/dokumenter")}>
                 <FileText className="h-6 w-6" />
-                <span>Dokumenter</span>
+                <span>{t("auto.dokumenter")}</span>
               </Button>
             </div>
           </CardContent>

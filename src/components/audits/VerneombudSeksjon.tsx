@@ -29,6 +29,7 @@ import {
 import { generateVerneombudExemptionPdf } from "@/utils/generateVerneombudExemptionPdf";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function VerneombudSeksjon() {
   const { profile, company } = useAuth();
@@ -76,10 +77,9 @@ export default function VerneombudSeksjon() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold mb-1">Verneombud</h2>
+            <h2 className="text-lg font-semibold mb-1">{t("auto.verneombud")}</h2>
             <p className="text-muted-foreground text-sm">
-              Her finner du dokumentasjon knyttet til verneombud, inkludert valg av verneombud, 
-              avtale om fritak, og forsvarlighetsvurdering iht. Arbeidsmiljøloven.
+              {t("auto.her_finner_du_dokumentasjon_knyttet_til_")}
             </p>
           </div>
         </div>
@@ -118,9 +118,9 @@ export default function VerneombudSeksjon() {
                         )}
                       </div>
                       <div>
-                        <CardTitle className="text-lg">Valg av verneombud</CardTitle>
+                        <CardTitle className="text-lg">{t("auto.valg_av_verneombud")}</CardTitle>
                         <CardDescription>
-                          Påkrevd for bedrifter med 5 eller flere ansatte
+                          {t("auto.paakrevd_for_bedrifter_med_5_eller_flere")}
                         </CardDescription>
                       </div>
                     </div>
@@ -135,13 +135,13 @@ export default function VerneombudSeksjon() {
                       <div className="grid gap-3 text-sm">
                         <div className="flex items-center gap-3">
                           <UserCheck className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Verneombud:</span>
+                          <span className="text-muted-foreground">{t("auto.verneombud_2")}</span>
                           <span className="font-medium">{verneombudAgreement.verneombud_name}</span>
                         </div>
                         {verneombudAgreement.election_method && (
                           <div className="flex items-center gap-3">
                             <Users className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">Valgmetode:</span>
+                            <span className="text-muted-foreground">{t("auto.valgmetode")}</span>
                             <span className="font-medium">
                               {verneombudAgreement.election_method === "election" ? "Valg blant ansatte" :
                                verneombudAgreement.election_method === "appointment" ? "Utpekt av arbeidsgiver" :
@@ -153,14 +153,14 @@ export default function VerneombudSeksjon() {
                         {verneombudAgreement.term_end && (
                           <div className="flex items-center gap-3">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">Funksjonsperiode til:</span>
+                            <span className="text-muted-foreground">{t("auto.funksjonsperiode_til")}</span>
                             <span className="font-medium">{formatDate(verneombudAgreement.term_end)}</span>
                           </div>
                         )}
                         {verneombudAgreement.training_completed && (
                           <div className="flex items-center gap-3">
                             <CheckCircle2 className="w-4 h-4 text-success" />
-                            <span className="text-success font-medium">Opplæring gjennomført</span>
+                            <span className="text-success font-medium">{t("auto.opplaering_gjennomfoert")}</span>
                           </div>
                         )}
                       </div>
@@ -169,7 +169,7 @@ export default function VerneombudSeksjon() {
                         <>
                           <Separator />
                           <div>
-                            <p className="text-sm text-muted-foreground mb-2">Verneombudets signatur:</p>
+                            <p className="text-sm text-muted-foreground mb-2">{t("auto.verneombudets_signatur")}</p>
                             <div className="bg-muted/30 rounded-lg p-2 inline-block border">
                               <img 
                                 src={verneombudAgreement.verneombud_signature} 
@@ -198,7 +198,7 @@ export default function VerneombudSeksjon() {
                       <div className="grid gap-3 text-sm">
                         <div className="flex items-center gap-3">
                           <UserCheck className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Verneombud:</span>
+                          <span className="text-muted-foreground">{t("auto.verneombud_2")}</span>
                           <span className="font-medium">
                             {[verneombudFromProfile.first_name, verneombudFromProfile.last_name].filter(Boolean).join(" ") || "Ukjent"}
                           </span>
@@ -206,14 +206,14 @@ export default function VerneombudSeksjon() {
                         {verneombudFromProfile.email && (
                           <div className="flex items-center gap-3">
                             <User className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">E-post:</span>
+                            <span className="text-muted-foreground">{t("auto.e_post_3")}</span>
                             <span className="font-medium">{verneombudFromProfile.email}</span>
                           </div>
                         )}
                         {verneombudFromProfile.phone && (
                           <div className="flex items-center gap-3">
                             <User className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">Telefon:</span>
+                            <span className="text-muted-foreground">{t("auto.telefon_2")}</span>
                             <span className="font-medium">{verneombudFromProfile.phone}</span>
                           </div>
                         )}
@@ -221,8 +221,7 @@ export default function VerneombudSeksjon() {
 
                       <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
                         <p>
-                          Verneombud er registrert via Organisering-siden. For komplett dokumentasjon 
-                          med signatur og opplæringsstatus, registrer en formell verneombudsavtale.
+                          {t("auto.verneombud_er_registrert_via_organiserin")}
                         </p>
                       </div>
 
@@ -242,15 +241,14 @@ export default function VerneombudSeksjon() {
                       <div className="grid gap-3 text-sm">
                         <div className="flex items-center gap-3">
                           <UserCheck className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Verneombud:</span>
+                          <span className="text-muted-foreground">{t("auto.verneombud_2")}</span>
                           <span className="font-medium">{verneombudFromAiSetup.personName}</span>
                         </div>
                       </div>
 
                       <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground">
                         <p>
-                          Verneombud ble angitt under AI-oppsettet. For komplett dokumentasjon 
-                          med signatur og opplæringsstatus, registrer en formell verneombudsavtale.
+                          {t("auto.verneombud_ble_angitt_under_ai_oppsettet")}
                         </p>
                       </div>
 
@@ -301,9 +299,9 @@ export default function VerneombudSeksjon() {
                         )}
                       </div>
                       <div>
-                        <CardTitle className="text-lg">Avtale om fritak fra verneombud</CardTitle>
+                        <CardTitle className="text-lg">{t("auto.avtale_om_fritak_fra_verneombud")}</CardTitle>
                         <CardDescription>
-                          For bedrifter med færre enn 5 ansatte
+                          {t("auto.for_bedrifter_med_faerre_enn_5_ansatte")}
                         </CardDescription>
                       </div>
                     </div>
@@ -318,17 +316,17 @@ export default function VerneombudSeksjon() {
                       <div className="grid gap-3 text-sm">
                         <div className="flex items-center gap-3">
                           <Users className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Antall ansatte:</span>
+                          <span className="text-muted-foreground">{t("auto.antall_ansatte_2")}</span>
                           <span className="font-medium">{verneombudExemption.total_employees || "Ikke angitt"}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <User className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Arbeidsgiver:</span>
+                          <span className="text-muted-foreground">{t("auto.arbeidsgiver_2")}</span>
                           <span className="font-medium">{verneombudExemption.employer_name || "Ikke angitt"}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <Calendar className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Gyldig til:</span>
+                          <span className="text-muted-foreground">{t("auto.gyldig_til")}</span>
                           <span className="font-medium">{formatDate(verneombudExemption.valid_until)}</span>
                         </div>
                       </div>
@@ -337,7 +335,7 @@ export default function VerneombudSeksjon() {
                         <>
                           <Separator />
                           <div>
-                            <p className="text-sm text-muted-foreground mb-2">Arbeidsgiver signatur:</p>
+                            <p className="text-sm text-muted-foreground mb-2">{t("auto.arbeidsgiver_signatur")}</p>
                             <div className="bg-muted/30 rounded-lg p-2 inline-block border">
                               <img 
                                 src={verneombudExemption.employer_signature} 
@@ -388,8 +386,7 @@ export default function VerneombudSeksjon() {
                     <div className="text-center py-6">
                       <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
                       <p className="text-muted-foreground mb-4">
-                        Hvis bedriften har færre enn 5 ansatte, kan dere inngå en skriftlig avtale om 
-                        å ikke ha verneombud. Alle ansatte må være enige om denne avtalen.
+                        {t("auto.hvis_bedriften_har_faerre_enn_5_ansatte_")}
                       </p>
                       <Button variant="outline" onClick={() => setShowVerneombudDialog(true)}>
                         <PenLine className="w-4 h-4 mr-2" />

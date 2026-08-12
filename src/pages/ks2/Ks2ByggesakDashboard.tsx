@@ -27,25 +27,26 @@ import {
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { t } from "@/i18n/t";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  not_started: { label: "Ikke startet", color: "bg-muted text-muted-foreground", icon: <Clock className="h-3 w-3" /> },
-  draft: { label: "Utkast", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: <FileText className="h-3 w-3" /> },
-  ready: { label: "Klar", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400", icon: <ClipboardCheck className="h-3 w-3" /> },
-  signed: { label: "Signert", color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400", icon: <CheckCircle2 className="h-3 w-3" /> },
-  sent: { label: "Sendt", color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400", icon: <Send className="h-3 w-3" /> },
-  uploaded: { label: "Opplastet", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <Download className="h-3 w-3" /> },
+  not_started: { label: t("auto.ikke_startet"), color: "bg-muted text-muted-foreground", icon: <Clock className="h-3 w-3" /> },
+  draft: { label: t("auto.utkast"), color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400", icon: <FileText className="h-3 w-3" /> },
+  ready: { label: t("auto.klar"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400", icon: <ClipboardCheck className="h-3 w-3" /> },
+  signed: { label: t("auto.signert"), color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400", icon: <CheckCircle2 className="h-3 w-3" /> },
+  sent: { label: t("auto.sendt"), color: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400", icon: <Send className="h-3 w-3" /> },
+  uploaded: { label: t("auto.opplastet"), color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <Download className="h-3 w-3" /> },
 };
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  nabovarsel: { label: "Nabovarsel", icon: <Users className="h-5 w-5" />, color: "text-blue-600" },
-  soknad: { label: "Søknader", icon: <FileText className="h-5 w-5" />, color: "text-indigo-600" },
-  ansvarsrett: { label: "Ansvarsrett", icon: <Award className="h-5 w-5" />, color: "text-orange-600" },
-  plan: { label: "Planer", icon: <ClipboardCheck className="h-5 w-5" />, color: "text-teal-600" },
-  kontroll: { label: "Kontroll", icon: <CheckCircle2 className="h-5 w-5" />, color: "text-green-600" },
-  ferdigattest: { label: "Ferdigattest", icon: <Building2 className="h-5 w-5" />, color: "text-emerald-600" },
-  melding: { label: "Meldinger", icon: <AlertCircle className="h-5 w-5" />, color: "text-amber-600" },
-  annet: { label: "Annet", icon: <FileText className="h-5 w-5" />, color: "text-gray-600" },
+  nabovarsel: { label: t("auto.nabovarsel"), icon: <Users className="h-5 w-5" />, color: "text-blue-600" },
+  soknad: { label: t("auto.soeknader"), icon: <FileText className="h-5 w-5" />, color: "text-indigo-600" },
+  ansvarsrett: { label: t("auto.ansvarsrett"), icon: <Award className="h-5 w-5" />, color: "text-orange-600" },
+  plan: { label: t("auto.planer"), icon: <ClipboardCheck className="h-5 w-5" />, color: "text-teal-600" },
+  kontroll: { label: t("auto.kontroll"), icon: <CheckCircle2 className="h-5 w-5" />, color: "text-green-600" },
+  ferdigattest: { label: t("auto.ferdigattest"), icon: <Building2 className="h-5 w-5" />, color: "text-emerald-600" },
+  melding: { label: t("auto.meldinger"), icon: <AlertCircle className="h-5 w-5" />, color: "text-amber-600" },
+  annet: { label: t("auto.annet"), icon: <FileText className="h-5 w-5" />, color: "text-gray-600" },
 };
 
 export default function Ks2ByggesakDashboard() {
@@ -78,10 +79,9 @@ export default function Ks2ByggesakDashboard() {
       <div className="flex flex-col items-center justify-center py-16 space-y-6">
         <div className="text-center space-y-2">
           <Building2 className="h-16 w-16 mx-auto text-muted-foreground" />
-          <h2 className="text-2xl font-bold">Byggesak & Blanketter</h2>
+          <h2 className="text-2xl font-bold">{t("auto.byggesak_blanketter")}</h2>
           <p className="text-muted-foreground max-w-md">
-            Start byggesaken for å få tilgang til alle blanketter for søknad, ansvarsrett, 
-            nabovarsel, gjennomføringsplan og ferdigattest.
+            {t("auto.start_byggesaken_for_aa_faa_tilgang_til_")}
           </p>
         </div>
         <Button size="lg" onClick={initialize} disabled={initLoading}>
@@ -108,7 +108,7 @@ export default function Ks2ByggesakDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Byggesak & Blanketter</h1>
+          <h1 className="text-2xl font-bold">{t("auto.byggesak_blanketter")}</h1>
           <p className="text-muted-foreground">{project?.project_name}</p>
         </div>
         <div className="flex gap-2">
@@ -125,7 +125,7 @@ export default function Ks2ByggesakDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Fremdrift</p>
+                <p className="text-sm text-muted-foreground">{t("auto.fremdrift")}</p>
                 <p className="text-2xl font-bold">{signedForms} av {totalForms}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -140,7 +140,7 @@ export default function Ks2ByggesakDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Signerte</p>
+                <p className="text-sm text-muted-foreground">{t("auto.signerte")}</p>
                 <p className="text-2xl font-bold">{signedForms}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
@@ -154,7 +154,7 @@ export default function Ks2ByggesakDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Under arbeid</p>
+                <p className="text-sm text-muted-foreground">{t("auto.under_arbeid")}</p>
                 <p className="text-2xl font-bold">
                   {forms?.filter(f => f.status === "draft").length || 0}
                 </p>
@@ -170,7 +170,7 @@ export default function Ks2ByggesakDashboard() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Tiltaksklasse</p>
+                <p className="text-sm text-muted-foreground">{t("auto.tiltaksklasse")}</p>
                 <p className="text-2xl font-bold">{byggesak.tiltaksklasse || "1"}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -185,31 +185,31 @@ export default function Ks2ByggesakDashboard() {
       {(byggesak.gnr || byggesak.municipality) && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Eiendomsinformasjon</CardTitle>
+            <CardTitle className="text-base">{t("auto.eiendomsinformasjon")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 text-sm">
               {byggesak.municipality && (
                 <div>
-                  <p className="text-muted-foreground">Kommune</p>
+                  <p className="text-muted-foreground">{t("auto.kommune")}</p>
                   <p className="font-medium">{byggesak.municipality}</p>
                 </div>
               )}
               {byggesak.gnr && (
                 <div>
-                  <p className="text-muted-foreground">Gnr/Bnr</p>
+                  <p className="text-muted-foreground">{t("auto.gnr_bnr")}</p>
                   <p className="font-medium">{byggesak.gnr}/{byggesak.bnr || "-"}</p>
                 </div>
               )}
               {byggesak.property_address && (
                 <div>
-                  <p className="text-muted-foreground">Adresse</p>
+                  <p className="text-muted-foreground">{t("auto.adresse")}</p>
                   <p className="font-medium">{byggesak.property_address}</p>
                 </div>
               )}
               {byggesak.case_number && (
                 <div>
-                  <p className="text-muted-foreground">Saksnummer</p>
+                  <p className="text-muted-foreground">{t("auto.saksnummer")}</p>
                   <p className="font-medium">{byggesak.case_number}</p>
                 </div>
               )}
@@ -275,7 +275,7 @@ export default function Ks2ByggesakDashboard() {
 
                   {availableTemplates.length > 0 && (
                     <div className="pt-2 border-t mt-3">
-                      <p className="text-xs text-muted-foreground mb-2">Legg til blankett:</p>
+                      <p className="text-xs text-muted-foreground mb-2">{t("auto.legg_til_blankett")}</p>
                       <div className="flex flex-wrap gap-2">
                         {availableTemplates.map(template => (
                           <Button
@@ -301,36 +301,36 @@ export default function Ks2ByggesakDashboard() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Hurtighandlinger</CardTitle>
+          <CardTitle className="text-lg">{t("auto.hurtighandlinger")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
             <Button variant="outline" className="justify-start gap-2 h-auto py-3">
               <Download className="h-5 w-5 text-blue-600" />
               <div className="text-left">
-                <p className="font-medium">Last ned offisielle skjemaer</p>
-                <p className="text-xs text-muted-foreground">Fra DIBK</p>
+                <p className="font-medium">{t("auto.last_ned_offisielle_skjemaer")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.fra_dibk")}</p>
               </div>
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-auto py-3">
               <FileArchive className="h-5 w-5 text-green-600" />
               <div className="text-left">
-                <p className="font-medium">Generer komplett pakke</p>
-                <p className="text-xs text-muted-foreground">Alle signerte dokumenter</p>
+                <p className="font-medium">{t("auto.generer_komplett_pakke")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.alle_signerte_dokumenter")}</p>
               </div>
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-auto py-3" disabled>
               <Send className="h-5 w-5 text-purple-600" />
               <div className="text-left">
-                <p className="font-medium">Send til Altinn</p>
-                <p className="text-xs text-muted-foreground">Kommer snart</p>
+                <p className="font-medium">{t("auto.send_til_altinn")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.kommer_snart")}</p>
               </div>
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-auto py-3">
               <Building2 className="h-5 w-5 text-orange-600" />
               <div className="text-left">
-                <p className="font-medium">Rediger byggesak</p>
-                <p className="text-xs text-muted-foreground">Gnr, bnr, kommune</p>
+                <p className="font-medium">{t("auto.rediger_byggesak")}</p>
+                <p className="text-xs text-muted-foreground">{t("auto.gnr_bnr_kommune")}</p>
               </div>
             </Button>
           </div>

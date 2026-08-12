@@ -41,19 +41,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  pending: { label: "Venter", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-  approved: { label: "Godkjent", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  approved_with_remarks: { label: "Godkjent m/merknader", color: "bg-blue-100 text-blue-800", icon: AlertCircle },
-  rejected: { label: "Avvist", color: "bg-red-100 text-red-800", icon: XCircle },
+  pending: { label: t("auto.venter"), color: "bg-yellow-100 text-yellow-800", icon: Clock },
+  approved: { label: t("auto.godkjent"), color: "bg-green-100 text-green-800", icon: CheckCircle },
+  approved_with_remarks: { label: t("auto.godkjent_m_merknader"), color: "bg-blue-100 text-blue-800", icon: AlertCircle },
+  rejected: { label: t("auto.avvist"), color: "bg-red-100 text-red-800", icon: XCircle },
 };
 
 const accessStatusConfig: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  invited: { label: "Invitert", color: "bg-blue-100 text-blue-800", icon: Mail },
-  active: { label: "Aktiv", color: "bg-green-100 text-green-800", icon: UserCheck },
-  expired: { label: "Utløpt", color: "bg-orange-100 text-orange-800", icon: Clock },
-  revoked: { label: "Fjernet", color: "bg-red-100 text-red-800", icon: UserX },
+  invited: { label: t("auto.invitert"), color: "bg-blue-100 text-blue-800", icon: Mail },
+  active: { label: t("auto.aktiv"), color: "bg-green-100 text-green-800", icon: UserCheck },
+  expired: { label: t("auto.utloept"), color: "bg-orange-100 text-orange-800", icon: Clock },
+  revoked: { label: t("auto.fjernet"), color: "bg-red-100 text-red-800", icon: UserX },
 };
 
 export default function Ks2Underleverandorer() {
@@ -92,7 +93,7 @@ export default function Ks2Underleverandorer() {
       .update({ no_subcontractors: newValue } as any)
       .eq("id", projectId);
     if (error) {
-      toast.error("Kunne ikke oppdatere");
+      toast.error(t("auto.kunne_ikke_oppdatere_2"));
       return;
     }
     setNoUe(newValue);
@@ -141,8 +142,8 @@ export default function Ks2Underleverandorer() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold">Underleverandører</h2>
-          <p className="text-sm text-muted-foreground">Registrer og følg opp UE med gjestetilgang</p>
+          <h2 className="text-xl font-bold">{t("auto.underleverandoerer")}</h2>
+          <p className="text-sm text-muted-foreground">{t("auto.registrer_og_foelg_opp_ue_med_gjestetilg")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowLogDialog(true)}>
@@ -164,7 +165,7 @@ export default function Ks2Underleverandorer() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Søk etter firma, fagområde, e-post..."
+          placeholder={t("auto.soek_etter_firma_fagomraade_e_post")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -173,11 +174,11 @@ export default function Ks2Underleverandorer() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card><CardContent className="p-4"><div className="text-2xl font-bold">{subcontractors.length}</div><div className="text-sm text-muted-foreground">Totalt UE</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-green-600">{subcontractors.filter(s => s.approval_status === 'approved').length}</div><div className="text-sm text-muted-foreground">Godkjent</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-yellow-600">{subcontractors.filter(s => s.approval_status === 'pending').length}</div><div className="text-sm text-muted-foreground">Venter</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-primary">{activeAccessCount}</div><div className="text-sm text-muted-foreground">Med tilgang</div></CardContent></Card>
-        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-orange-600">{expiredAccessCount}</div><div className="text-sm text-muted-foreground">Utløpt tilgang</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-2xl font-bold">{subcontractors.length}</div><div className="text-sm text-muted-foreground">{t("auto.totalt_ue")}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-green-600">{subcontractors.filter(s => s.approval_status === 'approved').length}</div><div className="text-sm text-muted-foreground">{t("auto.godkjent")}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-yellow-600">{subcontractors.filter(s => s.approval_status === 'pending').length}</div><div className="text-sm text-muted-foreground">{t("auto.venter")}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-primary">{activeAccessCount}</div><div className="text-sm text-muted-foreground">{t("auto.med_tilgang")}</div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="text-2xl font-bold text-orange-600">{expiredAccessCount}</div><div className="text-sm text-muted-foreground">{t("auto.utloept_tilgang")}</div></CardContent></Card>
       </div>
 
       {/* Tabs */}
@@ -189,25 +190,25 @@ export default function Ks2Underleverandorer() {
 
         <TabsContent value="subcontractors">
           {isLoading ? (
-            <p className="text-center py-8 text-muted-foreground">Laster...</p>
+            <p className="text-center py-8 text-muted-foreground">{t("auto.laster")}</p>
           ) : noUe && subcontractors.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
                 <CheckCircle className="h-12 w-12 mx-auto text-emerald-500 mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen UE i dette prosjektet</h3>
-                <p className="text-muted-foreground mb-4">Du har markert at prosjektet ikke har underleverandører.</p>
-                <Button variant="outline" onClick={handleToggleNoUe}>Angre – legg til UE likevel</Button>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_ue_i_dette_prosjektet")}</h3>
+                <p className="text-muted-foreground mb-4">{t("auto.du_har_markert_at_prosjektet_ikke_har_un")}</p>
+                <Button variant="outline" onClick={handleToggleNoUe}>{t("auto.angre_legg_til_ue_likevel")}</Button>
               </CardContent>
             </Card>
           ) : filteredSubcontractors.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
                 <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen underleverandører</h3>
-                <p className="text-muted-foreground mb-4">Registrer underleverandører for å følge opp.</p>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_underleverandoerer")}</h3>
+                <p className="text-muted-foreground mb-4">{t("auto.registrer_underleverandoerer_for_aa_foel")}</p>
                 <div className="flex items-center justify-center gap-3">
                   <Button onClick={() => setShowNewDialog(true)}><Plus className="h-4 w-4 mr-2" />Registrer</Button>
-                  <Button variant="outline" onClick={handleToggleNoUe}>Ingen UE i prosjektet</Button>
+                  <Button variant="outline" onClick={handleToggleNoUe}>{t("auto.ingen_ue_i_prosjektet")}</Button>
                 </div>
               </CardContent>
             </Card>
@@ -252,13 +253,13 @@ export default function Ks2Underleverandorer() {
 
         <TabsContent value="access">
           {accessLoading ? (
-            <p className="text-center py-8 text-muted-foreground">Laster...</p>
+            <p className="text-center py-8 text-muted-foreground">{t("auto.laster")}</p>
           ) : filteredAccess.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
                 <UserCheck className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen gjestetilganger</h3>
-                <p className="text-muted-foreground mb-4">Gi underleverandører tilgang når du registrerer dem.</p>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_gjestetilganger")}</h3>
+                <p className="text-muted-foreground mb-4">{t("auto.gi_underleverandoerer_tilgang_naar_du_re")}</p>
                 <Button onClick={() => setShowNewDialog(true)}><Plus className="h-4 w-4 mr-2" />Registrer UE med tilgang</Button>
               </CardContent>
             </Card>
@@ -372,15 +373,15 @@ export default function Ks2Underleverandorer() {
       <AlertDialog open={showRevokeDialog} onOpenChange={setShowRevokeDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Fjern tilgang?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.fjern_tilgang")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Brukeren vil ikke lenger kunne logge inn på dette prosjektet. Du kan fornye tilgangen senere om nødvendig.
+              {t("auto.brukeren_vil_ikke_lenger_kunne_logge_inn")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRevokeAccess} className="bg-destructive text-destructive-foreground">
-              Fjern tilgang
+              {t("auto.fjern_tilgang_2")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

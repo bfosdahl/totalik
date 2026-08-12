@@ -25,6 +25,7 @@ import {
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import jsPDF from "jspdf";
+import { t } from "@/i18n/t";
 
 export default function IkKsHandbok() {
   const { company, profile } = useAuth();
@@ -96,31 +97,31 @@ export default function IkKsHandbok() {
 
   const sections = [
     {
-      title: "Målsetting",
+      title: t("auto.maalsetting"),
       icon: Target,
       status: (systemGoals?.length || 0) > 0,
       count: systemGoals?.length || 0,
     },
     {
-      title: "Kvalitetsmål",
+      title: t("auto.kvalitetsmaal"),
       icon: Target,
       status: (goals?.length || 0) > 0,
       count: goals?.length || 0,
     },
     {
-      title: "Organisasjonsplan",
+      title: t("auto.organisasjonsplan"),
       icon: Users,
       status: !!organization?.custom_content,
       count: organization ? 1 : 0,
     },
     {
-      title: "Rutiner",
+      title: t("auto.rutiner"),
       icon: ClipboardList,
       status: (routines?.length || 0) > 0,
       count: routines?.length || 0,
     },
     {
-      title: "Egenerklæring KS",
+      title: t("auto.egenerklaering_ks"),
       icon: FileText,
       status: hasSelfDeclaration,
       count: hasSelfDeclaration ? 1 : 0,
@@ -856,10 +857,9 @@ export default function IkKsHandbok() {
               <BookOpen className="w-6 h-6 text-primary" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold mb-1">KS Håndbok</h2>
+              <h2 className="text-lg font-semibold mb-1">{t("auto.ks_haandbok")}</h2>
               <p className="text-muted-foreground text-sm">
-                Last ned bedriftens samlede kvalitetssikringshåndbok som PDF. 
-                Håndboken inneholder målsetting, organisering, rutiner og egenerklæring.
+                {t("auto.last_ned_bedriftens_samlede_kvalitetssik")}
               </p>
             </div>
           </div>
@@ -883,7 +883,7 @@ export default function IkKsHandbok() {
       >
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Innhold i håndboken</CardTitle>
+            <CardTitle className="text-lg">{t("auto.innhold_i_haandboken")}</CardTitle>
             <CardDescription>
               {completedSections} av {sections.length} seksjoner har innhold
             </CardDescription>

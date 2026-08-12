@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, MapPin, Loader2, AlertCircle } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface Ks2ProjectMapProps {
   address?: string | null;
@@ -142,15 +143,15 @@ export default function Ks2ProjectMap({ address, gnrBnr, projectName }: Ks2Proje
           <div className="h-[300px] flex flex-col items-center justify-center bg-muted rounded-lg text-muted-foreground">
             <AlertCircle className="h-8 w-8 mb-2" />
             <p className="text-sm">{error}</p>
-            <p className="text-xs mt-1">Legg inn en gyldig adresse for å vise kart</p>
+            <p className="text-xs mt-1">{t("auto.legg_inn_en_gyldig_adresse_for_aa_vise_k")}</p>
           </div>
         )}
 
         {!isLoading && !address && (
           <div className="h-[300px] flex flex-col items-center justify-center bg-muted rounded-lg text-muted-foreground">
             <MapPin className="h-8 w-8 mb-2" />
-            <p className="text-sm">Ingen adresse angitt</p>
-            <p className="text-xs mt-1">Legg inn adresse i prosjektinfo for å vise kart</p>
+            <p className="text-sm">{t("auto.ingen_adresse_angitt")}</p>
+            <p className="text-xs mt-1">{t("auto.legg_inn_adresse_i_prosjektinfo_for_aa_v")}</p>
           </div>
         )}
 

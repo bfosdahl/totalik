@@ -30,6 +30,7 @@ import { useHmsVernerundeTemplates, HmsVernerundeTemplate, VernerundeCheckpoint 
 import VernerundeTemplateSelector from "./vernerunde/VernerundeTemplateSelector";
 import CustomVernerundeBuilder from "./vernerunde/CustomVernerundeBuilder";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { t } from "@/i18n/t";
 
 const getDefaultFormData = () => ({
   dato: format(new Date(), "yyyy-MM-dd"),
@@ -250,7 +251,7 @@ const VernerundeForm = () => {
         onSelect={handleLoadForm}
         onCreateNew={handleCreateNew}
         isDeleting={isDeleting}
-        title="Lagrede vernerunder"
+        title={t("auto.lagrede_vernerunder")}
       />
 
       {isBuildingCustom && !selectedTemplate ? (
@@ -322,7 +323,7 @@ const VernerundeForm = () => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Dato for vernerunde</Label>
+                      <Label>{t("auto.dato_for_vernerunde")}</Label>
                       <Input
                         type="date"
                         value={formData.dato}
@@ -330,9 +331,9 @@ const VernerundeForm = () => {
                       />
                     </div>
                     <div>
-                      <Label>Avdeling / område</Label>
+                      <Label>{t("auto.avdeling_omraade")}</Label>
                       <Input
-                        placeholder="F.eks. Lager, Kontor, Verksted"
+                        placeholder={t("auto.f_eks_lager_kontor_verksted")}
                         value={formData.avdeling}
                         onChange={(e) => setFormData((prev) => ({ ...prev, avdeling: e.target.value }))}
                       />
@@ -353,9 +354,9 @@ const VernerundeForm = () => {
                 {/* Checklist Sections by Category */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">Sjekkpunkter</h3>
+                    <h3 className="font-semibold">{t("auto.sjekkpunkter")}</h3>
                     <Button variant="ghost" size="sm" onClick={expandAllCategories}>
-                      Utvid alle
+                      {t("auto.utvid_alle")}
                     </Button>
                   </div>
                   
@@ -415,7 +416,7 @@ const VernerundeForm = () => {
                                       </p>
                                     )}
                                     <Input
-                                      placeholder="Kommentar / merknad..."
+                                      placeholder={t("auto.kommentar_merknad")}
                                       value={formData.comments[checkpoint.id] || ""}
                                       onChange={(e) => handleCommentChange(checkpoint.id, e.target.value)}
                                       className="text-sm h-8"
@@ -440,18 +441,18 @@ const VernerundeForm = () => {
                     Avvik, forbedringsforslag og tiltak
                   </h3>
                   <div>
-                    <Label>Observerte avvik / farer / uønskede forhold</Label>
+                    <Label>{t("auto.observerte_avvik_farer_uoenskede_forhold")}</Label>
                     <Textarea
-                      placeholder="Beskriv eventuelle avvik som ble observert..."
+                      placeholder={t("auto.beskriv_eventuelle_avvik_som_ble_observe")}
                       rows={4}
                       value={formData.avvik}
                       onChange={(e) => setFormData((prev) => ({ ...prev, avvik: e.target.value }))}
                     />
                   </div>
                   <div>
-                    <Label>Forslag til tiltak / forbedringer</Label>
+                    <Label>{t("auto.forslag_til_tiltak_forbedringer")}</Label>
                     <Textarea
-                      placeholder="Beskriv forslag til tiltak..."
+                      placeholder={t("auto.beskriv_forslag_til_tiltak")}
                       rows={4}
                       value={formData.tiltak}
                       onChange={(e) => setFormData((prev) => ({ ...prev, tiltak: e.target.value }))}
@@ -459,9 +460,9 @@ const VernerundeForm = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Ansvarlig for oppfølging</Label>
+                      <Label>{t("auto.ansvarlig_for_oppfoelging")}</Label>
                       <Input
-                        placeholder="Navn / rolle"
+                        placeholder={t("auto.navn_rolle")}
                         value={formData.ansvarligOppfolging}
                         onChange={(e) =>
                           setFormData((prev) => ({ ...prev, ansvarligOppfolging: e.target.value }))
@@ -469,7 +470,7 @@ const VernerundeForm = () => {
                       />
                     </div>
                     <div>
-                      <Label>Frist for gjennomføring av tiltak</Label>
+                      <Label>{t("auto.frist_for_gjennomfoering_av_tiltak")}</Label>
                       <Input
                         type="date"
                         value={formData.fristTiltak}
@@ -489,19 +490,19 @@ const VernerundeForm = () => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <Label className="mb-2 block">Verneombud / representant</Label>
+                      <Label className="mb-2 block">{t("auto.verneombud_representant")}</Label>
                       <SignaturePad
                         onSave={(sig) => handleSignatureSave("signVerneombud", sig)}
                         existingSignature={formData.signVerneombud}
-                        label="Verneombud"
+                        label={t("auto.verneombud")}
                       />
                     </div>
                     <div>
-                      <Label className="mb-2 block">Leder / ansvarlig</Label>
+                      <Label className="mb-2 block">{t("auto.leder_ansvarlig")}</Label>
                       <SignaturePad
                         onSave={(sig) => handleSignatureSave("signLeder", sig)}
                         existingSignature={formData.signLeder}
-                        label="Leder"
+                        label={t("auto.leder")}
                       />
                     </div>
                   </div>

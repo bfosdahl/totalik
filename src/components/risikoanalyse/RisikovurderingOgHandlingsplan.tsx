@@ -32,49 +32,50 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 // Predefined hazard sources (farekilder) - "Annet" first for easy access
 const PREDEFINED_HAZARDS = [
   { value: "annet", label: "Annet (fritekst)", category: "annet" },
-  { value: "arbeid_i_hoyden", label: "Arbeid i høyden", category: "fysisk" },
+  { value: "arbeid_i_hoyden", label: t("auto.arbeid_i_hoeyden"), category: "fysisk" },
   { value: "varmt_arbeid", label: "Varmt arbeid (sveising/sliping)", category: "brann" },
-  { value: "elektrisk_arbeid", label: "Elektrisk arbeid", category: "fysisk" },
-  { value: "maskinarbeid", label: "Maskinarbeid/verktøy", category: "fysisk" },
-  { value: "tunge_loft", label: "Tunge løft/manuelt arbeid", category: "ergonomisk" },
-  { value: "kjemikalier", label: "Arbeid med kjemikalier", category: "kjemisk" },
-  { value: "stoystov", label: "Støy/støv", category: "fysisk" },
-  { value: "trafikk", label: "Trafikk/kjøretøy", category: "fysisk" },
-  { value: "alenearbeid", label: "Alenearbeid", category: "organisatorisk" },
-  { value: "trange_rom", label: "Trange rom/innesperring", category: "fysisk" },
-  { value: "utgravning", label: "Utgravning/grøfter", category: "fysisk" },
-  { value: "stress", label: "Stress/arbeidspress", category: "psykososialt" },
-  { value: "vold_trusler", label: "Vold/trusler", category: "psykososialt" },
+  { value: "elektrisk_arbeid", label: t("auto.elektrisk_arbeid"), category: "fysisk" },
+  { value: "maskinarbeid", label: t("auto.maskinarbeid_verktoey"), category: "fysisk" },
+  { value: "tunge_loft", label: t("auto.tunge_loeft_manuelt_arbeid"), category: "ergonomisk" },
+  { value: "kjemikalier", label: t("auto.arbeid_med_kjemikalier"), category: "kjemisk" },
+  { value: "stoystov", label: t("auto.stoey_stoev"), category: "fysisk" },
+  { value: "trafikk", label: t("auto.trafikk_kjoeretoey"), category: "fysisk" },
+  { value: "alenearbeid", label: t("auto.alenearbeid"), category: "organisatorisk" },
+  { value: "trange_rom", label: t("auto.trange_rom_innesperring"), category: "fysisk" },
+  { value: "utgravning", label: t("auto.utgravning_groefter"), category: "fysisk" },
+  { value: "stress", label: t("auto.stress_arbeidspress"), category: "psykososialt" },
+  { value: "vold_trusler", label: t("auto.vold_trusler"), category: "psykososialt" },
 ];
 
 // Consequence descriptions with tooltips
 const CONSEQUENCE_LEVELS = [
-  { value: 1, label: "1", description: "Ubetydelig - Ingen/minimal skade" },
-  { value: 2, label: "2", description: "Mindre alvorlig - Førstehjelp, kort fravær" },
-  { value: 3, label: "3", description: "Alvorlig - Medisinsk behandling, lengre fravær" },
-  { value: 4, label: "4", description: "Svært alvorlig - Sykehusinnleggelse, varig skade" },
-  { value: 5, label: "5", description: "Kritisk/livstruende - Død eller permanent invaliditet" },
+  { value: 1, label: "1", description: t("auto.ubetydelig_ingen_minimal_skade") },
+  { value: 2, label: "2", description: t("auto.mindre_alvorlig_foerstehjelp_kort_fravae") },
+  { value: 3, label: "3", description: t("auto.alvorlig_medisinsk_behandling_lengre_fra") },
+  { value: 4, label: "4", description: t("auto.svaert_alvorlig_sykehusinnleggelse_varig") },
+  { value: 5, label: "5", description: t("auto.kritisk_livstruende_doed_eller_permanent") },
 ];
 
 // Probability descriptions with tooltips
 const PROBABILITY_LEVELS = [
-  { value: 1, label: "1", description: "Svært lite sannsynlig - Sjeldnere enn hvert 10. år" },
-  { value: 2, label: "2", description: "Lite sannsynlig - Hvert 5-10 år" },
-  { value: 3, label: "3", description: "Mulig - Hvert 1-5 år" },
-  { value: 4, label: "4", description: "Sannsynlig - 1-10 ganger årlig" },
-  { value: 5, label: "5", description: "Svært sannsynlig - Mer enn 10 ganger årlig" },
+  { value: 1, label: "1", description: t("auto.svaert_lite_sannsynlig_sjeldnere_enn_hve") },
+  { value: 2, label: "2", description: t("auto.lite_sannsynlig_hvert_5_10_aar") },
+  { value: 3, label: "3", description: t("auto.mulig_hvert_1_5_aar") },
+  { value: 4, label: "4", description: t("auto.sannsynlig_1_10_ganger_aarlig") },
+  { value: 5, label: "5", description: t("auto.svaert_sannsynlig_mer_enn_10_ganger_aarl") },
 ];
 
 // Action types
 const ACTION_TYPES = [
-  { value: "teknisk", label: "Teknisk" },
-  { value: "organisatorisk", label: "Organisatorisk" },
-  { value: "opplaering", label: "Opplæring" },
-  { value: "ppe", label: "Verneutstyr" },
+  { value: "teknisk", label: t("auto.teknisk") },
+  { value: "organisatorisk", label: t("auto.organisatorisk") },
+  { value: "opplaering", label: t("auto.opplaering") },
+  { value: "ppe", label: t("auto.verneutstyr") },
 ];
 
 // Each unwanted event under a hazard source
@@ -353,10 +354,10 @@ export function RisikovurderingOgHandlingsplan() {
 
       if (actionError) throw actionError;
 
-      toast.success("Lagret");
+      toast.success(t("auto.lagret"));
     } catch (error) {
       console.error("Error saving:", error);
-      toast.error("Kunne ikke lagre");
+      toast.error(t("auto.kunne_ikke_lagre_2"));
     } finally {
       setIsSaving(false);
     }
@@ -366,7 +367,7 @@ export function RisikovurderingOgHandlingsplan() {
   const addRisk = () => {
     const validEvents = newRisk.events.filter(e => e.description.trim());
     if (!newRisk.hazard_source || validEvents.length === 0) {
-      toast.error("Velg farekilde og legg til minst én uønsket hendelse");
+      toast.error(t("auto.velg_farekilde_og_legg_til_minst_n_uoens"));
       return;
     }
 
@@ -497,7 +498,7 @@ export function RisikovurderingOgHandlingsplan() {
 
     setShowReevaluateDialog(false);
     setSelectedEventForReeval(null);
-    toast.success("Hendelse revurdert");
+    toast.success(t("auto.hendelse_revurdert"));
   };
 
   // Delete risk - with auto-save to database
@@ -582,12 +583,12 @@ export function RisikovurderingOgHandlingsplan() {
         throw new Error("Delete verification failed: risk still present");
       }
 
-      toast.success("Farekilde slettet");
+      toast.success(t("auto.farekilde_slettet"));
       // Force re-fetch data so UI matches DB without full navigation
       setRefreshKey((k) => k + 1);
     } catch (error) {
       console.error("Error deleting risk:", error);
-      toast.error("Kunne ikke slette farekilde");
+      toast.error(t("auto.kunne_ikke_slette_farekilde"));
       // Rollback on error
       setRisks(prevRisks);
       setActions(prevActions);
@@ -602,7 +603,7 @@ export function RisikovurderingOgHandlingsplan() {
   // Delete action
   const deleteAction = (id: string) => {
     setActions(actions.filter(a => a.id !== id));
-    toast.success("Tiltak slettet");
+    toast.success(t("auto.tiltak_slettet"));
   };
 
   // Add action for a specific event
@@ -615,7 +616,7 @@ export function RisikovurderingOgHandlingsplan() {
   // Save new action from dialog
   const saveNewAction = () => {
     if (!selectedEventForAction || !newActionDescription.trim()) {
-      toast.error("Fyll inn beskrivelse av tiltaket");
+      toast.error(t("auto.fyll_inn_beskrivelse_av_tiltaket"));
       return;
     }
 
@@ -644,7 +645,7 @@ export function RisikovurderingOgHandlingsplan() {
     setShowAddActionDialog(false);
     setSelectedEventForAction(null);
     setNewActionDescription("");
-    toast.success("Tiltak lagt til");
+    toast.success(t("auto.tiltak_lagt_til"));
   };
 
   // Check if event already has action
@@ -679,12 +680,12 @@ export function RisikovurderingOgHandlingsplan() {
       : PREDEFINED_HAZARDS.find(h => h.value === newRisk.hazard_source)?.label || newRisk.hazard_source;
 
     if (!hazardLabel?.trim()) {
-      toast.error("Velg eller skriv inn farekilde");
+      toast.error(t("auto.velg_eller_skriv_inn_farekilde"));
       return;
     }
 
     if (newRisk.events.some(e => !e.description.trim())) {
-      toast.error("Alle hendelser må ha en beskrivelse");
+      toast.error(t("auto.alle_hendelser_maa_ha_en_beskrivelse"));
       return;
     }
 
@@ -739,7 +740,7 @@ export function RisikovurderingOgHandlingsplan() {
     });
     setEditingRisk(null);
     setShowAddDialog(false);
-    toast.success("Farekilde oppdatert");
+    toast.success(t("auto.farekilde_oppdatert"));
   };
 
   // Close dialog and reset
@@ -763,7 +764,7 @@ export function RisikovurderingOgHandlingsplan() {
         events: [
           {
             id: crypto.randomUUID(),
-            description: "Brann i elektrisk anlegg",
+            description: t("auto.brann_i_elektrisk_anlegg"),
             consequence: 4,
             probability: 2,
             measures: "Kontroller at man ikke har løse stikkontakter og unødvendig mye bruk av skjøtekabler!",
@@ -773,7 +774,7 @@ export function RisikovurderingOgHandlingsplan() {
           },
           {
             id: crypto.randomUUID(),
-            description: "Brann i kaffetrakter",
+            description: t("auto.brann_i_kaffetrakter"),
             consequence: 4,
             probability: 2,
             measures: "Montere timer på kaffetrakter",
@@ -791,7 +792,7 @@ export function RisikovurderingOgHandlingsplan() {
         events: [
           {
             id: crypto.randomUUID(),
-            description: "Fall fra stige eller stillas",
+            description: t("auto.fall_fra_stige_eller_stillas"),
             consequence: 5,
             probability: 3,
             measures: "Bruke godkjent stillas med rekkverk, aldri stige over 2 meter uten sikring",
@@ -801,7 +802,7 @@ export function RisikovurderingOgHandlingsplan() {
           },
           {
             id: crypto.randomUUID(),
-            description: "Fallende gjenstander fra høyden",
+            description: t("auto.fallende_gjenstander_fra_hoeyden"),
             consequence: 4,
             probability: 3,
             measures: "Sikre verktøy med stropper, avsperring under arbeidsområde, påbudt hjelm",
@@ -811,7 +812,7 @@ export function RisikovurderingOgHandlingsplan() {
           },
           {
             id: crypto.randomUUID(),
-            description: "Hengende igjen i fallsikringsutstyr",
+            description: t("auto.hengende_igjen_i_fallsikringsutstyr"),
             consequence: 3,
             probability: 2,
             measures: "Opplæring i bruk av fallsikring, aldri alenearbeid i høyden",
@@ -830,7 +831,7 @@ export function RisikovurderingOgHandlingsplan() {
         events: [
           {
             id: crypto.randomUUID(),
-            description: "Mobbing eller trakassering på arbeidsplassen",
+            description: t("auto.mobbing_eller_trakassering_paa_arbeidspl"),
             consequence: 4,
             probability: 2,
             measures: "Etablere tydelige rutiner mot mobbing, anonym varslingskanal, jevnlige medarbeidersamtaler",
@@ -840,7 +841,7 @@ export function RisikovurderingOgHandlingsplan() {
           },
           {
             id: crypto.randomUUID(),
-            description: "Langvarig stress og utbrenthet",
+            description: t("auto.langvarig_stress_og_utbrenthet"),
             consequence: 4,
             probability: 3,
             measures: "Jevnlig oppfølging av arbeidsbelastning, fleksibel arbeidstid, tilgang til bedriftshelsetjeneste",
@@ -858,7 +859,7 @@ export function RisikovurderingOgHandlingsplan() {
         events: [
           {
             id: crypto.randomUUID(),
-            description: "Ryggskade ved tunge løft",
+            description: t("auto.ryggskade_ved_tunge_loeft"),
             consequence: 4,
             probability: 3,
             measures: "Opplæring i riktig løfteteknikk, bruk av løfteutstyr ved last over 15 kg",
@@ -868,7 +869,7 @@ export function RisikovurderingOgHandlingsplan() {
           },
           {
             id: crypto.randomUUID(),
-            description: "Belastningsskader ved repetitivt arbeid",
+            description: t("auto.belastningsskader_ved_repetitivt_arbeid"),
             consequence: 3,
             probability: 3,
             measures: "Variere arbeidsoppgaver, jevnlige pauser, ergonomisk tilpasset arbeidsplass",
@@ -952,7 +953,7 @@ export function RisikovurderingOgHandlingsplan() {
           <Card className="border-l-4 border-l-primary">
             <CardContent className="p-3">
               <div className="text-2xl font-bold">{stats.totalSources}</div>
-              <div className="text-xs text-muted-foreground">Farekilder</div>
+              <div className="text-xs text-muted-foreground">{t("auto.farekilder")}</div>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-red-500">
@@ -976,13 +977,13 @@ export function RisikovurderingOgHandlingsplan() {
           <Card className="border-l-4 border-l-orange-500">
             <CardContent className="p-3">
               <div className="text-2xl font-bold text-orange-600">{stats.openActions}</div>
-              <div className="text-xs text-muted-foreground">Åpne tiltak</div>
+              <div className="text-xs text-muted-foreground">{t("auto.aapne_tiltak")}</div>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-destructive">
             <CardContent className="p-3">
               <div className="text-2xl font-bold text-destructive">{stats.overdueActions}</div>
-              <div className="text-xs text-muted-foreground">Forfalt</div>
+              <div className="text-xs text-muted-foreground">{t("auto.forfalt")}</div>
             </CardContent>
           </Card>
         </div>
@@ -1009,7 +1010,7 @@ export function RisikovurderingOgHandlingsplan() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">1</span>
-                    Farekilde *
+                    {t("auto.farekilde")}
                     <Tooltip>
                       <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
                       <TooltipContent>Hva er kilden til faren? (f.eks. arbeid i høyden)</TooltipContent>
@@ -1017,7 +1018,7 @@ export function RisikovurderingOgHandlingsplan() {
                   </label>
                   <Select value={newRisk.hazard_source} onValueChange={(v) => setNewRisk(p => ({ ...p, hazard_source: v }))}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg farekilde" />
+                      <SelectValue placeholder={t("auto.velg_farekilde")} />
                     </SelectTrigger>
                     <SelectContent>
                       {PREDEFINED_HAZARDS.map(h => (
@@ -1027,7 +1028,7 @@ export function RisikovurderingOgHandlingsplan() {
                   </Select>
                   {newRisk.hazard_source === "annet" && (
                     <Input 
-                      placeholder="Beskriv farekilden..."
+                      placeholder={t("auto.beskriv_farekilden")}
                       value={newRisk.hazard_source_custom}
                       onChange={(e) => setNewRisk(p => ({ ...p, hazard_source_custom: e.target.value }))}
                     />
@@ -1038,7 +1039,7 @@ export function RisikovurderingOgHandlingsplan() {
                 <div className="space-y-3">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <span className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">2</span>
-                    Uønskede hendelser *
+                    {t("auto.uoenskede_hendelser")}
                     <Tooltip>
                       <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
                       <TooltipContent className="max-w-xs">
@@ -1066,9 +1067,9 @@ export function RisikovurderingOgHandlingsplan() {
                             
                             {/* Event description */}
                             <div>
-                              <label className="text-xs text-muted-foreground">Hva kan skje?</label>
+                              <label className="text-xs text-muted-foreground">{t("auto.hva_kan_skje")}</label>
                               <Input 
-                                placeholder="Beskriv den uønskede hendelsen..."
+                                placeholder={t("auto.beskriv_den_uoenskede_hendelsen")}
                                 value={event.description}
                                 onChange={(e) => updateEventInForm(idx, "description", e.target.value)}
                               />
@@ -1128,9 +1129,9 @@ export function RisikovurderingOgHandlingsplan() {
 
                             {/* Measures */}
                             <div>
-                              <label className="text-xs text-muted-foreground">Tiltak</label>
+                              <label className="text-xs text-muted-foreground">{t("auto.tiltak")}</label>
                               <Textarea 
-                                placeholder="Hvilke tiltak skal/er iverksatt for denne hendelsen?"
+                                placeholder={t("auto.hvilke_tiltak_skal_er_iverksatt_for_denn")}
                                 value={event.measures}
                                 onChange={(e) => updateEventInForm(idx, "measures", e.target.value)}
                                 className="min-h-[60px]"
@@ -1140,10 +1141,10 @@ export function RisikovurderingOgHandlingsplan() {
                             {/* Responsible and deadline */}
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="text-xs text-muted-foreground">Ansvarlig</label>
+                                <label className="text-xs text-muted-foreground">{t("auto.ansvarlig_2")}</label>
                                 <Select value={event.responsible || ""} onValueChange={(v) => updateEventInForm(idx, "responsible", v)}>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Velg">{event.responsible || "Velg"}</SelectValue>
+                                    <SelectValue placeholder={t("auto.velg_2")}>{event.responsible || "Velg"}</SelectValue>
                                   </SelectTrigger>
                                   <SelectContent>
                                     {currentUserName && (
@@ -1158,7 +1159,7 @@ export function RisikovurderingOgHandlingsplan() {
                                 </Select>
                               </div>
                               <div>
-                                <label className="text-xs text-muted-foreground">Frist</label>
+                                <label className="text-xs text-muted-foreground">{t("auto.frist_2")}</label>
                                 <Input 
                                   type="date" 
                                   value={event.deadline || ""}
@@ -1179,7 +1180,7 @@ export function RisikovurderingOgHandlingsplan() {
                 </div>
               </div>
               <DialogFooter className="mt-4">
-                <Button variant="outline" onClick={closeDialog}>Avbryt</Button>
+                <Button variant="outline" onClick={closeDialog}>{t("auto.avbryt")}</Button>
                 <Button onClick={editingRisk ? saveEditedRisk : addRisk}>
                   {editingRisk ? "Lagre endringer" : "Legg til risikovurdering"}
                 </Button>
@@ -1220,13 +1221,13 @@ export function RisikovurderingOgHandlingsplan() {
                 <AlertTriangle className="h-5 w-5 text-orange-500" />
                 Risikovurdering
               </CardTitle>
-              <CardDescription>Farekilder med uønskede hendelser</CardDescription>
+              <CardDescription>{t("auto.farekilder_med_uoenskede_hendelser")}</CardDescription>
             </CardHeader>
             <CardContent>
               {risks.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                  <p>Ingen risikoer registrert</p>
+                  <p>{t("auto.ingen_risikoer_registrert")}</p>
                   <Button variant="outline" className="mt-3" onClick={() => setShowAddDialog(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Legg til første risiko
@@ -1292,7 +1293,7 @@ export function RisikovurderingOgHandlingsplan() {
 
                                     {hasReeval && (
                                       <div className={cn("mt-2 p-2 rounded text-xs", levelAfter?.bg)}>
-                                        <div className="font-medium">Etter tiltak:</div>
+                                        <div className="font-medium">{t("auto.etter_tiltak_2")}</div>
                                         <div>K×S: {event.consequence_after}×{event.probability_after} = {event.consequence_after! * event.probability_after!} ({levelAfter?.level})</div>
                                         {event.reevaluated_at && (
                                           <div className="text-muted-foreground">
@@ -1375,14 +1376,14 @@ export function RisikovurderingOgHandlingsplan() {
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
                 Handlingsplan
               </CardTitle>
-              <CardDescription>Tiltak for å redusere risiko</CardDescription>
+              <CardDescription>{t("auto.tiltak_for_aa_redusere_risiko")}</CardDescription>
             </CardHeader>
             <CardContent>
               {actions.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                  <p>Ingen tiltak registrert</p>
-                  <p className="text-xs mt-1">Tiltak opprettes automatisk for gul/rød risiko</p>
+                  <p>{t("auto.ingen_tiltak_registrert")}</p>
+                  <p className="text-xs mt-1">{t("auto.tiltak_opprettes_automatisk_for_gul_roed")}</p>
                 </div>
               ) : (
                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
@@ -1406,9 +1407,9 @@ export function RisikovurderingOgHandlingsplan() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="planlagt">Planlagt</SelectItem>
-                              <SelectItem value="pågår">Pågår</SelectItem>
-                              <SelectItem value="utført">Utført</SelectItem>
+                              <SelectItem value="planlagt">{t("auto.planlagt")}</SelectItem>
+                              <SelectItem value="pågår">{t("auto.paagaar")}</SelectItem>
+                              <SelectItem value="utført">{t("auto.utfoert")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1425,7 +1426,7 @@ export function RisikovurderingOgHandlingsplan() {
                             </SelectContent>
                           </Select>
                           <Input 
-                            placeholder="Ansvarlig"
+                            placeholder={t("auto.ansvarlig_2")}
                             value={action.responsible || ""}
                             onChange={(e) => updateAction(action.id, { responsible: e.target.value })}
                             className="flex-1 h-6 text-xs min-w-[100px]"
@@ -1453,15 +1454,15 @@ export function RisikovurderingOgHandlingsplan() {
         <Dialog open={showReevaluateDialog} onOpenChange={setShowReevaluateDialog}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Revurder hendelse etter tiltak</DialogTitle>
+              <DialogTitle>{t("auto.revurder_hendelse_etter_tiltak")}</DialogTitle>
               <DialogDescription>
-                Vurder ny konsekvens og sannsynlighet etter at tiltak er gjennomført
+                {t("auto.vurder_ny_konsekvens_og_sannsynlighet_et")}
               </DialogDescription>
             </DialogHeader>
             {selectedEventForReeval && (
               <div className="space-y-4">
                 <div className="p-3 rounded bg-muted text-sm">
-                  <strong>Hendelse:</strong> {selectedEventForReeval.event.description}
+                  <strong>{t("auto.hendelse")}</strong> {selectedEventForReeval.event.description}
                   <div className="text-xs text-muted-foreground mt-1">
                     Før tiltak: {selectedEventForReeval.event.consequence}×{selectedEventForReeval.event.probability} = {selectedEventForReeval.event.consequence * selectedEventForReeval.event.probability}
                   </div>
@@ -1538,8 +1539,8 @@ export function RisikovurderingOgHandlingsplan() {
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowReevaluateDialog(false)}>Avbryt</Button>
-              <Button onClick={handleReevaluate}>Bekreft revurdering</Button>
+              <Button variant="outline" onClick={() => setShowReevaluateDialog(false)}>{t("auto.avbryt")}</Button>
+              <Button onClick={handleReevaluate}>{t("auto.bekreft_revurdering")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1548,27 +1549,27 @@ export function RisikovurderingOgHandlingsplan() {
         <Dialog open={showAddActionDialog} onOpenChange={setShowAddActionDialog}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Legg til tiltak</DialogTitle>
+              <DialogTitle>{t("auto.legg_til_tiltak")}</DialogTitle>
               <DialogDescription>
-                Beskriv tiltaket som skal redusere risikoen
+                {t("auto.beskriv_tiltaket_som_skal_redusere_risik")}
               </DialogDescription>
             </DialogHeader>
             {selectedEventForAction && (
               <div className="space-y-4">
                 <div className="p-3 rounded bg-muted text-sm">
-                  <strong>Farekilde:</strong> {selectedEventForAction.risk.hazard_source === "annet" 
+                  <strong>{t("auto.farekilde_2")}</strong> {selectedEventForAction.risk.hazard_source === "annet" 
                     ? selectedEventForAction.risk.hazard_source_custom 
                     : PREDEFINED_HAZARDS.find(h => h.value === selectedEventForAction.risk.hazard_source)?.label || selectedEventForAction.risk.hazard_source}
-                  <div className="mt-1"><strong>Hendelse:</strong> {selectedEventForAction.event.description}</div>
+                  <div className="mt-1"><strong>{t("auto.hendelse")}</strong> {selectedEventForAction.event.description}</div>
                   <div className="text-xs text-muted-foreground mt-1">
                     Risiko: {selectedEventForAction.event.consequence}×{selectedEventForAction.event.probability} = {selectedEventForAction.event.consequence * selectedEventForAction.event.probability}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Beskrivelse av tiltak *</label>
+                  <label className="text-sm font-medium">{t("auto.beskrivelse_av_tiltak")}</label>
                   <Textarea 
-                    placeholder="Hva skal gjøres for å redusere risikoen?"
+                    placeholder={t("auto.hva_skal_gjoeres_for_aa_redusere_risikoe")}
                     value={newActionDescription}
                     onChange={(e) => setNewActionDescription(e.target.value)}
                     rows={3}
@@ -1582,16 +1583,16 @@ export function RisikovurderingOgHandlingsplan() {
                 setSelectedEventForAction(null);
                 setNewActionDescription("");
               }}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
-              <Button onClick={saveNewAction}>Legg til tiltak</Button>
+              <Button onClick={saveNewAction}>{t("auto.legg_til_tiltak")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Legal reference footer */}
         <div className="text-xs text-muted-foreground text-center pt-4 border-t">
-          Risikovurdering i henhold til Internkontrollforskriften §5, Arbeidsmiljøloven §3-1, og Forskrift om organisering, ledelse og medvirkning §7-1
+          {t("auto.risikovurdering_i_henhold_til_internkont")}
         </div>
       </div>
     </TooltipProvider>

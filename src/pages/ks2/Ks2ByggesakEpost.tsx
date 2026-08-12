@@ -29,6 +29,7 @@ import {
 } from "@/hooks/useKsModule2Byggesak";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface EmailRecipient {
   email: string;
@@ -89,11 +90,11 @@ export default function Ks2ByggesakEpost() {
 
   const addRecipient = () => {
     if (!newEmail || !newEmail.includes("@")) {
-      toast.error("Ugyldig e-postadresse");
+      toast.error(t("auto.ugyldig_e_postadresse"));
       return;
     }
     if (recipients.some(r => r.email === newEmail)) {
-      toast.error("E-postadresse er allerede lagt til");
+      toast.error(t("auto.e_postadresse_er_allerede_lagt_til"));
       return;
     }
     setRecipients([...recipients, { email: newEmail }]);
@@ -114,15 +115,15 @@ export default function Ks2ByggesakEpost() {
 
   const handleSend = async () => {
     if (recipients.length === 0) {
-      toast.error("Legg til minst én mottaker");
+      toast.error(t("auto.legg_til_minst_n_mottaker"));
       return;
     }
     if (!subject.trim()) {
-      toast.error("Skriv inn emne");
+      toast.error(t("auto.skriv_inn_emne"));
       return;
     }
     if (selectedForms.length === 0) {
-      toast.error("Velg minst én blankett som vedlegg");
+      toast.error(t("auto.velg_minst_n_blankett_som_vedlegg"));
       return;
     }
 
@@ -157,7 +158,7 @@ export default function Ks2ByggesakEpost() {
     return (
       <div className="text-center py-12">
         <Mail className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">Start byggesaken først for å sende e-post</p>
+        <p className="text-muted-foreground">{t("auto.start_byggesaken_foerst_for_aa_sende_e_p")}</p>
       </div>
     );
   }
@@ -170,7 +171,7 @@ export default function Ks2ByggesakEpost() {
           E-post utsending
         </h1>
         <p className="text-muted-foreground">
-          Send blanketter og dokumenter direkte til kommune, naboer eller andre
+          {t("auto.send_blanketter_og_dokumenter_direkte_ti")}
         </p>
       </div>
 
@@ -178,17 +179,17 @@ export default function Ks2ByggesakEpost() {
         {/* Compose Email */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Ny e-post</CardTitle>
-            <CardDescription>Skriv melding og velg vedlegg</CardDescription>
+            <CardTitle className="text-lg">{t("auto.ny_e_post")}</CardTitle>
+            <CardDescription>{t("auto.skriv_melding_og_velg_vedlegg")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Recipients */}
             <div className="space-y-2">
-              <Label>Mottakere</Label>
+              <Label>{t("auto.mottakere")}</Label>
               <div className="flex gap-2">
                 <Input
                   type="email"
-                  placeholder="E-postadresse"
+                  placeholder={t("auto.e_postadresse")}
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addRecipient()}
@@ -233,9 +234,9 @@ export default function Ks2ByggesakEpost() {
 
             {/* Subject */}
             <div className="space-y-2">
-              <Label>Emne</Label>
+              <Label>{t("auto.emne_2")}</Label>
               <Input
-                placeholder="Emne for e-post"
+                placeholder={t("auto.emne_for_e_post")}
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
               />
@@ -243,9 +244,9 @@ export default function Ks2ByggesakEpost() {
 
             {/* Message */}
             <div className="space-y-2">
-              <Label>Melding</Label>
+              <Label>{t("auto.melding")}</Label>
               <Textarea
-                placeholder="Skriv din melding her..."
+                placeholder={t("auto.skriv_din_melding_her")}
                 rows={4}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -261,7 +262,7 @@ export default function Ks2ByggesakEpost() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk i signerte blanketter..."
+                  placeholder={t("auto.soek_i_signerte_blanketter")}
                   className="pl-10"
                   value={searchForms}
                   onChange={(e) => setSearchForms(e.target.value)}
@@ -270,7 +271,7 @@ export default function Ks2ByggesakEpost() {
               <ScrollArea className="h-40 border rounded-lg p-2">
                 {filteredForms.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    Ingen signerte blanketter funnet
+                    {t("auto.ingen_signerte_blanketter_funnet")}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -311,7 +312,7 @@ export default function Ks2ByggesakEpost() {
               disabled={isSending || recipients.length === 0 || selectedForms.length === 0}
             >
               {isSending ? (
-                <>Sender...</>
+                <>{t("auto.sender")}</>
               ) : (
                 <>
                   <Send className="h-4 w-4" />
@@ -329,13 +330,13 @@ export default function Ks2ByggesakEpost() {
               <FolderOpen className="h-5 w-5" />
               Sendte e-poster
             </CardTitle>
-            <CardDescription>Historikk over utgående e-poster</CardDescription>
+            <CardDescription>{t("auto.historikk_over_utgaaende_e_poster")}</CardDescription>
           </CardHeader>
           <CardContent>
             {sentEmails.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Mail className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                <p>Ingen sendte e-poster ennå</p>
+                <p>{t("auto.ingen_sendte_e_poster_ennaa")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -375,24 +376,24 @@ export default function Ks2ByggesakEpost() {
       {/* Project Info Card */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Prosjektinfo for e-post</CardTitle>
+          <CardTitle className="text-base">{t("auto.prosjektinfo_for_e_post")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 text-sm">
             <div>
-              <p className="text-muted-foreground">Prosjekt</p>
+              <p className="text-muted-foreground">{t("auto.prosjekt")}</p>
               <p className="font-medium">{project?.project_name}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Adresse</p>
+              <p className="text-muted-foreground">{t("auto.adresse")}</p>
               <p className="font-medium">{byggesak.property_address || "-"}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Kommune</p>
+              <p className="text-muted-foreground">{t("auto.kommune")}</p>
               <p className="font-medium">{byggesak.municipality || "-"}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Gnr/Bnr</p>
+              <p className="text-muted-foreground">{t("auto.gnr_bnr")}</p>
               <p className="font-medium">{byggesak.gnr ? `${byggesak.gnr}/${byggesak.bnr || "-"}` : "-"}</p>
             </div>
           </div>

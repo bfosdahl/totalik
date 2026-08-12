@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Plus, Target, Edit, Trash2, Loader2, Sparkles } from "lucide-react";
 import { useIkAlkoholGoals, GOAL_STATUSES, GOAL_PERIODS } from "@/hooks/useIkAlkoholGoals";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { t } from "@/i18n/t";
 
 const IkAlkoholMaal = () => {
   const navigate = useNavigate();
@@ -77,8 +78,8 @@ const IkAlkoholMaal = () => {
       <div className="container max-w-6xl mx-auto py-6 px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Målsetting</h1>
-            <p className="text-muted-foreground">Mål og KPI-er for alkoholkontroll</p>
+            <h1 className="text-2xl font-bold">{t("auto.maalsetting")}</h1>
+            <p className="text-muted-foreground">{t("auto.maal_og_kpi_er_for_alkoholkontroll")}</p>
           </div>
           <div className="flex gap-2">
             {goals.length === 0 && (
@@ -93,7 +94,7 @@ const IkAlkoholMaal = () => {
         </div>
 
         {goals.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-muted-foreground">Ingen mål definert</CardContent></Card>
+          <Card><CardContent className="py-8 text-center text-muted-foreground">{t("auto.ingen_maal_definert_2")}</CardContent></Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {goals.map(goal => {
@@ -124,7 +125,7 @@ const IkAlkoholMaal = () => {
                     
                     {goal.actions && goal.actions.length > 0 && (
                       <div className="mb-3">
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Tiltak:</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">{t("auto.tiltak_2")}</p>
                         <ul className="text-sm space-y-1">
                           {goal.actions.map((a: string, i: number) => (
                             <li key={i} className="flex items-start gap-2"><span className="text-primary">•</span>{a}</li>
@@ -155,26 +156,26 @@ const IkAlkoholMaal = () => {
             <DialogHeader><DialogTitle>{editingGoal ? 'Rediger mål' : 'Nytt mål'}</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Mål *</label>
+                <label className="text-sm font-medium">{t("auto.maal_2")}</label>
                 <Input value={formData.goal_text} onChange={(e) => setFormData({ ...formData, goal_text: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium">Beskrivelse</label>
+                <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
                 <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={2} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">KPI / Målepunkt</label>
+                  <label className="text-sm font-medium">{t("auto.kpi_maalepunkt")}</label>
                   <Input value={formData.kpi_metric} onChange={(e) => setFormData({ ...formData, kpi_metric: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Målverdi</label>
+                  <label className="text-sm font-medium">{t("auto.maalverdi")}</label>
                   <Input value={formData.kpi_target} onChange={(e) => setFormData({ ...formData, kpi_target: e.target.value })} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Periode</label>
+                  <label className="text-sm font-medium">{t("auto.periode")}</label>
                   <Select value={formData.period} onValueChange={(v) => setFormData({ ...formData, period: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -183,7 +184,7 @@ const IkAlkoholMaal = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Status</label>
+                  <label className="text-sm font-medium">{t("auto.status_2")}</label>
                   <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -193,14 +194,14 @@ const IkAlkoholMaal = () => {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Ansvarlig</label>
+                <label className="text-sm font-medium">{t("auto.ansvarlig_2")}</label>
                 <Input value={formData.responsible_name} onChange={(e) => setFormData({ ...formData, responsible_name: e.target.value })} />
               </div>
               <div>
-                <label className="text-sm font-medium">Tiltak</label>
+                <label className="text-sm font-medium">{t("auto.tiltak")}</label>
                 <div className="flex gap-2 mb-2">
-                  <Input value={newAction} onChange={(e) => setNewAction(e.target.value)} placeholder="Legg til tiltak" onKeyPress={(e) => e.key === 'Enter' && addAction()} />
-                  <Button type="button" onClick={addAction}>Legg til</Button>
+                  <Input value={newAction} onChange={(e) => setNewAction(e.target.value)} placeholder={t("auto.legg_til_tiltak")} onKeyPress={(e) => e.key === 'Enter' && addAction()} />
+                  <Button type="button" onClick={addAction}>{t("auto.legg_til")}</Button>
                 </div>
                 {formData.actions.length > 0 && (
                   <ul className="space-y-1">
@@ -215,8 +216,8 @@ const IkAlkoholMaal = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Avbryt</Button>
-              <Button onClick={handleSave}>Lagre</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>{t("auto.avbryt")}</Button>
+              <Button onClick={handleSave}>{t("auto.lagre")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

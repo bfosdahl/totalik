@@ -13,6 +13,7 @@ import ResponsiveChecklist, { type ChecklistRow } from "./ResponsiveChecklist";
 import ResponsiveActionTable from "./ResponsiveActionTable";
 import SavedFormsList from "./SavedFormsList";
 import UserSelect from "./UserSelect";
+import { t } from "@/i18n/t";
 
 type YesNoNa = "yes" | "no" | "na" | "";
 
@@ -57,50 +58,50 @@ interface FormData {
 }
 
 const defaultGoalsItems: ChecklistRow[] = [
-  { id: "goals_known", label: "Er mål for HMS-arbeidet definert og kjent for alle ansatte?" },
-  { id: "action_plan", label: "Er det laget handlingsplan og er denne fulgt opp?" },
-  { id: "measures_effective", label: "Er det gjennomført evaluering av om tiltakene har hatt ønsket effekt?" }
+  { id: "goals_known", label: t("auto.er_maal_for_hms_arbeidet_definert_og_kje") },
+  { id: "action_plan", label: t("auto.er_det_laget_handlingsplan_og_er_denne_f") },
+  { id: "measures_effective", label: t("auto.er_det_gjennomfoert_evaluering_av_om_til") }
 ];
 
 const defaultOrganizationItems: ChecklistRow[] = [
-  { id: "roles_defined", label: "Er roller og ansvar tydelig definert og dokumentert?" },
-  { id: "safety_rep", label: "Er verneombud/vernetjeneste valgt dersom påkrevd?" },
-  { id: "communication", label: "Fungerer intern kommunikasjon og informasjon om HMS godt nok?" }
+  { id: "roles_defined", label: t("auto.er_roller_og_ansvar_tydelig_definert_og_") },
+  { id: "safety_rep", label: t("auto.er_verneombud_vernetjeneste_valgt_dersom") },
+  { id: "communication", label: t("auto.fungerer_intern_kommunikasjon_og_informa") }
 ];
 
 const defaultRiskItems: ChecklistRow[] = [
-  { id: "risk_all_tasks", label: "Er det gjennomført risikovurderinger for alle arbeidsoppgaver?" },
-  { id: "risk_updated", label: "Er risikovurderinger oppdatert etter endringer i drift?" },
-  { id: "risk_followup", label: "Blir tiltak fra risikovurderinger fulgt opp og dokumentert?" }
+  { id: "risk_all_tasks", label: t("auto.er_det_gjennomfoert_risikovurderinger_fo") },
+  { id: "risk_updated", label: t("auto.er_risikovurderinger_oppdatert_etter_end") },
+  { id: "risk_followup", label: t("auto.blir_tiltak_fra_risikovurderinger_fulgt_") }
 ];
 
 const defaultRoutinesItems: ChecklistRow[] = [
-  { id: "written_routines", label: "Finnes nødvendige skriftlige rutiner?" },
-  { id: "routines_known", label: "Er rutinene kjent hos de ansatte og praktisert i arbeidshverdagen?" },
-  { id: "routines_updated", label: "Er rutiner oppdatert i forhold til krav og drift?" }
+  { id: "written_routines", label: t("auto.finnes_noedvendige_skriftlige_rutiner") },
+  { id: "routines_known", label: t("auto.er_rutinene_kjent_hos_de_ansatte_og_prak") },
+  { id: "routines_updated", label: t("auto.er_rutiner_oppdatert_i_forhold_til_krav_") }
 ];
 
 const defaultTrainingItems: ChecklistRow[] = [
-  { id: "training_done", label: "Er nødvendig opplæring gjennomført og dokumentert?" },
-  { id: "training_info", label: "Har ansatte fått informasjon om relevante HMS-rutiner?" },
-  { id: "needs_more_training", label: "Er det behov for ytterligere opplæring?" }
+  { id: "training_done", label: t("auto.er_noedvendig_opplaering_gjennomfoert_og") },
+  { id: "training_info", label: t("auto.har_ansatte_faatt_informasjon_om_relevan") },
+  { id: "needs_more_training", label: t("auto.er_det_behov_for_ytterligere_opplaering") }
 ];
 
 const defaultDeviationsItems: ChecklistRow[] = [
-  { id: "deviation_system_works", label: "Fungerer avvikssystemet etter hensikten?" },
-  { id: "deviations_followed", label: "Blir avvik analysert og fulgt opp med tiltak?" },
-  { id: "learning_measures", label: "Er det gjort læringstiltak for å unngå gjentakelser?" }
+  { id: "deviation_system_works", label: t("auto.fungerer_avvikssystemet_etter_hensikten") },
+  { id: "deviations_followed", label: t("auto.blir_avvik_analysert_og_fulgt_opp_med_ti") },
+  { id: "learning_measures", label: t("auto.er_det_gjort_laeringstiltak_for_aa_unnga") }
 ];
 
 const defaultInspectionsItems: ChecklistRow[] = [
-  { id: "inspections_done", label: "Er det gjennomført vernerunder i perioden?" },
-  { id: "inspections_followup", label: "Er funn fulgt opp i henhold til frister?" }
+  { id: "inspections_done", label: t("auto.er_det_gjennomfoert_vernerunder_i_period") },
+  { id: "inspections_followup", label: t("auto.er_funn_fulgt_opp_i_henhold_til_frister") }
 ];
 
 const defaultWorkEnvItems: ChecklistRow[] = [
-  { id: "sick_leave_followup", label: "Er sykefravær fulgt opp og analysert?" },
-  { id: "hse_meetings", label: "Er det gjennomført verne-/AMU-møter der det er påkrevd?" },
-  { id: "good_work_env", label: "Opplever ansatte et trygt og godt arbeidsmiljø?" }
+  { id: "sick_leave_followup", label: t("auto.er_sykefravaer_fulgt_opp_og_analysert") },
+  { id: "hse_meetings", label: t("auto.er_det_gjennomfoert_verne_amu_moeter_der") },
+  { id: "good_work_env", label: t("auto.opplever_ansatte_et_trygt_og_godt_arbeid") }
 ];
 
 const initializeChecklistAnswers = (items: ChecklistRow[]): ChecklistAnswers => {
@@ -320,7 +321,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onSelect={handleSelectResponse}
         onCreateNew={handleCreateNew}
         isDeleting={isSaving}
-        title="Årlig HMS-revisjon"
+        title={t("auto.aarlig_hms_revisjon")}
       />
     );
   }
@@ -343,7 +344,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="companyName">Virksomhet</Label>
+            <Label htmlFor="companyName">{t("auto.virksomhet")}</Label>
             <Input
               id="companyName"
               value={formData.companyName}
@@ -352,7 +353,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="revisionDate">Dato for revisjon</Label>
+            <Label htmlFor="revisionDate">{t("auto.dato_for_revisjon")}</Label>
             <Input
               id="revisionDate"
               type="date"
@@ -371,20 +372,20 @@ const AnnualHmsRevisionForm: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="auditor">Revisor</Label>
+            <Label htmlFor="auditor">{t("auto.revisor")}</Label>
             <UserSelect
               value={formData.auditor}
               onValueChange={(value) => setFormData(prev => ({ ...prev, auditor: value }))}
-              placeholder="Velg revisor"
+              placeholder={t("auto.velg_revisor")}
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="participants">Deltakere i revisjon</Label>
+            <Label htmlFor="participants">{t("auto.deltakere_i_revisjon")}</Label>
             <Textarea
               id="participants"
               value={formData.participants}
               onChange={(e) => setFormData(prev => ({ ...prev, participants: e.target.value }))}
-              placeholder="Navn, roller..."
+              placeholder={t("auto.navn_roller")}
               rows={2}
             />
           </div>
@@ -393,7 +394,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
 
       {/* Checklist sections */}
       <ResponsiveChecklist
-        title="1. Mål og planer for HMS-arbeidet"
+        title={t("auto.1_maal_og_planer_for_hms_arbeidet")}
         items={formData.sectionItems.goalsSection}
         answers={formData.goalsSection}
         sectionKey="goalsSection"
@@ -404,7 +405,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onDeleteItem={(id) => handleDeleteItem("goalsSection", id)}
       />
       <ResponsiveChecklist
-        title="2. Organisering og ansvar"
+        title={t("auto.2_organisering_og_ansvar")}
         items={formData.sectionItems.organizationSection}
         answers={formData.organizationSection}
         sectionKey="organizationSection"
@@ -415,7 +416,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onDeleteItem={(id) => handleDeleteItem("organizationSection", id)}
       />
       <ResponsiveChecklist
-        title="3. Risikovurdering"
+        title={t("auto.3_risikovurdering")}
         items={formData.sectionItems.riskSection}
         answers={formData.riskSection}
         sectionKey="riskSection"
@@ -426,7 +427,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onDeleteItem={(id) => handleDeleteItem("riskSection", id)}
       />
       <ResponsiveChecklist
-        title="4. Rutiner og prosedyrer"
+        title={t("auto.4_rutiner_og_prosedyrer")}
         items={formData.sectionItems.routinesSection}
         answers={formData.routinesSection}
         sectionKey="routinesSection"
@@ -437,7 +438,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onDeleteItem={(id) => handleDeleteItem("routinesSection", id)}
       />
       <ResponsiveChecklist
-        title="5. Opplæring og kompetanse"
+        title={t("auto.5_opplaering_og_kompetanse")}
         items={formData.sectionItems.trainingSection}
         answers={formData.trainingSection}
         sectionKey="trainingSection"
@@ -448,7 +449,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onDeleteItem={(id) => handleDeleteItem("trainingSection", id)}
       />
       <ResponsiveChecklist
-        title="6. Avviksbehandling og hendelser"
+        title={t("auto.6_avviksbehandling_og_hendelser")}
         items={formData.sectionItems.deviationsSection}
         answers={formData.deviationsSection}
         sectionKey="deviationsSection"
@@ -459,7 +460,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onDeleteItem={(id) => handleDeleteItem("deviationsSection", id)}
       />
       <ResponsiveChecklist
-        title="7. Vernerunder / inspeksjoner"
+        title={t("auto.7_vernerunder_inspeksjoner")}
         items={formData.sectionItems.inspectionsSection}
         answers={formData.inspectionsSection}
         sectionKey="inspectionsSection"
@@ -470,7 +471,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         onDeleteItem={(id) => handleDeleteItem("inspectionsSection", id)}
       />
       <ResponsiveChecklist
-        title="8. Arbeidsmiljø og trivsel"
+        title={t("auto.8_arbeidsmiljoe_og_trivsel")}
         items={formData.sectionItems.workEnvSection}
         answers={formData.workEnvSection}
         sectionKey="workEnvSection"
@@ -484,11 +485,11 @@ const AnnualHmsRevisionForm: React.FC = () => {
       {/* Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Oppsummering</CardTitle>
+          <CardTitle>{t("auto.oppsummering")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="strengths">Styrker i HMS-arbeidet</Label>
+            <Label htmlFor="strengths">{t("auto.styrker_i_hms_arbeidet")}</Label>
             <Textarea
               id="strengths"
               value={formData.strengths}
@@ -497,7 +498,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="improvements">Forbedringsområder</Label>
+            <Label htmlFor="improvements">{t("auto.forbedringsomraader")}</Label>
             <Textarea
               id="improvements"
               value={formData.improvements}
@@ -510,7 +511,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
 
       {/* Actions */}
       <ResponsiveActionTable
-        title="Nye tiltak og ansvarsfordeling"
+        title={t("auto.nye_tiltak_og_ansvarsfordeling")}
         actions={formData.actions}
         onAdd={addActionRow}
         onRemove={removeActionRow}
@@ -520,25 +521,25 @@ const AnnualHmsRevisionForm: React.FC = () => {
       {/* Signatures */}
       <Card>
         <CardHeader>
-          <CardTitle>Signaturer</CardTitle>
+          <CardTitle>{t("auto.signaturer")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="auditorSignature">Signatur revisor</Label>
+            <Label htmlFor="auditorSignature">{t("auto.signatur_revisor")}</Label>
             <Input
               id="auditorSignature"
               value={formData.auditorSignature}
               onChange={(e) => setFormData(prev => ({ ...prev, auditorSignature: e.target.value }))}
-              placeholder="Navn"
+              placeholder={t("auto.navn_2")}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="managerSignature">Signatur leder</Label>
+            <Label htmlFor="managerSignature">{t("auto.signatur_leder")}</Label>
             <Input
               id="managerSignature"
               value={formData.managerSignature}
               onChange={(e) => setFormData(prev => ({ ...prev, managerSignature: e.target.value }))}
-              placeholder="Navn"
+              placeholder={t("auto.navn_2")}
             />
           </div>
         </CardContent>

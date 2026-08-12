@@ -38,27 +38,28 @@ import {
   FileText,
 } from "lucide-react";
 import { AdminDocumentFolder, useAdminDocumentFolders } from "@/hooks/useAdminDocumentFolders";
+import { t } from "@/i18n/t";
 
 const FOLDER_COLORS = [
-  { value: "blue", label: "Blå", class: "bg-blue-500" },
-  { value: "emerald", label: "Grønn", class: "bg-emerald-500" },
-  { value: "amber", label: "Gul", class: "bg-amber-500" },
-  { value: "purple", label: "Lilla", class: "bg-purple-500" },
-  { value: "cyan", label: "Cyan", class: "bg-cyan-500" },
-  { value: "orange", label: "Oransje", class: "bg-orange-500" },
-  { value: "red", label: "Rød", class: "bg-red-500" },
-  { value: "gray", label: "Grå", class: "bg-gray-500" },
+  { value: "blue", label: t("auto.blaa"), class: "bg-blue-500" },
+  { value: "emerald", label: t("auto.groenn"), class: "bg-emerald-500" },
+  { value: "amber", label: t("auto.gul"), class: "bg-amber-500" },
+  { value: "purple", label: t("auto.lilla"), class: "bg-purple-500" },
+  { value: "cyan", label: t("auto.cyan"), class: "bg-cyan-500" },
+  { value: "orange", label: t("auto.oransje"), class: "bg-orange-500" },
+  { value: "red", label: t("auto.roed"), class: "bg-red-500" },
+  { value: "gray", label: t("auto.graa"), class: "bg-gray-500" },
 ];
 
 const FOLDER_ICONS = [
-  { value: "Folder", label: "Mappe" },
-  { value: "Shield", label: "Skjold" },
-  { value: "BookOpen", label: "Bok" },
-  { value: "Users", label: "Brukere" },
-  { value: "AlertTriangle", label: "Advarsel" },
-  { value: "ClipboardList", label: "Sjekkliste" },
-  { value: "Beaker", label: "Kjemi" },
-  { value: "HeartPulse", label: "Helse" },
+  { value: "Folder", label: t("auto.mappe") },
+  { value: "Shield", label: t("auto.skjold") },
+  { value: "BookOpen", label: t("auto.bok") },
+  { value: "Users", label: t("auto.brukere") },
+  { value: "AlertTriangle", label: t("auto.advarsel") },
+  { value: "ClipboardList", label: t("auto.sjekkliste") },
+  { value: "Beaker", label: t("auto.kjemi") },
+  { value: "HeartPulse", label: t("auto.helse") },
 ];
 
 interface DocumentFolderTreeProps {
@@ -238,7 +239,7 @@ export function DocumentFolderTree({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-3 border-b flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Mapper</h3>
+        <h3 className="font-semibold text-sm">{t("auto.mapper")}</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -260,7 +261,7 @@ export function DocumentFolderTree({
         onClick={() => onSelectFolder(null)}
       >
         <FileText className="h-4 w-4" />
-        <span className="text-sm font-medium">Alle dokumenter</span>
+        <span className="text-sm font-medium">{t("auto.alle_dokumenter")}</span>
         <Badge variant="secondary" className="ml-auto text-xs">
           {Object.values(documentCounts).reduce((a, b) => a + b, 0)}
         </Badge>
@@ -273,7 +274,7 @@ export function DocumentFolderTree({
         {folderTree.length === 0 && (
           <div className="text-center py-8 text-muted-foreground text-sm">
             <Folder className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>Ingen mapper ennå</p>
+            <p>{t("auto.ingen_mapper_ennaa")}</p>
             <Button
               variant="link"
               size="sm"
@@ -305,11 +306,11 @@ export function DocumentFolderTree({
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Mappenavn</Label>
+              <Label>{t("auto.mappenavn")}</Label>
               <Input
                 value={folderForm.name}
                 onChange={(e) => setFolderForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="F.eks. HMS-dokumenter"
+                placeholder={t("auto.f_eks_hms_dokumenter")}
               />
             </div>
             <div className="space-y-2">
@@ -317,12 +318,12 @@ export function DocumentFolderTree({
               <Input
                 value={folderForm.description}
                 onChange={(e) => setFolderForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Kort beskrivelse av mappen"
+                placeholder={t("auto.kort_beskrivelse_av_mappen")}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Farge</Label>
+                <Label>{t("auto.farge")}</Label>
                 <Select
                   value={folderForm.color}
                   onValueChange={(v) => setFolderForm((f) => ({ ...f, color: v }))}
@@ -343,7 +344,7 @@ export function DocumentFolderTree({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Ikon</Label>
+                <Label>{t("auto.ikon")}</Label>
                 <Select
                   value={folderForm.icon}
                   onValueChange={(v) => setFolderForm((f) => ({ ...f, icon: v }))}

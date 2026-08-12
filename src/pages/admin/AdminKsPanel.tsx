@@ -63,51 +63,52 @@ import { useAdminProjectTypeTemplates, AdminProjectTypeTemplate } from "@/hooks/
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const CONTRACTOR_TYPES = [
-  { value: "total", label: "Totalentreprenør" },
-  { value: "hoved", label: "Hovedentreprenør" },
-  { value: "under", label: "Underentreprenør" },
+  { value: "total", label: t("auto.totalentreprenoer") },
+  { value: "hoved", label: t("auto.hovedentreprenoer") },
+  { value: "under", label: t("auto.underentreprenoer") },
 ];
 
 const EXAMPLE_CONTENT_LEVELS = [
-  { value: "minimal", label: "Minimal - Kun sjekklister og rutiner" },
-  { value: "medium", label: "Medium - Inkluderer byggherre, underleverandører" },
+  { value: "minimal", label: t("auto.minimal_kun_sjekklister_og_rutiner") },
+  { value: "medium", label: t("auto.medium_inkluderer_byggherre_underleveran") },
   { value: "full", label: "Full - Alt innhold (møtereferater, økonomi, avvik, etc.)" },
 ];
 
 // Category configurations for visual display
 const CHECKLIST_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  "Tømrerarbeid": { label: "Tømrerarbeid", icon: Hammer, color: "bg-amber-500" },
-  "Våtrom": { label: "Våtrom", icon: Droplets, color: "bg-blue-500" },
-  "Elektro": { label: "Elektro", icon: Zap, color: "bg-yellow-500" },
-  "Rørlegger": { label: "Rørlegger", icon: Flame, color: "bg-orange-500" },
-  "Betong": { label: "Betong", icon: HardHat, color: "bg-gray-500" },
-  "Tak": { label: "Tak", icon: Home, color: "bg-slate-500" },
-  "Generell": { label: "Generell", icon: ClipboardList, color: "bg-primary" },
-  "Maling": { label: "Maling", icon: Wrench, color: "bg-purple-500" },
-  "Ventilasjon": { label: "Ventilasjon", icon: Settings, color: "bg-teal-500" },
+  "Tømrerarbeid": { label: t("auto.toemrerarbeid"), icon: Hammer, color: "bg-amber-500" },
+  "Våtrom": { label: t("auto.vaatrom"), icon: Droplets, color: "bg-blue-500" },
+  "Elektro": { label: t("auto.elektro"), icon: Zap, color: "bg-yellow-500" },
+  "Rørlegger": { label: t("auto.roerlegger"), icon: Flame, color: "bg-orange-500" },
+  "Betong": { label: t("auto.betong"), icon: HardHat, color: "bg-gray-500" },
+  "Tak": { label: t("auto.tak"), icon: Home, color: "bg-slate-500" },
+  "Generell": { label: t("auto.generell"), icon: ClipboardList, color: "bg-primary" },
+  "Maling": { label: t("auto.maling"), icon: Wrench, color: "bg-purple-500" },
+  "Ventilasjon": { label: t("auto.ventilasjon"), icon: Settings, color: "bg-teal-500" },
 };
 
 const ROUTINE_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  "Kvalitetsstyring": { label: "Kvalitetsstyring", icon: ShieldCheck, color: "bg-blue-500" },
-  "Avvikshåndtering": { label: "Avvikshåndtering", icon: AlertTriangle, color: "bg-red-500" },
-  "Dokumentstyring": { label: "Dokumentstyring", icon: FileArchive, color: "bg-purple-500" },
+  "Kvalitetsstyring": { label: t("auto.kvalitetsstyring"), icon: ShieldCheck, color: "bg-blue-500" },
+  "Avvikshåndtering": { label: t("auto.avvikshaandtering"), icon: AlertTriangle, color: "bg-red-500" },
+  "Dokumentstyring": { label: t("auto.dokumentstyring"), icon: FileArchive, color: "bg-purple-500" },
   "HMS": { label: "HMS", icon: Shield, color: "bg-green-500" },
-  "Underleverandør": { label: "Underleverandør", icon: Truck, color: "bg-orange-500" },
-  "Kunnskap": { label: "Kunnskap", icon: BookOpen, color: "bg-indigo-500" },
-  "Organisasjon": { label: "Organisasjon", icon: Users, color: "bg-teal-500" },
-  "Generell": { label: "Generell", icon: ScrollText, color: "bg-gray-500" },
+  "Underleverandør": { label: t("auto.underleverandoer"), icon: Truck, color: "bg-orange-500" },
+  "Kunnskap": { label: t("auto.kunnskap"), icon: BookOpen, color: "bg-indigo-500" },
+  "Organisasjon": { label: t("auto.organisasjon"), icon: Users, color: "bg-teal-500" },
+  "Generell": { label: t("auto.generell"), icon: ScrollText, color: "bg-gray-500" },
 };
 
 const DOCUMENT_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  "Byggesak": { label: "Byggesak", icon: Building2, color: "bg-blue-500" },
-  "Kontrakter": { label: "Kontrakter", icon: FileCheck, color: "bg-green-500" },
-  "HMS-dokumenter": { label: "HMS-dokumenter", icon: Shield, color: "bg-red-500" },
-  "Maler": { label: "Maler", icon: FileText, color: "bg-purple-500" },
-  "Veiledere": { label: "Veiledere", icon: BookOpen, color: "bg-amber-500" },
-  "Skjemaer": { label: "Skjemaer", icon: ClipboardCheck, color: "bg-teal-500" },
-  "Generell": { label: "Generell", icon: FolderOpen, color: "bg-gray-500" },
+  "Byggesak": { label: t("auto.byggesak"), icon: Building2, color: "bg-blue-500" },
+  "Kontrakter": { label: t("auto.kontrakter"), icon: FileCheck, color: "bg-green-500" },
+  "HMS-dokumenter": { label: t("auto.hms_dokumenter"), icon: Shield, color: "bg-red-500" },
+  "Maler": { label: t("auto.maler"), icon: FileText, color: "bg-purple-500" },
+  "Veiledere": { label: t("auto.veiledere"), icon: BookOpen, color: "bg-amber-500" },
+  "Skjemaer": { label: t("auto.skjemaer"), icon: ClipboardCheck, color: "bg-teal-500" },
+  "Generell": { label: t("auto.generell"), icon: FolderOpen, color: "bg-gray-500" },
 };
 
 const getDefaultCategoryConfig = (category: string) => ({
@@ -814,9 +815,9 @@ export default function AdminKsPanel() {
               <BookOpen className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Admin – KS Maler</h1>
+              <h1 className="text-2xl font-bold">{t("auto.admin_ks_maler")}</h1>
               <p className="text-muted-foreground text-sm">
-                Sjekkliste-maler, kvalitetsrutiner og KS-dokumenter for prosjekter
+                {t("auto.sjekkliste_maler_kvalitetsrutiner_og_ks_")}
               </p>
             </div>
           </div>
@@ -834,7 +835,7 @@ export default function AdminKsPanel() {
                 <ClipboardList className="h-4 w-4 text-muted-foreground" />
                 <div className="text-2xl font-bold">{stats.totalChecklists}</div>
               </div>
-              <p className="text-xs text-muted-foreground">Sjekkliste-maler</p>
+              <p className="text-xs text-muted-foreground">{t("auto.sjekkliste_maler")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -843,7 +844,7 @@ export default function AdminKsPanel() {
                 <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                 <div className="text-2xl font-bold">{stats.checklistCategories}</div>
               </div>
-              <p className="text-xs text-muted-foreground">Kategorier</p>
+              <p className="text-xs text-muted-foreground">{t("auto.kategorier")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -852,7 +853,7 @@ export default function AdminKsPanel() {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
                 <div className="text-2xl font-bold">{stats.totalRoutines}</div>
               </div>
-              <p className="text-xs text-muted-foreground">Rutine-maler</p>
+              <p className="text-xs text-muted-foreground">{t("auto.rutine_maler")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -861,7 +862,7 @@ export default function AdminKsPanel() {
                 <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                 <div className="text-2xl font-bold">{stats.routineCategories}</div>
               </div>
-              <p className="text-xs text-muted-foreground">Kategorier</p>
+              <p className="text-xs text-muted-foreground">{t("auto.kategorier")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -870,7 +871,7 @@ export default function AdminKsPanel() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 <div className="text-2xl font-bold">{stats.totalDocuments}</div>
               </div>
-              <p className="text-xs text-muted-foreground">Dokumenter</p>
+              <p className="text-xs text-muted-foreground">{t("auto.dokumenter")}</p>
             </CardContent>
           </Card>
           <Card>
@@ -881,7 +882,7 @@ export default function AdminKsPanel() {
                   {stats.mandatoryChecklists + stats.mandatoryRoutines + stats.mandatoryDocuments}
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">Obligatoriske</p>
+              <p className="text-xs text-muted-foreground">{t("auto.obligatoriske")}</p>
             </CardContent>
           </Card>
         </div>
@@ -890,7 +891,7 @@ export default function AdminKsPanel() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk i maler og dokumenter..."
+            placeholder={t("auto.soek_i_maler_og_dokumenter")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -902,23 +903,23 @@ export default function AdminKsPanel() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="project-types" className="gap-2">
               <FolderOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Prosjektmaler</span>
-              <span className="sm:hidden">Prosjekt</span>
+              <span className="hidden sm:inline">{t("auto.prosjektmaler")}</span>
+              <span className="sm:hidden">{t("auto.prosjekt")}</span>
             </TabsTrigger>
             <TabsTrigger value="checklists" className="gap-2">
               <ClipboardList className="h-4 w-4" />
-              <span className="hidden sm:inline">Sjekklister</span>
-              <span className="sm:hidden">Sjekklister</span>
+              <span className="hidden sm:inline">{t("auto.sjekklister")}</span>
+              <span className="sm:hidden">{t("auto.sjekklister")}</span>
             </TabsTrigger>
             <TabsTrigger value="routines" className="gap-2">
               <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Rutiner</span>
-              <span className="sm:hidden">Rutiner</span>
+              <span className="hidden sm:inline">{t("auto.rutiner")}</span>
+              <span className="sm:hidden">{t("auto.rutiner")}</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-2">
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Dokumenter</span>
-              <span className="sm:hidden">Dok</span>
+              <span className="hidden sm:inline">{t("auto.dokumenter")}</span>
+              <span className="sm:hidden">{t("auto.dok")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -944,22 +945,22 @@ export default function AdminKsPanel() {
                       {editingProjectType ? "Rediger prosjektmal" : "Ny prosjektmal"}
                     </DialogTitle>
                     <DialogDescription>
-                      Definer prosjekttype med tilhørende sjekklister, rutiner og dokumenter
+                      {t("auto.definer_prosjekttype_med_tilhoerende_sje")}
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="max-h-[60vh] pr-4">
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Navn på prosjektmal *</Label>
+                          <Label>{t("auto.navn_paa_prosjektmal")}</Label>
                           <Input
                             value={projectTypeForm.template_name}
                             onChange={(e) => setProjectTypeForm({ ...projectTypeForm, template_name: e.target.value })}
-                            placeholder="F.eks. Enebolig nybygg"
+                            placeholder={t("auto.f_eks_enebolig_nybygg")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Entreprenørtype</Label>
+                          <Label>{t("auto.entreprenoertype")}</Label>
                           <Select value={projectTypeForm.contractor_type} onValueChange={(v) => setProjectTypeForm({ ...projectTypeForm, contractor_type: v })}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -969,18 +970,18 @@ export default function AdminKsPanel() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label>Kort beskrivelse</Label>
-                        <Input value={projectTypeForm.description} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, description: e.target.value })} placeholder="Beskrivelse som vises i valglisten" />
+                        <Label>{t("auto.kort_beskrivelse")}</Label>
+                        <Input value={projectTypeForm.description} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, description: e.target.value })} placeholder={t("auto.beskrivelse_som_vises_i_valglisten")} />
                       </div>
                       <div className="space-y-2">
-                        <Label>Standard prosjektbeskrivelse</Label>
-                        <Textarea value={projectTypeForm.default_description} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, default_description: e.target.value })} placeholder="Denne teksten fylles ut automatisk i prosjektbeskrivelse" rows={3} />
+                        <Label>{t("auto.standard_prosjektbeskrivelse")}</Label>
+                        <Textarea value={projectTypeForm.default_description} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, default_description: e.target.value })} placeholder={t("auto.denne_teksten_fylles_ut_automatisk_i_pro")} rows={3} />
                       </div>
                       <Separator />
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Switch checked={projectTypeForm.include_example_content} onCheckedChange={(c) => setProjectTypeForm({ ...projectTypeForm, include_example_content: c })} />
-                          <Label>Inkluder eksempelinnhold</Label>
+                          <Label>{t("auto.inkluder_eksempelinnhold")}</Label>
                         </div>
                         {projectTypeForm.include_example_content && (
                           <div className="ml-6 space-y-3 pt-2">
@@ -991,8 +992,8 @@ export default function AdminKsPanel() {
                               </SelectContent>
                             </Select>
                             <div className="grid grid-cols-2 gap-3">
-                              <Input placeholder="Eksempel byggherre" value={projectTypeForm.example_client_name} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, example_client_name: e.target.value })} />
-                              <Input placeholder="Kontraktssum" type="number" value={projectTypeForm.example_contract_sum} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, example_contract_sum: e.target.value })} />
+                              <Input placeholder={t("auto.eksempel_byggherre")} value={projectTypeForm.example_client_name} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, example_client_name: e.target.value })} />
+                              <Input placeholder={t("auto.kontraktssum")} type="number" value={projectTypeForm.example_contract_sum} onChange={(e) => setProjectTypeForm({ ...projectTypeForm, example_contract_sum: e.target.value })} />
                             </div>
                           </div>
                         )}
@@ -1034,7 +1035,7 @@ export default function AdminKsPanel() {
                     </div>
                   </ScrollArea>
                   <div className="flex justify-end gap-2 pt-4">
-                    <Button variant="outline" onClick={() => { resetProjectTypeForm(); setShowNewProjectTypeDialog(false); }}>Avbryt</Button>
+                    <Button variant="outline" onClick={() => { resetProjectTypeForm(); setShowNewProjectTypeDialog(false); }}>{t("auto.avbryt")}</Button>
                     <Button onClick={editingProjectType ? handleUpdateProjectType : handleCreateProjectType} disabled={!projectTypeForm.template_name}>
                       {editingProjectType ? "Lagre endringer" : "Opprett mal"}
                     </Button>
@@ -1094,22 +1095,22 @@ export default function AdminKsPanel() {
                       {editingChecklist ? "Rediger sjekkliste-mal" : "Ny sjekkliste-mal"}
                     </DialogTitle>
                     <DialogDescription>
-                      Opprett en standardisert sjekkliste som alle kunder kan bruke
+                      {t("auto.opprett_en_standardisert_sjekkliste_som_")}
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="max-h-[60vh] pr-4">
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Navn på mal *</Label>
+                          <Label>{t("auto.navn_paa_mal")}</Label>
                           <Input
                             value={checklistForm.template_name}
                             onChange={(e) => setChecklistForm({ ...checklistForm, template_name: e.target.value })}
-                            placeholder="F.eks. Våtrom - Membran NS 3600"
+                            placeholder={t("auto.f_eks_vaatrom_membran_ns_3600")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Versjon</Label>
+                          <Label>{t("auto.versjon")}</Label>
                           <Input
                             value={checklistForm.version}
                             onChange={(e) => setChecklistForm({ ...checklistForm, version: e.target.value })}
@@ -1119,7 +1120,7 @@ export default function AdminKsPanel() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Kategori *</Label>
+                        <Label>{t("auto.kategori_2")}</Label>
                         {checklistCustomCategoryMode ? (
                           <div className="flex gap-2">
                             <Input
@@ -1128,7 +1129,7 @@ export default function AdminKsPanel() {
                                 setChecklistCustomCategory(e.target.value);
                                 setChecklistForm({ ...checklistForm, category: e.target.value });
                               }}
-                              placeholder="Skriv inn ny kategori..."
+                              placeholder={t("auto.skriv_inn_ny_kategori")}
                               autoFocus
                             />
                             <Button
@@ -1156,14 +1157,14 @@ export default function AdminKsPanel() {
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Velg kategori" />
+                              <SelectValue placeholder={t("auto.velg_kategori")} />
                             </SelectTrigger>
                             <SelectContent>
                               {CHECKLIST_CATEGORIES.map((cat) => (
                                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                               ))}
                               <SelectItem value="__custom__" className="text-primary font-medium">
-                                + Opprett ny kategori...
+                                {t("auto.opprett_ny_kategori")}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -1171,11 +1172,11 @@ export default function AdminKsPanel() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Beskrivelse</Label>
+                        <Label>{t("auto.beskrivelse")}</Label>
                         <Textarea
                           value={checklistForm.description}
                           onChange={(e) => setChecklistForm({ ...checklistForm, description: e.target.value })}
-                          placeholder="Kort beskrivelse av malen..."
+                          placeholder={t("auto.kort_beskrivelse_av_malen")}
                           rows={2}
                         />
                       </div>
@@ -1209,7 +1210,7 @@ export default function AdminKsPanel() {
 
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <Label>Sjekkpunkter</Label>
+                          <Label>{t("auto.sjekkpunkter")}</Label>
                           <Button type="button" variant="outline" size="sm" onClick={addCheckpoint}>
                             <Plus className="h-4 w-4 mr-1" />
                             Legg til
@@ -1219,7 +1220,7 @@ export default function AdminKsPanel() {
                           <div key={index} className="flex gap-2 items-start">
                             <div className="flex-1 space-y-2">
                               <Input
-                                placeholder="Sjekkpunkt tekst"
+                                placeholder={t("auto.sjekkpunkt_tekst")}
                                 value={checkpoint.checkpoint_text}
                                 onChange={(e) => updateCheckpoint(index, "checkpoint_text", e.target.value)}
                               />
@@ -1247,7 +1248,7 @@ export default function AdminKsPanel() {
                   </ScrollArea>
                   <div className="flex justify-end gap-2 pt-4">
                     <Button variant="outline" onClick={() => setShowNewChecklistDialog(false)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button
                       onClick={editingChecklist ? handleUpdateChecklist : handleCreateChecklist}
@@ -1268,7 +1269,7 @@ export default function AdminKsPanel() {
             {Object.keys(checklistsByCategory).length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  Ingen sjekkliste-maler funnet
+                  {t("auto.ingen_sjekkliste_maler_funnet")}
                 </CardContent>
               </Card>
             )}
@@ -1296,22 +1297,22 @@ export default function AdminKsPanel() {
                       {editingRoutine ? "Rediger rutine-mal" : "Ny rutine-mal"}
                     </DialogTitle>
                     <DialogDescription>
-                      Opprett en standardisert kvalitetsrutine
+                      {t("auto.opprett_en_standardisert_kvalitetsrutine")}
                     </DialogDescription>
                   </DialogHeader>
                   <ScrollArea className="max-h-[60vh] pr-4">
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label>Navn på rutine *</Label>
+                          <Label>{t("auto.navn_paa_rutine_2")}</Label>
                           <Input
                             value={routineForm.routine_name}
                             onChange={(e) => setRoutineForm({ ...routineForm, routine_name: e.target.value })}
-                            placeholder="F.eks. Avvikshåndtering"
+                            placeholder={t("auto.f_eks_avvikshaandtering")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label>Versjon</Label>
+                          <Label>{t("auto.versjon")}</Label>
                           <Input
                             value={routineForm.version}
                             onChange={(e) => setRoutineForm({ ...routineForm, version: e.target.value })}
@@ -1321,7 +1322,7 @@ export default function AdminKsPanel() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Kategori *</Label>
+                        <Label>{t("auto.kategori_2")}</Label>
                         {routineCustomCategoryMode ? (
                           <div className="flex gap-2">
                             <Input
@@ -1330,7 +1331,7 @@ export default function AdminKsPanel() {
                                 setRoutineCustomCategory(e.target.value);
                                 setRoutineForm({ ...routineForm, category: e.target.value });
                               }}
-                              placeholder="Skriv inn ny kategori..."
+                              placeholder={t("auto.skriv_inn_ny_kategori")}
                               autoFocus
                             />
                             <Button
@@ -1358,14 +1359,14 @@ export default function AdminKsPanel() {
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Velg kategori" />
+                              <SelectValue placeholder={t("auto.velg_kategori")} />
                             </SelectTrigger>
                             <SelectContent>
                               {ROUTINE_CATEGORIES.map((cat) => (
                                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                               ))}
                               <SelectItem value="__custom__" className="text-primary font-medium">
-                                + Opprett ny kategori...
+                                {t("auto.opprett_ny_kategori")}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -1373,21 +1374,21 @@ export default function AdminKsPanel() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Beskrivelse</Label>
+                        <Label>{t("auto.beskrivelse")}</Label>
                         <Textarea
                           value={routineForm.description}
                           onChange={(e) => setRoutineForm({ ...routineForm, description: e.target.value })}
-                          placeholder="Kort beskrivelse av rutinen..."
+                          placeholder={t("auto.kort_beskrivelse_av_rutinen")}
                           rows={2}
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Innhold *</Label>
+                        <Label>{t("auto.innhold_2")}</Label>
                         <Textarea
                           value={routineForm.content}
                           onChange={(e) => setRoutineForm({ ...routineForm, content: e.target.value })}
-                          placeholder="Skriv rutinens innhold her..."
+                          placeholder={t("auto.skriv_rutinens_innhold_her")}
                           rows={10}
                         />
                       </div>
@@ -1420,7 +1421,7 @@ export default function AdminKsPanel() {
                   </ScrollArea>
                   <div className="flex justify-end gap-2 pt-4">
                     <Button variant="outline" onClick={() => setShowNewRoutineDialog(false)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button
                       onClick={editingRoutine ? handleUpdateRoutine : handleCreateRoutine}
@@ -1441,7 +1442,7 @@ export default function AdminKsPanel() {
             {Object.keys(routinesByCategory).length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  Ingen rutine-maler funnet
+                  {t("auto.ingen_rutine_maler_funnet")}
                 </CardContent>
               </Card>
             )}
@@ -1465,24 +1466,24 @@ export default function AdminKsPanel() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Last opp dokument</DialogTitle>
+                    <DialogTitle>{t("auto.last_opp_dokument")}</DialogTitle>
                     <DialogDescription>
-                      Last opp et dokument til dokumentbanken
+                      {t("auto.last_opp_et_dokument_til_dokumentbanken")}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Dokumentnavn *</Label>
+                      <Label>{t("auto.dokumentnavn_2")}</Label>
                       <Input
                         value={documentForm.document_name}
                         onChange={(e) => setDocumentForm({ ...documentForm, document_name: e.target.value })}
-                        placeholder="F.eks. Samsvarserklæring SAK10"
+                        placeholder={t("auto.f_eks_samsvarserklaering_sak10")}
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Type</Label>
+                        <Label>{t("auto.type")}</Label>
                         <Select
                           value={documentForm.document_type}
                           onValueChange={(value) => setDocumentForm({ ...documentForm, document_type: value })}
@@ -1491,15 +1492,15 @@ export default function AdminKsPanel() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Skjema">Skjema</SelectItem>
-                            <SelectItem value="Mal">Mal</SelectItem>
-                            <SelectItem value="Veileder">Veileder</SelectItem>
-                            <SelectItem value="Dokument">Dokument</SelectItem>
+                            <SelectItem value="Skjema">{t("auto.skjema")}</SelectItem>
+                            <SelectItem value="Mal">{t("auto.mal")}</SelectItem>
+                            <SelectItem value="Veileder">{t("auto.veileder")}</SelectItem>
+                            <SelectItem value="Dokument">{t("auto.dokument")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Kategori</Label>
+                        <Label>{t("auto.kategori")}</Label>
                         {documentCustomCategoryMode ? (
                           <div className="flex gap-2">
                             <Input
@@ -1508,7 +1509,7 @@ export default function AdminKsPanel() {
                                 setDocumentCustomCategory(e.target.value);
                                 setDocumentForm({ ...documentForm, category: e.target.value });
                               }}
-                              placeholder="Skriv inn ny kategori..."
+                              placeholder={t("auto.skriv_inn_ny_kategori")}
                               autoFocus
                             />
                             <Button
@@ -1536,14 +1537,14 @@ export default function AdminKsPanel() {
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Velg kategori" />
+                              <SelectValue placeholder={t("auto.velg_kategori")} />
                             </SelectTrigger>
                             <SelectContent>
                               {DOCUMENT_CATEGORIES.map((cat) => (
                                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                               ))}
                               <SelectItem value="__custom__" className="text-primary font-medium">
-                                + Opprett ny kategori...
+                                {t("auto.opprett_ny_kategori")}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -1552,17 +1553,17 @@ export default function AdminKsPanel() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Beskrivelse</Label>
+                      <Label>{t("auto.beskrivelse")}</Label>
                       <Textarea
                         value={documentForm.description}
                         onChange={(e) => setDocumentForm({ ...documentForm, description: e.target.value })}
-                        placeholder="Kort beskrivelse..."
+                        placeholder={t("auto.kort_beskrivelse_2")}
                         rows={2}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Fil *</Label>
+                      <Label>{t("auto.fil_2")}</Label>
                       <Input
                         type="file"
                         onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
@@ -1583,7 +1584,7 @@ export default function AdminKsPanel() {
                   </div>
                   <div className="flex justify-end gap-2 pt-4">
                     <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button
                       onClick={handleUploadDocument}
@@ -1604,7 +1605,7 @@ export default function AdminKsPanel() {
             {Object.keys(documentsByCategory).length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  Ingen dokumenter funnet
+                  {t("auto.ingen_dokumenter_funnet")}
                 </CardContent>
               </Card>
             )}

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileChecklistItem from "./MobileChecklistItem";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { t } from "@/i18n/t";
 
 type YesNoNa = "yes" | "no" | "na" | "";
 
@@ -94,7 +95,7 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
               className="gap-1"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Legg til</span>
+              <span className="hidden sm:inline">{t("auto.legg_til")}</span>
             </Button>
           )}
         </div>
@@ -167,7 +168,7 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                 <Input
                   value={newItemLabel}
                   onChange={(e) => setNewItemLabel(e.target.value)}
-                  placeholder="Skriv inn nytt spørsmål..."
+                  placeholder={t("auto.skriv_inn_nytt_spoersmaal")}
                   className="flex-1"
                   autoFocus
                   onKeyDown={(e) => {
@@ -208,23 +209,23 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">
-                    Kontrollpunkt
+                    {t("auto.kontrollpunkt")}
                   </th>
                   <th className="text-center py-2 px-2 text-sm font-medium text-muted-foreground w-14">
-                    Ja
+                    {t("auto.ja")}
                   </th>
                   <th className="text-center py-2 px-2 text-sm font-medium text-muted-foreground w-14">
-                    Nei
+                    {t("auto.nei")}
                   </th>
                   <th className="text-center py-2 px-2 text-sm font-medium text-muted-foreground w-14">
                     N/A
                   </th>
                   <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground w-48">
-                    Kommentar
+                    {t("auto.kommentar_2")}
                   </th>
                   {isEditable && (
                     <th className="text-center py-2 px-2 text-sm font-medium text-muted-foreground w-20">
-                      Handlinger
+                      {t("auto.handlinger")}
                     </th>
                   )}
                 </tr>
@@ -287,7 +288,7 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                       <Input
                         value={answers[item.id]?.comment || ""}
                         onChange={(e) => onCommentChange(item.id, e.target.value)}
-                        placeholder="Kommentar..."
+                        placeholder={t("auto.kommentar")}
                         className="h-8 text-sm"
                       />
                     </td>
@@ -329,7 +330,7 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                         <Input
                           value={newItemLabel}
                           onChange={(e) => setNewItemLabel(e.target.value)}
-                          placeholder="Skriv inn nytt spørsmål..."
+                          placeholder={t("auto.skriv_inn_nytt_spoersmaal")}
                           className="flex-1"
                           autoFocus
                           onKeyDown={(e) => {

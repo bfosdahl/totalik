@@ -1,4 +1,5 @@
- import { useState } from "react";
+
+import { t } from "@/i18n/t"; import { useState } from "react";
  import { Calendar, Trash2, AlertTriangle, Loader2 } from "lucide-react";
  import {
    Dialog,
@@ -85,7 +86,7 @@
        setPreviewCount(null);
      } catch (error) {
        console.error("Error resetting deviations:", error);
-       toast.error("Kunne ikke slette avvik");
+       toast.error(t("auto.kunne_ikke_slette_avvik"));
      } finally {
        setIsDeleting(false);
      }
@@ -106,7 +107,7 @@
              Nullstill avvik
            </DialogTitle>
            <DialogDescription>
-             Slett alle avvik som ble opprettet FØR kundens oppstartsdato.
+             {t("auto.slett_alle_avvik_som_ble_opprettet_foer_")}
            </DialogDescription>
          </DialogHeader>
  
@@ -114,15 +115,15 @@
            <div className="space-y-6 py-4">
              <div className="bg-muted/50 rounded-lg p-3">
                <p className="text-sm">
-                 <span className="text-muted-foreground">Bedrift:</span>{" "}
+                 <span className="text-muted-foreground">{t("auto.bedrift_3")}</span>{" "}
                  <span className="font-medium">{company.name}</span>
                </p>
              </div>
  
              <div className="space-y-2">
-               <Label>Velg oppstartsdato</Label>
+               <Label>{t("auto.velg_oppstartsdato")}</Label>
                <p className="text-xs text-muted-foreground mb-2">
-                 Alle avvik opprettet FØR denne datoen vil bli slettet.
+                 {t("auto.alle_avvik_opprettet_foer_denne_datoen_v")}
                </p>
                <Popover>
                  <PopoverTrigger asChild>
@@ -178,7 +179,7 @@
                    </>
                  ) : (
                    <p className="text-sm text-green-700 dark:text-green-400">
-                     Ingen avvik å slette før denne datoen.
+                     {t("auto.ingen_avvik_aa_slette_foer_denne_datoen")}
                    </p>
                  )}
                </div>
@@ -186,7 +187,7 @@
  
              <div className="flex justify-end gap-3 pt-2">
                <Button variant="outline" onClick={handleClose}>
-                 Avbryt
+                 {t("auto.avbryt")}
                </Button>
                <Button
                  variant="destructive"

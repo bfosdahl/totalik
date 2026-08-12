@@ -43,6 +43,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { t } from "@/i18n/t";
 
 interface Ks2ProjectSidebarProps {
   projectName: string;
@@ -53,58 +54,58 @@ interface Ks2ProjectSidebarProps {
 
 // Top-level standalone items
 const topMenuItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
-  { id: "chat", label: "Prosjekt-assistent", icon: MessageSquare, path: "/chat", guestAllowed: false },
+  { id: "dashboard", label: t("auto.dashboard"), icon: LayoutDashboard, path: "", guestAllowed: true },
+  { id: "chat", label: t("auto.prosjekt_assistent"), icon: MessageSquare, path: "/chat", guestAllowed: false },
 ];
 
 // Grouped menu sections
 const kvalitetssikringItems = [
-  { id: "sjekklister", label: "Sjekklister & egenkontroller", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
-  { id: "avvik", label: "KS-avvik", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
+  { id: "sjekklister", label: t("auto.sjekklister_egenkontroller"), icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "avvik", label: t("auto.ks_avvik"), icon: AlertTriangle, path: "/avvik", guestAllowed: true },
   
 ];
 
 const hmsMenuItems = [
-  { id: "hms-dashboard", label: "HMS-dashboard", icon: LayoutDashboard, path: "/hms", guestAllowed: true },
-  { id: "hms-plan", label: "HMS-plan", icon: FileText, path: "/hms/hms-plan", guestAllowed: true },
-  { id: "sha-plan", label: "SHA-plan", icon: FileCheck, path: "/hms/sha-plan", guestAllowed: true },
+  { id: "hms-dashboard", label: t("auto.hms_dashboard"), icon: LayoutDashboard, path: "/hms", guestAllowed: true },
+  { id: "hms-plan", label: t("auto.hms_plan"), icon: FileText, path: "/hms/hms-plan", guestAllowed: true },
+  { id: "sha-plan", label: t("auto.sha_plan"), icon: FileCheck, path: "/hms/sha-plan", guestAllowed: true },
   { id: "sja", label: "SJA", icon: ClipboardCheck, path: "/hms/sja", guestAllowed: true },
-  { id: "vernerunder", label: "Vernerunder & RUH", icon: HardHat, path: "/hms/vernerunder", guestAllowed: true },
-  { id: "hms-avvik", label: "HMS-avvik", icon: AlertTriangle, path: "/hms/avvik", guestAllowed: true },
-  { id: "stoffkartotek", label: "Stoffkartotek", icon: FlaskConical, path: "/hms/stoffkartotek", guestAllowed: true },
-  { id: "riggplan", label: "Riggplan", icon: MapPin, path: "/hms/riggplan", guestAllowed: true },
+  { id: "vernerunder", label: t("auto.vernerunder_ruh"), icon: HardHat, path: "/hms/vernerunder", guestAllowed: true },
+  { id: "hms-avvik", label: t("auto.hms_avvik"), icon: AlertTriangle, path: "/hms/avvik", guestAllowed: true },
+  { id: "stoffkartotek", label: t("auto.stoffkartotek"), icon: FlaskConical, path: "/hms/stoffkartotek", guestAllowed: true },
+  { id: "riggplan", label: t("auto.riggplan"), icon: MapPin, path: "/hms/riggplan", guestAllowed: true },
 ];
 
 const byggesakItems = [
-  { id: "byggesak-dashboard", label: "Byggesak-oversikt", icon: Home, path: "/byggesak", guestAllowed: false },
-  { id: "byggesak-blanketter", label: "Blanketter", icon: FileText, path: "/byggesak/blanketter", guestAllowed: false },
-  { id: "byggesak-epost", label: "E-post utsending", icon: Mail, path: "/byggesak/epost", guestAllowed: false },
+  { id: "byggesak-dashboard", label: t("auto.byggesak_oversikt"), icon: Home, path: "/byggesak", guestAllowed: false },
+  { id: "byggesak-blanketter", label: t("auto.blanketter"), icon: FileText, path: "/byggesak/blanketter", guestAllowed: false },
+  { id: "byggesak-epost", label: t("auto.e_post_utsending"), icon: Mail, path: "/byggesak/epost", guestAllowed: false },
 ];
 
 const prosjektstyringItems = [
-  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
-  { id: "fremdriftsplan", label: "Fremdriftsplan", icon: GanttChart, path: "/fremdriftsplan", guestAllowed: false },
-  { id: "dagsrapport", label: "Dagsrapporter", icon: FileText, path: "/dagsrapport", guestAllowed: false },
-  { id: "timeregistrering", label: "Timeregistrering", icon: Clock, path: "/timeregistrering", guestAllowed: false },
-  { id: "mannskap", label: "Mannskapsliste", icon: HardHat, path: "/mannskap", guestAllowed: false },
-  { id: "motereferater", label: "Møtereferater", icon: Users, path: "/motereferater", guestAllowed: false },
+  { id: "prosjektinfo", label: t("auto.prosjektinfo"), icon: Info, path: "/prosjektinfo", guestAllowed: false },
+  { id: "fremdriftsplan", label: t("auto.fremdriftsplan"), icon: GanttChart, path: "/fremdriftsplan", guestAllowed: false },
+  { id: "dagsrapport", label: t("auto.dagsrapporter"), icon: FileText, path: "/dagsrapport", guestAllowed: false },
+  { id: "timeregistrering", label: t("auto.timeregistrering"), icon: Clock, path: "/timeregistrering", guestAllowed: false },
+  { id: "mannskap", label: t("auto.mannskapsliste"), icon: HardHat, path: "/mannskap", guestAllowed: false },
+  { id: "motereferater", label: t("auto.moetereferater"), icon: Users, path: "/motereferater", guestAllowed: false },
 ];
 
 const okonomiFakturaItems = [
-  { id: "okonomi", label: "Økonomi", icon: Wallet, path: "/okonomi", guestAllowed: false },
-  { id: "endringsmeldinger", label: "Endringsmeldinger", icon: FileText, path: "/endringsmeldinger", guestAllowed: false },
-  { id: "reklamasjoner", label: "Reklamasjoner", icon: FileWarning, path: "/reklamasjoner", guestAllowed: false },
+  { id: "okonomi", label: t("auto.oekonomi"), icon: Wallet, path: "/okonomi", guestAllowed: false },
+  { id: "endringsmeldinger", label: t("auto.endringsmeldinger"), icon: FileText, path: "/endringsmeldinger", guestAllowed: false },
+  { id: "reklamasjoner", label: t("auto.reklamasjoner"), icon: FileWarning, path: "/reklamasjoner", guestAllowed: false },
 ];
 
 const partnereItems = [
-  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
+  { id: "underleverandorer", label: t("auto.underleverandoerer"), icon: Building2, path: "/underleverandorer", guestAllowed: false },
 ];
 
 const dokumentasjonItems = [
-  { id: "dokumentasjon", label: "Dokumentasjon & FDV", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
-  { id: "rutiner", label: "Rutinebank", icon: FileText, path: "/rutiner", guestAllowed: false },
-  { id: "malbibliotek", label: "Malbibliotek", icon: Library, path: "/maler", guestAllowed: true },
-  { id: "rapport", label: "Prosjektrapport", icon: FileText, path: "/rapport", guestAllowed: true },
+  { id: "dokumentasjon", label: t("auto.dokumentasjon_fdv"), icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+  { id: "rutiner", label: t("auto.rutinebank"), icon: FileText, path: "/rutiner", guestAllowed: false },
+  { id: "malbibliotek", label: t("auto.malbibliotek"), icon: Library, path: "/maler", guestAllowed: true },
+  { id: "rapport", label: t("auto.prosjektrapport"), icon: FileText, path: "/rapport", guestAllowed: true },
 ];
 
 interface MenuItem {
@@ -128,45 +129,45 @@ const CONTRACTOR_TYPES_WITH_SUBS = ["total", "hoved"];
 
 // Menu items for small projects
 const smallProjectTopItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
-  { id: "chat", label: "Prosjekt-assistent", icon: MessageSquare, path: "/chat", guestAllowed: false },
+  { id: "dashboard", label: t("auto.dashboard"), icon: LayoutDashboard, path: "", guestAllowed: true },
+  { id: "chat", label: t("auto.prosjekt_assistent"), icon: MessageSquare, path: "/chat", guestAllowed: false },
 ];
 
 const smallProjectItems = [
-  { id: "prosjektinfo", label: "Prosjektinfo", icon: Info, path: "/prosjektinfo", guestAllowed: false },
-  { id: "dagsrapport", label: "Dagsrapporter", icon: FileText, path: "/dagsrapport", guestAllowed: false },
-  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
-  { id: "bilder", label: "Bilder", icon: Image, path: "/bilder", guestAllowed: true },
-  { id: "notater", label: "Notater", icon: StickyNote, path: "/notater", guestAllowed: false },
-  { id: "timeregistrering", label: "Timer", icon: Clock, path: "/timeregistrering", guestAllowed: false },
-  { id: "befaringer", label: "Befaringer", icon: Eye, path: "/befaringer", guestAllowed: true },
-  { id: "dokumentasjon", label: "Dokumenter", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
-  { id: "underleverandorer", label: "Underleverandører", icon: Building2, path: "/underleverandorer", guestAllowed: false },
-  { id: "okonomi", label: "Økonomi", icon: Wallet, path: "/okonomi", guestAllowed: false },
+  { id: "prosjektinfo", label: t("auto.prosjektinfo"), icon: Info, path: "/prosjektinfo", guestAllowed: false },
+  { id: "dagsrapport", label: t("auto.dagsrapporter"), icon: FileText, path: "/dagsrapport", guestAllowed: false },
+  { id: "sjekklister", label: t("auto.sjekklister"), icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "bilder", label: t("auto.bilder"), icon: Image, path: "/bilder", guestAllowed: true },
+  { id: "notater", label: t("auto.notater"), icon: StickyNote, path: "/notater", guestAllowed: false },
+  { id: "timeregistrering", label: t("auto.timer"), icon: Clock, path: "/timeregistrering", guestAllowed: false },
+  { id: "befaringer", label: t("auto.befaringer"), icon: Eye, path: "/befaringer", guestAllowed: true },
+  { id: "dokumentasjon", label: t("auto.dokumenter"), icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+  { id: "underleverandorer", label: t("auto.underleverandoerer"), icon: Building2, path: "/underleverandorer", guestAllowed: false },
+  { id: "okonomi", label: t("auto.oekonomi"), icon: Wallet, path: "/okonomi", guestAllowed: false },
 ];
 
 // Menu items for mini projects
 const miniProjectTopItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "", guestAllowed: true },
+  { id: "dashboard", label: t("auto.dashboard"), icon: LayoutDashboard, path: "", guestAllowed: true },
 ];
 
 const miniProjectItems = [
-  { id: "sjekklister", label: "Sjekklister", icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
-  { id: "avvik", label: "Avvik", icon: AlertTriangle, path: "/avvik", guestAllowed: true },
-  { id: "dokumentasjon", label: "Dokumenter", icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
+  { id: "sjekklister", label: t("auto.sjekklister"), icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
+  { id: "avvik", label: t("auto.avvik"), icon: AlertTriangle, path: "/avvik", guestAllowed: true },
+  { id: "dokumentasjon", label: t("auto.dokumenter"), icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
 ];
 
 function getMenuGroups(contractorType?: string | null): MenuGroup[] {
   const needsSubs = contractorType ? CONTRACTOR_TYPES_WITH_SUBS.includes(contractorType) : true;
 
   const groups: MenuGroup[] = [
-    { id: "ks", label: "Kvalitetssikring", icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
-    { id: "hms", label: "HMS / SHA", icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
-    { id: "byggesak", label: "Byggesak & Blanketter", icon: Home, items: byggesakItems, color: "text-orange-500" },
-    { id: "prosjekt", label: "Prosjektstyring", icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
-    { id: "okonomi", label: "Økonomi", icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
-    ...(needsSubs ? [{ id: "partnere", label: "Partnere", icon: Building2, items: partnereItems, color: "text-purple-500" }] : []),
-    { id: "dokumenter", label: "Dokumentasjon", icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
+    { id: "ks", label: t("auto.kvalitetssikring"), icon: ClipboardCheck, items: kvalitetssikringItems, color: "text-primary" },
+    { id: "hms", label: t("auto.hms_sha"), icon: Shield, items: hmsMenuItems, color: "text-emerald-500" },
+    { id: "byggesak", label: t("auto.byggesak_blanketter"), icon: Home, items: byggesakItems, color: "text-orange-500" },
+    { id: "prosjekt", label: t("auto.prosjektstyring"), icon: Briefcase, items: prosjektstyringItems, color: "text-blue-500" },
+    { id: "okonomi", label: t("auto.oekonomi"), icon: Wallet, items: okonomiFakturaItems, color: "text-amber-500" },
+    ...(needsSubs ? [{ id: "partnere", label: t("auto.partnere"), icon: Building2, items: partnereItems, color: "text-purple-500" }] : []),
+    { id: "dokumenter", label: t("auto.dokumentasjon"), icon: FolderOpen, items: dokumentasjonItems, color: "text-cyan-500" },
   ];
 
   return groups;
@@ -282,7 +283,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
         )}
         {isGuestUser && currentGuestProject && (
           <div className="mb-3 p-2 rounded-lg bg-primary/10 border border-primary/20">
-            <p className="text-xs text-primary font-medium">Gjestetilgang</p>
+            <p className="text-xs text-primary font-medium">{t("auto.gjestetilgang")}</p>
             <p className="text-xs text-sidebar-foreground/70">{currentGuestProject.role_in_project}</p>
           </div>
         )}
@@ -323,7 +324,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="hidden lg:block">
-                  <p>Snarvei: ⌘D</p>
+                  <p>{t("auto.snarvei_d")}</p>
                 </TooltipContent>
               </Tooltip>
             );
@@ -434,7 +435,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
             Logg ut
           </Button>
         )}
-        <p className="text-xs text-sidebar-foreground/50">KS Bygg</p>
+        <p className="text-xs text-sidebar-foreground/50">{t("auto.ks_bygg")}</p>
       </div>
     </div>
   );

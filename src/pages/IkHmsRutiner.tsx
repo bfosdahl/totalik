@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { RoutineTemplate } from "@/hooks/useRoutineLibrary";
 import { adoptRoutineTemplateToVisibleSystem } from "@/lib/adoptRoutineTemplate";
+import { t } from "@/i18n/t";
 
 export default function IkHmsRutiner() {
   const { t } = useTranslate();
@@ -19,7 +20,7 @@ export default function IkHmsRutiner() {
   // i customer_routine_instances og dermed forsvant fra visningen.
   const handleAdopt = async (template: RoutineTemplate) => {
     if (!profile?.company_id) {
-      toast.error("Mangler bedrift");
+      toast.error(t("auto.mangler_bedrift"));
       return;
     }
 

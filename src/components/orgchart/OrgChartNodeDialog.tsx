@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { PREDEFINED_ORG_ROLES, type OrgChartNode } from '@/hooks/useOrgChart';
+import { t } from "@/i18n/t";
 
 interface OrgChartNodeDialogProps {
   open: boolean;
@@ -121,10 +122,10 @@ const OrgChartNodeDialog: React.FC<OrgChartNodeDialogProps> = ({
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="predefined">Rolletype</Label>
+            <Label htmlFor="predefined">{t("auto.rolletype")}</Label>
             <Select value={selectedPredefined} onValueChange={handlePredefinedChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg rolletype" />
+                <SelectValue placeholder={t("auto.velg_rolletype")} />
               </SelectTrigger>
               <SelectContent>
                 {PREDEFINED_ORG_ROLES.map((role) => (
@@ -132,37 +133,37 @@ const OrgChartNodeDialog: React.FC<OrgChartNodeDialogProps> = ({
                     {role.title}
                   </SelectItem>
                 ))}
-                <SelectItem value="custom">Egendefinert</SelectItem>
+                <SelectItem value="custom">{t("auto.egendefinert")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           {selectedPredefined === 'custom' && (
             <div className="space-y-2">
-              <Label htmlFor="title">Rolletittel *</Label>
+              <Label htmlFor="title">{t("auto.rolletittel")}</Label>
               <Input
                 id="title"
                 value={roleTitle}
                 onChange={(e) => setRoleTitle(e.target.value)}
-                placeholder="F.eks. Salgssjef"
+                placeholder={t("auto.f_eks_salgssjef")}
                 required
               />
             </div>
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="description">Beskrivelse</Label>
+            <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
             <Textarea
               id="description"
               value={roleDescription}
               onChange={(e) => setRoleDescription(e.target.value)}
-              placeholder="Beskriv ansvarsområder..."
+              placeholder={t("auto.beskriv_ansvarsomraader")}
               rows={3}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="parent">Rapporterer til</Label>
+            <Label htmlFor="parent">{t("auto.rapporterer_til")}</Label>
             <Select 
               value={parentNodeId || 'none'} 
               onValueChange={(v) => setParentNodeId(v === 'none' ? null : v)}
@@ -183,7 +184,7 @@ const OrgChartNodeDialog: React.FC<OrgChartNodeDialogProps> = ({
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={!roleTitle.trim() || isLoading}>
               {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

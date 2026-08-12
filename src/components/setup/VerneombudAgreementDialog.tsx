@@ -14,6 +14,7 @@ import { CheckCircle2, Loader2, PenLine, X, ArrowLeft, ArrowRight, Shield, User 
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface VerneombudAgreementDialogProps {
   open: boolean;
@@ -185,7 +186,7 @@ export function VerneombudAgreementDialog({
 
   const handleSubmit = async () => {
     if (!verneombudName || !employerSignature) {
-      toast.error("Vennligst fyll ut alle påkrevde felt");
+      toast.error(t("auto.vennligst_fyll_ut_alle_paakrevde_felt"));
       return;
     }
 
@@ -234,11 +235,11 @@ export function VerneombudAgreementDialog({
         if (error) throw error;
       }
 
-      toast.success("Verneombudsavtale lagret!");
+      toast.success(t("auto.verneombudsavtale_lagret"));
       setStep("complete");
     } catch (error) {
       console.error("Error saving verneombud agreement:", error);
-      toast.error("Kunne ikke lagre avtalen");
+      toast.error(t("auto.kunne_ikke_lagre_avtalen"));
     } finally {
       setIsSaving(false);
     }
@@ -270,17 +271,15 @@ export function VerneombudAgreementDialog({
         {step === "info" && (
           <div className="space-y-4 py-4">
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">Om verneombud</h3>
+              <h3 className="font-semibold mb-2">{t("auto.om_verneombud")}</h3>
               <p className="text-sm text-muted-foreground">
-                Alle virksomheter med 5 eller flere ansatte skal ha verneombud. 
-                Verneombudet er de ansattes representant i HMS-spørsmål og skal 
-                ivareta arbeidstakernes interesser i saker som angår arbeidsmiljøet.
+                {t("auto.alle_virksomheter_med_5_eller_flere_ansa")}
               </p>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="verneombudSelect">Velg verneombud</Label>
+                <Label htmlFor="verneombudSelect">{t("auto.velg_verneombud")}</Label>
                 <Select 
                   value={selectedVerneombudUserId} 
                   onValueChange={(value) => {
@@ -292,7 +291,7 @@ export function VerneombudAgreementDialog({
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                    <SelectValue placeholder={t("auto.velg_fra_ansatte_eller_skriv_inn_manuelt")} />
                   </SelectTrigger>
                   <SelectContent>
                     {!isLoadingUsers && users.map((user) => (
@@ -300,32 +299,32 @@ export function VerneombudAgreementDialog({
                         {getUserDisplayName(user)}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                    <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="verneombudName">Verneombudets navn *</Label>
+                  <Label htmlFor="verneombudName">{t("auto.verneombudets_navn")}</Label>
                   <Input
                     id="verneombudName"
                     value={verneombudName}
                     onChange={(e) => setVerneombudName(e.target.value)}
-                    placeholder="Fullt navn"
+                    placeholder={t("auto.fullt_navn")}
                     disabled={selectedVerneombudUserId !== "" && selectedVerneombudUserId !== "custom"}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="electionMethod">Valgmetode</Label>
+                  <Label htmlFor="electionMethod">{t("auto.valgmetode_2")}</Label>
                   <Select value={electionMethod} onValueChange={setElectionMethod}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg metode" />
+                      <SelectValue placeholder={t("auto.velg_metode")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="election">Valg blant ansatte</SelectItem>
-                      <SelectItem value="appointment">Utpekt av arbeidsgiver</SelectItem>
-                      <SelectItem value="volunteer">Frivillig</SelectItem>
+                      <SelectItem value="election">{t("auto.valg_blant_ansatte")}</SelectItem>
+                      <SelectItem value="appointment">{t("auto.utpekt_av_arbeidsgiver")}</SelectItem>
+                      <SelectItem value="volunteer">{t("auto.frivillig")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -333,7 +332,7 @@ export function VerneombudAgreementDialog({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="verneombudEmail">E-post</Label>
+                  <Label htmlFor="verneombudEmail">{t("auto.e_post_2")}</Label>
                   <Input
                     id="verneombudEmail"
                     type="email"
@@ -343,7 +342,7 @@ export function VerneombudAgreementDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="verneombudPhone">Telefon</Label>
+                  <Label htmlFor="verneombudPhone">{t("auto.telefon")}</Label>
                   <Input
                     id="verneombudPhone"
                     type="tel"
@@ -356,7 +355,7 @@ export function VerneombudAgreementDialog({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="termStart">Funksjonsperiode fra</Label>
+                  <Label htmlFor="termStart">{t("auto.funksjonsperiode_fra")}</Label>
                   <Input
                     id="termStart"
                     type="date"
@@ -365,7 +364,7 @@ export function VerneombudAgreementDialog({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="termEnd">Funksjonsperiode til</Label>
+                  <Label htmlFor="termEnd">{t("auto.funksjonsperiode_til_2")}</Label>
                   <Input
                     id="termEnd"
                     type="date"
@@ -388,7 +387,7 @@ export function VerneombudAgreementDialog({
 
               {trainingCompleted && (
                 <div className="space-y-2">
-                  <Label htmlFor="trainingDate">Dato for opplæring</Label>
+                  <Label htmlFor="trainingDate">{t("auto.dato_for_opplaering")}</Label>
                   <Input
                     id="trainingDate"
                     type="date"
@@ -399,12 +398,12 @@ export function VerneombudAgreementDialog({
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Notater</Label>
+                <Label htmlFor="notes">{t("auto.notater")}</Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Eventuelle merknader..."
+                  placeholder={t("auto.eventuelle_merknader")}
                   rows={3}
                 />
               </div>
@@ -423,7 +422,7 @@ export function VerneombudAgreementDialog({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Verneombudets signatur</Label>
+                <Label>{t("auto.verneombudets_signatur_2")}</Label>
                 <div className="flex items-center gap-2">
                   {savedSignature && !usingSavedVerneombudSig && !verneombudSignature && (
                     <Button variant="outline" size="sm" onClick={useSavedVerneombudSignature} className="text-primary">
@@ -473,13 +472,13 @@ export function VerneombudAgreementDialog({
           <div className="space-y-4 py-4">
             <div className="bg-muted/50 rounded-lg p-4">
               <p className="text-sm text-muted-foreground">
-                Arbeidsgiver bekrefter at <strong>{verneombudName}</strong> er valgt som verneombud 
+                {t("auto.arbeidsgiver_bekrefter_at")} <strong>{verneombudName}</strong> er valgt som verneombud 
                 for {companyName}.
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employerSelect">Velg arbeidsgiver</Label>
+              <Label htmlFor="employerSelect">{t("auto.velg_arbeidsgiver")}</Label>
               <Select 
                 value={selectedEmployerUserId} 
                 onValueChange={(value) => {
@@ -490,7 +489,7 @@ export function VerneombudAgreementDialog({
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                  <SelectValue placeholder={t("auto.velg_fra_ansatte_eller_skriv_inn_manuelt")} />
                 </SelectTrigger>
                 <SelectContent>
                   {!isLoadingUsers && users.map((user) => (
@@ -498,32 +497,32 @@ export function VerneombudAgreementDialog({
                       {getUserDisplayName(user)}
                     </SelectItem>
                   ))}
-                  <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                  <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {(selectedEmployerUserId === "custom" || !selectedEmployerUserId) && (
               <div className="space-y-2">
-                <Label htmlFor="employerName">Arbeidsgivers navn *</Label>
+                <Label htmlFor="employerName">{t("auto.arbeidsgivers_navn")}</Label>
                 <Input
                   id="employerName"
                   value={employerName}
                   onChange={(e) => setEmployerName(e.target.value)}
-                  placeholder="Fullt navn"
+                  placeholder={t("auto.fullt_navn")}
                 />
               </div>
             )}
 
             {selectedEmployerUserId && selectedEmployerUserId !== "custom" && (
               <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm"><strong>Valgt person:</strong> {employerName}</p>
+                <p className="text-sm"><strong>{t("auto.valgt_person")}</strong> {employerName}</p>
               </div>
             )}
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Arbeidsgivers signatur *</Label>
+                <Label>{t("auto.arbeidsgivers_signatur")}</Label>
                 <div className="flex items-center gap-2">
                   {savedSignature && !usingSavedEmployerSig && !employerSignature && (
                     <Button variant="outline" size="sm" onClick={useSavedEmployerSignature} className="text-primary">
@@ -574,9 +573,9 @@ export function VerneombudAgreementDialog({
             <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Verneombudsavtale signert!</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("auto.verneombudsavtale_signert")}</h3>
             <p className="text-muted-foreground text-sm">
-              Avtalen om valg av verneombud er nå lagret og vil inkluderes i HMS-håndboken.
+              {t("auto.avtalen_om_valg_av_verneombud_er_naa_lag")}
             </p>
           </div>
         )}
@@ -585,7 +584,7 @@ export function VerneombudAgreementDialog({
           {step === "info" && (
             <>
               <Button variant="outline" onClick={() => handleClose(true)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button 
                 onClick={() => setStep("verneombud")}
@@ -604,7 +603,7 @@ export function VerneombudAgreementDialog({
                 Tilbake
               </Button>
               <Button onClick={() => setStep("employer")}>
-                Neste
+                {t("auto.neste")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </>
@@ -637,7 +636,7 @@ export function VerneombudAgreementDialog({
 
           {step === "complete" && (
             <Button onClick={() => handleClose(true)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
           )}
         </DialogFooter>

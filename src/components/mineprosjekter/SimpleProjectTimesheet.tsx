@@ -13,6 +13,7 @@ import { nb } from "date-fns/locale";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { t } from "@/i18n/t";
 
 interface TimeEntry {
   id: string;
@@ -112,7 +113,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
           .eq("id", editingEntry.id);
 
         if (error) throw error;
-        toast.success("Timeregistrering oppdatert");
+        toast.success(t("auto.timeregistrering_oppdatert"));
       } else {
         const { error } = await supabase.from("ks_module2_project_time_entries").insert({
           project_id: projectId,
@@ -125,14 +126,14 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
         });
 
         if (error) throw error;
-        toast.success("Timeregistrering lagret");
+        toast.success(t("auto.timeregistrering_lagret"));
       }
 
       setShowDialog(false);
       fetchEntries();
     } catch (error) {
       console.error("Error saving time entry:", error);
-      toast.error("Kunne ikke lagre timeregistrering");
+      toast.error(t("auto.kunne_ikke_lagre_timeregistrering"));
     } finally {
       setIsSaving(false);
     }
@@ -145,10 +146,10 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
       if (error) throw error;
 
       setEntries((prev) => prev.filter((e) => e.id !== id));
-      toast.success("Timeregistrering slettet");
+      toast.success(t("auto.timeregistrering_slettet"));
     } catch (error) {
       console.error("Error deleting time entry:", error);
-      toast.error("Kunne ikke slette timeregistrering");
+      toast.error(t("auto.kunne_ikke_slette_timeregistrering"));
     }
   };
 
@@ -164,7 +165,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
               Timeliste
             </CardTitle>
             <span className="text-sm text-muted-foreground">
-              Totalt: <strong>{totalHours.toFixed(1)} timer</strong>
+              {t("auto.totalt_2")} <strong>{totalHours.toFixed(1)} timer</strong>
             </span>
           </div>
           <Button className="gap-2" onClick={handleOpenNew}>
@@ -180,8 +181,8 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
           ) : entries.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Clock className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Ingen timer registrert</p>
-              <p className="text-sm text-muted-foreground">Registrer timer brukt på prosjektet</p>
+              <p className="text-muted-foreground">{t("auto.ingen_timer_registrert")}</p>
+              <p className="text-sm text-muted-foreground">{t("auto.registrer_timer_brukt_paa_prosjektet")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -231,7 +232,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Dato</Label>
+                <Label>{t("auto.dato")}</Label>
                 <Input
                   type="date"
                   value={formData.date}
@@ -239,7 +240,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
                 />
               </div>
               <div className="space-y-2">
-                <Label>Timer</Label>
+                <Label>{t("auto.timer")}</Label>
                 <Input
                   type="number"
                   step="0.5"
@@ -250,13 +251,13 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Ansatt</Label>
+              <Label>{t("auto.ansatt")}</Label>
               <Select
                 value={formData.employee_id}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, employee_id: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg ansatt" />
+                  <SelectValue placeholder={t("auto.velg_ansatt")} />
                 </SelectTrigger>
                 <SelectContent>
                   {users.map((user) => (
@@ -270,7 +271,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
             <div className="space-y-2">
               <Label>Beskrivelse (valgfritt)</Label>
               <Textarea
-                placeholder="Hva ble gjort?"
+                placeholder={t("auto.hva_ble_gjort")}
                 value={formData.description}
                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 rows={3}
@@ -279,7 +280,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleSave} disabled={isSaving || !formData.hours}>
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

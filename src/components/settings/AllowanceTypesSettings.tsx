@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAllowanceTypes, ALLOWANCE_UNIT_LABELS, AllowanceUnit, AllowanceType } from "@/hooks/useAllowanceTypes";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface Props {
   onBack: () => void;
@@ -52,7 +53,7 @@ export function AllowanceTypesSettings({ onBack }: Props) {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">Lønn & tilleggssatser</h1>
+          <h1 className="text-2xl font-bold">{t("auto.loenn_tilleggssatser")}</h1>
           <p className="text-sm text-muted-foreground">
             Definer tillegg som ansatte kan legge til på timeregistrering (diett, kilometer, reisetimer, hvilebrudd osv.).
           </p>
@@ -65,9 +66,9 @@ export function AllowanceTypesSettings({ onBack }: Props) {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Laster…</p>
+        <p className="text-sm text-muted-foreground">{t("auto.laster_2")}</p>
       ) : types.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground">Ingen tilleggssatser definert.</CardContent></Card>
+        <Card><CardContent className="py-8 text-center text-muted-foreground">{t("auto.ingen_tilleggssatser_definert")}</CardContent></Card>
       ) : (
         <div className="grid gap-2">
           {types.map((t) => (
@@ -76,8 +77,8 @@ export function AllowanceTypesSettings({ onBack }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium">{t.name}</span>
-                    {t.is_default && <Badge variant="secondary" className="text-xs">Standard</Badge>}
-                    {!t.is_active && <Badge variant="outline" className="text-xs">Inaktiv</Badge>}
+                    {t.is_default && <Badge variant="secondary" className="text-xs">{t("auto.standard")}</Badge>}
+                    {!t.is_active && <Badge variant="outline" className="text-xs">{t("auto.inaktiv")}</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {t.rate.toLocaleString("nb-NO", { minimumFractionDigits: 2 })} kr / {ALLOWANCE_UNIT_LABELS[t.unit]}
@@ -93,7 +94,7 @@ export function AllowanceTypesSettings({ onBack }: Props) {
                     >
                       {t.is_active ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setEditing(t)}>Endre</Button>
+                    <Button variant="outline" size="sm" onClick={() => setEditing(t)}>{t("auto.endre")}</Button>
                     {!t.is_default && (
                       <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(t)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -122,17 +123,17 @@ export function AllowanceTypesSettings({ onBack }: Props) {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett tilleggssats?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_tilleggssats")}</AlertDialogTitle>
             <AlertDialogDescription>
               «{deleteTarget?.name}» blir slettet. Allerede registrerte tillegg på timer beholder sats og beløp.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={async () => {
               if (deleteTarget) await deleteType(deleteTarget.id);
               setDeleteTarget(null);
-            }}>Slett</AlertDialogAction>
+            }}>{t("auto.slett")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -174,12 +175,12 @@ function AllowanceEditDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label>Navn</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="F.eks. Diett innenlands" />
+            <Label>{t("auto.navn_2")}</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("auto.f_eks_diett_innenlands")} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Enhet</Label>
+              <Label>{t("auto.enhet")}</Label>
               <Select value={unit} onValueChange={(v) => setUnit(v as AllowanceUnit)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -200,7 +201,7 @@ function AllowanceEditDialog({
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Avbryt</Button>
+          <Button variant="outline" onClick={onClose}>{t("auto.avbryt")}</Button>
           <Button
             disabled={saving || !name.trim()}
             onClick={async () => {

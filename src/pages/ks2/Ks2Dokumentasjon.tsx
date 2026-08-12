@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface ProjectDocument {
   id: string;
@@ -122,7 +123,7 @@ export default function Ks2Dokumentasjon() {
         setFolders(allFolders);
       } catch (error) {
         console.error("Error fetching documents:", error);
-        toast.error("Kunne ikke laste dokumenter");
+        toast.error(t("auto.kunne_ikke_laste_dokumenter"));
       } finally {
         setIsLoading(false);
       }
@@ -193,7 +194,7 @@ export default function Ks2Dokumentasjon() {
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Kunne ikke laste opp dokument");
+      toast.error(t("auto.kunne_ikke_laste_opp_dokument"));
     } finally {
       setIsUploading(false);
       setUploadTargetFolder(null);
@@ -210,7 +211,7 @@ export default function Ks2Dokumentasjon() {
       window.open(data.signedUrl, "_blank");
     } catch (error) {
       console.error("View error:", error);
-      toast.error("Kunne ikke åpne dokument");
+      toast.error(t("auto.kunne_ikke_aapne_dokument"));
     }
   };
 
@@ -230,7 +231,7 @@ export default function Ks2Dokumentasjon() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Kunne ikke laste ned dokument");
+      toast.error(t("auto.kunne_ikke_laste_ned_dokument"));
     }
   };
 
@@ -251,7 +252,7 @@ export default function Ks2Dokumentasjon() {
       })));
     } catch (error) {
       console.error("Update error:", error);
-      toast.error("Kunne ikke oppdatere dokument");
+      toast.error(t("auto.kunne_ikke_oppdatere_dokument"));
     }
   };
 
@@ -275,21 +276,21 @@ export default function Ks2Dokumentasjon() {
         documents: folder.documents.filter(d => d.id !== doc.id),
       })));
 
-      toast.success("Dokument slettet");
+      toast.success(t("auto.dokument_slettet"));
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Kunne ikke slette dokument");
+      toast.error(t("auto.kunne_ikke_slette_dokument"));
     }
   };
 
   const handleCreateFolder = () => {
     if (!newFolderCode || !newFolderName) {
-      toast.error("Fyll ut mappekode og navn");
+      toast.error(t("auto.fyll_ut_mappekode_og_navn"));
       return;
     }
 
     if (folders.some(f => f.code === newFolderCode)) {
-      toast.error("Denne mappekoden finnes allerede");
+      toast.error(t("auto.denne_mappekoden_finnes_allerede"));
       return;
     }
 
@@ -304,7 +305,7 @@ export default function Ks2Dokumentasjon() {
     setShowNewFolderDialog(false);
     setNewFolderCode("");
     setNewFolderName("");
-    toast.success("Mappe opprettet");
+    toast.success(t("auto.mappe_opprettet"));
   };
 
   const filteredFolders = folders.map((folder) => ({
@@ -327,7 +328,7 @@ export default function Ks2Dokumentasjon() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Dokumentasjon & FDV</h1>
+          <h1 className="text-2xl font-bold">{t("auto.dokumentasjon_fdv")}</h1>
           <p className="text-muted-foreground">
             {totalDocuments} dokumenter • {includedInReport} inkludert i rapport
           </p>
@@ -350,7 +351,7 @@ export default function Ks2Dokumentasjon() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Søk i dokumenter..."
+              placeholder={t("auto.soek_i_dokumenter")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -425,7 +426,7 @@ export default function Ks2Dokumentasjon() {
                   <div className="border-t">
                     {folder.documents.length === 0 ? (
                       <div className="p-4 text-center text-muted-foreground text-sm">
-                        <p>Ingen dokumenter i denne mappen</p>
+                        <p>{t("auto.ingen_dokumenter_i_denne_mappen")}</p>
                         <Button
                           variant="link"
                           size="sm"
@@ -449,7 +450,7 @@ export default function Ks2Dokumentasjon() {
                             <Checkbox
                               checked={doc.include_in_report}
                               onCheckedChange={() => handleToggleReportInclusion(doc)}
-                              title="Inkluder i rapport"
+                              title={t("auto.inkluder_i_rapport")}
                             />
                             <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                             <div className="flex-1 min-w-0">
@@ -501,13 +502,13 @@ export default function Ks2Dokumentasjon() {
       <Dialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Opprett ny mappe</DialogTitle>
+            <DialogTitle>{t("auto.opprett_ny_mappe")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Mappekode</Label>
+              <Label>{t("auto.mappekode")}</Label>
               <Input
-                placeholder="F.eks. 40"
+                placeholder={t("auto.f_eks_40")}
                 value={newFolderCode}
                 onChange={(e) => setNewFolderCode(e.target.value)}
               />
@@ -516,9 +517,9 @@ export default function Ks2Dokumentasjon() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label>Mappenavn</Label>
+              <Label>{t("auto.mappenavn")}</Label>
               <Input
-                placeholder="F.eks. Drift og vedlikehold"
+                placeholder={t("auto.f_eks_drift_og_vedlikehold")}
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
               />
@@ -526,10 +527,10 @@ export default function Ks2Dokumentasjon() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewFolderDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleCreateFolder}>
-              Opprett mappe
+              {t("auto.opprett_mappe")}
             </Button>
           </DialogFooter>
         </DialogContent>

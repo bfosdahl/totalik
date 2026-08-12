@@ -28,6 +28,7 @@ import { useIkAlkohol, AlkoholComplianceItem, AlkoholRiskControl, AlkoholTrainin
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 const POINTS_COLORS: Record<number, string> = {
   1: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -37,20 +38,20 @@ const POINTS_COLORS: Record<number, string> = {
 };
 
 const TRAINING_TYPES = [
-  { value: "ansvarlig_vertskap", label: "Ansvarlig vertskap" },
-  { value: "alderskontroll", label: "Alderskontroll" },
-  { value: "konflikthandtering", label: "Konflikthåndtering" },
-  { value: "gjenkjenne_beruselse", label: "Gjenkjenne beruselse" },
-  { value: "skjenkebestemmelser", label: "Skjenkebestemmelser" },
-  { value: "annet", label: "Annet" },
+  { value: "ansvarlig_vertskap", label: t("auto.ansvarlig_vertskap") },
+  { value: "alderskontroll", label: t("auto.alderskontroll") },
+  { value: "konflikthandtering", label: t("auto.konflikthaandtering") },
+  { value: "gjenkjenne_beruselse", label: t("auto.gjenkjenne_beruselse") },
+  { value: "skjenkebestemmelser", label: t("auto.skjenkebestemmelser") },
+  { value: "annet", label: t("auto.annet") },
 ];
 
 const ROLES = [
-  { value: "bartender", label: "Bartender" },
-  { value: "servitor", label: "Servitør" },
-  { value: "vakt", label: "Dørvakt" },
-  { value: "kasse", label: "Kasse" },
-  { value: "leder", label: "Leder/Styrer" },
+  { value: "bartender", label: t("auto.bartender") },
+  { value: "servitor", label: t("auto.servitoer") },
+  { value: "vakt", label: t("auto.doervakt") },
+  { value: "kasse", label: t("auto.kasse") },
+  { value: "leder", label: t("auto.leder_styrer") },
 ];
 
 export default function IkAlkoholInternkontroll() {
@@ -210,9 +211,9 @@ export default function IkAlkoholInternkontroll() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Internkontroll</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.internkontroll")}</h1>
             <p className="text-muted-foreground mt-1">
-              Dokumenter og følg opp internkontroll etter alkoholloven
+              {t("auto.dokumenter_og_foelg_opp_internkontroll_e")}
             </p>
           </div>
           {!activeLicense && (
@@ -229,19 +230,19 @@ export default function IkAlkoholInternkontroll() {
             <CardContent className="pt-6">
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Kommune</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.kommune")}</p>
                   <p className="font-medium">{activeLicense.municipality}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Bevillingsnr</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.bevillingsnr")}</p>
                   <p className="font-medium">{activeLicense.license_number || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Styrer</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.styrer")}</p>
                   <p className="font-medium">{activeLicense.manager_name || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Gyldig til</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.gyldig_til_2")}</p>
                   <p className="font-medium">
                     {activeLicense.valid_to 
                       ? format(new Date(activeLicense.valid_to), "d. MMM yyyy", { locale: nb })
@@ -259,18 +260,18 @@ export default function IkAlkoholInternkontroll() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="kartlegging" className="gap-2">
               <ClipboardList className="h-4 w-4 hidden sm:block" />
-              <span className="hidden sm:inline">Kartlegging</span>
-              <span className="sm:hidden">Regler</span>
+              <span className="hidden sm:inline">{t("auto.kartlegging")}</span>
+              <span className="sm:hidden">{t("auto.regler")}</span>
             </TabsTrigger>
             <TabsTrigger value="opplaering" className="gap-2">
               <GraduationCap className="h-4 w-4 hidden sm:block" />
-              <span className="hidden sm:inline">Opplæring</span>
-              <span className="sm:hidden">Kurs</span>
+              <span className="hidden sm:inline">{t("auto.opplaering")}</span>
+              <span className="sm:hidden">{t("auto.kurs")}</span>
             </TabsTrigger>
             <TabsTrigger value="oppfolging" className="gap-2">
               <CalendarCheck className="h-4 w-4 hidden sm:block" />
-              <span className="hidden sm:inline">Oppfølging</span>
-              <span className="sm:hidden">Plan</span>
+              <span className="hidden sm:inline">{t("auto.oppfoelging")}</span>
+              <span className="sm:hidden">{t("auto.plan")}</span>
             </TabsTrigger>
             <TabsTrigger value="vedlegg" className="gap-2">
               <Paperclip className="h-4 w-4 hidden sm:block" />
@@ -287,7 +288,7 @@ export default function IkAlkoholInternkontroll() {
                   Regelpunkter og tiltak
                 </CardTitle>
                 <CardDescription>
-                  Basert på prikksystemet. Klikk på et regelpunkt for å registrere tiltak.
+                  {t("auto.basert_paa_prikksystemet_klikk_paa_et_re")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -295,10 +296,10 @@ export default function IkAlkoholInternkontroll() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">Regel</TableHead>
-                        <TableHead>Overtredelse</TableHead>
-                        <TableHead className="w-[80px] text-center">Prikker</TableHead>
-                        <TableHead className="w-[100px] text-center">Status</TableHead>
+                        <TableHead className="w-[100px]">{t("auto.regel")}</TableHead>
+                        <TableHead>{t("auto.overtredelse")}</TableHead>
+                        <TableHead className="w-[80px] text-center">{t("auto.prikker")}</TableHead>
+                        <TableHead className="w-[100px] text-center">{t("auto.status_2")}</TableHead>
                         <TableHead className="w-[80px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -340,7 +341,7 @@ export default function IkAlkoholInternkontroll() {
                               )}
                               {status === "under_arbeid" && (
                                 <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                                  Under arbeid
+                                  {t("auto.under_arbeid")}
                                 </Badge>
                               )}
                             </TableCell>
@@ -382,7 +383,7 @@ export default function IkAlkoholInternkontroll() {
                     Opplæringsplan
                   </CardTitle>
                   <CardDescription>
-                    Dokumenter opplæring for alle ansatte
+                    {t("auto.dokumenter_opplaering_for_alle_ansatte")}
                   </CardDescription>
                 </div>
                 <Button onClick={() => {
@@ -401,18 +402,18 @@ export default function IkAlkoholInternkontroll() {
               <CardContent>
                 {training.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">
-                    Ingen opplæring registrert ennå
+                    {t("auto.ingen_opplaering_registrert_ennaa")}
                   </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Ansatt</TableHead>
-                          <TableHead>Rolle</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Gjennomført</TableHead>
-                          <TableHead>Utløper</TableHead>
+                          <TableHead>{t("auto.ansatt")}</TableHead>
+                          <TableHead>{t("auto.rolle")}</TableHead>
+                          <TableHead>{t("auto.type")}</TableHead>
+                          <TableHead>{t("auto.gjennomfoert")}</TableHead>
+                          <TableHead>{t("auto.utloeper")}</TableHead>
                           <TableHead className="w-[80px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -470,7 +471,7 @@ export default function IkAlkoholInternkontroll() {
                     Revisjonsplan
                   </CardTitle>
                   <CardDescription>
-                    Plan for jevnlig gjennomgang av internkontroll
+                    {t("auto.plan_for_jevnlig_gjennomgang_av_internko")}
                   </CardDescription>
                 </div>
                 <Button onClick={() => {
@@ -490,7 +491,7 @@ export default function IkAlkoholInternkontroll() {
               <CardContent>
                 {reviews.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">
-                    Ingen revisjoner planlagt ennå
+                    {t("auto.ingen_revisjoner_planlagt_ennaa")}
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -542,12 +543,12 @@ export default function IkAlkoholInternkontroll() {
                   Vedlegg og dokumentasjon
                 </CardTitle>
                 <CardDescription>
-                  Last opp ansattlister, organisasjonskart, skiltmateriell og annen dokumentasjon
+                  {t("auto.last_opp_ansattlister_organisasjonskart_")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-center py-8">
-                  Vedleggsfunksjonalitet kommer snart
+                  {t("auto.vedleggsfunksjonalitet_kommer_snart")}
                 </p>
               </CardContent>
             </Card>
@@ -559,7 +560,7 @@ export default function IkAlkoholInternkontroll() {
       <Dialog open={!!editingItem} onOpenChange={() => { setEditingItem(null); setEditingControl(null); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Registrer tiltak</DialogTitle>
+            <DialogTitle>{t("auto.registrer_tiltak")}</DialogTitle>
           </DialogHeader>
           {editingItem && editingControl && (
             <div className="space-y-4">
@@ -572,18 +573,18 @@ export default function IkAlkoholInternkontroll() {
               </div>
 
               <div className="space-y-2">
-                <Label>Utfordringer</Label>
+                <Label>{t("auto.utfordringer")}</Label>
                 <Textarea
-                  placeholder="Beskriv utfordringer knyttet til dette regelpunktet..."
+                  placeholder={t("auto.beskriv_utfordringer_knyttet_til_dette_r")}
                   value={editingControl.challenges || ""}
                   onChange={(e) => setEditingControl({ ...editingControl, challenges: e.target.value })}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Forebyggende tiltak og rutiner</Label>
+                <Label>{t("auto.forebyggende_tiltak_og_rutiner")}</Label>
                 <Textarea
-                  placeholder="Beskriv tiltak for å forhindre brudd..."
+                  placeholder={t("auto.beskriv_tiltak_for_aa_forhindre_brudd")}
                   value={editingControl.preventive_measures || ""}
                   onChange={(e) => setEditingControl({ ...editingControl, preventive_measures: e.target.value })}
                 />
@@ -591,17 +592,17 @@ export default function IkAlkoholInternkontroll() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Ansvarlig rolle/person</Label>
+                  <Label>{t("auto.ansvarlig_rolle_person")}</Label>
                   <Input
-                    placeholder="F.eks. Styrer, Dørvakt..."
+                    placeholder={t("auto.f_eks_styrer_doervakt")}
                     value={editingControl.responsible_role || ""}
                     onChange={(e) => setEditingControl({ ...editingControl, responsible_role: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Frister/perioder</Label>
+                  <Label>{t("auto.frister_perioder")}</Label>
                   <Input
-                    placeholder="F.eks. Daglig, Ved hver vakt..."
+                    placeholder={t("auto.f_eks_daglig_ved_hver_vakt")}
                     value={editingControl.deadline_period || ""}
                     onChange={(e) => setEditingControl({ ...editingControl, deadline_period: e.target.value })}
                   />
@@ -609,7 +610,7 @@ export default function IkAlkoholInternkontroll() {
               </div>
 
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label>{t("auto.status_2")}</Label>
                 <Select
                   value={editingControl.status || "Utkast"}
                   onValueChange={(value) => setEditingControl({ ...editingControl, status: value })}
@@ -618,9 +619,9 @@ export default function IkAlkoholInternkontroll() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Utkast">Utkast</SelectItem>
-                    <SelectItem value="Aktiv">Aktiv</SelectItem>
-                    <SelectItem value="Under revisjon">Under revisjon</SelectItem>
+                    <SelectItem value="Utkast">{t("auto.utkast")}</SelectItem>
+                    <SelectItem value="Aktiv">{t("auto.aktiv")}</SelectItem>
+                    <SelectItem value="Under revisjon">{t("auto.under_revisjon")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -628,7 +629,7 @@ export default function IkAlkoholInternkontroll() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => { setEditingItem(null); setEditingControl(null); }}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleSaveControl} disabled={upsertRiskControl.isPending}>
               <Save className="h-4 w-4 mr-2" />
@@ -642,26 +643,26 @@ export default function IkAlkoholInternkontroll() {
       <Dialog open={showLicenseDialog} onOpenChange={setShowLicenseDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Registrer bevilling</DialogTitle>
+            <DialogTitle>{t("auto.registrer_bevilling")}</DialogTitle>
           </DialogHeader>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Kommune *</Label>
+              <Label>{t("auto.kommune_2")}</Label>
               <Input
                 value={licenseForm.municipality}
                 onChange={(e) => setLicenseForm({ ...licenseForm, municipality: e.target.value })}
-                placeholder="F.eks. Oslo"
+                placeholder={t("auto.f_eks_oslo")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Bevillingsnummer</Label>
+              <Label>{t("auto.bevillingsnummer")}</Label>
               <Input
                 value={licenseForm.license_number}
                 onChange={(e) => setLicenseForm({ ...licenseForm, license_number: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label>Gyldig fra</Label>
+              <Label>{t("auto.gyldig_fra")}</Label>
               <Input
                 type="date"
                 value={licenseForm.valid_from}
@@ -669,7 +670,7 @@ export default function IkAlkoholInternkontroll() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Gyldig til</Label>
+              <Label>{t("auto.gyldig_til_2")}</Label>
               <Input
                 type="date"
                 value={licenseForm.valid_to}
@@ -677,43 +678,43 @@ export default function IkAlkoholInternkontroll() {
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label>Konseptkategori</Label>
+              <Label>{t("auto.konseptkategori")}</Label>
               <Select
                 value={licenseForm.concept_category}
                 onValueChange={(value) => setLicenseForm({ ...licenseForm, concept_category: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg kategori" />
+                  <SelectValue placeholder={t("auto.velg_kategori")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="restaurant_cafe">Restaurant/Kafé</SelectItem>
-                  <SelectItem value="pub_bar">Pub/Bar</SelectItem>
-                  <SelectItem value="nightclub">Nattklubb</SelectItem>
-                  <SelectItem value="hotel">Hotell</SelectItem>
-                  <SelectItem value="event">Arrangement</SelectItem>
-                  <SelectItem value="venue">Selskapslokale</SelectItem>
+                  <SelectItem value="restaurant_cafe">{t("auto.restaurant_kaf")}</SelectItem>
+                  <SelectItem value="pub_bar">{t("auto.pub_bar")}</SelectItem>
+                  <SelectItem value="nightclub">{t("auto.nattklubb")}</SelectItem>
+                  <SelectItem value="hotel">{t("auto.hotell")}</SelectItem>
+                  <SelectItem value="event">{t("auto.arrangement")}</SelectItem>
+                  <SelectItem value="venue">{t("auto.selskapslokale")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <p className="text-sm font-medium">Styrer</p>
+              <p className="text-sm font-medium">{t("auto.styrer")}</p>
             </div>
             <div className="space-y-2">
-              <Label>Navn</Label>
+              <Label>{t("auto.navn_2")}</Label>
               <Input
                 value={licenseForm.manager_name}
                 onChange={(e) => setLicenseForm({ ...licenseForm, manager_name: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label>Telefon</Label>
+              <Label>{t("auto.telefon")}</Label>
               <Input
                 value={licenseForm.manager_phone}
                 onChange={(e) => setLicenseForm({ ...licenseForm, manager_phone: e.target.value })}
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label>E-post</Label>
+              <Label>{t("auto.e_post_2")}</Label>
               <Input
                 type="email"
                 value={licenseForm.manager_email}
@@ -721,17 +722,17 @@ export default function IkAlkoholInternkontroll() {
               />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <p className="text-sm font-medium">Stedfortreder</p>
+              <p className="text-sm font-medium">{t("auto.stedfortreder")}</p>
             </div>
             <div className="space-y-2">
-              <Label>Navn</Label>
+              <Label>{t("auto.navn_2")}</Label>
               <Input
                 value={licenseForm.deputy_name}
                 onChange={(e) => setLicenseForm({ ...licenseForm, deputy_name: e.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <Label>Telefon</Label>
+              <Label>{t("auto.telefon")}</Label>
               <Input
                 value={licenseForm.deputy_phone}
                 onChange={(e) => setLicenseForm({ ...licenseForm, deputy_phone: e.target.value })}
@@ -740,7 +741,7 @@ export default function IkAlkoholInternkontroll() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowLicenseDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleSaveLicense} 
@@ -763,21 +764,21 @@ export default function IkAlkoholInternkontroll() {
           {editingTraining && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Ansatt *</Label>
+                <Label>{t("auto.ansatt_2")}</Label>
                 <Input
                   value={editingTraining.employee_name || ""}
                   onChange={(e) => setEditingTraining({ ...editingTraining, employee_name: e.target.value })}
-                  placeholder="Navn på ansatt"
+                  placeholder={t("auto.navn_paa_ansatt")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Rolle *</Label>
+                <Label>{t("auto.rolle_2")}</Label>
                 <Select
                   value={editingTraining.role || ""}
                   onValueChange={(value) => setEditingTraining({ ...editingTraining, role: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg rolle" />
+                    <SelectValue placeholder={t("auto.velg_rolle")} />
                   </SelectTrigger>
                   <SelectContent>
                     {ROLES.map((role) => (
@@ -789,13 +790,13 @@ export default function IkAlkoholInternkontroll() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Type opplæring *</Label>
+                <Label>{t("auto.type_opplaering")}</Label>
                 <Select
                   value={editingTraining.training_type || ""}
                   onValueChange={(value) => setEditingTraining({ ...editingTraining, training_type: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg type" />
+                    <SelectValue placeholder={t("auto.velg_type")} />
                   </SelectTrigger>
                   <SelectContent>
                     {TRAINING_TYPES.map((type) => (
@@ -808,7 +809,7 @@ export default function IkAlkoholInternkontroll() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Gjennomført dato</Label>
+                  <Label>{t("auto.gjennomfoert_dato")}</Label>
                   <Input
                     type="date"
                     value={editingTraining.completed_date || ""}
@@ -820,7 +821,7 @@ export default function IkAlkoholInternkontroll() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Utløpsdato</Label>
+                  <Label>{t("auto.utloepsdato")}</Label>
                   <Input
                     type="date"
                     value={editingTraining.expires_date || ""}
@@ -829,18 +830,18 @@ export default function IkAlkoholInternkontroll() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Notater</Label>
+                <Label>{t("auto.notater")}</Label>
                 <Textarea
                   value={editingTraining.notes || ""}
                   onChange={(e) => setEditingTraining({ ...editingTraining, notes: e.target.value })}
-                  placeholder="Eventuelle notater..."
+                  placeholder={t("auto.eventuelle_notater")}
                 />
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowTrainingDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleSaveTraining} 
@@ -863,7 +864,7 @@ export default function IkAlkoholInternkontroll() {
           {editingReview && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Type revisjon</Label>
+                <Label>{t("auto.type_revisjon")}</Label>
                 <Select
                   value={editingReview.review_type || "monthly"}
                   onValueChange={(value) => setEditingReview({ ...editingReview, review_type: value })}
@@ -872,14 +873,14 @@ export default function IkAlkoholInternkontroll() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="monthly">Månedlig</SelectItem>
-                    <SelectItem value="quarterly">Kvartalsvis</SelectItem>
-                    <SelectItem value="annual">Årlig</SelectItem>
+                    <SelectItem value="monthly">{t("auto.maanedlig")}</SelectItem>
+                    <SelectItem value="quarterly">{t("auto.kvartalsvis")}</SelectItem>
+                    <SelectItem value="annual">{t("auto.aarlig")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Planlagt dato</Label>
+                <Label>{t("auto.planlagt_dato_2")}</Label>
                 <Input
                   type="date"
                   value={editingReview.planned_date || ""}
@@ -889,7 +890,7 @@ export default function IkAlkoholInternkontroll() {
               {editingReview.id && (
                 <>
                   <div className="space-y-2">
-                    <Label>Gjennomført dato</Label>
+                    <Label>{t("auto.gjennomfoert_dato")}</Label>
                     <Input
                       type="date"
                       value={editingReview.completed_date || ""}
@@ -901,19 +902,19 @@ export default function IkAlkoholInternkontroll() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Deltakere</Label>
+                    <Label>{t("auto.deltakere")}</Label>
                     <Input
                       value={editingReview.participants || ""}
                       onChange={(e) => setEditingReview({ ...editingReview, participants: e.target.value })}
-                      placeholder="Navn på deltakere"
+                      placeholder={t("auto.navn_paa_deltakere")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Oppsummering</Label>
+                    <Label>{t("auto.oppsummering")}</Label>
                     <Textarea
                       value={editingReview.summary || ""}
                       onChange={(e) => setEditingReview({ ...editingReview, summary: e.target.value })}
-                      placeholder="Oppsummering av revisjonen..."
+                      placeholder={t("auto.oppsummering_av_revisjonen")}
                     />
                   </div>
                 </>
@@ -922,7 +923,7 @@ export default function IkAlkoholInternkontroll() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowReviewDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleSaveReview} 

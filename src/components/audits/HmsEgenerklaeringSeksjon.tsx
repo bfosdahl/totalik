@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function HmsEgenerklaeringSeksjon() {
   const { company } = useAuth();
@@ -56,10 +57,9 @@ export default function HmsEgenerklaeringSeksjon() {
             <FileText className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold mb-1">HMS Erklæringer</h2>
+            <h2 className="text-lg font-semibold mb-1">{t("auto.hms_erklaeringer")}</h2>
             <p className="text-muted-foreground text-sm">
-              Her finner du og kan signere de obligatoriske HMS-erklæringene for din bedrift. 
-              Disse dokumentene bekrefter at virksomheten arbeider systematisk med helse, miljø og sikkerhet.
+              {t("auto.her_finner_du_og_kan_signere_de_obligato")}
             </p>
           </div>
         </div>
@@ -83,9 +83,9 @@ export default function HmsEgenerklaeringSeksjon() {
                   )}
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Egenerklæring om HMS</CardTitle>
+                  <CardTitle className="text-lg">{t("auto.egenerklaering_om_hms")}</CardTitle>
                   <CardDescription>
-                    Bekreftelse på systematisk HMS-arbeid iht. Internkontrollforskriften
+                    {t("auto.bekreftelse_paa_systematisk_hms_arbeid_i")}
                   </CardDescription>
                 </div>
               </div>
@@ -100,17 +100,17 @@ export default function HmsEgenerklaeringSeksjon() {
                 <div className="grid gap-3 text-sm">
                   <div className="flex items-center gap-3">
                     <Building2 className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Bedrift:</span>
+                    <span className="text-muted-foreground">{t("auto.bedrift_3")}</span>
                     <span className="font-medium">{selfDeclaration.company_name}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Signert av:</span>
+                    <span className="text-muted-foreground">{t("auto.signert_av")}</span>
                     <span className="font-medium">{selfDeclaration.manager_name || "Ikke angitt"}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Signert dato:</span>
+                    <span className="text-muted-foreground">{t("auto.signert_dato")}</span>
                     <span className="font-medium">{formatDate(selfDeclaration.manager_signed_at)}</span>
                   </div>
                 </div>
@@ -119,7 +119,7 @@ export default function HmsEgenerklaeringSeksjon() {
                   <>
                     <Separator />
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">Signatur:</p>
+                      <p className="text-sm text-muted-foreground mb-2">{t("auto.signatur_2")}</p>
                       <div className="bg-muted/30 rounded-lg p-2 inline-block border">
                         <img 
                           src={selfDeclaration.manager_signature} 
@@ -146,8 +146,7 @@ export default function HmsEgenerklaeringSeksjon() {
               <div className="text-center py-6">
                 <AlertCircle className="w-12 h-12 text-warning mx-auto mb-3 opacity-50" />
                 <p className="text-muted-foreground mb-4">
-                  Egenerklæring om HMS er ikke signert ennå. 
-                  Denne dokumentasjonen er viktig for å bekrefte at bedriften arbeider systematisk med HMS.
+                  {t("auto.egenerklaering_om_hms_er_ikke_signert_en")}
                 </p>
                 <Button onClick={() => setShowSelfDeclarationDialog(true)}>
                   <PenLine className="w-4 h-4 mr-2" />

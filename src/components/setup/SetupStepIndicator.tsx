@@ -1,6 +1,7 @@
 import { CheckCircle2, Circle, CircleDot } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useRef, useEffect } from "react";
+import { t } from "@/i18n/t";
 
 export interface SetupStep {
   id: string;
@@ -9,15 +10,15 @@ export interface SetupStep {
 }
 
 export const HMS_SETUP_STEPS: SetupStep[] = [
-  { id: "bedriftsinfo", label: "Bedriftsinformasjon", shortLabel: "Bedrift" },
-  { id: "egenerklaering", label: "Egenerklæring HMS", shortLabel: "Erklæring" },
-  { id: "verneombud", label: "Verneombud", shortLabel: "Verneombud" },
-  { id: "maal", label: "Mål for internkontroll", shortLabel: "Mål" },
-  { id: "organisering", label: "Organisering og ansvar", shortLabel: "Org." },
-  { id: "risiko", label: "Risikovurdering", shortLabel: "Risiko" },
-  { id: "handlingsplan", label: "Handlingsplan", shortLabel: "Tiltak" },
-  { id: "rutiner", label: "Rutiner og prosedyrer", shortLabel: "Rutiner" },
-  { id: "lover", label: "Lover og forskrifter", shortLabel: "Lover" },
+  { id: "bedriftsinfo", label: t("auto.bedriftsinformasjon"), shortLabel: "Bedrift" },
+  { id: "egenerklaering", label: t("auto.egenerklaering_hms"), shortLabel: "Erklæring" },
+  { id: "verneombud", label: t("auto.verneombud"), shortLabel: "Verneombud" },
+  { id: "maal", label: t("auto.maal_for_internkontroll_2"), shortLabel: "Mål" },
+  { id: "organisering", label: t("auto.organisering_og_ansvar"), shortLabel: "Org." },
+  { id: "risiko", label: t("auto.risikovurdering"), shortLabel: "Risiko" },
+  { id: "handlingsplan", label: t("auto.handlingsplan"), shortLabel: "Tiltak" },
+  { id: "rutiner", label: t("auto.rutiner_og_prosedyrer_2"), shortLabel: "Rutiner" },
+  { id: "lover", label: t("auto.lover_og_forskrifter"), shortLabel: "Lover" },
 ];
 
 interface SetupStepIndicatorProps {

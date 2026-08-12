@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { AdminChecklistTemplate, CHECKLIST_CATEGORIES, useAdminKsTemplates } from "@/hooks/useAdminKsTemplates";
+import { t } from "@/i18n/t";
 
 interface Props {
   template: AdminChecklistTemplate | null;
@@ -81,24 +82,24 @@ export function KsBygChecklistEditDialog({ template, open, onOpenChange }: Props
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Rediger sjekklistemal</DialogTitle>
+          <DialogTitle>{t("auto.rediger_sjekklistemal")}</DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto pr-2 -mr-2 min-h-0">
           <div className="space-y-4 pb-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Malnavn</Label>
+              <Label className="text-xs">{t("auto.malnavn")}</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9 text-sm" />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs">Beskrivelse</Label>
+              <Label className="text-xs">{t("auto.beskrivelse")}</Label>
               <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="text-sm" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Kategori</Label>
+                <Label className="text-xs">{t("auto.kategori")}</Label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -109,19 +110,19 @@ export function KsBygChecklistEditDialog({ template, open, onOpenChange }: Props
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Fag / Trade</Label>
-                <Input value={trade} onChange={(e) => setTrade(e.target.value)} className="h-9 text-sm" placeholder="F.eks. Tømrer" />
+                <Label className="text-xs">{t("auto.fag_trade")}</Label>
+                <Input value={trade} onChange={(e) => setTrade(e.target.value)} className="h-9 text-sm" placeholder={t("auto.f_eks_toemrer")} />
               </div>
             </div>
 
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Switch checked={isActive} onCheckedChange={setIsActive} />
-                <Label className="text-xs">Aktiv</Label>
+                <Label className="text-xs">{t("auto.aktiv")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={isMandatory} onCheckedChange={setIsMandatory} />
-                <Label className="text-xs">Obligatorisk</Label>
+                <Label className="text-xs">{t("auto.obligatorisk")}</Label>
               </div>
             </div>
 
@@ -155,7 +156,7 @@ export function KsBygChecklistEditDialog({ template, open, onOpenChange }: Props
                   value={newCheckpoint}
                   onChange={(e) => setNewCheckpoint(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCheckpoint())}
-                  placeholder="Nytt sjekkpunkt..."
+                  placeholder={t("auto.nytt_sjekkpunkt")}
                   className="h-8 text-xs"
                 />
                 <Button variant="outline" size="sm" className="h-8 shrink-0" onClick={addCheckpoint}>
@@ -167,7 +168,7 @@ export function KsBygChecklistEditDialog({ template, open, onOpenChange }: Props
         </div>
 
         <DialogFooter className="pt-3 border-t flex-shrink-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("auto.avbryt")}</Button>
           <Button onClick={handleSave} disabled={!name.trim() || updateChecklistTemplate.isPending}>
             {updateChecklistTemplate.isPending ? "Lagrer..." : "Lagre endringer"}
           </Button>

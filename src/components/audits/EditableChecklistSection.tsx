@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { t } from "@/i18n/t";
 import { 
   Plus, 
   Trash2, 
@@ -164,7 +165,7 @@ const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
                     value={editingSubtitle}
                     onChange={(e) => setEditingSubtitle(e.target.value)}
                     className="text-sm h-7"
-                    placeholder="Legg til beskrivelse..."
+                    placeholder={t("auto.legg_til_beskrivelse")}
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleSaveSubtitle();
@@ -214,7 +215,7 @@ const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
               className="gap-1"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Legg til</span>
+              <span className="hidden sm:inline">{t("auto.legg_til")}</span>
             </Button>
             {onDeleteSection && (
               <Button
@@ -285,19 +286,19 @@ const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="yes" id={`${sectionId}-${q.id}-yes`} />
-                  <Label htmlFor={`${sectionId}-${q.id}-yes`} className="text-sm">Ja</Label>
+                  <Label htmlFor={`${sectionId}-${q.id}-yes`} className="text-sm">{t("auto.ja")}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="no" id={`${sectionId}-${q.id}-no`} />
-                  <Label htmlFor={`${sectionId}-${q.id}-no`} className="text-sm">Nei</Label>
+                  <Label htmlFor={`${sectionId}-${q.id}-no`} className="text-sm">{t("auto.nei")}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="na" id={`${sectionId}-${q.id}-na`} />
-                  <Label htmlFor={`${sectionId}-${q.id}-na`} className="text-sm">Ikke aktuelt</Label>
+                  <Label htmlFor={`${sectionId}-${q.id}-na`} className="text-sm">{t("auto.ikke_aktuelt")}</Label>
                 </div>
               </RadioGroup>
               <Input
-                placeholder="Kommentar"
+                placeholder={t("auto.kommentar_2")}
                 value={answers[q.id]?.comment || ''}
                 onChange={(e) => onAnswerChange(q.id, 'comment', e.target.value)}
                 className="flex-1"
@@ -312,7 +313,7 @@ const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
             <Input
               value={newQuestion}
               onChange={(e) => setNewQuestion(e.target.value)}
-              placeholder="Skriv inn nytt spørsmål..."
+              placeholder={t("auto.skriv_inn_nytt_spoersmaal")}
               className="flex-1"
               autoFocus
               onKeyDown={(e) => {

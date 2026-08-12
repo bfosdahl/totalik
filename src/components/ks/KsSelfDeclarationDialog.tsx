@@ -13,6 +13,7 @@ import { Loader2, FileText, CheckCircle2, User } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface KsSelfDeclarationDialogProps {
   open: boolean;
@@ -82,7 +83,7 @@ export function KsSelfDeclarationDialog({
     const sig = usingSavedSignature ? savedSignature : managerSigRef.current?.toDataURL() || "";
     
     if (!sig || (managerSigRef.current?.isEmpty() && !usingSavedSignature)) {
-      toast.error("Vennligst signer før du lagrer");
+      toast.error(t("auto.vennligst_signer_foer_du_lagrer"));
       return;
     }
 
@@ -123,11 +124,11 @@ export function KsSelfDeclarationDialog({
 
       if (error) throw error;
 
-      toast.success("Egenerklæring om kvalitetssikringssystem er signert og lagret!");
+      toast.success(t("auto.egenerklaering_om_kvalitetssikringssyste_2"));
       setStep("complete");
     } catch (error) {
       console.error("Error saving KS self-declaration:", error);
-      toast.error("Kunne ikke lagre egenerklæringen. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_lagre_egenerklaeringen_proev_"));
     } finally {
       setIsSaving(false);
     }
@@ -169,27 +170,27 @@ export function KsSelfDeclarationDialog({
           {step === "info" && (
             <div className="space-y-4">
               <Card className="p-4 bg-muted/50">
-                <h3 className="font-semibold mb-3">Denne bekreftelsen gjelder:</h3>
+                <h3 className="font-semibold mb-3">{t("auto.denne_bekreftelsen_gjelder")}</h3>
                 <div className="space-y-2 text-sm">
                   <div className="grid grid-cols-[120px_1fr] gap-2">
-                    <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">Firma:</span>
+                    <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">{t("auto.firma")}</span>
                     <span className="font-medium py-1">{companyName}</span>
                   </div>
                   {companyAddress && (
                     <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">Adresse:</span>
+                      <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">{t("auto.adresse_2")}</span>
                       <span className="py-1">{companyAddress}</span>
                     </div>
                   )}
                   {(postalCode || city) && (
                     <div className="grid grid-cols-[120px_1fr] gap-2">
-                      <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">Postnr. /-sted:</span>
+                      <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">{t("auto.postnr_sted")}</span>
                       <span className="py-1">{[postalCode, city].filter(Boolean).join(" ")}</span>
                     </div>
                   )}
                   <div className="grid grid-cols-[120px_1fr] gap-2">
-                    <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">Land:</span>
-                    <span className="py-1">Norge</span>
+                    <span className="text-muted-foreground font-medium bg-primary/10 px-2 py-1 rounded">{t("auto.land")}</span>
+                    <span className="py-1">{t("auto.norge")}</span>
                   </div>
                 </div>
               </Card>
@@ -206,22 +207,19 @@ export function KsSelfDeclarationDialog({
 
                 <div className="p-4 bg-muted/30 rounded-lg border">
                   <p className="leading-relaxed">
-                    Kvalitetssikringssystemet skal være utarbeidet i den form og det omfang som er nødvendig på 
-                    bakgrunn av virksomhetens art, aktiviteter, risikoforhold og størrelse.
-                    Kvalitetssikringssystemet skal være i henhold til enhver tid gjeldende lover og forskrifter.
+                    {t("auto.kvalitetssikringssystemet_skal_vaere_uta")}
                   </p>
                 </div>
 
                 <div className="p-4 bg-muted/30 rounded-lg border">
                   <p className="leading-relaxed">
-                    Tilbyder skal på anmodning legge fram dokumentasjon på kvalitetssikringssystemet. 
-                    Oppdragsgiver stiller krav om at bekreftelsen signeres.
+                    {t("auto.tilbyder_skal_paa_anmodning_legge_fram_d")}
                   </p>
                 </div>
 
                 <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
                   <p className="leading-relaxed font-medium">
-                    Undertegnende leverandør erklærer med dette at nevnte forpliktelser vil bli overholdt.
+                    {t("auto.undertegnende_leverandoer_erklaerer_med_")}
                   </p>
                 </div>
               </div>
@@ -232,13 +230,12 @@ export function KsSelfDeclarationDialog({
             <div className="space-y-4">
               <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
                 <p className="text-sm text-muted-foreground">
-                  Daglig leder eller den som er ansvarlig for kvalitetssikringssystemet signerer denne erklæringen 
-                  på vegne av bedriften.
+                  {t("auto.daglig_leder_eller_den_som_er_ansvarlig_")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="managerSelect">Velg person eller skriv inn navn</Label>
+                <Label htmlFor="managerSelect">{t("auto.velg_person_eller_skriv_inn_navn")}</Label>
                 <Select 
                   value={selectedUserId} 
                   onValueChange={(value) => {
@@ -249,7 +246,7 @@ export function KsSelfDeclarationDialog({
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg fra ansatte eller skriv inn manuelt" />
+                    <SelectValue placeholder={t("auto.velg_fra_ansatte_eller_skriv_inn_manuelt")} />
                   </SelectTrigger>
                   <SelectContent>
                     {!isLoadingUsers && users.map((user) => (
@@ -257,19 +254,19 @@ export function KsSelfDeclarationDialog({
                         {getUserDisplayName(user)}
                       </SelectItem>
                     ))}
-                    <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                    <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {(selectedUserId === "custom" || !selectedUserId) && (
                 <div>
-                  <Label htmlFor="managerName">Daglig leder / Ansvarlig - Navn</Label>
+                  <Label htmlFor="managerName">{t("auto.daglig_leder_ansvarlig_navn")}</Label>
                   <Input
                     id="managerName"
                     value={managerName}
                     onChange={(e) => setManagerName(e.target.value)}
-                    placeholder="Skriv inn fullt navn"
+                    placeholder={t("auto.skriv_inn_fullt_navn")}
                     className="mt-1"
                   />
                 </div>
@@ -277,13 +274,13 @@ export function KsSelfDeclarationDialog({
 
               {selectedUserId && selectedUserId !== "custom" && (
                 <div className="p-3 bg-muted/50 rounded-lg">
-                  <p className="text-sm"><strong>Valgt person:</strong> {managerName}</p>
+                  <p className="text-sm"><strong>{t("auto.valgt_person")}</strong> {managerName}</p>
                 </div>
               )}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Signatur</Label>
+                  <Label>{t("auto.signatur")}</Label>
                   {savedSignature && !usingSavedSignature && (
                     <Button
                       type="button"
@@ -315,7 +312,7 @@ export function KsSelfDeclarationDialog({
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleClearManagerSig}>
-                    Tøm signatur
+                    {t("auto.toem_signatur")}
                   </Button>
                   {usingSavedSignature && (
                     <span className="text-xs text-success flex items-center gap-1">
@@ -335,10 +332,9 @@ export function KsSelfDeclarationDialog({
           {step === "complete" && (
             <div className="text-center py-8">
               <CheckCircle2 className="w-16 h-16 text-success mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Egenerklæringen er signert!</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("auto.egenerklaeringen_er_signert")}</h3>
               <p className="text-muted-foreground">
-                Egenerklæring om kvalitetssikringssystem er nå lagret og dokumenterer at virksomheten 
-                har et velfungerende system for kvalitetssikring i henhold til gjeldende krav.
+                {t("auto.egenerklaering_om_kvalitetssikringssyste")}
               </p>
             </div>
           )}
@@ -350,10 +346,10 @@ export function KsSelfDeclarationDialog({
           {step === "info" && (
             <>
               <Button variant="outline" onClick={handleClose}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={() => setStep("manager")}>
-                Start signering
+                {t("auto.start_signering")}
               </Button>
             </>
           )}
@@ -361,7 +357,7 @@ export function KsSelfDeclarationDialog({
           {step === "manager" && (
             <>
               <Button variant="outline" onClick={() => setStep("info")}>
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button onClick={handleSubmit} disabled={isSaving || !managerName.trim()}>
                 {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -372,7 +368,7 @@ export function KsSelfDeclarationDialog({
 
           {step === "complete" && (
             <Button onClick={handleClose}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
           )}
         </DialogFooter>

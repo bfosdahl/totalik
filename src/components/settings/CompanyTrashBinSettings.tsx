@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface TrashItem {
   table_name: string;
@@ -171,9 +172,9 @@ export function CompanyTrashBinSettings({ onBack }: Props) {
       <div className="flex items-center gap-3">
         <Trash2 className="w-6 h-6 text-destructive" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Papirkurv</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("auto.papirkurv")}</h1>
           <p className="text-muted-foreground text-sm">
-            Slettet innhold beholdes i 90 dager og kan gjenopprettes
+            {t("auto.slettet_innhold_beholdes_i_90_dager_og_k")}
           </p>
         </div>
       </div>
@@ -182,7 +183,7 @@ export function CompanyTrashBinSettings({ onBack }: Props) {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Søk..."
+            placeholder={t("auto.soek")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -190,7 +191,7 @@ export function CompanyTrashBinSettings({ onBack }: Props) {
         </div>
         <Select value={tableFilter} onValueChange={setTableFilter}>
           <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="Alle typer" />
+            <SelectValue placeholder={t("auto.alle_typer")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle typer ({items.length})</SelectItem>
@@ -204,12 +205,12 @@ export function CompanyTrashBinSettings({ onBack }: Props) {
       </div>
 
       {isLoading ? (
-        <p className="text-center py-10 text-muted-foreground">Laster...</p>
+        <p className="text-center py-10 text-muted-foreground">{t("auto.laster")}</p>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground bg-card border rounded-xl">
           <Trash2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="font-medium">Papirkurven er tom</p>
-          <p className="text-sm">Ingen slettede elementer akkurat nå</p>
+          <p className="font-medium">{t("auto.papirkurven_er_tom")}</p>
+          <p className="text-sm">{t("auto.ingen_slettede_elementer_akkurat_naa")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -247,7 +248,7 @@ export function CompanyTrashBinSettings({ onBack }: Props) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setPreview(item)}
-                title="Forhåndsvis"
+                title={t("auto.forhaandsvis")}
               >
                 <Eye className="w-4 h-4" />
               </Button>

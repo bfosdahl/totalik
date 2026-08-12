@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useEmployees } from "@/hooks/useEmployees";
+import { t } from "@/i18n/t";
 import {
   Collapsible,
   CollapsibleContent,
@@ -79,16 +80,16 @@ type PriorityFilter = "alle" | "lav" | "medium" | "høy" | "kritisk";
 type SortOption = "none" | "deadline_asc" | "deadline_desc" | "priority_asc" | "priority_desc" | "status";
 
 const statusConfig = {
-  ikke_startet: { label: "Ikke startet", icon: Circle, color: "text-muted-foreground", bg: "bg-muted" },
-  pågår: { label: "Pågår", icon: Clock, color: "text-warning", bg: "bg-warning/10" },
-  fullført: { label: "Fullført", icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
+  ikke_startet: { label: t("auto.ikke_startet"), icon: Circle, color: "text-muted-foreground", bg: "bg-muted" },
+  pågår: { label: t("auto.paagaar"), icon: Clock, color: "text-warning", bg: "bg-warning/10" },
+  fullført: { label: t("auto.fullfoert"), icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
 };
 
 const priorityConfig = {
-  lav: { label: "Lav", color: "bg-green-500/10 text-green-700 border-green-200" },
-  medium: { label: "Medium", color: "bg-yellow-500/10 text-yellow-700 border-yellow-200" },
-  høy: { label: "Høy", color: "bg-orange-500/10 text-orange-700 border-orange-200" },
-  kritisk: { label: "Kritisk", color: "bg-red-500/10 text-red-700 border-red-200" },
+  lav: { label: t("auto.lav"), color: "bg-green-500/10 text-green-700 border-green-200" },
+  medium: { label: t("auto.medium"), color: "bg-yellow-500/10 text-yellow-700 border-yellow-200" },
+  høy: { label: t("auto.hoey"), color: "bg-orange-500/10 text-orange-700 border-orange-200" },
+  kritisk: { label: t("auto.kritisk"), color: "bg-red-500/10 text-red-700 border-red-200" },
 };
 
 const priorityOrder = { kritisk: 4, høy: 3, medium: 2, lav: 1 };
@@ -227,7 +228,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
     };
     setActions([...actions, newAction]);
     setEditingId(newAction.id);
-    toast.success("Tiltak opprettet fra risiko");
+    toast.success(t("auto.tiltak_opprettet_fra_risiko"));
   };
 
   const updateAction = (id: string, updates: Partial<ActionItem>) => {
@@ -239,15 +240,15 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
   const removeAction = (id: string) => {
     setActions(actions.filter(action => action.id !== id));
     if (editingId === id) setEditingId(null);
-    toast.success("Tiltak fjernet");
+    toast.success(t("auto.tiltak_fjernet"));
   };
 
   const handleSave = async () => {
     try {
       await onSave({ actions });
-      toast.success("Handlingsplan lagret!");
+      toast.success(t("auto.handlingsplan_lagret"));
     } catch (error) {
-      toast.error("Kunne ikke lagre handlingsplan");
+      toast.error(t("auto.kunne_ikke_lagre_handlingsplan"));
     }
   };
 
@@ -275,7 +276,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
             Handlingsplan
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Definer konkrete tiltak med ansvarlige og frister basert på risikovurderingen
+            {t("auto.definer_konkrete_tiltak_med_ansvarlige_o")}
           </p>
         </div>
         <Button onClick={handleSave} disabled={isSaving}>
@@ -293,7 +294,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
               Høyrisiko uten tiltak ({highRisks.length})
             </CardTitle>
             <CardDescription>
-              Følgende risikoer har høy eller kritisk risikoverdi og mangler tiltak
+              {t("auto.foelgende_risikoer_har_hoey_eller_kritis")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -334,7 +335,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
               Koble tiltak til risikoer
             </CardTitle>
             <CardDescription>
-              Velg en risiko for å opprette et tiltak knyttet til den
+              {t("auto.velg_en_risiko_for_aa_opprette_et_tiltak")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -343,7 +344,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
               if (risk) addActionFromRisk(risk);
             }}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg risiko å koble tiltak til..." />
+                <SelectValue placeholder={t("auto.velg_risiko_aa_koble_tiltak_til")} />
               </SelectTrigger>
               <SelectContent>
                 {unlinkedRisks.map(risk => (
@@ -382,26 +383,26 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                     <Filter className="w-4 h-4 text-muted-foreground" />
                     <Select value={statusFilter} onValueChange={(v: StatusFilter) => setStatusFilter(v)}>
                       <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="Status" />
+                        <SelectValue placeholder={t("auto.status_2")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="alle">Alle statuser</SelectItem>
-                        <SelectItem value="ikke_startet">Ikke startet</SelectItem>
-                        <SelectItem value="pågår">Pågår</SelectItem>
-                        <SelectItem value="fullført">Fullført</SelectItem>
+                        <SelectItem value="alle">{t("auto.alle_statuser")}</SelectItem>
+                        <SelectItem value="ikke_startet">{t("auto.ikke_startet")}</SelectItem>
+                        <SelectItem value="pågår">{t("auto.paagaar")}</SelectItem>
+                        <SelectItem value="fullført">{t("auto.fullfoert")}</SelectItem>
                       </SelectContent>
                     </Select>
 
                     <Select value={priorityFilter} onValueChange={(v: PriorityFilter) => setPriorityFilter(v)}>
                       <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="Prioritet" />
+                        <SelectValue placeholder={t("auto.prioritet")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="alle">Alle prioriteter</SelectItem>
-                        <SelectItem value="kritisk">Kritisk</SelectItem>
-                        <SelectItem value="høy">Høy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="lav">Lav</SelectItem>
+                        <SelectItem value="alle">{t("auto.alle_prioriteter")}</SelectItem>
+                        <SelectItem value="kritisk">{t("auto.kritisk")}</SelectItem>
+                        <SelectItem value="høy">{t("auto.hoey")}</SelectItem>
+                        <SelectItem value="medium">{t("auto.medium")}</SelectItem>
+                        <SelectItem value="lav">{t("auto.lav")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -410,15 +411,15 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                     <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
                     <Select value={sortOption} onValueChange={(v: SortOption) => setSortOption(v)}>
                       <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Sortering" />
+                        <SelectValue placeholder={t("auto.sortering")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Ingen sortering</SelectItem>
+                        <SelectItem value="none">{t("auto.ingen_sortering")}</SelectItem>
                         <SelectItem value="deadline_asc">Frist (tidligst først)</SelectItem>
                         <SelectItem value="deadline_desc">Frist (senest først)</SelectItem>
                         <SelectItem value="priority_desc">Prioritet (høyest først)</SelectItem>
                         <SelectItem value="priority_asc">Prioritet (lavest først)</SelectItem>
-                        <SelectItem value="status">Status</SelectItem>
+                        <SelectItem value="status">{t("auto.status_2")}</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -445,9 +446,9 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
           <Card className="border-dashed">
             <CardContent className="py-8 text-center">
               <ClipboardList className="w-10 h-10 mx-auto text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground">Ingen tiltak registrert ennå</p>
+              <p className="text-muted-foreground">{t("auto.ingen_tiltak_registrert_ennaa")}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Legg til tiltak manuelt eller koble dem til risikoer fra vurderingen
+                {t("auto.legg_til_tiltak_manuelt_eller_koble_dem_")}
               </p>
             </CardContent>
           </Card>
@@ -455,9 +456,9 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
           <Card className="border-dashed">
             <CardContent className="py-8 text-center">
               <Filter className="w-10 h-10 mx-auto text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground">Ingen tiltak matcher filtrene</p>
+              <p className="text-muted-foreground">{t("auto.ingen_tiltak_matcher_filtrene")}</p>
               <Button variant="link" onClick={clearFilters} className="mt-2">
-                Nullstill filtre
+                {t("auto.nullstill_filtre")}
               </Button>
             </CardContent>
           </Card>
@@ -537,16 +538,16 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                           <div className="space-y-4 pt-4">
                             {action.risk_description && (
                               <div className="p-3 rounded-md bg-muted/50 text-sm">
-                                <span className="font-medium">Koblet risiko:</span> {action.risk_description}
+                                <span className="font-medium">{t("auto.koblet_risiko")}</span> {action.risk_description}
                               </div>
                             )}
 
                             <div className="space-y-2">
-                              <Label>Beskrivelse av tiltak *</Label>
+                              <Label>{t("auto.beskrivelse_av_tiltak")}</Label>
                               <Textarea
                                 value={action.action_description}
                                 onChange={(e) => updateAction(action.id, { action_description: e.target.value })}
-                                placeholder="Beskriv tiltaket som skal gjennomføres..."
+                                placeholder={t("auto.beskriv_tiltaket_som_skal_gjennomfoeres")}
                                 rows={3}
                               />
                             </div>
@@ -562,7 +563,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                                   onValueChange={(value) => updateAction(action.id, { responsible: value })}
                                 >
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Velg ansvarlig" />
+                                    <SelectValue placeholder={t("auto.velg_ansvarlig")} />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {employees.map((emp) => (
@@ -589,7 +590,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label>Status</Label>
+                                <Label>{t("auto.status_2")}</Label>
                                 <Select
                                   value={action.status}
                                   onValueChange={(value: ActionItem["status"]) => 
@@ -600,15 +601,15 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="ikke_startet">Ikke startet</SelectItem>
-                                    <SelectItem value="pågår">Pågår</SelectItem>
-                                    <SelectItem value="fullført">Fullført</SelectItem>
+                                    <SelectItem value="ikke_startet">{t("auto.ikke_startet")}</SelectItem>
+                                    <SelectItem value="pågår">{t("auto.paagaar")}</SelectItem>
+                                    <SelectItem value="fullført">{t("auto.fullfoert")}</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
 
                               <div className="space-y-2">
-                                <Label>Prioritet</Label>
+                                <Label>{t("auto.prioritet")}</Label>
                                 <Select
                                   value={action.priority}
                                   onValueChange={(value: ActionItem["priority"]) => 
@@ -619,21 +620,21 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="lav">Lav</SelectItem>
-                                    <SelectItem value="medium">Medium</SelectItem>
-                                    <SelectItem value="høy">Høy</SelectItem>
-                                    <SelectItem value="kritisk">Kritisk</SelectItem>
+                                    <SelectItem value="lav">{t("auto.lav")}</SelectItem>
+                                    <SelectItem value="medium">{t("auto.medium")}</SelectItem>
+                                    <SelectItem value="høy">{t("auto.hoey")}</SelectItem>
+                                    <SelectItem value="kritisk">{t("auto.kritisk")}</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                             </div>
 
                             <div className="space-y-2">
-                              <Label>Kommentarer</Label>
+                              <Label>{t("auto.kommentarer")}</Label>
                               <Textarea
                                 value={action.comments}
                                 onChange={(e) => updateAction(action.id, { comments: e.target.value })}
-                                placeholder="Eventuelle kommentarer eller notater..."
+                                placeholder={t("auto.eventuelle_kommentarer_eller_notater")}
                                 rows={2}
                               />
                             </div>
@@ -642,11 +643,11 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                           <div className="space-y-3 pt-4">
                             {action.risk_description && (
                               <p className="text-xs text-muted-foreground">
-                                <span className="font-medium">Risiko:</span> {action.risk_description}
+                                <span className="font-medium">{t("auto.risiko_2")}</span> {action.risk_description}
                               </p>
                             )}
                             <p className="text-sm">
-                              {action.action_description || <span className="text-muted-foreground italic">Ingen beskrivelse</span>}
+                              {action.action_description || <span className="text-muted-foreground italic">{t("auto.ingen_beskrivelse")}</span>}
                             </p>
                             <div className="flex flex-wrap items-center gap-3 text-sm">
                               {action.responsible && (
@@ -663,7 +664,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                               )}
                               {action.comments && (
                                 <p className="text-xs text-muted-foreground w-full mt-2">
-                                  <span className="font-medium">Kommentar:</span> {action.comments}
+                                  <span className="font-medium">{t("auto.kommentar_3")}</span> {action.comments}
                                 </p>
                               )}
                             </div>
@@ -686,25 +687,25 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold">{actions.length}</div>
-                <div className="text-xs text-muted-foreground">Totalt tiltak</div>
+                <div className="text-xs text-muted-foreground">{t("auto.totalt_tiltak")}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-muted-foreground">
                   {actions.filter(a => a.status === "ikke_startet").length}
                 </div>
-                <div className="text-xs text-muted-foreground">Ikke startet</div>
+                <div className="text-xs text-muted-foreground">{t("auto.ikke_startet")}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-warning">
                   {actions.filter(a => a.status === "pågår").length}
                 </div>
-                <div className="text-xs text-muted-foreground">Pågår</div>
+                <div className="text-xs text-muted-foreground">{t("auto.paagaar")}</div>
               </div>
               <div>
                 <div className="text-2xl font-bold text-success">
                   {actions.filter(a => a.status === "fullført").length}
                 </div>
-                <div className="text-xs text-muted-foreground">Fullført</div>
+                <div className="text-xs text-muted-foreground">{t("auto.fullfoert")}</div>
               </div>
             </div>
           </CardContent>

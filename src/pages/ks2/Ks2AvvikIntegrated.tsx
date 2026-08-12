@@ -36,41 +36,42 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { downloadKsModule2AvvikPdf, downloadKsModule2AvvikListPdf } from "@/utils/ksModule2AvvikPdf";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
+import { t } from "@/i18n/t";
 
 const KS_CATEGORIES = [
-  { value: "kvalitet", label: "Kvalitetsavvik" },
-  { value: "ks", label: "KS-avvik" },
-  { value: "tegning", label: "Tegningsavvik" },
-  { value: "material", label: "Materialavvik" },
-  { value: "annet", label: "Annet" },
+  { value: "kvalitet", label: t("auto.kvalitetsavvik") },
+  { value: "ks", label: t("auto.ks_avvik") },
+  { value: "tegning", label: t("auto.tegningsavvik") },
+  { value: "material", label: t("auto.materialavvik") },
+  { value: "annet", label: t("auto.annet") },
 ];
 
 const HMS_CATEGORIES = [
-  { value: "Personlig verneutstyr", label: "Personlig verneutstyr" },
-  { value: "Fallsikring", label: "Fallsikring" },
-  { value: "Orden og ryddighet", label: "Orden og ryddighet" },
-  { value: "Brannvern", label: "Brannvern" },
-  { value: "Elektrisk sikkerhet", label: "Elektrisk sikkerhet" },
-  { value: "Kjemikalier og farlige stoffer", label: "Kjemikalier og farlige stoffer" },
-  { value: "Maskin og utstyr", label: "Maskin og utstyr" },
-  { value: "Ergonomi", label: "Ergonomi" },
-  { value: "Støy og vibrasjoner", label: "Støy og vibrasjoner" },
-  { value: "Annet HMS", label: "Annet HMS" },
+  { value: "Personlig verneutstyr", label: t("auto.personlig_verneutstyr") },
+  { value: "Fallsikring", label: t("auto.fallsikring") },
+  { value: "Orden og ryddighet", label: t("auto.orden_og_ryddighet") },
+  { value: "Brannvern", label: t("auto.brannvern") },
+  { value: "Elektrisk sikkerhet", label: t("auto.elektrisk_sikkerhet") },
+  { value: "Kjemikalier og farlige stoffer", label: t("auto.kjemikalier_og_farlige_stoffer") },
+  { value: "Maskin og utstyr", label: t("auto.maskin_og_utstyr") },
+  { value: "Ergonomi", label: t("auto.ergonomi") },
+  { value: "Støy og vibrasjoner", label: t("auto.stoey_og_vibrasjoner") },
+  { value: "Annet HMS", label: t("auto.annet_hms") },
 ];
 
 const HMS_CATEGORY_VALUES = HMS_CATEGORIES.map(c => c.value);
 
 const SEVERITIES = [
-  { value: "low", label: "Lav", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-  { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
-  { value: "high", label: "Høy", color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
-  { value: "critical", label: "Kritisk", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
+  { value: "low", label: t("auto.lav"), color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  { value: "medium", label: t("auto.medium"), color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
+  { value: "high", label: t("auto.hoey"), color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
+  { value: "critical", label: t("auto.kritisk"), color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
 ];
 
 const STATUSES = [
-  { value: "open", label: "Åpen", icon: AlertTriangle, color: "text-yellow-600" },
-  { value: "in_progress", label: "Under arbeid", icon: Clock, color: "text-blue-600" },
-  { value: "closed", label: "Lukket", icon: CheckCircle2, color: "text-green-600" },
+  { value: "open", label: t("auto.aapen"), icon: AlertTriangle, color: "text-yellow-600" },
+  { value: "in_progress", label: t("auto.under_arbeid"), icon: Clock, color: "text-blue-600" },
+  { value: "closed", label: t("auto.lukket"), icon: CheckCircle2, color: "text-green-600" },
 ];
 
 export default function Ks2AvvikIntegrated() {
@@ -244,7 +245,7 @@ export default function Ks2AvvikIntegrated() {
   const handleConfirmClose = async () => {
     if (!closingAvvik) return;
     if (!closeComment.trim()) {
-      toast.error("Skriv en kort kommentar om hvordan avviket ble løst");
+      toast.error(t("auto.skriv_en_kort_kommentar_om_hvordan_avvik"));
       return;
     }
     setIsClosing(true);
@@ -281,7 +282,7 @@ export default function Ks2AvvikIntegrated() {
 
   const handleDownloadAvvikPdf = async (avvik: KsModule2Avvik) => {
     if (!project || !company) {
-      toast.error("Kan ikke lage PDF", { description: "Mangler prosjekt- eller bedriftsdata." });
+      toast.error(t("auto.kan_ikke_lage_pdf"), { description: t("auto.mangler_prosjekt_eller_bedriftsdata") });
       return;
     }
     setPdfLoadingId(avvik.id);
@@ -311,20 +312,20 @@ export default function Ks2AvvikIntegrated() {
         const parts: string[] = [];
         if (signCount) parts.push(`${signCount} bilde-signering feilet`);
         if (fetchCount) parts.push(`${fetchCount} bilde kunne ikke lastes`);
-        toast.warning("PDF lastet ned med advarsler", {
+        toast.warning(t("auto.pdf_lastet_ned_med_advarsler"), {
           description: `${parts.join(" · ")}. Bildene mangler i PDF-en.`,
-          action: { label: "Prøv igjen", onClick: () => handleDownloadAvvikPdf(avvik) },
+          action: { label: t("auto.proev_igjen"), onClick: () => handleDownloadAvvikPdf(avvik) },
           duration: 10000,
         });
       } else {
-        toast.success("PDF lastet ned");
+        toast.success(t("auto.pdf_lastet_ned"));
       }
     } catch (e: any) {
       console.error("PDF generation failed:", e);
       toast.dismiss(loadingToast);
-      toast.error("Kunne ikke lage PDF", {
+      toast.error(t("auto.kunne_ikke_lage_pdf"), {
         description: e?.message || "Ukjent feil under generering.",
-        action: { label: "Prøv igjen", onClick: () => handleDownloadAvvikPdf(avvik) },
+        action: { label: t("auto.proev_igjen"), onClick: () => handleDownloadAvvikPdf(avvik) },
         duration: 10000,
       });
     } finally {
@@ -347,7 +348,7 @@ export default function Ks2AvvikIntegrated() {
         email: company.email,
       }
     );
-    toast.success("PDF lastet ned");
+    toast.success(t("auto.pdf_lastet_ned"));
   };
 
   const getSeverityBadge = (severity: string) => {
@@ -383,9 +384,9 @@ export default function Ks2AvvikIntegrated() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Avviksregister</h1>
+          <h1 className="text-2xl font-bold">{t("auto.avviksregister")}</h1>
           <p className="text-muted-foreground">
-            Registrer og følg opp avvik i prosjektet
+            {t("auto.registrer_og_foelg_opp_avvik_i_prosjekte")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -482,17 +483,17 @@ export default function Ks2AvvikIntegrated() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Tittel *</Label>
+              <Label>{t("auto.tittel_2")}</Label>
               <Input
                 value={newAvvik.title}
                 onChange={(e) => setNewAvvik(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Kort beskrivelse av avviket"
+                placeholder={t("auto.kort_beskrivelse_av_avviket")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Kategori</Label>
+                <Label>{t("auto.kategori")}</Label>
                 <Select
                   value={newAvvik.category}
                   onValueChange={(v) => setNewAvvik(prev => ({ ...prev, category: v }))}
@@ -508,7 +509,7 @@ export default function Ks2AvvikIntegrated() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Alvorlighetsgrad</Label>
+                <Label>{t("auto.alvorlighetsgrad_3")}</Label>
                 <Select
                   value={newAvvik.severity}
                   onValueChange={(v) => setNewAvvik(prev => ({ ...prev, severity: v }))}
@@ -526,26 +527,26 @@ export default function Ks2AvvikIntegrated() {
             </div>
 
             <div className="space-y-2">
-              <Label>Beskrivelse</Label>
+              <Label>{t("auto.beskrivelse")}</Label>
               <Textarea
                 value={newAvvik.description}
                 onChange={(e) => setNewAvvik(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Detaljert beskrivelse av avviket..."
+                placeholder={t("auto.detaljert_beskrivelse_av_avviket")}
                 rows={3}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Lokasjon</Label>
+                <Label>{t("auto.lokasjon")}</Label>
                 <Input
                   value={newAvvik.location}
                   onChange={(e) => setNewAvvik(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="Hvor ble det oppdaget?"
+                  placeholder={t("auto.hvor_ble_det_oppdaget")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Frist</Label>
+                <Label>{t("auto.frist_2")}</Label>
                 <Input
                   type="date"
                   value={newAvvik.deadline}
@@ -555,37 +556,37 @@ export default function Ks2AvvikIntegrated() {
             </div>
 
             <div className="space-y-2">
-              <Label>Ansvarlig</Label>
+              <Label>{t("auto.ansvarlig_2")}</Label>
               <Input
                 value={newAvvik.responsible_name}
                 onChange={(e) => setNewAvvik(prev => ({ ...prev, responsible_name: e.target.value }))}
-                placeholder="Hvem er ansvarlig for å lukke avviket?"
+                placeholder={t("auto.hvem_er_ansvarlig_for_aa_lukke_avviket")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Årsak</Label>
+              <Label>{t("auto.aarsak")}</Label>
               <Textarea
                 value={newAvvik.root_cause}
                 onChange={(e) => setNewAvvik(prev => ({ ...prev, root_cause: e.target.value }))}
-                placeholder="Hva er årsaken til avviket?"
+                placeholder={t("auto.hva_er_aarsaken_til_avviket")}
                 rows={2}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Korrigerende tiltak</Label>
+              <Label>{t("auto.korrigerende_tiltak_2")}</Label>
               <Textarea
                 value={newAvvik.corrective_action}
                 onChange={(e) => setNewAvvik(prev => ({ ...prev, corrective_action: e.target.value }))}
-                placeholder="Hvilke tiltak skal gjennomføres?"
+                placeholder={t("auto.hvilke_tiltak_skal_gjennomfoeres")}
                 rows={2}
               />
             </div>
 
             {/* Photo Upload Section */}
             <div className="space-y-2">
-              <Label>Bilder</Label>
+              <Label>{t("auto.bilder")}</Label>
               <div className="border-2 border-dashed rounded-lg p-4">
                 <input
                   ref={fileInputRef}
@@ -607,7 +608,7 @@ export default function Ks2AvvikIntegrated() {
                     {uploadingPhotos ? "Laster opp..." : "Last opp bilder"}
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    Du kan laste opp flere bilder samtidig
+                    {t("auto.du_kan_laste_opp_flere_bilder_samtidig")}
                   </p>
                 </div>
                 
@@ -636,7 +637,7 @@ export default function Ks2AvvikIntegrated() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsNewDialogOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleCreateAvvik} 
@@ -663,25 +664,25 @@ export default function Ks2AvvikIntegrated() {
                 <Badge>{getStatusInfo(viewAvvik.status).label}</Badge>
               </div>
               {viewAvvik.description && (
-                <div><Label className="text-xs">Beskrivelse</Label><p className="whitespace-pre-wrap">{viewAvvik.description}</p></div>
+                <div><Label className="text-xs">{t("auto.beskrivelse")}</Label><p className="whitespace-pre-wrap">{viewAvvik.description}</p></div>
               )}
               {viewAvvik.location && (
-                <div><Label className="text-xs">Lokasjon</Label><p>{viewAvvik.location}</p></div>
+                <div><Label className="text-xs">{t("auto.lokasjon")}</Label><p>{viewAvvik.location}</p></div>
               )}
               <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-xs">Oppdaget</Label><p>{format(new Date(viewAvvik.discovered_date), "dd.MM.yyyy")}</p></div>
-                {viewAvvik.deadline && <div><Label className="text-xs">Frist</Label><p>{format(new Date(viewAvvik.deadline), "dd.MM.yyyy")}</p></div>}
-                <div><Label className="text-xs">Rapportert av</Label><p>{viewAvvik.reported_by_name}</p></div>
-                {viewAvvik.responsible_name && <div><Label className="text-xs">Ansvarlig</Label><p>{viewAvvik.responsible_name}</p></div>}
+                <div><Label className="text-xs">{t("auto.oppdaget")}</Label><p>{format(new Date(viewAvvik.discovered_date), "dd.MM.yyyy")}</p></div>
+                {viewAvvik.deadline && <div><Label className="text-xs">{t("auto.frist_2")}</Label><p>{format(new Date(viewAvvik.deadline), "dd.MM.yyyy")}</p></div>}
+                <div><Label className="text-xs">{t("auto.rapportert_av_2")}</Label><p>{viewAvvik.reported_by_name}</p></div>
+                {viewAvvik.responsible_name && <div><Label className="text-xs">{t("auto.ansvarlig_2")}</Label><p>{viewAvvik.responsible_name}</p></div>}
               </div>
               {viewAvvik.root_cause && (
-                <div><Label className="text-xs">Årsak</Label><p className="whitespace-pre-wrap">{viewAvvik.root_cause}</p></div>
+                <div><Label className="text-xs">{t("auto.aarsak")}</Label><p className="whitespace-pre-wrap">{viewAvvik.root_cause}</p></div>
               )}
               {viewAvvik.corrective_action && (
-                <div><Label className="text-xs">Korrigerende tiltak / kommentar</Label><p className="whitespace-pre-wrap">{viewAvvik.corrective_action}</p></div>
+                <div><Label className="text-xs">{t("auto.korrigerende_tiltak_kommentar")}</Label><p className="whitespace-pre-wrap">{viewAvvik.corrective_action}</p></div>
               )}
               {viewAvvik.closed_at && (
-                <div><Label className="text-xs">Lukket</Label><p>{format(new Date(viewAvvik.closed_at), "dd.MM.yyyy HH:mm")} av {viewAvvik.closed_by_name || "Ukjent"}</p></div>
+                <div><Label className="text-xs">{t("auto.lukket")}</Label><p>{format(new Date(viewAvvik.closed_at), "dd.MM.yyyy HH:mm")} av {viewAvvik.closed_by_name || "Ukjent"}</p></div>
               )}
               {viewAvvik.photo_paths && viewAvvik.photo_paths.length > 0 && (
                 <div>
@@ -707,16 +708,16 @@ export default function Ks2AvvikIntegrated() {
             <DialogTitle>Lukk avvik {closingAvvik?.avvik_number}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <Label>Hvordan ble avviket løst? *</Label>
+            <Label>{t("auto.hvordan_ble_avviket_loest")}</Label>
             <Textarea
               value={closeComment}
               onChange={(e) => setCloseComment(e.target.value)}
               rows={4}
-              placeholder="Kort beskrivelse av hvordan avviket ble lukket..."
+              placeholder={t("auto.kort_beskrivelse_av_hvordan_avviket_ble_")}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setClosingAvvik(null)} disabled={isClosing}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setClosingAvvik(null)} disabled={isClosing}>{t("auto.avbryt")}</Button>
             <Button onClick={handleConfirmClose} disabled={isClosing || !closeComment.trim()}>
               {isClosing ? "Lukker..." : "Lukk avvik"}
             </Button>
@@ -786,7 +787,7 @@ function AvvikContent({
               </div>
               <div>
                 <p className="text-2xl font-bold">{openCount}</p>
-                <p className="text-sm text-muted-foreground">Åpne</p>
+                <p className="text-sm text-muted-foreground">{t("auto.aapne")}</p>
               </div>
             </div>
           </CardContent>
@@ -799,7 +800,7 @@ function AvvikContent({
               </div>
               <div>
                 <p className="text-2xl font-bold">{inProgressCount}</p>
-                <p className="text-sm text-muted-foreground">Under arbeid</p>
+                <p className="text-sm text-muted-foreground">{t("auto.under_arbeid")}</p>
               </div>
             </div>
           </CardContent>
@@ -812,7 +813,7 @@ function AvvikContent({
               </div>
               <div>
                 <p className="text-2xl font-bold">{closedCount}</p>
-                <p className="text-sm text-muted-foreground">Lukket</p>
+                <p className="text-sm text-muted-foreground">{t("auto.lukket")}</p>
               </div>
             </div>
           </CardContent>
@@ -824,7 +825,7 @@ function AvvikContent({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk etter avvik..."
+            placeholder={t("auto.soek_etter_avvik")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -835,10 +836,10 @@ function AvvikContent({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle statuser</SelectItem>
-            <SelectItem value="open">Åpne</SelectItem>
-            <SelectItem value="in_progress">Under arbeid</SelectItem>
-            <SelectItem value="closed">Lukket</SelectItem>
+            <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+            <SelectItem value="open">{t("auto.aapne")}</SelectItem>
+            <SelectItem value="in_progress">{t("auto.under_arbeid")}</SelectItem>
+            <SelectItem value="closed">{t("auto.lukket")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -848,7 +849,7 @@ function AvvikContent({
         <Card>
           <CardContent className="py-12 text-center">
             <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Ingen avvik funnet</h3>
+            <h3 className="text-lg font-medium mb-2">{t("auto.ingen_avvik_funnet")}</h3>
             <p className="text-muted-foreground">
               {searchQuery || filterStatus !== "all" 
                 ? "Prøv å justere søket eller filteret"

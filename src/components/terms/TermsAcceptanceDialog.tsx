@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface TermsAcceptanceDialogProps {
   open: boolean;
@@ -107,10 +108,10 @@ export const TermsAcceptanceDialog = ({
   const handleAccept = async () => {
     try {
       await onAccept();
-      toast.success("Vilkår godkjent");
+      toast.success(t("auto.vilkaar_godkjent"));
     } catch (error) {
       console.error("Error accepting terms:", error);
-      toast.error("Kunne ikke lagre godkjenning. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_lagre_godkjenning_proev_igjen"));
     }
   };
 
@@ -122,9 +123,9 @@ export const TermsAcceptanceDialog = ({
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Avtalevilkår</DialogTitle>
+          <DialogTitle>{t("auto.avtalevilkaar")}</DialogTitle>
         <DialogDescription>
-          Vennligst les og godkjenn avtalevilkårene for å fortsette.
+          {t("auto.vennligst_les_og_godkjenn_avtalevilkaare")}
         </DialogDescription>
       </DialogHeader>
 

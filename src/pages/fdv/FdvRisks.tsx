@@ -25,6 +25,7 @@ import { useFdvRiskAssessments } from "@/hooks/useFdvRiskAssessments";
 import { useFdvBuildings } from "@/hooks/useFdvBuildings";
 import { FdvRiskDialog } from "@/components/fdv/FdvRiskDialog";
 import { FdvRiskAssessment, FDV_RISK_CATEGORY_LABELS } from "@/types/fdv";
+import { t } from "@/i18n/t";
 
 export default function FdvRisks() {
   const { risks, highRisks, mediumRisks, lowRisks, isLoading, createRisk, updateRisk, deleteRisk } = useFdvRiskAssessments();
@@ -78,9 +79,9 @@ export default function FdvRisks() {
   };
 
   const getRiskBadge = (score: number) => {
-    if (score >= 15) return <Badge variant="destructive">Høy risiko</Badge>;
-    if (score >= 8) return <Badge variant="secondary" className="bg-warning/20 text-warning-foreground">Middels risiko</Badge>;
-    return <Badge variant="outline" className="text-green-600">Lav risiko</Badge>;
+    if (score >= 15) return <Badge variant="destructive">{t("auto.hoey_risiko")}</Badge>;
+    if (score >= 8) return <Badge variant="secondary" className="bg-warning/20 text-warning-foreground">{t("auto.middels_risiko")}</Badge>;
+    return <Badge variant="outline" className="text-green-600">{t("auto.lav_risiko")}</Badge>;
   };
 
   const activeRisks = risks.filter(r => r.status === 'aktiv');
@@ -96,7 +97,7 @@ export default function FdvRisks() {
               Risikoanalyse – Bygg
             </h1>
             <p className="text-muted-foreground mt-1">
-              Kartlegg risiko knyttet til bygningsmassen
+              {t("auto.kartlegg_risiko_knyttet_til_bygningsmass")}
             </p>
           </div>
           <Button onClick={handleCreate} className="gap-2">
@@ -112,7 +113,7 @@ export default function FdvRisks() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold">{activeRisks.length}</p>
-                  <p className="text-sm text-muted-foreground">Aktive risikoer</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.aktive_risikoer")}</p>
                 </div>
                 <Shield className="h-8 w-8 text-primary/20" />
               </div>
@@ -123,7 +124,7 @@ export default function FdvRisks() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold text-destructive">{highRisks.length}</p>
-                  <p className="text-sm text-muted-foreground">Høy risiko</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.hoey_risiko")}</p>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-red-500/20 flex items-center justify-center">
                   <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -136,7 +137,7 @@ export default function FdvRisks() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold text-warning">{mediumRisks.length}</p>
-                  <p className="text-sm text-muted-foreground">Middels risiko</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.middels_risiko")}</p>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
                   <AlertTriangle className="h-5 w-5 text-yellow-500" />
@@ -149,7 +150,7 @@ export default function FdvRisks() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold text-green-600">{lowRisks.length}</p>
-                  <p className="text-sm text-muted-foreground">Lav risiko</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.lav_risiko")}</p>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center">
                   <Shield className="h-5 w-5 text-green-500" />
@@ -161,13 +162,13 @@ export default function FdvRisks() {
 
         {/* Risk List */}
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Laster risikovurderinger...</div>
+          <div className="text-center py-8 text-muted-foreground">{t("auto.laster_risikovurderinger")}</div>
         ) : risks.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <AlertTriangle className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ingen risikovurderinger</h3>
-              <p className="text-muted-foreground mb-4">Start med å kartlegge risiko for dine bygg</p>
+              <h3 className="text-lg font-medium mb-2">{t("auto.ingen_risikovurderinger")}</h3>
+              <p className="text-muted-foreground mb-4">{t("auto.start_med_aa_kartlegge_risiko_for_dine_b")}</p>
               <Button onClick={handleCreate} className="gap-2">
                 <Plus className="h-4 w-4" />
                 Ny risikovurdering
@@ -198,7 +199,7 @@ export default function FdvRisks() {
 
                       <div className="mt-3 flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">Risikoscore:</span>
+                          <span className="text-xs text-muted-foreground">{t("auto.risikoscore")}</span>
                           <div className="flex items-center gap-1">
                             <Progress value={(risk.risk_score / 25) * 100} className="w-20 h-2" />
                             <span className="text-sm font-medium">{risk.risk_score}/25</span>
@@ -254,16 +255,15 @@ export default function FdvRisks() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett risikovurdering</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_risikovurdering_2")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne risikovurderingen?
-              Denne handlingen kan ikke angres.
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne__6")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

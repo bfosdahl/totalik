@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ShieldCheck, Send, Loader2 } from "lucide-react";
 import { useAnonymousMessages } from "@/hooks/useAnonymousMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { t } from "@/i18n/t";
 
 interface Props {
   open: boolean;
@@ -17,12 +18,12 @@ interface Props {
 }
 
 const categories = [
-  { value: "arbeidsmiljo", label: "Arbeidsmiljø" },
-  { value: "sikkerhet", label: "Sikkerhet" },
-  { value: "trakassering", label: "Trakassering" },
-  { value: "diskriminering", label: "Diskriminering" },
-  { value: "regelbrudd", label: "Regelbrudd" },
-  { value: "annet", label: "Annet" },
+  { value: "arbeidsmiljo", label: t("auto.arbeidsmiljoe") },
+  { value: "sikkerhet", label: t("auto.sikkerhet") },
+  { value: "trakassering", label: t("auto.trakassering") },
+  { value: "diskriminering", label: t("auto.diskriminering") },
+  { value: "regelbrudd", label: t("auto.regelbrudd") },
+  { value: "annet", label: t("auto.annet") },
 ];
 
 export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
@@ -52,17 +53,16 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
       <Alert className="border-primary/30 bg-primary/5">
         <ShieldCheck className="h-4 w-4 text-primary" />
         <AlertDescription className="text-sm">
-          <strong>100% anonymt:</strong> Vi lagrer ingen informasjon som kan identifisere deg. 
-          Hverken navn, IP-adresse eller tidspunkt for innsending kan spores tilbake til deg.
+          <strong>{t("auto.100_anonymt")}</strong> {t("auto.vi_lagrer_ingen_informasjon_som_kan_iden")}
         </AlertDescription>
       </Alert>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="category">Kategori *</Label>
+          <Label htmlFor="category">{t("auto.kategori_2")}</Label>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger id="category">
-              <SelectValue placeholder="Velg kategori" />
+              <SelectValue placeholder={t("auto.velg_kategori")} />
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
@@ -75,23 +75,23 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="subject">Emne *</Label>
+          <Label htmlFor="subject">{t("auto.emne")}</Label>
           <Input
             id="subject"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            placeholder="Kort beskrivelse av saken"
+            placeholder={t("auto.kort_beskrivelse_av_saken")}
             maxLength={100}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="message">Melding *</Label>
+          <Label htmlFor="message">{t("auto.melding_2")}</Label>
           <Textarea
             id="message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Beskriv saken så detaljert du ønsker..."
+            placeholder={t("auto.beskriv_saken_saa_detaljert_du_oensker")}
             rows={4}
             className="resize-none min-h-[100px]"
           />
@@ -102,7 +102,7 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
 
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button type="submit" disabled={!isValid || submitMessage.isPending}>
             {submitMessage.isPending ? (
@@ -133,7 +133,7 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
                 Send anonym melding
               </DrawerTitle>
               <DrawerDescription>
-                Din identitet er fullstendig skjult. Meldingen sendes til leder og verneombud.
+                {t("auto.din_identitet_er_fullstendig_skjult_meld")}
               </DrawerDescription>
             </DrawerHeader>
             {formContent}
@@ -152,7 +152,7 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
             Send anonym melding
           </DialogTitle>
           <DialogDescription>
-            Din identitet er fullstendig skjult. Meldingen sendes til leder og verneombud.
+            {t("auto.din_identitet_er_fullstendig_skjult_meld")}
           </DialogDescription>
         </DialogHeader>
         {formContent}

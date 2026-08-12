@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { normalizeHmsRoutines } from "@/lib/hmsImportNormalizers";
+import { t } from "@/i18n/t";
 
 interface RoutineItem {
   id: string;
@@ -418,10 +419,10 @@ export const RutinerTab = () => {
       
       setRoutines(normalizedRoutines);
       setHasChanges(false);
-      toast.success("Rutiner lagret");
+      toast.success(t("auto.rutiner_lagret"));
     } catch (err) {
       console.error("Error saving routines:", err);
-      toast.error("Kunne ikke lagre rutiner");
+      toast.error(t("auto.kunne_ikke_lagre_rutiner"));
     } finally {
       setSaving(false);
     }
@@ -449,7 +450,7 @@ export const RutinerTab = () => {
   const addFromLibrary = (predefined: Omit<RoutineItem, 'id'>) => {
     const existingNumbers = routines.map(r => r.routine_number);
     if (existingNumbers.includes(predefined.routine_number)) {
-      toast.error("Denne rutinen er allerede lagt til");
+      toast.error(t("auto.denne_rutinen_er_allerede_lagt_til"));
       return;
     }
     
@@ -473,7 +474,7 @@ export const RutinerTab = () => {
   const deleteRoutine = (id: string) => {
     setRoutines(routines.filter(r => r.id !== id));
     setHasChanges(true);
-    toast.success("Rutine slettet");
+    toast.success(t("auto.rutine_slettet"));
   };
 
   const toggleExpanded = (id: string) => {
@@ -517,7 +518,7 @@ export const RutinerTab = () => {
                 HMS-rutiner
               </CardTitle>
               <CardDescription>
-                Administrer bedriftens HMS-rutiner og prosedyrer
+                {t("auto.administrer_bedriftens_hms_rutiner_og_pr")}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -530,13 +531,13 @@ export const RutinerTab = () => {
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[80vh]">
                   <DialogHeader>
-                    <DialogTitle>Rutinebibliotek</DialogTitle>
+                    <DialogTitle>{t("auto.rutinebibliotek")}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Søk i rutinebiblioteket..."
+                        placeholder={t("auto.soek_i_rutinebiblioteket")}
                         value={librarySearch}
                         onChange={(e) => setLibrarySearch(e.target.value)}
                         className="pl-10"
@@ -592,7 +593,7 @@ export const RutinerTab = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Søk i rutiner..."
+              placeholder={t("auto.soek_i_rutiner")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -605,9 +606,9 @@ export const RutinerTab = () => {
       {filteredRoutines.length === 0 ? (
         <Card className="p-8 text-center">
           <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Ingen rutiner</h3>
+          <h3 className="text-lg font-medium mb-2">{t("auto.ingen_rutiner")}</h3>
           <p className="text-muted-foreground mb-4">
-            Legg til rutiner fra biblioteket eller opprett egne
+            {t("auto.legg_til_rutiner_fra_biblioteket_eller_o")}
           </p>
           <div className="flex justify-center gap-2">
             <Button variant="outline" onClick={() => setLibraryOpen(true)}>
@@ -644,7 +645,7 @@ export const RutinerTab = () => {
                             </Badge>
                             {routine.is_predefined && (
                               <Badge variant="secondary" className="text-xs">
-                                Standard
+                                {t("auto.standard")}
                               </Badge>
                             )}
                             <Badge variant="outline" className="text-[10px] text-muted-foreground">
@@ -688,7 +689,7 @@ export const RutinerTab = () => {
                             });
                             setEditingId(editingId === routine.id ? null : routine.id);
                           }}
-                          title="Rediger rutinen"
+                          title={t("auto.rediger_rutinen")}
                         >
                           {editingId === routine.id ? (
                             <>
@@ -720,14 +721,14 @@ export const RutinerTab = () => {
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="text-sm font-medium">Rutine-nummer</label>
+                            <label className="text-sm font-medium">{t("auto.rutine_nummer")}</label>
                             <Input
                               value={routine.routine_number}
                               onChange={(e) => updateRoutine(routine.id, "routine_number", e.target.value)}
                             />
                           </div>
                           <div>
-                            <label className="text-sm font-medium">Navn</label>
+                            <label className="text-sm font-medium">{t("auto.navn_2")}</label>
                             <Input
                               value={routine.routine_name}
                               onChange={(e) => updateRoutine(routine.id, "routine_name", e.target.value)}
@@ -735,7 +736,7 @@ export const RutinerTab = () => {
                           </div>
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Formål</label>
+                          <label className="text-sm font-medium">{t("auto.formaal")}</label>
                           <Textarea
                             value={routine.purpose}
                             onChange={(e) => updateRoutine(routine.id, "purpose", e.target.value)}
@@ -743,7 +744,7 @@ export const RutinerTab = () => {
                           />
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Ansvar</label>
+                          <label className="text-sm font-medium">{t("auto.ansvar")}</label>
                           <Textarea
                             value={routine.responsibility}
                             onChange={(e) => updateRoutine(routine.id, "responsibility", e.target.value)}
@@ -751,7 +752,7 @@ export const RutinerTab = () => {
                           />
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Fremgangsmåte</label>
+                          <label className="text-sm font-medium">{t("auto.fremgangsmaate")}</label>
                           <Textarea
                             value={routine.procedure}
                             onChange={(e) => updateRoutine(routine.id, "procedure", e.target.value)}
@@ -759,7 +760,7 @@ export const RutinerTab = () => {
                           />
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Eksempler</label>
+                          <label className="text-sm font-medium">{t("auto.eksempler")}</label>
                           <Textarea
                             value={routine.examples}
                             onChange={(e) => updateRoutine(routine.id, "examples", e.target.value)}
@@ -767,7 +768,7 @@ export const RutinerTab = () => {
                           />
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Husk</label>
+                          <label className="text-sm font-medium">{t("auto.husk")}</label>
                           <Textarea
                             value={routine.remember}
                             onChange={(e) => updateRoutine(routine.id, "remember", e.target.value)}
@@ -780,31 +781,31 @@ export const RutinerTab = () => {
                       <>
                         {routine.purpose && (
                           <div>
-                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">Formål</h4>
+                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">{t("auto.formaal")}</h4>
                             <p className="text-sm whitespace-pre-wrap">{routine.purpose}</p>
                           </div>
                         )}
                         {routine.responsibility && (
                           <div>
-                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">Ansvar</h4>
+                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">{t("auto.ansvar")}</h4>
                             <p className="text-sm whitespace-pre-wrap">{routine.responsibility}</p>
                           </div>
                         )}
                         {routine.procedure && (
                           <div>
-                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">Fremgangsmåte</h4>
+                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">{t("auto.fremgangsmaate")}</h4>
                             <p className="text-sm whitespace-pre-wrap">{routine.procedure}</p>
                           </div>
                         )}
                         {routine.examples && (
                           <div>
-                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">Eksempler</h4>
+                            <h4 className="text-sm font-semibold text-muted-foreground mb-1">{t("auto.eksempler")}</h4>
                             <p className="text-sm whitespace-pre-wrap">{routine.examples}</p>
                           </div>
                         )}
                         {routine.remember && (
                           <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-                            <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-1">Husk</h4>
+                            <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-1">{t("auto.husk")}</h4>
                             <p className="text-sm text-amber-700 dark:text-amber-300 whitespace-pre-wrap">{routine.remember}</p>
                           </div>
                         )}

@@ -29,19 +29,20 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { HmsSjaWizard } from "./HmsSjaWizard";
+import { t } from "@/i18n/t";
 
 const RISK_LEVELS = [
-  { value: "low", label: "Lav", color: "bg-green-100 text-green-700" },
-  { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-700" },
-  { value: "high", label: "Høy", color: "bg-orange-100 text-orange-700" },
-  { value: "critical", label: "Kritisk", color: "bg-red-100 text-red-700" },
+  { value: "low", label: t("auto.lav"), color: "bg-green-100 text-green-700" },
+  { value: "medium", label: t("auto.medium"), color: "bg-yellow-100 text-yellow-700" },
+  { value: "high", label: t("auto.hoey"), color: "bg-orange-100 text-orange-700" },
+  { value: "critical", label: t("auto.kritisk"), color: "bg-red-100 text-red-700" },
 ];
 
 const STATUS_CONFIG = {
-  draft: { label: "Utkast", color: "bg-gray-100 text-gray-700", icon: Edit },
-  active: { label: "Aktiv", color: "bg-blue-100 text-blue-700", icon: Clock },
-  completed: { label: "Fullført", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  cancelled: { label: "Avbrutt", color: "bg-red-100 text-red-700", icon: AlertTriangle },
+  draft: { label: t("auto.utkast"), color: "bg-gray-100 text-gray-700", icon: Edit },
+  active: { label: t("auto.aktiv"), color: "bg-blue-100 text-blue-700", icon: Clock },
+  completed: { label: t("auto.fullfoert"), color: "bg-green-100 text-green-700", icon: CheckCircle2 },
+  cancelled: { label: t("auto.avbrutt"), color: "bg-red-100 text-red-700", icon: AlertTriangle },
 };
 
 export function HmsSjaTab() {
@@ -66,7 +67,7 @@ export function HmsSjaTab() {
 
   const handleCreate = async () => {
     if (!newSja.title) {
-      toast.error("Tittel er påkrevd");
+      toast.error(t("auto.tittel_er_paakrevd"));
       return;
     }
 
@@ -145,7 +146,7 @@ export function HmsSjaTab() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Laster...</p>
+          <p className="text-muted-foreground">{t("auto.laster")}</p>
         </div>
       </div>
     );
@@ -170,25 +171,25 @@ export function HmsSjaTab() {
         <Card className="border-l-4 border-l-primary">
           <CardContent className="p-4">
             <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Totalt SJA</div>
+            <div className="text-sm text-muted-foreground">{t("auto.totalt_sja")}</div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-gray-400">
           <CardContent className="p-4">
             <div className="text-2xl font-bold">{stats.draft}</div>
-            <div className="text-sm text-muted-foreground">Utkast</div>
+            <div className="text-sm text-muted-foreground">{t("auto.utkast")}</div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
-            <div className="text-sm text-muted-foreground">Aktive</div>
+            <div className="text-sm text-muted-foreground">{t("auto.aktive")}</div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-green-500">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-            <div className="text-sm text-muted-foreground">Fullført</div>
+            <div className="text-sm text-muted-foreground">{t("auto.fullfoert")}</div>
           </CardContent>
         </Card>
       </div>
@@ -198,7 +199,7 @@ export function HmsSjaTab() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk etter SJA..."
+            placeholder={t("auto.soek_etter_sja")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -214,7 +215,7 @@ export function HmsSjaTab() {
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Opprett ny Sikker Jobb Analyse</DialogTitle>
+              <DialogTitle>{t("auto.opprett_ny_sikker_jobb_analyse")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               {templates.length > 0 && (
@@ -227,10 +228,10 @@ export function HmsSjaTab() {
                     onValueChange={setSelectedTemplateId}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Start fra bunn eller velg mal..." />
+                      <SelectValue placeholder={t("auto.start_fra_bunn_eller_velg_mal")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Ingen mal – start fra bunn</SelectItem>
+                      <SelectItem value="none">{t("auto.ingen_mal_start_fra_bunn")}</SelectItem>
                       {templates.map((t) => (
                         <SelectItem key={t.id} value={t.id}>
                           {t.name}
@@ -240,38 +241,38 @@ export function HmsSjaTab() {
                   </Select>
                   {selectedTemplateId !== "none" && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      Aktiviteter, risiko og tiltak fra malen fylles inn automatisk. Du kan justere alt etterpå.
+                      {t("auto.aktiviteter_risiko_og_tiltak_fra_malen_f")}
                     </p>
                   )}
                 </div>
               )}
               <div>
-                <label className="text-sm font-medium">Tittel *</label>
+                <label className="text-sm font-medium">{t("auto.tittel_2")}</label>
                 <Input 
-                  placeholder="F.eks. Arbeid i høyden - tak"
+                  placeholder={t("auto.f_eks_arbeid_i_hoeyden_tak")}
                   value={newSja.title}
                   onChange={(e) => setNewSja(p => ({ ...p, title: e.target.value }))}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Beskrivelse</label>
+                <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
                 <Textarea 
-                  placeholder="Beskriv arbeidet som skal utføres..."
+                  placeholder={t("auto.beskriv_arbeidet_som_skal_utfoeres")}
                   value={newSja.description}
                   onChange={(e) => setNewSja(p => ({ ...p, description: e.target.value }))}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Lokasjon</label>
+                  <label className="text-sm font-medium">{t("auto.lokasjon")}</label>
                   <Input 
-                    placeholder="Hvor skal arbeidet utføres?"
+                    placeholder={t("auto.hvor_skal_arbeidet_utfoeres")}
                     value={newSja.location}
                     onChange={(e) => setNewSja(p => ({ ...p, location: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Planlagt dato</label>
+                  <label className="text-sm font-medium">{t("auto.planlagt_dato_2")}</label>
                   <Input 
                     type="date"
                     value={newSja.planned_date}
@@ -281,13 +282,13 @@ export function HmsSjaTab() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Ansvarlig</label>
+                  <label className="text-sm font-medium">{t("auto.ansvarlig_2")}</label>
                   <Select 
                     value={newSja.responsible_name}
                     onValueChange={(v) => setNewSja(p => ({ ...p, responsible_name: v }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg ansvarlig" />
+                      <SelectValue placeholder={t("auto.velg_ansvarlig")} />
                     </SelectTrigger>
                     <SelectContent>
                       {employees.map(emp => (
@@ -299,7 +300,7 @@ export function HmsSjaTab() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Risikonivå</label>
+                  <label className="text-sm font-medium">{t("auto.risikonivaa")}</label>
                   <Select 
                     value={newSja.risk_level}
                     onValueChange={(v: any) => setNewSja(p => ({ ...p, risk_level: v }))}
@@ -317,7 +318,7 @@ export function HmsSjaTab() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewDialog(false)}>Avbryt</Button>
+              <Button variant="outline" onClick={() => setShowNewDialog(false)}>{t("auto.avbryt")}</Button>
               <Button onClick={handleCreate} disabled={createSja.isPending}>
                 {createSja.isPending ? "Oppretter..." : "Opprett og fortsett"}
               </Button>
@@ -331,7 +332,7 @@ export function HmsSjaTab() {
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <FileCheck className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="font-medium mb-1">Ingen SJA-er funnet</h3>
+            <h3 className="font-medium mb-1">{t("auto.ingen_sja_er_funnet")}</h3>
             <p className="text-sm text-muted-foreground mb-4">
               {searchQuery ? "Ingen treff på søket ditt" : "Opprett din første Sikker Jobb Analyse"}
             </p>

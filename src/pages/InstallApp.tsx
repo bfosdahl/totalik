@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { PageSeo } from "@/components/seo/PageSeo";
+import { t } from "@/i18n/t";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -86,9 +87,9 @@ export default function InstallApp() {
             <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500/10 flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-green-500" />
             </div>
-            <CardTitle className="text-xl sm:text-2xl">Appen er installert!</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">{t("auto.appen_er_installert")}</CardTitle>
             <CardDescription className="text-base">
-              Du kan nå bruke Total-IK direkte fra startskjermen din.
+              {t("auto.du_kan_naa_bruke_total_ik_direkte_fra_st")}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -99,7 +100,7 @@ export default function InstallApp() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-primary/10 to-background p-4 sm:p-6">
       <PageSeo
-        title="Installer Total-IK som app"
+        title={t("auto.installer_total_ik_som_app")}
         description="Installer Total-IK som progressiv app (PWA) på iPhone, Android eller PC for rask tilgang til internkontroll, HMS og avvik."
         path="/install"
       />
@@ -113,9 +114,9 @@ export default function InstallApp() {
           <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
             <Smartphone className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold px-4">Installer Total-IK</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold px-4">{t("auto.installer_total_ik")}</h1>
           <p className="text-sm sm:text-base text-muted-foreground px-4">
-            Få rask tilgang til internkontroll, HMS og dokumenter
+            {t("auto.faa_rask_tilgang_til_internkontroll_hms_")}
           </p>
         </motion.div>
 
@@ -127,28 +128,28 @@ export default function InstallApp() {
         >
           <Card>
             <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-base sm:text-lg">Fordeler med appen</CardTitle>
+              <CardTitle className="text-base sm:text-lg">{t("auto.fordeler_med_appen")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-medium text-sm sm:text-base">Rask tilgang til kursbevis</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Vis kursbevis ved tilsyn med ett klikk</p>
+                  <p className="font-medium text-sm sm:text-base">{t("auto.rask_tilgang_til_kursbevis")}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.vis_kursbevis_ved_tilsyn_med_ett_klikk")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-medium text-sm sm:text-base">Fungerer offline</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Se kursbeviset selv uten internett</p>
+                  <p className="font-medium text-sm sm:text-base">{t("auto.fungerer_offline")}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.se_kursbeviset_selv_uten_internett")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-medium text-sm sm:text-base">Ingen app-butikk nødvendig</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Installer direkte fra nettleseren</p>
+                  <p className="font-medium text-sm sm:text-base">{t("auto.ingen_app_butikk_noedvendig")}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.installer_direkte_fra_nettleseren")}</p>
                 </div>
               </div>
             </CardContent>
@@ -169,8 +170,8 @@ export default function InstallApp() {
                     <Apple className="w-6 h-6 text-background" />
                   </div>
                   <div>
-                    <CardTitle className="text-base sm:text-lg">Installer på iPhone / iPad</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">3 enkle steg – tar under 10 sekunder</p>
+                    <CardTitle className="text-base sm:text-lg">{t("auto.installer_paa_iphone_ipad")}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t("auto.3_enkle_steg_tar_under_10_sekunder")}</p>
                   </div>
                 </div>
               </CardHeader>
@@ -187,7 +188,7 @@ export default function InstallApp() {
                       Åpne denne siden i Safari først
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      På iPhone/iPad må du bruke Safari for å installere appen. Kopier lenken og åpne den i Safari.
+                      {t("auto.paa_iphone_ipad_maa_du_bruke_safari_for_")}
                     </p>
                   </motion.div>
                 )}
@@ -203,14 +204,14 @@ export default function InstallApp() {
                     1
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm sm:text-base">Trykk på Del-knappen</p>
+                    <p className="font-semibold text-sm sm:text-base">{t("auto.trykk_paa_del_knappen")}</p>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                      Firkant-ikonet med pil opp i Safari-menyen nederst
+                      {t("auto.firkant_ikonet_med_pil_opp_i_safari_meny")}
                     </p>
                     <div className="mt-2 bg-muted/50 rounded-lg p-3 flex items-center justify-center gap-2">
                       <Share className="w-6 h-6 text-primary" />
                       <ArrowDown className="w-4 h-4 text-muted-foreground animate-bounce" />
-                      <span className="text-xs text-muted-foreground">Finn dette ikonet nederst i Safari</span>
+                      <span className="text-xs text-muted-foreground">{t("auto.finn_dette_ikonet_nederst_i_safari")}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -226,15 +227,15 @@ export default function InstallApp() {
                     2
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm sm:text-base">Velg «Legg til på Hjem-skjerm»</p>
+                    <p className="font-semibold text-sm sm:text-base">{t("auto.velg_legg_til_paa_hjem_skjerm")}</p>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                      Scroll ned i menyen som dukker opp til du finner alternativet
+                      {t("auto.scroll_ned_i_menyen_som_dukker_opp_til_d")}
                     </p>
                     <div className="mt-2 bg-muted/50 rounded-lg p-3 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center shrink-0">
                         <Plus className="w-5 h-5 text-primary" />
                       </div>
-                      <span className="text-sm font-medium">Legg til på Hjem-skjerm</span>
+                      <span className="text-sm font-medium">{t("auto.legg_til_paa_hjem_skjerm")}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -250,9 +251,9 @@ export default function InstallApp() {
                     3
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm sm:text-base">Trykk «Legg til» øverst til høyre</p>
+                    <p className="font-semibold text-sm sm:text-base">{t("auto.trykk_legg_til_oeverst_til_hoeyre")}</p>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                      Total-IK dukker nå opp som en app på startskjermen din!
+                      {t("auto.total_ik_dukker_naa_opp_som_en_app_paa_s")}
                     </p>
                   </div>
                 </motion.div>
@@ -265,14 +266,14 @@ export default function InstallApp() {
                   className="border-t pt-4 mt-4"
                 >
                   <p className="text-xs font-medium text-muted-foreground mb-3 text-center">
-                    Resultatet – Total-IK på startskjermen:
+                    {t("auto.resultatet_total_ik_paa_startskjermen")}
                   </p>
                   <div className="flex justify-center">
                     <div className="flex flex-col items-center gap-1.5">
                       <div className="w-14 h-14 rounded-2xl bg-primary shadow-lg flex items-center justify-center">
                         <Smartphone className="w-7 h-7 text-primary-foreground" />
                       </div>
-                      <span className="text-[11px] font-medium">Total-IK</span>
+                      <span className="text-[11px] font-medium">{t("auto.total_ik")}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -283,30 +284,30 @@ export default function InstallApp() {
               <CardHeader className="p-4 sm:p-6">
                 <div className="flex items-center gap-2">
                   <Chrome className="w-5 h-5" />
-                  <CardTitle className="text-base sm:text-lg">Installer på Android</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">{t("auto.installer_paa_android")}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Klikk på knappen under for å installere appen på telefonen din. Appen vil være tilgjengelig fra startskjermen, og du kan bruke den som en vanlig app.
+                  {t("auto.klikk_paa_knappen_under_for_aa_installer")}
                 </p>
                 <Button onClick={handleInstallClick} className="w-full gap-2" size="lg">
                   <Download className="w-5 h-5" />
                   Installer appen
                 </Button>
                 <div className="pt-2 space-y-2 sm:space-y-3 border-t">
-                  <p className="text-xs sm:text-sm font-medium">Etter installasjon:</p>
+                  <p className="text-xs sm:text-sm font-medium">{t("auto.etter_installasjon")}</p>
                   <div className="flex items-start gap-2 sm:gap-3">
                     <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                    <p className="text-xs sm:text-sm text-muted-foreground">Finn appen på startskjermen din</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.finn_appen_paa_startskjermen_din")}</p>
                   </div>
                   <div className="flex items-start gap-2 sm:gap-3">
                     <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                    <p className="text-xs sm:text-sm text-muted-foreground">Åpne den som en vanlig app</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.aapne_den_som_en_vanlig_app")}</p>
                   </div>
                   <div className="flex items-start gap-2 sm:gap-3">
                     <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                    <p className="text-xs sm:text-sm text-muted-foreground">Bruk den offline når du trenger det</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.bruk_den_offline_naar_du_trenger_det")}</p>
                   </div>
                 </div>
               </CardContent>
@@ -314,19 +315,19 @@ export default function InstallApp() {
           ) : (
             <Card>
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-base sm:text-lg">Installer appen</CardTitle>
+                <CardTitle className="text-base sm:text-lg">{t("auto.installer_appen")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  For å installere appen på Android:
+                  {t("auto.for_aa_installere_appen_paa_android")}
                 </p>
                 <div className="flex items-start gap-2 sm:gap-3">
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="font-bold text-sm sm:text-base text-primary">1</span>
                   </div>
                   <div>
-                    <p className="font-medium text-sm sm:text-base">Åpne meny i Chrome</p>
-                    <span className="text-xs sm:text-sm text-muted-foreground">⋮ øverst til høyre</span>
+                    <p className="font-medium text-sm sm:text-base">{t("auto.aapne_meny_i_chrome")}</p>
+                    <span className="text-xs sm:text-sm text-muted-foreground">{t("auto.oeverst_til_hoeyre")}</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2 sm:gap-3">

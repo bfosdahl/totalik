@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { Department } from "@/hooks/useDepartments";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const DepartmentAiSetup = () => {
   const { departmentId } = useParams<{ departmentId: string }>();
@@ -53,7 +54,7 @@ const DepartmentAiSetup = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Kunne ikke laste avdelingsdata");
+        toast.error(t("auto.kunne_ikke_laste_avdelingsdata"));
       } finally {
         setIsLoading(false);
       }
@@ -113,7 +114,7 @@ const DepartmentAiSetup = () => {
         <div className="container max-w-4xl mx-auto py-8">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>Kunne ikke finne avdelingen.</AlertDescription>
+            <AlertDescription>{t("auto.kunne_ikke_finne_avdelingen")}</AlertDescription>
           </Alert>
         </div>
       </AppLayout>
@@ -153,12 +154,12 @@ const DepartmentAiSetup = () => {
             </Alert>
 
             <div className="bg-muted/50 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
-              <h3 className="font-semibold text-base sm:text-lg">Viktig informasjon</h3>
+              <h3 className="font-semibold text-base sm:text-lg">{t("auto.viktig_informasjon")}</h3>
               <div className="space-y-3 text-xs sm:text-sm">
                 <div>
-                  <p className="font-medium mb-1">✅ Avdelingens data er trygg</p>
+                  <p className="font-medium mb-1">{t("auto.avdelingens_data_er_trygg")}</p>
                   <p className="text-muted-foreground">
-                    Hvis du kjører oppsettet på nytt, beholdes alle tilpassede data.
+                    {t("auto.hvis_du_kjoerer_oppsettet_paa_nytt_behol_3")}
                   </p>
                 </div>
               </div>
@@ -166,7 +167,7 @@ const DepartmentAiSetup = () => {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button onClick={() => navigate(`/avdeling/${departmentId}`)} className="w-full sm:w-auto">
-                Gå til dashboard
+                {t("auto.gaa_til_dashboard")}
               </Button>
               <Button 
                 variant="outline" 
@@ -197,13 +198,13 @@ const DepartmentAiSetup = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowRestartDialog(false);
                 setIsRestarting(true);
                 setSetupCompleted(false);
               }}>
-                Start nytt oppsett
+                {t("auto.start_nytt_oppsett")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

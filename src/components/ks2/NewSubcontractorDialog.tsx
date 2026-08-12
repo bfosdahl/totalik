@@ -22,6 +22,7 @@ import {
 import { useKsModule2Subcontractors, NewSubcontractorInput } from "@/hooks/useKsModule2Subcontractors";
 import { useKsModule2ProjectAccess } from "@/hooks/useKsModule2ProjectAccess";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const TRADES = [
   "Tømrer",
@@ -139,11 +140,11 @@ export function NewSubcontractorDialog({
           <div className="space-y-4 py-4">
             <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-4 space-y-3">
               <p className="text-sm">
-                <strong>{invitedName || getValues("contact_person")}</strong> fra <strong>{getValues("firm_name")}</strong> har fått tilgang til prosjektet.
+                <strong>{invitedName || getValues("contact_person")}</strong> fra <strong>{getValues("firm_name")}</strong> {t("auto.har_faatt_tilgang_til_prosjektet")}
               </p>
               
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">E-post</Label>
+                <Label className="text-xs text-muted-foreground">{t("auto.e_post_2")}</Label>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-mono">{getValues("contact_email")}</span>
@@ -152,12 +153,12 @@ export function NewSubcontractorDialog({
             </div>
 
             <p className="text-xs text-muted-foreground">
-              En e-post med innloggingslenke er sendt til underleverandøren. De kan opprette passord ved å klikke på lenken i e-posten.
+              {t("auto.en_e_post_med_innloggingslenke_er_sendt_")}
             </p>
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={handleClose}>Lukk</Button>
+            <Button onClick={handleClose}>{t("auto.lukk")}</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -176,11 +177,11 @@ export function NewSubcontractorDialog({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="firm_name">Firmanavn *</Label>
+            <Label htmlFor="firm_name">{t("auto.firmanavn")}</Label>
             <Input
               id="firm_name"
               {...register("firm_name", { required: "Firmanavn er påkrevd" })}
-              placeholder="Firma AS"
+              placeholder={t("auto.firma_as")}
             />
             {errors.firm_name && (
               <p className="text-sm text-destructive">{errors.firm_name.message}</p>
@@ -188,7 +189,7 @@ export function NewSubcontractorDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="org_number">Org.nummer</Label>
+            <Label htmlFor="org_number">{t("auto.org_nummer")}</Label>
             <Input
               id="org_number"
               {...register("org_number")}
@@ -197,11 +198,11 @@ export function NewSubcontractorDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="work_scope">Arbeidsomfang *</Label>
+            <Label htmlFor="work_scope">{t("auto.arbeidsomfang")}</Label>
             <Textarea
               id="work_scope"
               {...register("work_scope", { required: "Arbeidsomfang er påkrevd" })}
-              placeholder="Beskriv arbeidet som skal utføres..."
+              placeholder={t("auto.beskriv_arbeidet_som_skal_utfoeres")}
               rows={3}
             />
             {errors.work_scope && (
@@ -210,10 +211,10 @@ export function NewSubcontractorDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Fagområde</Label>
+            <Label>{t("auto.fagomraade")}</Label>
             <Select value={trade} onValueChange={setTrade}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg fagområde" />
+                <SelectValue placeholder={t("auto.velg_fagomraade")} />
               </SelectTrigger>
               <SelectContent>
                 {TRADES.map((t) => (
@@ -225,7 +226,7 @@ export function NewSubcontractorDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start_date">Startdato</Label>
+              <Label htmlFor="start_date">{t("auto.startdato")}</Label>
               <Input
                 id="start_date"
                 type="date"
@@ -233,7 +234,7 @@ export function NewSubcontractorDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="end_date">Sluttdato</Label>
+              <Label htmlFor="end_date">{t("auto.sluttdato")}</Label>
               <Input
                 id="end_date"
                 type="date"
@@ -253,7 +254,7 @@ export function NewSubcontractorDialog({
           </div>
 
           <div className="border-t pt-4 space-y-4">
-            <h4 className="font-medium text-sm">Kontaktperson</h4>
+            <h4 className="font-medium text-sm">{t("auto.kontaktperson_2")}</h4>
             
             <div className="space-y-2">
               <Label htmlFor="contact_person">Navn {grantAccess && "*"}</Label>
@@ -262,7 +263,7 @@ export function NewSubcontractorDialog({
                 {...register("contact_person", { 
                   required: grantAccess ? "Kontaktperson er påkrevd for tilgang" : false 
                 })}
-                placeholder="Ola Nordmann"
+                placeholder={t("auto.ola_nordmann")}
               />
               {errors.contact_person && (
                 <p className="text-sm text-destructive">{errors.contact_person.message}</p>
@@ -271,7 +272,7 @@ export function NewSubcontractorDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contact_phone">Telefon</Label>
+                <Label htmlFor="contact_phone">{t("auto.telefon")}</Label>
                 <Input
                   id="contact_phone"
                   {...register("contact_phone")}
@@ -304,7 +305,7 @@ export function NewSubcontractorDialog({
                   Gi brukertilgang til prosjektet
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Underleverandøren får innlogging til dette prosjektet
+                  {t("auto.underleverandoeren_faar_innlogging_til_d")}
                 </p>
               </div>
               <Switch
@@ -316,10 +317,10 @@ export function NewSubcontractorDialog({
             {grantAccess && (
               <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                 <div className="space-y-2">
-                  <Label>Rolle i prosjektet</Label>
+                  <Label>{t("auto.rolle_i_prosjektet")}</Label>
                   <Select value={roleInProject} onValueChange={setRoleInProject}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Velg rolle" />
+                      <SelectValue placeholder={t("auto.velg_rolle")} />
                     </SelectTrigger>
                     <SelectContent>
                       {ROLES_IN_PROJECT.map((role) => (
@@ -330,7 +331,7 @@ export function NewSubcontractorDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tilgangsnivå</Label>
+                  <Label>{t("auto.tilgangsnivaa")}</Label>
                   <Select value={accessLevel} onValueChange={(v: 'guest' | 'full_ue') => setAccessLevel(v)}>
                     <SelectTrigger>
                       <SelectValue />
@@ -338,15 +339,15 @@ export function NewSubcontractorDialog({
                     <SelectContent>
                       <SelectItem value="guest">
                         <div className="flex flex-col">
-                          <span>Gjest</span>
+                          <span>{t("auto.gjest")}</span>
                           <span className="text-xs text-muted-foreground">
-                            Lese + fylle ut sjekklister + registrere avvik
+                            {t("auto.lese_fylle_ut_sjekklister_registrere_avv")}
                           </span>
                         </div>
                       </SelectItem>
                       <SelectItem value="full_ue">
                         <div className="flex flex-col">
-                          <span>Full UE</span>
+                          <span>{t("auto.full_ue")}</span>
                           <span className="text-xs text-muted-foreground">
                             Alt innenfor prosjektet (unntatt admin)
                           </span>
@@ -368,13 +369,13 @@ export function NewSubcontractorDialog({
                     min={new Date().toISOString().split('T')[0]}
                   />
                   <p className="text-xs text-muted-foreground">
-                    La stå tom for ingen utløpsdato
+                    {t("auto.la_staa_tom_for_ingen_utloepsdato")}
                   </p>
                 </div>
 
                 {!contactEmail && (
                   <p className="text-sm text-amber-600 dark:text-amber-400">
-                    ⚠️ Fyll inn e-post for å gi tilgang
+                    {t("auto.fyll_inn_e_post_for_aa_gi_tilgang")}
                   </p>
                 )}
               </div>

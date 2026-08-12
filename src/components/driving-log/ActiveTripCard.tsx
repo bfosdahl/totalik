@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Navigation, Square } from "lucide-react";
 import { DrivingLogEntry } from "@/hooks/useDrivingLog";
 import { format, parseISO } from "date-fns";
+import { t } from "@/i18n/t";
 
 interface ActiveTripCardProps {
   trip: DrivingLogEntry;
@@ -24,7 +25,7 @@ export function ActiveTripCard({ trip, onComplete, onCancel }: ActiveTripCardPro
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge className="bg-green-500 animate-pulse">Aktiv tur</Badge>
+              <Badge className="bg-green-500 animate-pulse">{t("auto.aktiv_tur")}</Badge>
               <Badge variant="outline">{tripTypeLabels[trip.trip_type] || trip.trip_type}</Badge>
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -35,7 +36,7 @@ export function ActiveTripCard({ trip, onComplete, onCancel }: ActiveTripCardPro
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>Km-stand: <strong className="text-foreground">{Number(trip.odometer_start).toFixed(0)}</strong></span>
+              <span>{t("auto.km_stand")} <strong className="text-foreground">{Number(trip.odometer_start).toFixed(0)}</strong></span>
               {trip.purpose && <span>Formål: {trip.purpose}</span>}
             </div>
           </div>

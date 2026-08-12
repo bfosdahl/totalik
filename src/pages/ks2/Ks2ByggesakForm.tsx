@@ -39,6 +39,7 @@ import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { toast } from "sonner";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
 import SignatureCanvas from "react-signature-canvas";
+import { t } from "@/i18n/t";
 
 // DIBK official PDF URLs
 const DIBK_PDFS: Record<string, string> = {
@@ -78,233 +79,233 @@ const FORM_FIELDS: Record<string, {
 }[]> = {
   // 5181 - Erklæring om ansvarsrett
   "5181": [
-    { key: "section_foretak", label: "Foretakets opplysninger", type: "text", section: "heading" },
-    { key: "foretak_navn", label: "Foretakets navn", type: "text", span: 2 },
-    { key: "foretak_org_nr", label: "Organisasjonsnummer", type: "text" },
-    { key: "foretak_adresse", label: "Adresse", type: "text" },
-    { key: "foretak_postnr", label: "Postnr", type: "text" },
-    { key: "foretak_poststed", label: "Poststed", type: "text" },
-    { key: "kontaktperson", label: "Kontaktperson", type: "text" },
-    { key: "telefon", label: "Telefon", type: "text" },
-    { key: "epost", label: "E-post", type: "email" },
-    { key: "section_ansvarsomrade", label: "Ansvarsområde", type: "text", section: "heading" },
-    { key: "funksjon", label: "Funksjon", type: "select", options: [
-      { value: "SOK", label: "SØK - Ansvarlig søker" },
-      { value: "PRO", label: "PRO - Prosjekterende" },
-      { value: "UTF", label: "UTF - Utførende" },
-      { value: "KPR", label: "KPR - Kontrollerende for prosjektering" },
-      { value: "KUT", label: "KUT - Kontrollerende for utførelse" },
+    { key: "section_foretak", label: t("auto.foretakets_opplysninger"), type: "text", section: "heading" },
+    { key: "foretak_navn", label: t("auto.foretakets_navn"), type: "text", span: 2 },
+    { key: "foretak_org_nr", label: t("auto.organisasjonsnummer"), type: "text" },
+    { key: "foretak_adresse", label: t("auto.adresse"), type: "text" },
+    { key: "foretak_postnr", label: t("auto.postnr"), type: "text" },
+    { key: "foretak_poststed", label: t("auto.poststed"), type: "text" },
+    { key: "kontaktperson", label: t("auto.kontaktperson_2"), type: "text" },
+    { key: "telefon", label: t("auto.telefon"), type: "text" },
+    { key: "epost", label: t("auto.e_post_2"), type: "email" },
+    { key: "section_ansvarsomrade", label: t("auto.ansvarsomraade"), type: "text", section: "heading" },
+    { key: "funksjon", label: t("auto.funksjon"), type: "select", options: [
+      { value: "SOK", label: t("auto.soek_ansvarlig_soeker") },
+      { value: "PRO", label: t("auto.pro_prosjekterende") },
+      { value: "UTF", label: t("auto.utf_utfoerende") },
+      { value: "KPR", label: t("auto.kpr_kontrollerende_for_prosjektering") },
+      { value: "KUT", label: t("auto.kut_kontrollerende_for_utfoerelse") },
     ]},
-    { key: "tiltaksklasse", label: "Tiltaksklasse", type: "select", options: [
-      { value: "1", label: "Tiltaksklasse 1" },
-      { value: "2", label: "Tiltaksklasse 2" },
-      { value: "3", label: "Tiltaksklasse 3" },
+    { key: "tiltaksklasse", label: t("auto.tiltaksklasse"), type: "select", options: [
+      { value: "1", label: t("auto.tiltaksklasse_1") },
+      { value: "2", label: t("auto.tiltaksklasse_2") },
+      { value: "3", label: t("auto.tiltaksklasse_3") },
     ]},
-    { key: "beskrivelse", label: "Beskrivelse av ansvarsområde", type: "textarea", span: 2, placeholder: "F.eks. Tømrerarbeid, grunnarbeid, sanitær..." },
-    { key: "section_eiendom", label: "Eiendom og tiltak", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Eiendommens adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "saksnummer", label: "Kommunens saksnummer", type: "text" },
+    { key: "beskrivelse", label: t("auto.beskrivelse_av_ansvarsomraade"), type: "textarea", span: 2, placeholder: "F.eks. Tømrerarbeid, grunnarbeid, sanitær..." },
+    { key: "section_eiendom", label: t("auto.eiendom_og_tiltak"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "saksnummer", label: t("auto.kommunens_saksnummer"), type: "text" },
   ],
 
   // 5154 - Nabovarsel
   "5154": [
-    { key: "section_tiltakshaver", label: "Tiltakshaver", type: "text", section: "heading" },
-    { key: "tiltakshaver_navn", label: "Tiltakshavers navn", type: "text", span: 2 },
-    { key: "tiltakshaver_adresse", label: "Adresse", type: "text" },
-    { key: "tiltakshaver_postnr", label: "Postnr", type: "text" },
-    { key: "tiltakshaver_poststed", label: "Poststed", type: "text" },
-    { key: "tiltakshaver_telefon", label: "Telefon", type: "text" },
-    { key: "tiltakshaver_epost", label: "E-post", type: "email" },
-    { key: "section_eiendom", label: "Eiendommen det varsles om", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Eiendommens adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "fnr", label: "Festenr", type: "text" },
-    { key: "snr", label: "Seksjonsnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "section_tiltak", label: "Beskrivelse av tiltaket", type: "text", section: "heading" },
-    { key: "beskrivelse", label: "Kort beskrivelse av tiltaket", type: "textarea", span: 2, placeholder: "Beskriv hva som skal bygges/endres..." },
-    { key: "dispensasjon", label: "Søkes det om dispensasjon?", type: "select", options: [
-      { value: "nei", label: "Nei" },
-      { value: "ja", label: "Ja" },
+    { key: "section_tiltakshaver", label: t("auto.tiltakshaver"), type: "text", section: "heading" },
+    { key: "tiltakshaver_navn", label: t("auto.tiltakshavers_navn"), type: "text", span: 2 },
+    { key: "tiltakshaver_adresse", label: t("auto.adresse"), type: "text" },
+    { key: "tiltakshaver_postnr", label: t("auto.postnr"), type: "text" },
+    { key: "tiltakshaver_poststed", label: t("auto.poststed"), type: "text" },
+    { key: "tiltakshaver_telefon", label: t("auto.telefon"), type: "text" },
+    { key: "tiltakshaver_epost", label: t("auto.e_post_2"), type: "email" },
+    { key: "section_eiendom", label: t("auto.eiendommen_det_varsles_om"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "fnr", label: t("auto.festenr"), type: "text" },
+    { key: "snr", label: t("auto.seksjonsnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "section_tiltak", label: t("auto.beskrivelse_av_tiltaket"), type: "text", section: "heading" },
+    { key: "beskrivelse", label: t("auto.kort_beskrivelse_av_tiltaket"), type: "textarea", span: 2, placeholder: "Beskriv hva som skal bygges/endres..." },
+    { key: "dispensasjon", label: t("auto.soekes_det_om_dispensasjon"), type: "select", options: [
+      { value: "nei", label: t("auto.nei") },
+      { value: "ja", label: t("auto.ja") },
     ]},
-    { key: "dispensasjon_beskrivelse", label: "Beskrivelse av dispensasjon", type: "textarea", span: 2 },
-    { key: "section_frist", label: "Frist for merknader", type: "text", section: "heading" },
+    { key: "dispensasjon_beskrivelse", label: t("auto.beskrivelse_av_dispensasjon"), type: "textarea", span: 2 },
+    { key: "section_frist", label: t("auto.frist_for_merknader"), type: "text", section: "heading" },
     { key: "frist_merknad", label: "Frist for merknader (minst 14 dager)", type: "date" },
-    { key: "merknad_sendes_til", label: "Merknader sendes til", type: "text", span: 2, placeholder: "Navn og adresse til ansvarlig søker" },
+    { key: "merknad_sendes_til", label: t("auto.merknader_sendes_til"), type: "text", span: 2, placeholder: "Navn og adresse til ansvarlig søker" },
   ],
 
   // 5174 - Søknad om tillatelse til tiltak
   "5174": [
-    { key: "section_eiendom", label: "Eiendom og tiltakshaver", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Eiendommens adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "fnr", label: "Festenr", type: "text" },
-    { key: "snr", label: "Seksjonsnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "tiltakshaver_navn", label: "Tiltakshavers navn", type: "text", span: 2 },
-    { key: "tiltakshaver_adresse", label: "Tiltakshavers adresse", type: "text" },
-    { key: "tiltakshaver_postnr", label: "Postnr", type: "text" },
-    { key: "tiltakshaver_poststed", label: "Poststed", type: "text" },
-    { key: "section_tiltak", label: "Tiltakets art", type: "text", section: "heading" },
-    { key: "tiltakstype", label: "Tiltakstype", type: "select", options: [
-      { value: "nybygg", label: "Nybygg" },
-      { value: "tilbygg", label: "Tilbygg" },
-      { value: "pabygg", label: "Påbygg" },
-      { value: "underbygg", label: "Underbygging" },
-      { value: "hovedombygging", label: "Hovedombygging" },
-      { value: "bruksendring", label: "Bruksendring" },
-      { value: "riving", label: "Riving" },
-      { value: "anlegg", label: "Anlegg" },
+    { key: "section_eiendom", label: t("auto.eiendom_og_tiltakshaver"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "fnr", label: t("auto.festenr"), type: "text" },
+    { key: "snr", label: t("auto.seksjonsnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "tiltakshaver_navn", label: t("auto.tiltakshavers_navn"), type: "text", span: 2 },
+    { key: "tiltakshaver_adresse", label: t("auto.tiltakshavers_adresse"), type: "text" },
+    { key: "tiltakshaver_postnr", label: t("auto.postnr"), type: "text" },
+    { key: "tiltakshaver_poststed", label: t("auto.poststed"), type: "text" },
+    { key: "section_tiltak", label: t("auto.tiltakets_art"), type: "text", section: "heading" },
+    { key: "tiltakstype", label: t("auto.tiltakstype"), type: "select", options: [
+      { value: "nybygg", label: t("auto.nybygg") },
+      { value: "tilbygg", label: t("auto.tilbygg") },
+      { value: "pabygg", label: t("auto.paabygg") },
+      { value: "underbygg", label: t("auto.underbygging") },
+      { value: "hovedombygging", label: t("auto.hovedombygging") },
+      { value: "bruksendring", label: t("auto.bruksendring") },
+      { value: "riving", label: t("auto.riving") },
+      { value: "anlegg", label: t("auto.anlegg") },
     ]},
-    { key: "bygningstype", label: "Bygningstype", type: "select", options: [
-      { value: "enebolig", label: "Enebolig" },
-      { value: "tomannsbolig", label: "Tomannsbolig" },
-      { value: "rekkehus", label: "Rekkehus" },
-      { value: "leilighetsbygg", label: "Leilighetsbygg" },
-      { value: "fritidsbolig", label: "Fritidsbolig" },
-      { value: "garasje", label: "Garasje" },
-      { value: "naeringsbygg", label: "Næringsbygg" },
-      { value: "annet", label: "Annet" },
+    { key: "bygningstype", label: t("auto.bygningstype"), type: "select", options: [
+      { value: "enebolig", label: t("auto.enebolig") },
+      { value: "tomannsbolig", label: t("auto.tomannsbolig") },
+      { value: "rekkehus", label: t("auto.rekkehus") },
+      { value: "leilighetsbygg", label: t("auto.leilighetsbygg") },
+      { value: "fritidsbolig", label: t("auto.fritidsbolig") },
+      { value: "garasje", label: t("auto.garasje") },
+      { value: "naeringsbygg", label: t("auto.naeringsbygg") },
+      { value: "annet", label: t("auto.annet") },
     ]},
-    { key: "beskrivelse", label: "Beskrivelse av tiltaket", type: "textarea", span: 2 },
+    { key: "beskrivelse", label: t("auto.beskrivelse_av_tiltaket"), type: "textarea", span: 2 },
     { key: "bra", label: "Bruksareal (BRA) m²", type: "number" },
     { key: "bya", label: "Bebygd areal (BYA) m²", type: "number" },
-    { key: "section_soker", label: "Ansvarlig søker", type: "text", section: "heading" },
-    { key: "soker_foretak", label: "Foretakets navn", type: "text", span: 2 },
-    { key: "soker_org_nr", label: "Organisasjonsnummer", type: "text" },
-    { key: "soker_kontaktperson", label: "Kontaktperson", type: "text" },
-    { key: "soker_telefon", label: "Telefon", type: "text" },
-    { key: "soker_epost", label: "E-post", type: "email" },
+    { key: "section_soker", label: t("auto.ansvarlig_soeker"), type: "text", section: "heading" },
+    { key: "soker_foretak", label: t("auto.foretakets_navn"), type: "text", span: 2 },
+    { key: "soker_org_nr", label: t("auto.organisasjonsnummer"), type: "text" },
+    { key: "soker_kontaktperson", label: t("auto.kontaktperson_2"), type: "text" },
+    { key: "soker_telefon", label: t("auto.telefon"), type: "text" },
+    { key: "soker_epost", label: t("auto.e_post_2"), type: "email" },
   ],
 
   // 5167 - Søknad om ferdigattest
   "5167": [
-    { key: "section_eiendom", label: "Eiendom", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Eiendommens adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "saksnummer", label: "Kommunens saksnummer", type: "text" },
-    { key: "section_tiltak", label: "Tiltak", type: "text", section: "heading" },
-    { key: "beskrivelse", label: "Kort beskrivelse av tiltaket", type: "textarea", span: 2 },
-    { key: "ferdigattest_gjelder", label: "Ferdigattesten gjelder", type: "select", options: [
-      { value: "hele", label: "Hele tiltaket" },
-      { value: "del", label: "Del av tiltaket" },
+    { key: "section_eiendom", label: t("auto.eiendom"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "saksnummer", label: t("auto.kommunens_saksnummer"), type: "text" },
+    { key: "section_tiltak", label: t("auto.tiltak"), type: "text", section: "heading" },
+    { key: "beskrivelse", label: t("auto.kort_beskrivelse_av_tiltaket"), type: "textarea", span: 2 },
+    { key: "ferdigattest_gjelder", label: t("auto.ferdigattesten_gjelder"), type: "select", options: [
+      { value: "hele", label: t("auto.hele_tiltaket") },
+      { value: "del", label: t("auto.del_av_tiltaket") },
     ]},
-    { key: "del_beskrivelse", label: "Hvilken del av tiltaket", type: "textarea", span: 2 },
-    { key: "section_soker", label: "Ansvarlig søker", type: "text", section: "heading" },
-    { key: "soker_foretak", label: "Foretakets navn", type: "text", span: 2 },
-    { key: "soker_org_nr", label: "Organisasjonsnummer", type: "text" },
-    { key: "soker_kontaktperson", label: "Kontaktperson", type: "text" },
-    { key: "soker_telefon", label: "Telefon", type: "text" },
-    { key: "soker_epost", label: "E-post", type: "email" },
-    { key: "section_vedlegg", label: "Vedlegg", type: "text", section: "heading" },
-    { key: "vedlegg_gjennomforingsplan", label: "Sluttrapport gjennomføringsplan vedlagt", type: "checkbox" },
-    { key: "vedlegg_kontrollerklaring", label: "Kontrollerklæringer vedlagt", type: "checkbox" },
-    { key: "vedlegg_samsvarserklaring", label: "Samsvarserklæringer vedlagt", type: "checkbox" },
+    { key: "del_beskrivelse", label: t("auto.hvilken_del_av_tiltaket"), type: "textarea", span: 2 },
+    { key: "section_soker", label: t("auto.ansvarlig_soeker"), type: "text", section: "heading" },
+    { key: "soker_foretak", label: t("auto.foretakets_navn"), type: "text", span: 2 },
+    { key: "soker_org_nr", label: t("auto.organisasjonsnummer"), type: "text" },
+    { key: "soker_kontaktperson", label: t("auto.kontaktperson_2"), type: "text" },
+    { key: "soker_telefon", label: t("auto.telefon"), type: "text" },
+    { key: "soker_epost", label: t("auto.e_post_2"), type: "email" },
+    { key: "section_vedlegg", label: t("auto.vedlegg"), type: "text", section: "heading" },
+    { key: "vedlegg_gjennomforingsplan", label: t("auto.sluttrapport_gjennomfoeringsplan_vedlagt"), type: "checkbox" },
+    { key: "vedlegg_kontrollerklaring", label: t("auto.kontrollerklaeringer_vedlagt"), type: "checkbox" },
+    { key: "vedlegg_samsvarserklaring", label: t("auto.samsvarserklaeringer_vedlagt"), type: "checkbox" },
   ],
 
   // 5185 - Gjennomføringsplan
   "5185": [
-    { key: "section_eiendom", label: "Eiendom", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Eiendommens adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "saksnummer", label: "Kommunens saksnummer", type: "text" },
-    { key: "section_tiltak", label: "Tiltak", type: "text", section: "heading" },
-    { key: "beskrivelse", label: "Kort beskrivelse av tiltaket", type: "textarea", span: 2 },
-    { key: "tiltaksklasse", label: "Høyeste tiltaksklasse", type: "select", options: [
-      { value: "1", label: "Tiltaksklasse 1" },
-      { value: "2", label: "Tiltaksklasse 2" },
-      { value: "3", label: "Tiltaksklasse 3" },
+    { key: "section_eiendom", label: t("auto.eiendom"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "saksnummer", label: t("auto.kommunens_saksnummer"), type: "text" },
+    { key: "section_tiltak", label: t("auto.tiltak"), type: "text", section: "heading" },
+    { key: "beskrivelse", label: t("auto.kort_beskrivelse_av_tiltaket"), type: "textarea", span: 2 },
+    { key: "tiltaksklasse", label: t("auto.hoeyeste_tiltaksklasse"), type: "select", options: [
+      { value: "1", label: t("auto.tiltaksklasse_1") },
+      { value: "2", label: t("auto.tiltaksklasse_2") },
+      { value: "3", label: t("auto.tiltaksklasse_3") },
     ]},
-    { key: "section_soker", label: "Ansvarlig søker", type: "text", section: "heading" },
-    { key: "soker_foretak", label: "Foretakets navn", type: "text", span: 2 },
-    { key: "soker_org_nr", label: "Organisasjonsnummer", type: "text" },
-    { key: "soker_kontaktperson", label: "Kontaktperson", type: "text" },
-    { key: "soker_telefon", label: "Telefon", type: "text" },
-    { key: "soker_epost", label: "E-post", type: "email" },
+    { key: "section_soker", label: t("auto.ansvarlig_soeker"), type: "text", section: "heading" },
+    { key: "soker_foretak", label: t("auto.foretakets_navn"), type: "text", span: 2 },
+    { key: "soker_org_nr", label: t("auto.organisasjonsnummer"), type: "text" },
+    { key: "soker_kontaktperson", label: t("auto.kontaktperson_2"), type: "text" },
+    { key: "soker_telefon", label: t("auto.telefon"), type: "text" },
+    { key: "soker_epost", label: t("auto.e_post_2"), type: "email" },
   ],
 
   // 5148 - Samsvarserklæring
   "5148": [
-    { key: "section_eiendom", label: "Eiendom", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Eiendommens adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "saksnummer", label: "Kommunens saksnummer", type: "text" },
-    { key: "section_foretak", label: "Ansvarlig foretak", type: "text", section: "heading" },
-    { key: "foretak_navn", label: "Foretakets navn", type: "text", span: 2 },
-    { key: "foretak_org_nr", label: "Organisasjonsnummer", type: "text" },
-    { key: "funksjon", label: "Funksjon", type: "select", options: [
-      { value: "PRO", label: "PRO - Prosjekterende" },
-      { value: "UTF", label: "UTF - Utførende" },
+    { key: "section_eiendom", label: t("auto.eiendom"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "saksnummer", label: t("auto.kommunens_saksnummer"), type: "text" },
+    { key: "section_foretak", label: t("auto.ansvarlig_foretak"), type: "text", section: "heading" },
+    { key: "foretak_navn", label: t("auto.foretakets_navn"), type: "text", span: 2 },
+    { key: "foretak_org_nr", label: t("auto.organisasjonsnummer"), type: "text" },
+    { key: "funksjon", label: t("auto.funksjon"), type: "select", options: [
+      { value: "PRO", label: t("auto.pro_prosjekterende") },
+      { value: "UTF", label: t("auto.utf_utfoerende") },
     ]},
-    { key: "tiltaksklasse", label: "Tiltaksklasse", type: "select", options: [
-      { value: "1", label: "Tiltaksklasse 1" },
-      { value: "2", label: "Tiltaksklasse 2" },
-      { value: "3", label: "Tiltaksklasse 3" },
+    { key: "tiltaksklasse", label: t("auto.tiltaksklasse"), type: "select", options: [
+      { value: "1", label: t("auto.tiltaksklasse_1") },
+      { value: "2", label: t("auto.tiltaksklasse_2") },
+      { value: "3", label: t("auto.tiltaksklasse_3") },
     ]},
-    { key: "section_erklaering", label: "Erklæring", type: "text", section: "heading" },
-    { key: "beskrivelse", label: "Beskrivelse av ansvarsområde", type: "textarea", span: 2 },
-    { key: "avvik_fra_tillatelse", label: "Er det avvik fra gitt tillatelse?", type: "select", options: [
-      { value: "nei", label: "Nei" },
-      { value: "ja", label: "Ja" },
+    { key: "section_erklaering", label: t("auto.erklaering"), type: "text", section: "heading" },
+    { key: "beskrivelse", label: t("auto.beskrivelse_av_ansvarsomraade"), type: "textarea", span: 2 },
+    { key: "avvik_fra_tillatelse", label: t("auto.er_det_avvik_fra_gitt_tillatelse"), type: "select", options: [
+      { value: "nei", label: t("auto.nei") },
+      { value: "ja", label: t("auto.ja") },
     ]},
-    { key: "avvik_beskrivelse", label: "Beskrivelse av avvik", type: "textarea", span: 2 },
+    { key: "avvik_beskrivelse", label: t("auto.beskrivelse_av_avvik"), type: "textarea", span: 2 },
   ],
 
   // 5149 - Kontrollerklæring
   "5149": [
-    { key: "section_eiendom", label: "Eiendom", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Eiendommens adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "saksnummer", label: "Kommunens saksnummer", type: "text" },
-    { key: "section_foretak", label: "Kontrollerende foretak", type: "text", section: "heading" },
-    { key: "foretak_navn", label: "Foretakets navn", type: "text", span: 2 },
-    { key: "foretak_org_nr", label: "Organisasjonsnummer", type: "text" },
-    { key: "funksjon", label: "Kontrollfunksjon", type: "select", options: [
-      { value: "KPR", label: "KPR - Kontrollerende for prosjektering" },
-      { value: "KUT", label: "KUT - Kontrollerende for utførelse" },
+    { key: "section_eiendom", label: t("auto.eiendom"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "saksnummer", label: t("auto.kommunens_saksnummer"), type: "text" },
+    { key: "section_foretak", label: t("auto.kontrollerende_foretak"), type: "text", section: "heading" },
+    { key: "foretak_navn", label: t("auto.foretakets_navn"), type: "text", span: 2 },
+    { key: "foretak_org_nr", label: t("auto.organisasjonsnummer"), type: "text" },
+    { key: "funksjon", label: t("auto.kontrollfunksjon"), type: "select", options: [
+      { value: "KPR", label: t("auto.kpr_kontrollerende_for_prosjektering") },
+      { value: "KUT", label: t("auto.kut_kontrollerende_for_utfoerelse") },
     ]},
-    { key: "tiltaksklasse", label: "Tiltaksklasse", type: "select", options: [
-      { value: "1", label: "Tiltaksklasse 1" },
-      { value: "2", label: "Tiltaksklasse 2" },
-      { value: "3", label: "Tiltaksklasse 3" },
+    { key: "tiltaksklasse", label: t("auto.tiltaksklasse"), type: "select", options: [
+      { value: "1", label: t("auto.tiltaksklasse_1") },
+      { value: "2", label: t("auto.tiltaksklasse_2") },
+      { value: "3", label: t("auto.tiltaksklasse_3") },
     ]},
-    { key: "section_kontroll", label: "Kontrollresultat", type: "text", section: "heading" },
-    { key: "beskrivelse", label: "Beskrivelse av kontrollområde", type: "textarea", span: 2 },
-    { key: "kontroll_ok", label: "Kontrollen viser samsvar", type: "select", options: [
-      { value: "ja", label: "Ja" },
-      { value: "nei", label: "Nei, det er åpne avvik" },
+    { key: "section_kontroll", label: t("auto.kontrollresultat"), type: "text", section: "heading" },
+    { key: "beskrivelse", label: t("auto.beskrivelse_av_kontrollomraade"), type: "textarea", span: 2 },
+    { key: "kontroll_ok", label: t("auto.kontrollen_viser_samsvar"), type: "select", options: [
+      { value: "ja", label: t("auto.ja") },
+      { value: "nei", label: t("auto.nei_det_er_aapne_avvik") },
     ]},
-    { key: "avvik_beskrivelse", label: "Beskrivelse av åpne avvik", type: "textarea", span: 2 },
+    { key: "avvik_beskrivelse", label: t("auto.beskrivelse_av_aapne_avvik"), type: "textarea", span: 2 },
   ],
 
   // Default fallback for unknown forms
   default: [
-    { key: "section_eiendom", label: "Eiendom", type: "text", section: "heading" },
-    { key: "eiendom_adresse", label: "Adresse", type: "text", span: 2 },
-    { key: "gnr", label: "Gnr", type: "text" },
-    { key: "bnr", label: "Bnr", type: "text" },
-    { key: "kommune", label: "Kommune", type: "text" },
-    { key: "saksnummer", label: "Saksnummer", type: "text" },
-    { key: "section_tiltakshaver", label: "Tiltakshaver", type: "text", section: "heading" },
-    { key: "tiltakshaver", label: "Tiltakshaver/Byggherre", type: "text", span: 2 },
-    { key: "section_foretak", label: "Ansvarlig foretak", type: "text", section: "heading" },
-    { key: "ansvarlig_foretak", label: "Ansvarlig foretak", type: "text" },
-    { key: "kontaktperson", label: "Kontaktperson", type: "text" },
-    { key: "section_merknad", label: "Merknader", type: "text", section: "heading" },
-    { key: "merknad", label: "Merknader", type: "textarea", span: 2 },
+    { key: "section_eiendom", label: t("auto.eiendom"), type: "text", section: "heading" },
+    { key: "eiendom_adresse", label: t("auto.adresse"), type: "text", span: 2 },
+    { key: "gnr", label: t("auto.gnr"), type: "text" },
+    { key: "bnr", label: t("auto.bnr"), type: "text" },
+    { key: "kommune", label: t("auto.kommune"), type: "text" },
+    { key: "saksnummer", label: t("auto.saksnummer"), type: "text" },
+    { key: "section_tiltakshaver", label: t("auto.tiltakshaver"), type: "text", section: "heading" },
+    { key: "tiltakshaver", label: t("auto.tiltakshaver_byggherre"), type: "text", span: 2 },
+    { key: "section_foretak", label: t("auto.ansvarlig_foretak"), type: "text", section: "heading" },
+    { key: "ansvarlig_foretak", label: t("auto.ansvarlig_foretak"), type: "text" },
+    { key: "kontaktperson", label: t("auto.kontaktperson_2"), type: "text" },
+    { key: "section_merknad", label: t("auto.merknader"), type: "text", section: "heading" },
+    { key: "merknad", label: t("auto.merknader"), type: "textarea", span: 2 },
   ],
 };
 
@@ -386,7 +387,7 @@ export default function Ks2ByggesakForm() {
   }
 
   if (!form) {
-    return <div>Blankett ikke funnet</div>;
+    return <div>{t("auto.blankett_ikke_funnet")}</div>;
   }
 
   const fields = FORM_FIELDS[form.form_number] || FORM_FIELDS.default;
@@ -404,12 +405,12 @@ export default function Ks2ByggesakForm() {
       status: form.status === "not_started" ? "draft" : form.status,
     });
     setHasChanges(false);
-    toast.success("Utkast lagret");
+    toast.success(t("auto.utkast_lagret"));
   };
 
   const handleSign = async () => {
     if (!signatureRef.current || signatureRef.current.isEmpty()) {
-      toast.error("Vennligst tegn signaturen din");
+      toast.error(t("auto.vennligst_tegn_signaturen_din"));
       return;
     }
 
@@ -424,7 +425,7 @@ export default function Ks2ByggesakForm() {
     });
     
     setShowSignDialog(false);
-    toast.success("Blankett signert elektronisk!");
+    toast.success(t("auto.blankett_signert_elektronisk"));
     setHasChanges(false);
   };
 
@@ -441,7 +442,7 @@ export default function Ks2ByggesakForm() {
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      toast.error("Kunne ikke laste opp fil");
+      toast.error(t("auto.kunne_ikke_laste_opp_fil"));
       return;
     }
 
@@ -450,7 +451,7 @@ export default function Ks2ByggesakForm() {
       uploaded_file_path: filePath,
       status: "uploaded",
     });
-    toast.success("Signert blankett lastet opp!");
+    toast.success(t("auto.signert_blankett_lastet_opp_2"));
   };
 
   const handleSendTo = (target: "kommune" | "byggherre" | "kunde") => {
@@ -464,7 +465,7 @@ export default function Ks2ByggesakForm() {
       status: "sent",
       sent_at: new Date().toISOString(),
     });
-    toast.success("Blankett markert som sendt!");
+    toast.success(t("auto.blankett_markert_som_sendt"));
   };
 
   // Generate HTML content for email
@@ -497,7 +498,7 @@ export default function Ks2ByggesakForm() {
     if (formData.signature) {
       html += `
         <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;" />
-        <h3 style="color: #333;">Signatur</h3>
+        <h3 style="color: #333;">{t("auto.signatur")}</h3>
         <img src="${formData.signature}" alt="Signatur" style="max-width: 300px; border: 1px solid #e5e5e5; padding: 10px;" />
         <p style="color: #666; font-size: 12px;">Signert av: ${form.signed_by_name} - ${form.signed_at ? new Date(form.signed_at).toLocaleDateString("nb-NO") : ""}</p>
       `;
@@ -544,9 +545,9 @@ export default function Ks2ByggesakForm() {
         {/* Mode Selection */}
         <Card>
           <CardHeader>
-            <CardTitle>Velg utfyllingsmetode</CardTitle>
+            <CardTitle>{t("auto.velg_utfyllingsmetode")}</CardTitle>
             <CardDescription>
-              Hvordan ønsker du å fylle ut denne blanketten?
+              {t("auto.hvordan_oensker_du_aa_fylle_ut_denne_bla")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -560,9 +561,9 @@ export default function Ks2ByggesakForm() {
                   <Monitor className="h-8 w-8 text-primary" />
                 </div>
                 <div className="text-center">
-                  <h3 className="font-semibold text-lg">Fyll ut nettbasert</h3>
+                  <h3 className="font-semibold text-lg">{t("auto.fyll_ut_nettbasert")}</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Fyll ut skjemaet direkte i systemet, signer elektronisk og send til mottaker
+                    {t("auto.fyll_ut_skjemaet_direkte_i_systemet_sign")}
                   </p>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1 mt-2">
@@ -590,9 +591,9 @@ export default function Ks2ByggesakForm() {
                   <FileUp className="h-8 w-8 text-amber-600" />
                 </div>
                 <div className="text-center">
-                  <h3 className="font-semibold text-lg">Last ned og fyll ut</h3>
+                  <h3 className="font-semibold text-lg">{t("auto.last_ned_og_fyll_ut")}</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Last ned offisiell PDF, fyll ut manuelt, og last opp signert versjon
+                    {t("auto.last_ned_offisiell_pdf_fyll_ut_manuelt_o")}
                   </p>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1 mt-2">
@@ -654,7 +655,7 @@ export default function Ks2ByggesakForm() {
                 1. Last ned blankett
               </CardTitle>
               <CardDescription>
-                Last ned offisiell DIBK-blankett og fyll ut manuelt
+                {t("auto.last_ned_offisiell_dibk_blankett_og_fyll")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -666,7 +667,7 @@ export default function Ks2ByggesakForm() {
                   </a>
                 </Button>
               ) : (
-                <p className="text-sm text-muted-foreground">PDF ikke tilgjengelig for dette skjemaet</p>
+                <p className="text-sm text-muted-foreground">{t("auto.pdf_ikke_tilgjengelig_for_dette_skjemaet")}</p>
               )}
             </CardContent>
           </Card>
@@ -678,15 +679,15 @@ export default function Ks2ByggesakForm() {
                 2. Last opp signert versjon
               </CardTitle>
               <CardDescription>
-                Skann eller ta bilde av ferdig utfylt blankett
+                {t("auto.skann_eller_ta_bilde_av_ferdig_utfylt_bl")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <label>
                 <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer">
                   <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm font-medium">Klikk for å laste opp</p>
-                  <p className="text-xs text-muted-foreground">PDF, JPG eller PNG</p>
+                  <p className="text-sm font-medium">{t("auto.klikk_for_aa_laste_opp")}</p>
+                  <p className="text-xs text-muted-foreground">{t("auto.pdf_jpg_eller_png")}</p>
                 </div>
                 <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={handleUploadSigned} />
               </label>
@@ -694,7 +695,7 @@ export default function Ks2ByggesakForm() {
               {form.uploaded_file_path && (
                 <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <span className="text-sm text-green-700 dark:text-green-300">Signert blankett lastet opp</span>
+                  <span className="text-sm text-green-700 dark:text-green-300">{t("auto.signert_blankett_lastet_opp")}</span>
                 </div>
               )}
             </CardContent>
@@ -710,7 +711,7 @@ export default function Ks2ByggesakForm() {
                 3. Send blankett
               </CardTitle>
               <CardDescription>
-                Send til kommune, byggherre eller kunde
+                {t("auto.send_til_kommune_byggherre_eller_kunde")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -780,9 +781,9 @@ export default function Ks2ByggesakForm() {
       {/* Form Fields */}
       <Card>
         <CardHeader>
-          <CardTitle>Fyll ut blankett</CardTitle>
+          <CardTitle>{t("auto.fyll_ut_blankett")}</CardTitle>
           <CardDescription>
-            Feltene autofylles fra prosjekt- og bedriftsinformasjon. Gjør endringer der det er nødvendig.
+            {t("auto.feltene_autofylles_fra_prosjekt_og_bedri")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -823,7 +824,7 @@ export default function Ks2ByggesakForm() {
                       onValueChange={(value) => handleFieldChange(field.key, value)}
                     >
                       <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Velg..." />
+                        <SelectValue placeholder={t("auto.velg")} />
                       </SelectTrigger>
                       <SelectContent>
                         {field.options.map(opt => (
@@ -912,7 +913,7 @@ export default function Ks2ByggesakForm() {
               Send blankett
             </CardTitle>
             <CardDescription>
-              Send ferdig utfylt blankett til mottaker
+              {t("auto.send_ferdig_utfylt_blankett_til_mottaker")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -962,9 +963,9 @@ export default function Ks2ByggesakForm() {
       <Dialog open={showSignDialog} onOpenChange={setShowSignDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Elektronisk signatur</DialogTitle>
+            <DialogTitle>{t("auto.elektronisk_signatur")}</DialogTitle>
             <DialogDescription>
-              Tegn signaturen din i feltet nedenfor for å signere blanketten elektronisk
+              {t("auto.tegn_signaturen_din_i_feltet_nedenfor_fo")}
             </DialogDescription>
           </DialogHeader>
           
@@ -993,7 +994,7 @@ export default function Ks2ByggesakForm() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSignDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleSign} disabled={updateForm.isPending}>
               <Pen className="h-4 w-4 mr-2" />

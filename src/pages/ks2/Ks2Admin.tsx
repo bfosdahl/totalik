@@ -38,32 +38,33 @@ import { useCompanyKsChecklistTemplates } from "@/hooks/useCompanyKsChecklistTem
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const CATEGORIES = [
-  { value: "betong", label: "Betong" },
-  { value: "våtrom", label: "Våtrom" },
-  { value: "tømrer", label: "Tømrer" },
-  { value: "tak", label: "Tak" },
-  { value: "grunn", label: "Grunnarbeid" },
-  { value: "brann", label: "Brann" },
-  { value: "elektro", label: "Elektro" },
-  { value: "rør", label: "Rørlegger" },
-  { value: "ventilasjon", label: "Ventilasjon" },
-  { value: "gulv", label: "Gulv" },
-  { value: "overflate", label: "Overflate" },
-  { value: "fasade", label: "Fasade" },
-  { value: "utomhus", label: "Utomhus" },
-  { value: "ferdigstillelse", label: "Ferdigstillelse" },
-  { value: "general", label: "Generelt" },
+  { value: "betong", label: t("auto.betong") },
+  { value: "våtrom", label: t("auto.vaatrom") },
+  { value: "tømrer", label: t("auto.toemrer") },
+  { value: "tak", label: t("auto.tak") },
+  { value: "grunn", label: t("auto.grunnarbeid") },
+  { value: "brann", label: t("auto.brann") },
+  { value: "elektro", label: t("auto.elektro") },
+  { value: "rør", label: t("auto.roerlegger") },
+  { value: "ventilasjon", label: t("auto.ventilasjon") },
+  { value: "gulv", label: t("auto.gulv") },
+  { value: "overflate", label: t("auto.overflate") },
+  { value: "fasade", label: t("auto.fasade") },
+  { value: "utomhus", label: t("auto.utomhus") },
+  { value: "ferdigstillelse", label: t("auto.ferdigstillelse") },
+  { value: "general", label: t("auto.generelt") },
 ];
 
 const DOCUMENT_CATEGORIES = [
-  { value: "sjekkliste", label: "Sjekkliste-mal" },
-  { value: "skjema", label: "Skjema" },
-  { value: "rutine", label: "Rutine" },
-  { value: "byggesak", label: "Byggesak" },
-  { value: "kontrakt", label: "Kontrakt" },
-  { value: "annet", label: "Annet" },
+  { value: "sjekkliste", label: t("auto.sjekkliste_mal") },
+  { value: "skjema", label: t("auto.skjema") },
+  { value: "rutine", label: t("auto.rutine") },
+  { value: "byggesak", label: t("auto.byggesak") },
+  { value: "kontrakt", label: t("auto.kontrakt") },
+  { value: "annet", label: t("auto.annet") },
 ];
 
 export default function Ks2Admin() {
@@ -109,7 +110,7 @@ export default function Ks2Admin() {
 
   const handleAiGenerate = async () => {
     if (!aiTema.trim()) {
-      toast.error("Skriv inn et tema for sjekklisten");
+      toast.error(t("auto.skriv_inn_et_tema_for_sjekklisten"));
       return;
     }
     setAiIsGenerating(true);
@@ -127,7 +128,7 @@ export default function Ks2Admin() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setAiResult(data.checklist);
-      toast.success("Sjekkliste generert!");
+      toast.success(t("auto.sjekkliste_generert"));
     } catch (err: any) {
       console.error("AI generation error:", err);
       toast.error(err.message || "Kunne ikke generere sjekkliste");
@@ -160,7 +161,7 @@ export default function Ks2Admin() {
         });
         if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
       }
-      toast.success("Sjekkliste-mal lagret i malbiblioteket!");
+      toast.success(t("auto.sjekkliste_mal_lagret_i_malbiblioteket"));
       setAiResult(null);
       setAiTema("");
       setAiKategori("");
@@ -190,7 +191,7 @@ export default function Ks2Admin() {
 
   const handleCreateTemplate = async () => {
     if (!newTemplate.template_name) {
-      toast.error("Mal må ha et navn");
+      toast.error(t("auto.mal_maa_ha_et_navn"));
       return;
     }
     
@@ -241,7 +242,7 @@ export default function Ks2Admin() {
 
   const handleUploadDocument = async () => {
     if (!uploadFile || !uploadData.title) {
-      toast.error("Velg fil og fyll inn tittel");
+      toast.error(t("auto.velg_fil_og_fyll_inn_tittel"));
       return;
     }
     
@@ -298,8 +299,8 @@ export default function Ks2Admin() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Admin – KS Bygg</h1>
-              <p className="text-muted-foreground">Administrer maler, dokumenter og innstillinger</p>
+              <h1 className="text-2xl font-bold">{t("auto.admin_ks_bygg")}</h1>
+              <p className="text-muted-foreground">{t("auto.administrer_maler_dokumenter_og_innstill")}</p>
             </div>
           </div>
         </div>
@@ -310,23 +311,23 @@ export default function Ks2Admin() {
           <TabsList className="grid w-full grid-cols-4 max-w-lg">
             <TabsTrigger value="ai-maker" className="gap-2">
               <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">AI Maker</span>
+              <span className="hidden sm:inline">{t("auto.ai_maker")}</span>
               <span className="sm:hidden">AI</span>
             </TabsTrigger>
             <TabsTrigger value="templates" className="gap-2">
               <CheckSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Sjekkliste-maler</span>
-              <span className="sm:hidden">Maler</span>
+              <span className="hidden sm:inline">{t("auto.sjekkliste_maler")}</span>
+              <span className="sm:hidden">{t("auto.maler")}</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-2">
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Dokumentbank</span>
-              <span className="sm:hidden">Dok</span>
+              <span className="hidden sm:inline">{t("auto.dokumentbank")}</span>
+              <span className="sm:hidden">{t("auto.dok")}</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Innstillinger</span>
-              <span className="sm:hidden">Innst.</span>
+              <span className="hidden sm:inline">{t("auto.innstillinger")}</span>
+              <span className="sm:hidden">{t("auto.innst")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -338,7 +339,7 @@ export default function Ks2Admin() {
                 AI Sjekkliste Maker
               </h2>
               <p className="text-sm text-muted-foreground">
-                Generer komplette sjekklistemaler med AI – malene blir tilgjengelige for kundene i Sjekklistemaler
+                {t("auto.generer_komplette_sjekklistemaler_med_ai")}
               </p>
             </div>
 
@@ -346,25 +347,25 @@ export default function Ks2Admin() {
               {/* Input form */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Beskriv sjekklisten</CardTitle>
-                  <CardDescription>Fyll inn tema og detaljer, så genererer AI-en en komplett sjekkliste</CardDescription>
+                  <CardTitle className="text-lg">{t("auto.beskriv_sjekklisten")}</CardTitle>
+                  <CardDescription>{t("auto.fyll_inn_tema_og_detaljer_saa_genererer_")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Tema / tittel *</Label>
+                    <Label>{t("auto.tema_tittel_2")}</Label>
                     <Input
                       value={aiTema}
                       onChange={(e) => setAiTema(e.target.value)}
-                      placeholder="F.eks. Tømrerarbeid yttervegger, Betongstøp gulv på grunn..."
+                      placeholder={t("auto.f_eks_toemrerarbeid_yttervegger_betongst")}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Kategori</Label>
+                      <Label>{t("auto.kategori")}</Label>
                       <Select value={aiKategori} onValueChange={setAiKategori}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Velg kategori..." />
+                          <SelectValue placeholder={t("auto.velg_kategori_2")} />
                         </SelectTrigger>
                         <SelectContent>
                           {CHECKLIST_CATEGORIES.map((cat) => (
@@ -374,22 +375,22 @@ export default function Ks2Admin() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Fag / håndverk</Label>
+                      <Label>{t("auto.fag_haandverk_2")}</Label>
                       <Select value={aiTrade} onValueChange={setAiTrade}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Velg fag..." />
+                          <SelectValue placeholder={t("auto.velg_fag_2")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Tømrer">Tømrer</SelectItem>
-                          <SelectItem value="Murer">Murer</SelectItem>
-                          <SelectItem value="Betongarbeider">Betongarbeider</SelectItem>
-                          <SelectItem value="Rørlegger">Rørlegger</SelectItem>
-                          <SelectItem value="Elektriker">Elektriker</SelectItem>
-                          <SelectItem value="Blikkenslager">Blikkenslager</SelectItem>
-                          <SelectItem value="Maler">Maler</SelectItem>
-                          <SelectItem value="Flislegger">Flislegger</SelectItem>
-                          <SelectItem value="Taktekker">Taktekker</SelectItem>
-                          <SelectItem value="Generelt">Generelt</SelectItem>
+                          <SelectItem value="Tømrer">{t("auto.toemrer")}</SelectItem>
+                          <SelectItem value="Murer">{t("auto.murer")}</SelectItem>
+                          <SelectItem value="Betongarbeider">{t("auto.betongarbeider")}</SelectItem>
+                          <SelectItem value="Rørlegger">{t("auto.roerlegger")}</SelectItem>
+                          <SelectItem value="Elektriker">{t("auto.elektriker")}</SelectItem>
+                          <SelectItem value="Blikkenslager">{t("auto.blikkenslager")}</SelectItem>
+                          <SelectItem value="Maler">{t("auto.maler")}</SelectItem>
+                          <SelectItem value="Flislegger">{t("auto.flislegger")}</SelectItem>
+                          <SelectItem value="Taktekker">{t("auto.taktekker")}</SelectItem>
+                          <SelectItem value="Generelt">{t("auto.generelt")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -397,23 +398,23 @@ export default function Ks2Admin() {
 
                   <div className="space-y-2">
                     <Label className="flex items-center gap-1">
-                      Tilknyttet rutine
+                      {t("auto.tilknyttet_rutine")}
                       <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
                     </Label>
                     <Input
                       value={aiRutineRef}
                       onChange={(e) => setAiRutineRef(e.target.value)}
-                      placeholder="F.eks. Rutine for egenkontroll tømrerarbeid..."
+                      placeholder={t("auto.f_eks_rutine_for_egenkontroll_toemrerarb")}
                     />
                     <p className="text-xs text-muted-foreground">Skriv inn rutinen denne sjekklisten hører til (valgfritt)</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Tilleggsdetaljer</Label>
+                    <Label>{t("auto.tilleggsdetaljer")}</Label>
                     <Textarea
                       value={aiDetaljer}
                       onChange={(e) => setAiDetaljer(e.target.value)}
-                      placeholder="Spesielle krav, standarder, materialer eller fokusområder..."
+                      placeholder={t("auto.spesielle_krav_standarder_materialer_ell")}
                       rows={3}
                     />
                   </div>
@@ -441,7 +442,7 @@ export default function Ks2Admin() {
               {/* Preview / Result */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Forhåndsvisning</CardTitle>
+                  <CardTitle className="text-lg">{t("auto.forhaandsvisning")}</CardTitle>
                   <CardDescription>
                     {aiResult ? "Rediger og lagre sjekklisten" : "Generert sjekkliste vises her"}
                   </CardDescription>
@@ -451,19 +452,19 @@ export default function Ks2Admin() {
                     <div className="py-12 text-center text-muted-foreground">
                       <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-30" />
                       <p>Fyll inn tema og trykk "Generer med AI"</p>
-                      <p className="text-sm mt-1">Sjekklisten blir klar på noen sekunder</p>
+                      <p className="text-sm mt-1">{t("auto.sjekklisten_blir_klar_paa_noen_sekunder")}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Navn</Label>
+                        <Label className="text-xs text-muted-foreground">{t("auto.navn_2")}</Label>
                         <Input
                           value={aiResult.template_name}
                           onChange={(e) => setAiResult((p: any) => ({ ...p, template_name: e.target.value }))}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Beskrivelse</Label>
+                        <Label className="text-xs text-muted-foreground">{t("auto.beskrivelse")}</Label>
                         <Textarea
                           value={aiResult.description}
                           onChange={(e) => setAiResult((p: any) => ({ ...p, description: e.target.value }))}
@@ -477,7 +478,7 @@ export default function Ks2Admin() {
 
                       {aiResult.related_standards?.length > 0 && (
                         <div className="text-xs text-muted-foreground">
-                          <span className="font-medium">Standarder: </span>
+                          <span className="font-medium">{t("auto.standarder")} </span>
                           {aiResult.related_standards.join(", ")}
                         </div>
                       )}
@@ -545,7 +546,7 @@ export default function Ks2Admin() {
           <TabsContent value="templates" className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold">Sjekkliste-maler</h2>
+                <h2 className="text-xl font-semibold">{t("auto.sjekkliste_maler")}</h2>
                 <p className="text-sm text-muted-foreground">
                   {templates.length} maler tilgjengelig
                 </p>
@@ -559,20 +560,20 @@ export default function Ks2Admin() {
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Opprett ny sjekkliste-mal</DialogTitle>
+                    <DialogTitle>{t("auto.opprett_ny_sjekkliste_mal")}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Malnavn *</Label>
+                        <Label>{t("auto.malnavn_2")}</Label>
                         <Input 
                           value={newTemplate.template_name}
                           onChange={e => setNewTemplate(prev => ({ ...prev, template_name: e.target.value }))}
-                          placeholder="F.eks. Betongstøp kontroll"
+                          placeholder={t("auto.f_eks_betongstoep_kontroll")}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Kategori</Label>
+                        <Label>{t("auto.kategori")}</Label>
                         <Select 
                           value={newTemplate.category}
                           onValueChange={v => setNewTemplate(prev => ({ ...prev, category: v }))}
@@ -590,11 +591,11 @@ export default function Ks2Admin() {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label>Beskrivelse</Label>
+                      <Label>{t("auto.beskrivelse")}</Label>
                       <Textarea 
                         value={newTemplate.description}
                         onChange={e => setNewTemplate(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Kort beskrivelse av malen..."
+                        placeholder={t("auto.kort_beskrivelse_av_malen")}
                       />
                     </div>
 
@@ -605,7 +606,7 @@ export default function Ks2Admin() {
                           <div key={idx} className="flex items-center gap-2 p-2 bg-muted rounded">
                             <span className="flex-1 text-sm">{cp.text}</span>
                             <Badge variant="outline">{cp.type}</Badge>
-                            {cp.required && <Badge>Påkrevd</Badge>}
+                            {cp.required && <Badge>{t("auto.paakrevd")}</Badge>}
                             <Button 
                               variant="ghost" 
                               size="icon"
@@ -621,7 +622,7 @@ export default function Ks2Admin() {
                             <Input 
                               value={newCheckpoint.text}
                               onChange={e => setNewCheckpoint(prev => ({ ...prev, text: e.target.value }))}
-                              placeholder="Nytt sjekkpunkt..."
+                              placeholder={t("auto.nytt_sjekkpunkt")}
                             />
                           </div>
                           <Select 
@@ -632,11 +633,11 @@ export default function Ks2Admin() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="yesno">Ja/Nei</SelectItem>
-                              <SelectItem value="text">Tekst</SelectItem>
-                              <SelectItem value="number">Tall</SelectItem>
-                              <SelectItem value="photo">Bilde</SelectItem>
-                              <SelectItem value="signature">Signatur</SelectItem>
+                              <SelectItem value="yesno">{t("auto.ja_nei")}</SelectItem>
+                              <SelectItem value="text">{t("auto.tekst")}</SelectItem>
+                              <SelectItem value="number">{t("auto.tall")}</SelectItem>
+                              <SelectItem value="photo">{t("auto.bilde")}</SelectItem>
+                              <SelectItem value="signature">{t("auto.signatur")}</SelectItem>
                             </SelectContent>
                           </Select>
                           <div className="flex items-center gap-2">
@@ -644,7 +645,7 @@ export default function Ks2Admin() {
                               checked={newCheckpoint.required}
                               onCheckedChange={v => setNewCheckpoint(prev => ({ ...prev, required: v }))}
                             />
-                            <span className="text-xs">Påkrevd</span>
+                            <span className="text-xs">{t("auto.paakrevd")}</span>
                           </div>
                           <Button onClick={handleAddCheckpoint} size="icon">
                             <Plus className="h-4 w-4" />
@@ -655,10 +656,10 @@ export default function Ks2Admin() {
 
                     <div className="flex justify-end gap-2 pt-4">
                       <Button variant="outline" onClick={() => setIsNewTemplateOpen(false)}>
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                       <Button onClick={handleCreateTemplate}>
-                        Opprett mal
+                        {t("auto.opprett_mal")}
                       </Button>
                     </div>
                   </div>
@@ -667,13 +668,13 @@ export default function Ks2Admin() {
             </div>
 
             {templatesLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Laster maler...</div>
+              <div className="text-center py-8 text-muted-foreground">{t("auto.laster_maler")}</div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {templates.map(template => (
                   <Card key={template.id} className="relative">
                     {template.is_system_template && (
-                      <Badge className="absolute top-2 right-2" variant="secondary">System</Badge>
+                      <Badge className="absolute top-2 right-2" variant="secondary">{t("auto.system")}</Badge>
                     )}
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg">{template.template_name}</CardTitle>
@@ -714,7 +715,7 @@ export default function Ks2Admin() {
           <TabsContent value="documents" className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h2 className="text-xl font-semibold">Dokumentbank</h2>
+                <h2 className="text-xl font-semibold">{t("auto.dokumentbank")}</h2>
                 <p className="text-sm text-muted-foreground">
                   {documents.length} dokumenter tilgjengelig for nedlasting
                 </p>
@@ -728,11 +729,11 @@ export default function Ks2Admin() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Last opp nytt dokument</DialogTitle>
+                    <DialogTitle>{t("auto.last_opp_nytt_dokument")}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label>Fil *</Label>
+                      <Label>{t("auto.fil_2")}</Label>
                       <div className="border-2 border-dashed rounded-lg p-6 text-center">
                         {uploadFile ? (
                           <div className="space-y-2">
@@ -740,13 +741,13 @@ export default function Ks2Admin() {
                             <p className="font-medium">{uploadFile.name}</p>
                             <p className="text-sm text-muted-foreground">{formatFileSize(uploadFile.size)}</p>
                             <Button variant="outline" size="sm" onClick={() => setUploadFile(null)}>
-                              Fjern
+                              {t("auto.fjern")}
                             </Button>
                           </div>
                         ) : (
                           <div className="space-y-2">
                             <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
-                            <p className="text-muted-foreground">Klikk for å velge fil</p>
+                            <p className="text-muted-foreground">{t("auto.klikk_for_aa_velge_fil")}</p>
                             <p className="text-xs text-muted-foreground">PDF, Word, bilder (maks 50MB)</p>
                             <input
                               ref={fileInputRef}
@@ -760,7 +761,7 @@ export default function Ks2Admin() {
                               }}
                             />
                             <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                              Velg fil
+                              {t("auto.velg_fil")}
                             </Button>
                           </div>
                         )}
@@ -768,16 +769,16 @@ export default function Ks2Admin() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Tittel *</Label>
+                      <Label>{t("auto.tittel_2")}</Label>
                       <Input
                         value={uploadData.title}
                         onChange={(e) => setUploadData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="F.eks. Betongstøp sjekkliste"
+                        placeholder={t("auto.f_eks_betongstoep_sjekkliste")}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Kategori</Label>
+                      <Label>{t("auto.kategori")}</Label>
                       <Select
                         value={uploadData.category}
                         onValueChange={(v) => setUploadData(prev => ({ ...prev, category: v }))}
@@ -794,17 +795,17 @@ export default function Ks2Admin() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Beskrivelse</Label>
+                      <Label>{t("auto.beskrivelse")}</Label>
                       <Textarea
                         value={uploadData.description}
                         onChange={(e) => setUploadData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Kort beskrivelse..."
+                        placeholder={t("auto.kort_beskrivelse_2")}
                       />
                     </div>
 
                     <div className="flex justify-end gap-2 pt-4">
                       <Button variant="outline" onClick={() => setIsUploadDocOpen(false)}>
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                       <Button onClick={handleUploadDocument} disabled={isUploading}>
                         {isUploading ? "Laster opp..." : "Last opp"}
@@ -816,13 +817,13 @@ export default function Ks2Admin() {
             </div>
 
             {documentsLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Laster dokumenter...</div>
+              <div className="text-center py-8 text-muted-foreground">{t("auto.laster_dokumenter")}</div>
             ) : documents.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Ingen dokumenter lastet opp ennå</p>
-                  <p className="text-sm">Last opp PDF/Word-filer som kan brukes som papirmaler</p>
+                  <p>{t("auto.ingen_dokumenter_lastet_opp_ennaa")}</p>
+                  <p className="text-sm">{t("auto.last_opp_pdf_word_filer_som_kan_brukes_s")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -884,22 +885,22 @@ export default function Ks2Admin() {
 
           {/* Innstillinger Tab */}
           <TabsContent value="settings" className="space-y-4">
-            <h2 className="text-xl font-semibold">Firma-innstillinger</h2>
+            <h2 className="text-xl font-semibold">{t("auto.firma_innstillinger")}</h2>
             
             {settingsLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Laster innstillinger...</div>
+              <div className="text-center py-8 text-muted-foreground">{t("auto.laster_innstillinger")}</div>
             ) : (
               <div className="grid gap-6 max-w-2xl">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Generelt</CardTitle>
+                    <CardTitle className="text-lg">{t("auto.generelt")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <Label>Standard frist (dager)</Label>
                         <p className="text-sm text-muted-foreground">
-                          Antall dager til frist når ny sjekkliste opprettes
+                          {t("auto.antall_dager_til_frist_naar_ny_sjekklist")}
                         </p>
                       </div>
                       <Input 
@@ -914,14 +915,14 @@ export default function Ks2Admin() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Varsler</CardTitle>
+                    <CardTitle className="text-lg">{t("auto.varsler")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label>E-postvarsler</Label>
+                        <Label>{t("auto.e_postvarsler")}</Label>
                         <p className="text-sm text-muted-foreground">
-                          Send automatiske e-postvarsler ved frister og hendelser
+                          {t("auto.send_automatiske_e_postvarsler_ved_frist")}
                         </p>
                       </div>
                       <Switch 
@@ -931,9 +932,9 @@ export default function Ks2Admin() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label>Ukentlig KS-rapport</Label>
+                        <Label>{t("auto.ukentlig_ks_rapport")}</Label>
                         <p className="text-sm text-muted-foreground">
-                          Send ukentlig statusrapport til prosjektleder
+                          {t("auto.send_ukentlig_statusrapport_til_prosjekt")}
                         </p>
                       </div>
                       <Switch 
@@ -946,13 +947,13 @@ export default function Ks2Admin() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Branding</CardTitle>
+                    <CardTitle className="text-lg">{t("auto.branding")}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Firma-logo</Label>
+                      <Label>{t("auto.firma_logo")}</Label>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Vises på alle genererte rapporter og PDF-er
+                        {t("auto.vises_paa_alle_genererte_rapporter_og_pd")}
                       </p>
                       <Button variant="outline" className="gap-2">
                         <Upload className="h-4 w-4" />
@@ -960,7 +961,7 @@ export default function Ks2Admin() {
                       </Button>
                     </div>
                     <div className="space-y-2">
-                      <Label>Aksentfarge</Label>
+                      <Label>{t("auto.aksentfarge")}</Label>
                       <div className="flex items-center gap-2">
                         <Input 
                           type="color"

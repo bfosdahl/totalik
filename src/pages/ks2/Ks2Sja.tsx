@@ -23,6 +23,7 @@ import SignatureCanvas from "react-signature-canvas";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { registerPdfFont } from "@/utils/pdfFont";
+import { t } from "@/i18n/t";
 
 // === Detail/Edit View ===
 function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void }) {
@@ -128,7 +129,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
         status: "active",
       });
     } catch {
-      toast.error("Kunne ikke lagre");
+      toast.error(t("auto.kunne_ikke_lagre_2"));
     } finally {
       setIsSaving(false);
     }
@@ -136,7 +137,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
 
   const handleComplete = async () => {
     if (!sigRef.current || sigRef.current.isEmpty()) {
-      toast.error("Signatur er påkrevd");
+      toast.error(t("auto.signatur_er_paakrevd"));
       return;
     }
     try {
@@ -148,7 +149,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
       });
       onClose();
     } catch {
-      toast.error("Kunne ikke fullføre SJA");
+      toast.error(t("auto.kunne_ikke_fullfoere_sja"));
     }
   };
   const handleDownloadPdf = async () => {
@@ -391,15 +392,15 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
     }
 
     doc.save(`SJA_${sja.sja_number}.pdf`);
-    toast.success("PDF lastet ned");
+    toast.success(t("auto.pdf_lastet_ned"));
   };
 
 
   const steps = [
-    { n: 1, title: "Arbeidsbeskrivelse", icon: FileText },
-    { n: 2, title: "Risikoer", icon: AlertTriangle },
-    { n: 3, title: "Tiltak", icon: Shield },
-    { n: 4, title: "Signering", icon: CheckCircle2 },
+    { n: 1, title: t("auto.arbeidsbeskrivelse"), icon: FileText },
+    { n: 2, title: t("auto.risikoer"), icon: AlertTriangle },
+    { n: 3, title: t("auto.tiltak"), icon: Shield },
+    { n: 4, title: t("auto.signering"), icon: CheckCircle2 },
   ];
 
   return (
@@ -413,7 +414,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline">{sja.sja_number}</Badge>
-              {isCompleted && <Badge className="bg-success/20 text-success">Fullført</Badge>}
+              {isCompleted && <Badge className="bg-success/20 text-success">{t("auto.fullfoert")}</Badge>}
             </div>
             <h1 className="text-xl font-bold truncate">{sja.title}</h1>
           </div>
@@ -469,9 +470,9 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                 <FileText className="h-5 w-5" /> Arbeidsbeskrivelse
               </h2>
               <div>
-                <Label>Beskrivelse av arbeidet *</Label>
+                <Label>{t("auto.beskrivelse_av_arbeidet")}</Label>
                 <Textarea
-                  placeholder="Beskriv arbeidet som skal utføres i detalj..."
+                  placeholder={t("auto.beskriv_arbeidet_som_skal_utfoeres_i_det")}
                   value={workDescription}
                   onChange={(e) => setWorkDescription(e.target.value)}
                   className="min-h-[120px]"
@@ -481,23 +482,23 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
               <div>
                 <Label>Deltakere (kommaseparert)</Label>
                 <Input
-                  placeholder="Ola Nordmann, Kari Hansen"
+                  placeholder={t("auto.ola_nordmann_kari_hansen")}
                   value={participants}
                   onChange={(e) => setParticipants(e.target.value)}
                   disabled={isCompleted}
                 />
               </div>
               <div>
-                <Label>Merknader</Label>
+                <Label>{t("auto.merknader")}</Label>
                 <Textarea
-                  placeholder="Eventuelle merknader..."
+                  placeholder={t("auto.eventuelle_merknader")}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   disabled={isCompleted}
                 />
               </div>
               <div className="flex justify-end pt-4">
-                <Button onClick={() => setStep(2)}>Neste: Risikoer</Button>
+                <Button onClick={() => setStep(2)}>{t("auto.neste_risikoer")}</Button>
               </div>
             </div>
           )}
@@ -512,9 +513,9 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                 <Card className="bg-muted/30">
                   <CardContent className="p-4 space-y-3">
                     <div>
-                      <Label>Beskriv risiko/fare *</Label>
+                      <Label>{t("auto.beskriv_risiko_fare")}</Label>
                       <Textarea
-                        placeholder="Hva kan gå galt?"
+                        placeholder={t("auto.hva_kan_gaa_galt")}
                         value={newRisk.description}
                         onChange={(e) => setNewRisk({ ...newRisk, description: e.target.value })}
                         className="min-h-[60px]"
@@ -522,28 +523,28 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Sannsynlighet</Label>
+                        <Label>{t("auto.sannsynlighet_4")}</Label>
                         <Select value={newRisk.probability} onValueChange={(v) => setNewRisk({ ...newRisk, probability: v })}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Svært lite sannsynlig">Svært lite sannsynlig</SelectItem>
-                            <SelectItem value="Lite sannsynlig">Lite sannsynlig</SelectItem>
-                            <SelectItem value="Mulig">Mulig</SelectItem>
-                            <SelectItem value="Sannsynlig">Sannsynlig</SelectItem>
-                            <SelectItem value="Svært sannsynlig">Svært sannsynlig</SelectItem>
+                            <SelectItem value="Svært lite sannsynlig">{t("auto.svaert_lite_sannsynlig")}</SelectItem>
+                            <SelectItem value="Lite sannsynlig">{t("auto.lite_sannsynlig")}</SelectItem>
+                            <SelectItem value="Mulig">{t("auto.mulig")}</SelectItem>
+                            <SelectItem value="Sannsynlig">{t("auto.sannsynlig")}</SelectItem>
+                            <SelectItem value="Svært sannsynlig">{t("auto.svaert_sannsynlig")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div>
-                        <Label>Konsekvens</Label>
+                        <Label>{t("auto.konsekvens_4")}</Label>
                         <Select value={newRisk.consequence} onValueChange={(v) => setNewRisk({ ...newRisk, consequence: v })}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Ubetydelig">Ubetydelig</SelectItem>
-                            <SelectItem value="Liten">Liten</SelectItem>
-                            <SelectItem value="Moderat">Moderat</SelectItem>
-                            <SelectItem value="Alvorlig">Alvorlig</SelectItem>
-                            <SelectItem value="Svært alvorlig">Svært alvorlig</SelectItem>
+                            <SelectItem value="Ubetydelig">{t("auto.ubetydelig")}</SelectItem>
+                            <SelectItem value="Liten">{t("auto.liten")}</SelectItem>
+                            <SelectItem value="Moderat">{t("auto.moderat")}</SelectItem>
+                            <SelectItem value="Alvorlig">{t("auto.alvorlig")}</SelectItem>
+                            <SelectItem value="Svært alvorlig">{t("auto.svaert_alvorlig")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -559,7 +560,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                 {risks.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <AlertTriangle className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                    <p>Ingen risikoer identifisert ennå</p>
+                    <p>{t("auto.ingen_risikoer_identifisert_ennaa")}</p>
                   </div>
                 ) : (
                   risks.map((risk, idx) => (
@@ -581,8 +582,8 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
               </div>
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(1)}>Tilbake</Button>
-                <Button onClick={() => setStep(3)} disabled={risks.length === 0}>Neste: Tiltak</Button>
+                <Button variant="outline" onClick={() => setStep(1)}>{t("auto.tilbake")}</Button>
+                <Button onClick={() => setStep(3)} disabled={risks.length === 0}>{t("auto.neste_tiltak")}</Button>
               </div>
             </div>
           )}
@@ -609,7 +610,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                     </CardHeader>
                     <CardContent>
                       {riskMeasures.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">Ingen tiltak definert</p>
+                        <p className="text-sm text-muted-foreground">{t("auto.ingen_tiltak_definert")}</p>
                       ) : (
                         <div className="space-y-2">
                           {riskMeasures.map((m) => {
@@ -617,7 +618,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                             return (
                               <div key={mIdx} className="flex flex-col sm:flex-row items-stretch sm:items-start gap-2">
                                 <Textarea
-                                  placeholder="Beskriv tiltak..."
+                                  placeholder={t("auto.beskriv_tiltak")}
                                   value={m.measure}
                                   onChange={(e) => updateMeasure(mIdx, { measure: e.target.value })}
                                   className="flex-1 min-h-[80px]"
@@ -626,7 +627,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                                 />
                                 <div className="flex gap-2 sm:flex-col sm:w-40">
                                   <Input
-                                    placeholder="Ansvarlig"
+                                    placeholder={t("auto.ansvarlig_2")}
                                     value={m.responsible}
                                     onChange={(e) => updateMeasure(mIdx, { responsible: e.target.value })}
                                     className="flex-1 sm:w-full"
@@ -649,8 +650,8 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
               })}
 
               <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={() => setStep(2)}>Tilbake</Button>
-                <Button onClick={() => setStep(4)}>Neste: Signering</Button>
+                <Button variant="outline" onClick={() => setStep(2)}>{t("auto.tilbake")}</Button>
+                <Button onClick={() => setStep(4)}>{t("auto.neste_signering")}</Button>
               </div>
             </div>
           )}
@@ -666,7 +667,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                   <div className="p-4 bg-success/10 rounded-lg border border-success/30">
                     <div className="flex items-center gap-2 text-success mb-2">
                       <CheckCircle2 className="h-5 w-5" />
-                      <span className="font-medium">SJA er fullført og signert</span>
+                      <span className="font-medium">{t("auto.sja_er_fullfoert_og_signert")}</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Signert av {sja.completed_by_name} den{" "}
@@ -675,7 +676,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                   </div>
                   {sja.signature_data && (
                     <div>
-                      <Label>Signatur</Label>
+                      <Label>{t("auto.signatur")}</Label>
                       <img src={sja.signature_data} alt="Signatur" className="border rounded-lg max-h-32 bg-white mt-1" />
                     </div>
                   )}
@@ -686,13 +687,13 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                 <>
                   {/* Summary */}
                   <div className="p-4 bg-info/10 rounded-lg border border-info/30 text-sm space-y-1">
-                    <p><strong>Risikoer:</strong> {risks.length} identifisert</p>
-                    <p><strong>Tiltak:</strong> {measures.length} definert</p>
-                    <p>Ved å signere bekrefter du at alle har forstått risikoene og tiltakene.</p>
+                    <p><strong>{t("auto.risikoer_2")}</strong> {risks.length} identifisert</p>
+                    <p><strong>{t("auto.tiltak_2")}</strong> {measures.length} definert</p>
+                    <p>{t("auto.ved_aa_signere_bekrefter_du_at_alle_har__2")}</p>
                   </div>
 
                   <div>
-                    <Label>Din signatur *</Label>
+                    <Label>{t("auto.din_signatur_2")}</Label>
                     <div className="border rounded-lg bg-white mt-1 touch-none">
                       <SignatureCanvas
                         ref={sigRef}
@@ -703,7 +704,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                       />
                     </div>
                     <Button variant="ghost" size="sm" className="mt-1" onClick={() => sigRef.current?.clear()}>
-                      Tøm signatur
+                      {t("auto.toem_signatur")}
                     </Button>
                   </div>
 
@@ -711,7 +712,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                   <AdditionalSignaturesSection sja={sja} />
 
                   <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => setStep(3)}>Tilbake</Button>
+                    <Button variant="outline" onClick={() => setStep(3)}>{t("auto.tilbake")}</Button>
                     <Button
                       onClick={handleComplete}
                       disabled={completeSja.isPending}
@@ -744,11 +745,11 @@ function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
 
   const handleAdd = async () => {
     if (!name.trim()) {
-      toast.error("Navn er påkrevd");
+      toast.error(t("auto.navn_er_paakrevd"));
       return;
     }
     if (!sigRef.current || sigRef.current.isEmpty()) {
-      toast.error("Signatur er påkrevd");
+      toast.error(t("auto.signatur_er_paakrevd"));
       return;
     }
     const newSig = {
@@ -766,9 +767,9 @@ function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
       setRole("");
       sigRef.current?.clear();
       setShowForm(false);
-      toast.success("Signatur lagt til");
+      toast.success(t("auto.signatur_lagt_til"));
     } catch {
-      toast.error("Kunne ikke lagre signatur");
+      toast.error(t("auto.kunne_ikke_lagre_signatur"));
     }
   };
 
@@ -776,9 +777,9 @@ function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
     const updated = existing.filter((_, i) => i !== index);
     try {
       await updateSja.mutateAsync({ id: sja.id, additional_signatures: updated } as any);
-      toast.success("Signatur fjernet");
+      toast.success(t("auto.signatur_fjernet"));
     } catch {
-      toast.error("Kunne ikke fjerne");
+      toast.error(t("auto.kunne_ikke_fjerne"));
     }
   };
 
@@ -817,16 +818,16 @@ function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
         <div className="space-y-3 border rounded-lg p-3 bg-background">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <Label>Navn *</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Fullt navn" />
+              <Label>{t("auto.navn_3")}</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("auto.fullt_navn")} />
             </div>
             <div>
-              <Label>Rolle</Label>
-              <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="F.eks. Tømrer" />
+              <Label>{t("auto.rolle")}</Label>
+              <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder={t("auto.f_eks_toemrer")} />
             </div>
           </div>
           <div>
-            <Label>Signatur *</Label>
+            <Label>{t("auto.signatur_3")}</Label>
             <div className="border rounded-lg bg-white mt-1 touch-none">
               <SignatureCanvas
                 ref={sigRef}
@@ -837,12 +838,12 @@ function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
               />
             </div>
             <Button variant="ghost" size="sm" className="mt-1" onClick={() => sigRef.current?.clear()}>
-              Tøm signatur
+              {t("auto.toem_signatur")}
             </Button>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => { setShowForm(false); setName(""); setRole(""); sigRef.current?.clear(); }}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button size="sm" onClick={handleAdd} disabled={updateSja.isPending}>
               <CheckCircle2 className="h-4 w-4 mr-1" /> Lagre signatur
@@ -874,18 +875,18 @@ export default function Ks2Sja() {
 
   const getRiskBadge = (level: string) => {
     switch (level) {
-      case "high": return <Badge variant="destructive">Høy risiko</Badge>;
-      case "medium": return <Badge className="bg-warning text-warning-foreground">Middels risiko</Badge>;
-      case "low": return <Badge className="bg-success text-success-foreground">Lav risiko</Badge>;
-      default: return <Badge variant="secondary">Ikke vurdert</Badge>;
+      case "high": return <Badge variant="destructive">{t("auto.hoey_risiko")}</Badge>;
+      case "medium": return <Badge className="bg-warning text-warning-foreground">{t("auto.middels_risiko")}</Badge>;
+      case "low": return <Badge className="bg-success text-success-foreground">{t("auto.lav_risiko")}</Badge>;
+      default: return <Badge variant="secondary">{t("auto.ikke_vurdert")}</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed": return <Badge className="bg-success text-success-foreground">Fullført</Badge>;
-      case "active": return <Badge>Aktiv</Badge>;
-      case "draft": return <Badge variant="secondary">Utkast</Badge>;
+      case "completed": return <Badge className="bg-success text-success-foreground">{t("auto.fullfoert")}</Badge>;
+      case "active": return <Badge>{t("auto.aktiv")}</Badge>;
+      case "draft": return <Badge variant="secondary">{t("auto.utkast")}</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
     }
   };
@@ -952,8 +953,8 @@ export default function Ks2Sja() {
             <ClipboardCheck className="h-6 w-6 text-success" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">SJA - Sikker Jobb Analyse</h2>
-            <p className="text-muted-foreground">Risikovurdering før arbeid starter</p>
+            <h2 className="text-2xl font-bold">{t("auto.sja_sikker_jobb_analyse")}</h2>
+            <p className="text-muted-foreground">{t("auto.risikovurdering_foer_arbeid_starter")}</p>
           </div>
         </div>
         <Button className="bg-success hover:bg-success/90 text-success-foreground" onClick={() => setShowNewDialog(true)}>
@@ -964,7 +965,7 @@ export default function Ks2Sja() {
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Søk etter SJA..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+        <Input placeholder={t("auto.soek_etter_sja")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
       </div>
 
       {/* List */}
@@ -1034,7 +1035,7 @@ export default function Ks2Sja() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <ClipboardCheck className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Ingen SJA funnet</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_sja_funnet")}</h3>
             <p className="text-muted-foreground text-center mb-4">
               {searchQuery ? "Ingen treff på søket ditt" : "Opprett din første SJA for dette prosjektet"}
             </p>
@@ -1053,37 +1054,37 @@ export default function Ks2Sja() {
               <AlertTriangle className="h-5 w-5 text-warning" />
               Ny Sikker Jobb Analyse
             </DialogTitle>
-            <DialogDescription>Opprett en ny SJA for å vurdere risiko før arbeid starter</DialogDescription>
+            <DialogDescription>{t("auto.opprett_en_ny_sja_for_aa_vurdere_risiko_")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Tittel / Arbeidsoppgave *</Label>
+              <Label>{t("auto.tittel_arbeidsoppgave")}</Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="F.eks. Arbeid i høyden - Tak"
+                placeholder={t("auto.f_eks_arbeid_i_hoeyden_tak_2")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Beskrivelse av arbeidet</Label>
+              <Label>{t("auto.beskrivelse_av_arbeidet_2")}</Label>
               <Textarea
                 value={formData.work_description}
                 onChange={(e) => setFormData({ ...formData, work_description: e.target.value })}
-                placeholder="Beskriv arbeidet som skal utføres..."
+                placeholder={t("auto.beskriv_arbeidet_som_skal_utfoeres")}
                 rows={3}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Lokasjon</Label>
+                <Label>{t("auto.lokasjon")}</Label>
                 <Input
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="F.eks. Tak, 3. etasje"
+                  placeholder={t("auto.f_eks_tak_3_etasje")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Planlagt dato *</Label>
+                <Label>{t("auto.planlagt_dato_3")}</Label>
                 <Input
                   type="date"
                   value={formData.planned_date}
@@ -1092,27 +1093,27 @@ export default function Ks2Sja() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Ansvarlig *</Label>
+              <Label>{t("auto.ansvarlig_3")}</Label>
               <Input
                 value={formData.responsible_name}
                 onChange={(e) => setFormData({ ...formData, responsible_name: e.target.value })}
-                placeholder="Navn på ansvarlig person"
+                placeholder={t("auto.navn_paa_ansvarlig_person")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Risikonivå</Label>
+              <Label>{t("auto.risikonivaa")}</Label>
               <Select value={formData.overall_risk_level} onValueChange={(v) => setFormData({ ...formData, overall_risk_level: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Lav risiko</SelectItem>
-                  <SelectItem value="medium">Middels risiko</SelectItem>
-                  <SelectItem value="high">Høy risiko</SelectItem>
+                  <SelectItem value="low">{t("auto.lav_risiko")}</SelectItem>
+                  <SelectItem value="medium">{t("auto.middels_risiko")}</SelectItem>
+                  <SelectItem value="high">{t("auto.hoey_risiko")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewDialog(false)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setShowNewDialog(false)}>{t("auto.avbryt")}</Button>
             <Button
               className="bg-success hover:bg-success/90 text-success-foreground"
               onClick={handleCreate}

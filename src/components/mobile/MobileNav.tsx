@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 interface NavItem {
   id: string;
@@ -26,25 +27,25 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   {
     id: "dashboard",
-    label: "Hjem",
+    label: t("auto.hjem"),
     icon: <Home className="h-5 w-5" />,
     path: "/",
   },
   {
     id: "projects",
-    label: "Prosjekt",
+    label: t("auto.prosjekt"),
     icon: <Briefcase className="h-5 w-5" />,
     path: "/prosjekt-hub",
   },
   {
     id: "time",
-    label: "Timer",
+    label: t("auto.timer"),
     icon: <Clock className="h-5 w-5" />,
     path: "/time-registration",
   },
   {
     id: "driving",
-    label: "Kjørebok",
+    label: t("auto.kjoerebok"),
     icon: <Car className="h-5 w-5" />,
     path: "/my/driving-log",
   },
@@ -71,10 +72,10 @@ export function MobileNav({ className }: MobileNavProps) {
   };
 
   const moreItems = [
-    { label: "Avvik", icon: <AlertTriangle className="h-5 w-5" />, path: "/deviations" },
-    { label: "Ansatte", icon: <Users className="h-5 w-5" />, path: "/employees" },
-    { label: "Rutiner", icon: <Shield className="h-5 w-5" />, path: "/rutiner" },
-    { label: "Innstillinger", icon: <Menu className="h-5 w-5" />, path: "/settings" },
+    { label: t("auto.avvik"), icon: <AlertTriangle className="h-5 w-5" />, path: "/deviations" },
+    { label: t("auto.ansatte"), icon: <Users className="h-5 w-5" />, path: "/employees" },
+    { label: t("auto.rutiner"), icon: <Shield className="h-5 w-5" />, path: "/rutiner" },
+    { label: t("auto.innstillinger"), icon: <Menu className="h-5 w-5" />, path: "/settings" },
   ];
 
   return (
@@ -100,7 +101,7 @@ export function MobileNav({ className }: MobileNavProps) {
             className="mobile-bottom-nav-item"
           >
             <Menu className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Mer</span>
+            <span className="text-[10px] font-medium">{t("auto.mer")}</span>
           </button>
         </div>
       </nav>
@@ -127,7 +128,7 @@ export function MobileNav({ className }: MobileNavProps) {
               <div className="sheet-handle" />
               <div className="p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Flere valg</h3>
+                  <h3 className="text-lg font-semibold">{t("auto.flere_valg")}</h3>
                   <Button
                     variant="ghost"
                     size="icon"

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,11 +29,11 @@ interface ProjectCardProps {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  planned: { label: "Planlagt", className: "bg-muted text-muted-foreground" },
-  active: { label: "Aktiv", className: "bg-success/20 text-success" },
-  handover: { label: "Overtakelse", className: "bg-warning/20 text-warning" },
-  warranty: { label: "Garanti", className: "bg-info/20 text-info" },
-  completed: { label: "Avsluttet", className: "bg-secondary text-secondary-foreground" },
+  planned: { label: t("auto.planlagt"), className: "bg-muted text-muted-foreground" },
+  active: { label: t("auto.aktiv"), className: "bg-success/20 text-success" },
+  handover: { label: t("auto.overtakelse"), className: "bg-warning/20 text-warning" },
+  warranty: { label: t("auto.garanti"), className: "bg-info/20 text-info" },
+  completed: { label: t("auto.avsluttet"), className: "bg-secondary text-secondary-foreground" },
 };
 
 export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDelete, openDeviationsCount = 0 }: ProjectCardProps) {
@@ -55,21 +56,21 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
                 size="icon"
                 className="h-8 w-8 opacity-60 md:opacity-0 md:group-hover:opacity-60 hover:opacity-100 hover:text-destructive transition-opacity"
                 onClick={(e) => e.stopPropagation()}
-                title="Slett prosjekt"
+                title={t("auto.slett_prosjekt_2")}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent onClick={(e) => e.stopPropagation()}>
               <AlertDialogHeader>
-                <AlertDialogTitle>Slett prosjekt?</AlertDialogTitle>
+                <AlertDialogTitle>{t("auto.slett_prosjekt")}</AlertDialogTitle>
                 <AlertDialogDescription>
                   Er du sikker på at du vil slette "{project.project_name}"? 
                   Alle data knyttet til prosjektet vil bli slettet permanent. Denne handlingen kan ikke angres.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={(e) => {
@@ -92,7 +93,7 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
               e.stopPropagation();
               onCopy(project);
             }}
-            title="Kopier prosjekt"
+            title={t("auto.kopier_prosjekt")}
           >
             <Copy className="h-4 w-4 text-muted-foreground" />
           </Button>
@@ -129,10 +130,10 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
           <div className="flex gap-1.5 mt-2 flex-wrap">
             <Badge className={cn("text-xs", status.className)}>{status.label}</Badge>
             {(project as any).project_type === "small" && (
-              <Badge variant="outline" className="text-xs">Lite prosjekt</Badge>
+              <Badge variant="outline" className="text-xs">{t("auto.lite_prosjekt")}</Badge>
             )}
             {(project as any).project_type === "mini" && (
-              <Badge variant="outline" className="text-xs">Mini</Badge>
+              <Badge variant="outline" className="text-xs">{t("auto.mini")}</Badge>
             )}
           </div>
         </div>
@@ -179,7 +180,7 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
               <span className="text-xs font-medium">{openDeviationsCount} åpne avvik</span>
             </div>
           ) : (
-            <span className="text-xs text-muted-foreground">Ingen åpne avvik</span>
+            <span className="text-xs text-muted-foreground">{t("auto.ingen_aapne_avvik")}</span>
           )}
 
           {/* Last activity */}

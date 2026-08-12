@@ -14,6 +14,7 @@ import { Plus, Trash2, Receipt, Image, FileText, Download } from "lucide-react";
 import { useTripExpenses, TripExpense } from "@/hooks/useTripExpenses";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const expenseCategories: Record<string, string> = {
   parking: "Parkering",
@@ -65,7 +66,7 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
       .createSignedUrl(path, 300);
 
     if (error || !data?.signedUrl) {
-      toast.error("Kunne ikke åpne kvittering");
+      toast.error(t("auto.kunne_ikke_aapne_kvittering"));
       return;
     }
     setViewingReceipt(data.signedUrl);
@@ -91,9 +92,9 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
         </CardHeader>
         <CardContent>
           {expenses.isLoading ? (
-            <p className="text-sm text-muted-foreground">Laster...</p>
+            <p className="text-sm text-muted-foreground">{t("auto.laster")}</p>
           ) : !expenses.data?.length ? (
-            <p className="text-sm text-muted-foreground">Ingen utgifter registrert</p>
+            <p className="text-sm text-muted-foreground">{t("auto.ingen_utgifter_registrert")}</p>
           ) : (
             <div className="space-y-2">
               {expenses.data.map((expense) => (
@@ -136,11 +137,11 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Legg til utgift</DialogTitle>
+            <DialogTitle>{t("auto.legg_til_utgift")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Kategori</Label>
+              <Label>{t("auto.kategori")}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -152,8 +153,8 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Beskrivelse *</Label>
-              <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="F.eks. Parkering sentrum" required />
+              <Label>{t("auto.beskrivelse_2")}</Label>
+              <Input value={description} onChange={e => setDescription(e.target.value)} placeholder={t("auto.f_eks_parkering_sentrum")} required />
             </div>
 
             <div className="space-y-2">
@@ -169,7 +170,7 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
                   {receiptFile ? receiptFile.name : "Velg fil"}
                 </Button>
                 {receiptFile && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setReceiptFile(null)}>Fjern</Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setReceiptFile(null)}>{t("auto.fjern")}</Button>
                 )}
               </div>
               <input
@@ -182,7 +183,7 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setAddDialogOpen(false)}>Avbryt</Button>
+              <Button type="button" variant="outline" onClick={() => setAddDialogOpen(false)}>{t("auto.avbryt")}</Button>
               <Button type="submit" disabled={addExpense.isPending || !description || !amount}>
                 {addExpense.isPending ? "Lagrer..." : "Legg til"}
               </Button>
@@ -195,7 +196,7 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
       <Dialog open={!!viewingReceipt} onOpenChange={() => setViewingReceipt(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Kvittering</DialogTitle>
+            <DialogTitle>{t("auto.kvittering")}</DialogTitle>
           </DialogHeader>
           {viewingReceipt && (
             <div className="space-y-3">

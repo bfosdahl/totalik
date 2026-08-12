@@ -10,6 +10,7 @@ import { Loader2, Shield, CheckCircle2, User, ArrowRight, Info, FileText } from 
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 const VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT = 5;
 
@@ -92,7 +93,7 @@ export function InlineVerneombudStep({
             </p>
           </div>
           <Button size="sm" onClick={() => onComplete(verneombudName, hasValidExistingExemption)} className="shrink-0">
-            Neste <ArrowRight className="w-4 h-4 ml-1" />
+            {t("auto.neste")} <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
       </Card>
@@ -101,13 +102,13 @@ export function InlineVerneombudStep({
 
   const handleSaveExemption = async () => {
     if (needsVerneombud) {
-      toast.error("Virksomheter med 5 eller flere ansatte må ha verneombud og kan ikke inngå fritaksavtale.");
+      toast.error(t("auto.virksomheter_med_5_eller_flere_ansatte_m"));
       return;
     }
 
     const sig = usingSavedSignature ? savedSignature : sigRef.current?.toDataURL() || "";
     if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
-      toast.error("Vennligst signer");
+      toast.error(t("auto.vennligst_signer"));
       return;
     }
 
@@ -124,12 +125,12 @@ export function InlineVerneombudStep({
         agreement_date: new Date().toISOString().split("T")[0],
       }]);
       if (error) throw error;
-      toast.success("Avtale om fritak signert!");
+      toast.success(t("auto.avtale_om_fritak_signert"));
       setMode("done");
       onComplete("", true);
     } catch (error) {
       console.error(error);
-      toast.error("Kunne ikke lagre avtalen");
+      toast.error(t("auto.kunne_ikke_lagre_avtalen"));
     } finally {
       setIsSaving(false);
     }
@@ -137,7 +138,7 @@ export function InlineVerneombudStep({
 
   const handleSaveVerneombud = async () => {
     if (!verneombudName.trim()) {
-      toast.error("Vennligst skriv inn navn på verneombud");
+      toast.error(t("auto.vennligst_skriv_inn_navn_paa_verneombud"));
       return;
     }
     // Save without signature requirement - can sign later
@@ -154,12 +155,12 @@ export function InlineVerneombudStep({
         status: "active",
       });
       if (error) throw error;
-      toast.success("Verneombud registrert!");
+      toast.success(t("auto.verneombud_registrert"));
       setMode("done");
       onComplete(verneombudName, false);
     } catch (error) {
       console.error(error);
-      toast.error("Kunne ikke lagre");
+      toast.error(t("auto.kunne_ikke_lagre_2"));
     } finally {
       setIsSaving(false);
     }
@@ -170,7 +171,7 @@ export function InlineVerneombudStep({
       <Card className="p-4 border-success/30 bg-success/5">
         <div className="flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-success" />
-          <p className="text-sm font-medium text-success">Verneombud-steget fullført! ✅</p>
+          <p className="text-sm font-medium text-success">{t("auto.verneombud_steget_fullfoert")}</p>
         </div>
       </Card>
     );
@@ -180,7 +181,7 @@ export function InlineVerneombudStep({
     <Card className="p-4 sm:p-5 border-primary/20 space-y-4">
       <div className="flex items-center gap-2">
         <Shield className="w-5 h-5 text-primary" />
-        <h3 className="font-semibold">Verneombud</h3>
+        <h3 className="font-semibold">{t("auto.verneombud")}</h3>
       </div>
 
       {mode === "choose" && (
@@ -190,9 +191,9 @@ export function InlineVerneombudStep({
               <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <div>
                 {needsVerneombud ? (
-                  <p>Bedriften har <strong>{employeeCount} ansatte</strong> og er <strong>pålagt å ha verneombud</strong> iht. Arbeidsmiljøloven §6-1.</p>
+                  <p>{t("auto.bedriften_har")} <strong>{employeeCount} ansatte</strong> {t("auto.og_er")} <strong>{t("auto.paalagt_aa_ha_verneombud")}</strong> {t("auto.iht_arbeidsmiljoeloven_6_1")}</p>
                 ) : (
-                  <p>Bedriften har <strong>færre enn 5 ansatte</strong>. Dere kan velge å ha verneombud, eller skriftlig avtale fritak iht. Arbeidsmiljøloven §6-1.</p>
+                  <p>{t("auto.bedriften_har")} <strong>{t("auto.faerre_enn_5_ansatte")}</strong>{t("auto.dere_kan_velge_aa_ha_verneombud_eller_sk")}</p>
                 )}
               </div>
             </div>
@@ -200,25 +201,25 @@ export function InlineVerneombudStep({
 
           {needsVerneombud ? (
             <div className="space-y-3">
-              <p className="text-sm">Hvem er verneombud i bedriften?</p>
+              <p className="text-sm">{t("auto.hvem_er_verneombud_i_bedriften")}</p>
               <div>
                 <Select value={selectedUserId} onValueChange={(v) => { setSelectedUserId(v); if (v === "custom") setVerneombudName(""); }}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg fra ansatte..." />
+                    <SelectValue placeholder={t("auto.velg_fra_ansatte")} />
                   </SelectTrigger>
                   <SelectContent>
                     {!isLoadingUsers && users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>{getUserDisplayName(user)}</SelectItem>
                     ))}
-                    <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+                    <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {(selectedUserId === "custom" || !selectedUserId) && (
-                <Input value={verneombudName} onChange={(e) => setVerneombudName(e.target.value)} placeholder="Skriv inn navnet på verneombudet" />
+                <Input value={verneombudName} onChange={(e) => setVerneombudName(e.target.value)} placeholder={t("auto.skriv_inn_navnet_paa_verneombudet")} />
               )}
               <div className="flex gap-2 justify-end">
-                <Button variant="ghost" size="sm" onClick={onSkip}>Fullfør senere</Button>
+                <Button variant="ghost" size="sm" onClick={onSkip}>{t("auto.fullfoer_senere")}</Button>
                 <Button size="sm" onClick={handleSaveVerneombud} disabled={!verneombudName.trim() || isSaving}>
                   {isSaving && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
                   Registrer verneombud
@@ -236,7 +237,7 @@ export function InlineVerneombudStep({
                 Signer avtale om fritak
               </Button>
               <Button variant="ghost" size="sm" onClick={onSkip} className="justify-start text-muted-foreground">
-                Avklar dette senere
+                {t("auto.avklar_dette_senere")}
               </Button>
             </div>
           )}
@@ -245,23 +246,23 @@ export function InlineVerneombudStep({
 
       {mode === "assign" && (
         <div className="space-y-3">
-          <p className="text-sm">Hvem er verneombud?</p>
+          <p className="text-sm">{t("auto.hvem_er_verneombud")}</p>
           <Select value={selectedUserId} onValueChange={(v) => { setSelectedUserId(v); if (v === "custom") setVerneombudName(""); }}>
             <SelectTrigger>
-              <SelectValue placeholder="Velg fra ansatte..." />
+              <SelectValue placeholder={t("auto.velg_fra_ansatte")} />
             </SelectTrigger>
             <SelectContent>
               {!isLoadingUsers && users.map((user) => (
                 <SelectItem key={user.id} value={user.id}>{getUserDisplayName(user)}</SelectItem>
               ))}
-              <SelectItem value="custom">Skriv inn manuelt...</SelectItem>
+              <SelectItem value="custom">{t("auto.skriv_inn_manuelt_2")}</SelectItem>
             </SelectContent>
           </Select>
           {(selectedUserId === "custom" || !selectedUserId) && (
-            <Input value={verneombudName} onChange={(e) => setVerneombudName(e.target.value)} placeholder="Fullt navn" />
+            <Input value={verneombudName} onChange={(e) => setVerneombudName(e.target.value)} placeholder={t("auto.fullt_navn")} />
           )}
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" size="sm" onClick={() => setMode("choose")}>Tilbake</Button>
+            <Button variant="outline" size="sm" onClick={() => setMode("choose")}>{t("auto.tilbake")}</Button>
             <Button size="sm" onClick={handleSaveVerneombud} disabled={!verneombudName.trim() || isSaving}>
               {isSaving && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
               Registrer
@@ -273,7 +274,7 @@ export function InlineVerneombudStep({
       {mode === "sign_exempt" && (
         <div className="space-y-3">
           <div className="bg-muted/30 rounded-lg p-3 text-xs sm:text-sm border">
-            <p className="mb-2 font-medium">Avtale om fritak fra verneombud</p>
+            <p className="mb-2 font-medium">{t("auto.avtale_om_fritak_fra_verneombud")}</p>
             <p className="text-muted-foreground">
               I henhold til arbeidsmiljøloven §6-1 avtales det at virksomheten ({companyName}, {employeeCount} ansatte) 
               er fritatt fra kravet om verneombud. Arbeidsgiver forplikter seg til å ivareta HMS forsvarlig.
@@ -284,7 +285,7 @@ export function InlineVerneombudStep({
             <Input value={verneombudName} onChange={(e) => setVerneombudName(e.target.value)} placeholder="Navn (arbeidsgiver)" />
             
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Signatur</Label>
+              <Label className="text-xs">{t("auto.signatur")}</Label>
               {savedSignature && !usingSavedSignature && (
                 <Button type="button" variant="outline" size="sm" onClick={() => {
                   sigRef.current?.fromDataURL(savedSignature);
@@ -298,12 +299,12 @@ export function InlineVerneombudStep({
               <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-24 touch-none" }} backgroundColor="white" />
             </div>
             <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => { sigRef.current?.clear(); setUsingSavedSignature(false); }}>
-              Tøm signatur
+              {t("auto.toem_signatur")}
             </Button>
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" size="sm" onClick={() => setMode("choose")}>Tilbake</Button>
+            <Button variant="outline" size="sm" onClick={() => setMode("choose")}>{t("auto.tilbake")}</Button>
             <Button size="sm" onClick={handleSaveExemption} disabled={isSaving}>
               {isSaving && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
               Signer avtale

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import UserSelect from '@/components/audits/UserSelect';
+import { t } from "@/i18n/t";
 
 interface OrgChartPersonDialogProps {
   open: boolean;
@@ -44,17 +45,17 @@ const OrgChartPersonDialog: React.FC<OrgChartPersonDialogProps> = ({
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="person">Velg person</Label>
+            <Label htmlFor="person">{t("auto.velg_person")}</Label>
             <UserSelect
               value={personName}
               onValueChange={setPersonName}
-              placeholder="Velg fra ansatte eller skriv inn navn"
+              placeholder={t("auto.velg_fra_ansatte_eller_skriv_inn_navn")}
             />
           </div>
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={!personName.trim() || isLoading}>
               {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

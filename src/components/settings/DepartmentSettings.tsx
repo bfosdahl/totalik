@@ -17,6 +17,7 @@ import { OrderModuleDialog } from "@/components/modules/OrderModuleDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { t } from "@/i18n/t";
 
 interface DepartmentSettingsProps {
   onBack: () => void;
@@ -69,7 +70,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
       refreshCompany?.();
     } catch (error) {
       console.error("Error toggling departments:", error);
-      toast.error("Kunne ikke endre innstilling");
+      toast.error(t("auto.kunne_ikke_endre_innstilling"));
     }
   };
 
@@ -115,12 +116,12 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
 
       if (companyError) throw companyError;
 
-      toast.success("Avdelingsmodul aktivert");
+      toast.success(t("auto.avdelingsmodul_aktivert"));
       await refetchModules();
       await refreshCompany?.();
     } catch (error) {
       console.error("Error activating module:", error);
-      toast.error("Kunne ikke aktivere modulen");
+      toast.error(t("auto.kunne_ikke_aktivere_modulen"));
     } finally {
       setIsSaving(false);
     }
@@ -165,7 +166,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
 
   const handleCreate = async () => {
     if (!formData.name.trim()) {
-      toast.error("Avdelingsnavn er påkrevd");
+      toast.error(t("auto.avdelingsnavn_er_paakrevd"));
       return;
     }
 
@@ -181,7 +182,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
 
   const handleUpdate = async () => {
     if (!selectedDepartment || !formData.name.trim()) {
-      toast.error("Avdelingsnavn er påkrevd");
+      toast.error(t("auto.avdelingsnavn_er_paakrevd"));
       return;
     }
 
@@ -225,8 +226,8 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Avdelinger</h2>
-          <p className="text-muted-foreground">Administrer avdelinger for din bedrift</p>
+          <h2 className="text-2xl font-bold text-foreground">{t("auto.avdelinger")}</h2>
+          <p className="text-muted-foreground">{t("auto.administrer_avdelinger_for_din_bedrift")}</p>
         </div>
       </div>
 
@@ -239,13 +240,13 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               Bestill Avdelingsmodul
             </CardTitle>
             <CardDescription>
-              Organiser bedriften i avdelinger med egne brukere, data og tilgangskontroll
+              {t("auto.organiser_bedriften_i_avdelinger_med_egn")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Avdelinger</p>
+                <p className="font-medium">{t("auto.avdelinger")}</p>
                 <p className="text-sm text-muted-foreground">
                   {pricing?.price_monthly ? `${pricing.price_monthly} kr/mnd` : "Kontakt oss for pris"}
                 </p>
@@ -268,15 +269,15 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               Admin: Aktiver Avdelingsmodul
             </CardTitle>
             <CardDescription>
-              Som systemadministrator kan du aktivere modulen uten betaling
+              {t("auto.som_systemadministrator_kan_du_aktivere_")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Avdelingsmodul ikke aktivert</p>
+                <p className="font-medium">{t("auto.avdelingsmodul_ikke_aktivert")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Klikk for å aktivere uten betaling eller ordrebekreftelse
+                  {t("auto.klikk_for_aa_aktivere_uten_betaling_elle")}
                 </p>
               </div>
               <Button 
@@ -301,13 +302,13 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               Avdelingsfunksjon
             </CardTitle>
             <CardDescription>
-              Aktiver for å organisere bedriften i avdelinger med egne brukere og data
+              {t("auto.aktiver_for_aa_organisere_bedriften_i_av")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Bruk avdelinger</p>
+                <p className="font-medium">{t("auto.bruk_avdelinger")}</p>
                 <p className="text-sm text-muted-foreground">
                   {hasDepartments 
                     ? "Avdelinger er aktivert for denne bedriften" 
@@ -346,7 +347,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Building2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground text-center">
-                  Ingen avdelinger lagt til ennå.
+                  {t("auto.ingen_avdelinger_lagt_til_ennaa")}
                   <br />
                   Klikk "Ny avdeling" for å opprette den første.
                 </p>
@@ -364,7 +365,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
                       </div>
                       <div className="flex items-center gap-1">
                         {!dept.is_active && (
-                          <Badge variant="secondary">Inaktiv</Badge>
+                          <Badge variant="secondary">{t("auto.inaktiv")}</Badge>
                         )}
                         <Button 
                           variant="ghost" 
@@ -414,24 +415,24 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Opprett ny avdeling</DialogTitle>
+            <DialogTitle>{t("auto.opprett_ny_avdeling")}</DialogTitle>
             <DialogDescription>
-              Legg til en ny avdeling i bedriften
+              {t("auto.legg_til_en_ny_avdeling_i_bedriften")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Avdelingsnavn *</Label>
+                <Label htmlFor="name">{t("auto.avdelingsnavn_2")}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="F.eks. Oslo-kontoret"
+                  placeholder={t("auto.f_eks_oslo_kontoret")}
                 />
               </div>
               <div>
-                <Label htmlFor="org_number">Org. nummer</Label>
+                <Label htmlFor="org_number">{t("auto.org_nummer_2")}</Label>
                 <Input
                   id="org_number"
                   value={formData.org_number}
@@ -441,27 +442,27 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               </div>
             </div>
             <div>
-              <Label htmlFor="description">Beskrivelse</Label>
+              <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Kort beskrivelse av avdelingen"
+                placeholder={t("auto.kort_beskrivelse_av_avdelingen")}
                 rows={2}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="address">Adresse</Label>
+                <Label htmlFor="address">{t("auto.adresse")}</Label>
                 <Input
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Gateadresse"
+                  placeholder={t("auto.gateadresse")}
                 />
               </div>
               <div>
-                <Label htmlFor="postal_code">Postnummer</Label>
+                <Label htmlFor="postal_code">{t("auto.postnummer")}</Label>
                 <Input
                   id="postal_code"
                   value={formData.postal_code}
@@ -471,18 +472,18 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               </div>
             </div>
             <div>
-              <Label htmlFor="city">Poststed</Label>
+              <Label htmlFor="city">{t("auto.poststed")}</Label>
               <Input
                 id="city"
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="By/sted"
+                placeholder={t("auto.by_sted")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleCreate} disabled={isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -496,15 +497,15 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rediger avdeling</DialogTitle>
+            <DialogTitle>{t("auto.rediger_avdeling")}</DialogTitle>
             <DialogDescription>
-              Oppdater informasjon om avdelingen
+              {t("auto.oppdater_informasjon_om_avdelingen")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="edit-name">Avdelingsnavn *</Label>
+                <Label htmlFor="edit-name">{t("auto.avdelingsnavn_2")}</Label>
                 <Input
                   id="edit-name"
                   value={formData.name}
@@ -512,7 +513,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-org_number">Org. nummer</Label>
+                <Label htmlFor="edit-org_number">{t("auto.org_nummer_2")}</Label>
                 <Input
                   id="edit-org_number"
                   value={formData.org_number}
@@ -522,7 +523,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               </div>
             </div>
             <div>
-              <Label htmlFor="edit-description">Beskrivelse</Label>
+              <Label htmlFor="edit-description">{t("auto.beskrivelse")}</Label>
               <Textarea
                 id="edit-description"
                 value={formData.description}
@@ -532,7 +533,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="edit-address">Adresse</Label>
+                <Label htmlFor="edit-address">{t("auto.adresse")}</Label>
                 <Input
                   id="edit-address"
                   value={formData.address}
@@ -540,7 +541,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-postal_code">Postnummer</Label>
+                <Label htmlFor="edit-postal_code">{t("auto.postnummer")}</Label>
                 <Input
                   id="edit-postal_code"
                   value={formData.postal_code}
@@ -549,7 +550,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               </div>
             </div>
             <div>
-              <Label htmlFor="edit-city">Poststed</Label>
+              <Label htmlFor="edit-city">{t("auto.poststed")}</Label>
               <Input
                 id="edit-city"
                 value={formData.city}
@@ -558,8 +559,8 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label>Aktiv</Label>
-                <p className="text-sm text-muted-foreground">Deaktiver for å skjule avdelingen</p>
+                <Label>{t("auto.aktiv")}</Label>
+                <p className="text-sm text-muted-foreground">{t("auto.deaktiver_for_aa_skjule_avdelingen")}</p>
               </div>
               <Switch
                 checked={formData.is_active}
@@ -569,7 +570,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleUpdate} disabled={isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -583,14 +584,14 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett avdeling</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_avdeling")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{selectedDepartment?.name}"? 
               Dette vil også fjerne alle brukertilknytninger til denne avdelingen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

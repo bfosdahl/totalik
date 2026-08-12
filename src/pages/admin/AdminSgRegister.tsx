@@ -22,6 +22,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkSgDialog } from "@/components/admin/LinkSgDialog";
+import { t } from "@/i18n/t";
 
 interface SGEnterprise {
   name: string;
@@ -100,12 +101,12 @@ export default function AdminSgRegister() {
       setHasFetched(true);
       
       toast({
-        title: "Data hentet",
+        title: t("auto.data_hentet"),
         description: `${sorted.length} godkjente bedrifter lastet inn`,
       });
     } catch (error) {
       toast({
-        title: "Feil ved henting",
+        title: t("auto.feil_ved_henting"),
         description: error instanceof Error ? error.message : "Ukjent feil",
         variant: "destructive",
       });
@@ -176,9 +177,9 @@ export default function AdminSgRegister() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">SG Register Søk</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t("auto.sg_register_soek")}</h1>
           <p className="text-muted-foreground mt-1">
-            Søk i Sentral Godkjenning registeret fra Direktoratet for byggkvalitet
+            {t("auto.soek_i_sentral_godkjenning_registeret_fr")}
           </p>
         </div>
 
@@ -186,9 +187,9 @@ export default function AdminSgRegister() {
         {!hasFetched && (
           <Card>
             <CardHeader>
-              <CardTitle>Hent SG-data</CardTitle>
+              <CardTitle>{t("auto.hent_sg_data")}</CardTitle>
               <CardDescription>
-                Klikk for å laste inn godkjente bedrifter fra SG-registeret
+                {t("auto.klikk_for_aa_laste_inn_godkjente_bedrift")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -217,7 +218,7 @@ export default function AdminSgRegister() {
         {hasFetched && (
           <Card>
             <CardHeader>
-              <CardTitle>Søk og filtrer</CardTitle>
+              <CardTitle>{t("auto.soek_og_filtrer")}</CardTitle>
               <CardDescription>
                 Søk etter navn, org.nr. eller "alle" for topp 50 som utløper snart
               </CardDescription>
@@ -227,7 +228,7 @@ export default function AdminSgRegister() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Søk etter navn eller org.nr..."
+                    placeholder={t("auto.soek_etter_navn_eller_org_nr")}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -267,7 +268,7 @@ export default function AdminSgRegister() {
         {hasFetched && (
           <Card>
             <CardHeader>
-              <CardTitle>Resultater</CardTitle>
+              <CardTitle>{t("auto.resultater")}</CardTitle>
               <CardDescription>
                 {filteredEnterprises.length > 0 
                   ? `${filteredEnterprises.length} bedrifter funnet`
@@ -279,7 +280,7 @@ export default function AdminSgRegister() {
               {filteredEnterprises.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <AlertCircle className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                  <p>Ingen treff. Prøv et annet søk.</p>
+                  <p>{t("auto.ingen_treff_proev_et_annet_soek")}</p>
                 </div>
               ) : (
                 <div className="space-y-4 max-h-[600px] overflow-y-auto">
@@ -310,8 +311,8 @@ export default function AdminSgRegister() {
           onLinked={() => {
             setSelectedEnterprise(null);
             toast({
-              title: "Suksess",
-              description: "SG-godkjenning er nå koblet til bedriften",
+              title: t("auto.suksess"),
+              description: t("auto.sg_godkjenning_er_naa_koblet_til_bedrift"),
             });
           }}
         />

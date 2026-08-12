@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Construction, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 interface SettingsPlaceholderProps {
   title: string;
@@ -47,9 +48,9 @@ export function SettingsPlaceholder({
         <div className="p-4 rounded-full bg-muted mb-4">
           <Construction className="w-10 h-10 text-muted-foreground" />
         </div>
-        <h2 className="text-xl font-semibold mb-2">Kommer snart</h2>
+        <h2 className="text-xl font-semibold mb-2">{t("auto.kommer_snart")}</h2>
         <p className="text-muted-foreground max-w-md">
-          Denne funksjonen er under utvikling og vil være tilgjengelig i en fremtidig oppdatering.
+          {t("auto.denne_funksjonen_er_under_utvikling_og_v")}
         </p>
       </motion.div>
     </div>

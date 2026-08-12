@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { t } from "@/i18n/t";
 
 export interface AlertDetailsSource {
   key: string;
@@ -66,7 +67,7 @@ export function AlertDetailsDialog({
 
         {!details ? (
           <p className="text-sm text-muted-foreground">
-            Ingen detaljer lagret for dette varselet. Nye varsler får full kildeoversikt.
+            {t("auto.ingen_detaljer_lagret_for_dette_varselet")}
           </p>
         ) : (
           <div className="space-y-5">
@@ -78,7 +79,7 @@ export function AlertDetailsDialog({
 
             {sources.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold mb-2">Målinger per kilde</h3>
+                <h3 className="text-sm font-semibold mb-2">{t("auto.maalinger_per_kilde")}</h3>
                 <div className="rounded-lg border border-border divide-y divide-border">
                   {sources.map((s) => {
                     const missing = (s.count ?? 0) === 0;
@@ -108,9 +109,9 @@ export function AlertDetailsDialog({
             )}
 
             <div>
-              <h3 className="text-sm font-semibold mb-2">Stille jobber</h3>
+              <h3 className="text-sm font-semibold mb-2">{t("auto.stille_jobber")}</h3>
               {silentJobs.length === 0 ? (
-                <p className="text-xs text-muted-foreground">Alle jobber har kjørt i perioden.</p>
+                <p className="text-xs text-muted-foreground">{t("auto.alle_jobber_har_kjoert_i_perioden")}</p>
               ) : (
                 <ul className="space-y-1">
                   {silentJobs.map((j) => (
@@ -129,10 +130,10 @@ export function AlertDetailsDialog({
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2">Stille sensorer</h3>
+              <h3 className="text-sm font-semibold mb-2">{t("auto.stille_sensorer")}</h3>
               {silentSensors.length === 0 ? (
                 <p className="text-xs text-muted-foreground">
-                  Alle aktive sensorer har levert avlesning i perioden.
+                  {t("auto.alle_aktive_sensorer_har_levert_avlesnin")}
                 </p>
               ) : (
                 <ul className="space-y-1">

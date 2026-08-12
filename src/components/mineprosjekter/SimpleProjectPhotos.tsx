@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { t } from "@/i18n/t";
 
 interface Photo {
   id: string;
@@ -99,7 +100,7 @@ export function SimpleProjectPhotos({ projectId }: SimpleProjectPhotosProps) {
       fetchPhotos();
     } catch (error) {
       console.error("Error uploading photos:", error);
-      toast.error("Kunne ikke laste opp bilder");
+      toast.error(t("auto.kunne_ikke_laste_opp_bilder"));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -115,10 +116,10 @@ export function SimpleProjectPhotos({ projectId }: SimpleProjectPhotosProps) {
       
       setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
       setSelectedPhoto(null);
-      toast.success("Bilde slettet");
+      toast.success(t("auto.bilde_slettet"));
     } catch (error) {
       console.error("Error deleting photo:", error);
-      toast.error("Kunne ikke slette bilde");
+      toast.error(t("auto.kunne_ikke_slette_bilde"));
     }
   };
 
@@ -162,8 +163,8 @@ export function SimpleProjectPhotos({ projectId }: SimpleProjectPhotosProps) {
           ) : photos.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <ImageIcon className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Ingen bilder ennå</p>
-              <p className="text-sm text-muted-foreground">Last opp bilder fra prosjektet</p>
+              <p className="text-muted-foreground">{t("auto.ingen_bilder_ennaa")}</p>
+              <p className="text-sm text-muted-foreground">{t("auto.last_opp_bilder_fra_prosjektet")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -185,7 +186,7 @@ export function SimpleProjectPhotos({ projectId }: SimpleProjectPhotosProps) {
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-white text-sm">Vis</span>
+                    <span className="text-white text-sm">{t("auto.vis")}</span>
                   </div>
                 </div>
               ))}

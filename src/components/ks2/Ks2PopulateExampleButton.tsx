@@ -4,6 +4,7 @@ import { Wand2, Loader2, Check } from "lucide-react";
 import { populateExampleProject } from "@/utils/ksModule2PopulateExampleProject";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +29,7 @@ export function Ks2PopulateExampleButton({ projectId, onComplete }: Ks2PopulateE
 
   const handlePopulate = async () => {
     if (!company?.id) {
-      toast.error("Ingen bedrift funnet");
+      toast.error(t("auto.ingen_bedrift_funnet"));
       return;
     }
 
@@ -38,18 +39,18 @@ export function Ks2PopulateExampleButton({ projectId, onComplete }: Ks2PopulateE
       
       if (result.success) {
         setIsComplete(true);
-        toast.success("Eksempeldata lagt til! Last siden på nytt for å se endringene.");
+        toast.success(t("auto.eksempeldata_lagt_til_last_siden_paa_nyt"));
         onComplete?.();
         // Reload after a short delay
         setTimeout(() => {
           window.location.reload();
         }, 1500);
       } else {
-        toast.error("Kunne ikke legge til eksempeldata:" + result.error);
+        toast.error(t("auto.kunne_ikke_legge_til_eksempeldata") + result.error);
       }
     } catch (error) {
       console.error("Error populating project:", error);
-      toast.error("En feil oppstod");
+      toast.error(t("auto.en_feil_oppstod"));
     } finally {
       setIsLoading(false);
     }
@@ -83,27 +84,27 @@ export function Ks2PopulateExampleButton({ projectId, onComplete }: Ks2PopulateE
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Fyll prosjekt med eksempeldata?</AlertDialogTitle>
+          <AlertDialogTitle>{t("auto.fyll_prosjekt_med_eksempeldata")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Dette vil legge til komplett eksempeldata i prosjektet:
+            {t("auto.dette_vil_legge_til_komplett_eksempeldat")}
             <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
-              <li>Møtereferater med agenda og aksjoner</li>
-              <li>Økonomi med budsjett, kostnader og fakturaer</li>
+              <li>{t("auto.moetereferater_med_agenda_og_aksjoner")}</li>
+              <li>{t("auto.oekonomi_med_budsjett_kostnader_og_faktu")}</li>
               <li>Egenkontroller (fullført, pågår, planlagt)</li>
-              <li>Avvik og reklamasjoner</li>
-              <li>Underleverandører med godkjenningsstatus</li>
-              <li>SJA-analyser</li>
-              <li>Vernerunder med funn</li>
-              <li>Endringsmeldinger</li>
-              <li>Stoffkartotek</li>
-              <li>Milepæler</li>
+              <li>{t("auto.avvik_og_reklamasjoner")}</li>
+              <li>{t("auto.underleverandoerer_med_godkjenningsstatu")}</li>
+              <li>{t("auto.sja_analyser")}</li>
+              <li>{t("auto.vernerunder_med_funn")}</li>
+              <li>{t("auto.endringsmeldinger")}</li>
+              <li>{t("auto.stoffkartotek")}</li>
+              <li>{t("auto.milepaeler")}</li>
             </ul>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Avbryt</AlertDialogCancel>
+          <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
           <AlertDialogAction onClick={handlePopulate}>
-            Legg til eksempeldata
+            {t("auto.legg_til_eksempeldata")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

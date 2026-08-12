@@ -77,25 +77,26 @@ import {
 } from "@/utils/handbookPdfSanitizer";
 import { getHandbookPdfLabels } from "@/utils/handbookPdfLabels";
 import { registerPdfFont, PDF_FONT } from "@/utils/pdfFont";
+import { t } from "@/i18n/t";
 
 const statusConfig = {
   complete: {
     icon: CheckCircle2,
     color: "text-success",
     bg: "bg-success/10",
-    label: "Komplett",
+    label: t("auto.komplett"),
   },
   incomplete: {
     icon: AlertTriangle,
     color: "text-warning",
     bg: "bg-warning/10",
-    label: "Ufullstendig",
+    label: t("auto.ufullstendig"),
   },
   ongoing: {
     icon: Minus,
     color: "text-muted-foreground",
     bg: "bg-muted",
-    label: "Løpende",
+    label: t("auto.loepende"),
   },
 };
 
@@ -340,7 +341,7 @@ const Handbook = () => {
             {/* Render checklist answers if available */}
             {formData.checklistAnswers && typeof formData.checklistAnswers === 'object' && (
               <div className="space-y-3 pt-3 border-t border-border">
-                <p className="font-medium text-foreground">Resultater fra kartlegging:</p>
+                <p className="font-medium text-foreground">{t("auto.resultater_fra_kartlegging")}</p>
                 {Object.entries(formData.checklistAnswers as Record<string, Record<string, { answer?: string; comment?: string }>>).map(([sectionKey, questions]) => {
                   if (!questions || typeof questions !== 'object' || Object.keys(questions).length === 0) return null;
                   
@@ -416,7 +417,7 @@ const Handbook = () => {
                           return (
                             <div key={qKey} className="mt-2 text-xs text-muted-foreground border-l-2 border-warning/50 pl-2">
                               <p className="font-medium">{questionText}</p>
-                              <p>Svar: <span className={qData.answer === 'no' ? 'text-warning' : 'text-success'}>{qData.answer === 'yes' ? 'Ja' : 'Nei'}</span></p>
+                              <p>{t("auto.svar")} <span className={qData.answer === 'no' ? 'text-warning' : 'text-success'}>{qData.answer === 'yes' ? 'Ja' : 'Nei'}</span></p>
                               {qData.comment && <p>Kommentar: {qData.comment}</p>}
                             </div>
                           );
@@ -431,7 +432,7 @@ const Handbook = () => {
             
             {formData.otherComments && (
               <div className="pt-3 border-t border-border">
-                <p className="font-medium text-foreground">Andre kommentarer:</p>
+                <p className="font-medium text-foreground">{t("auto.andre_kommentarer")}</p>
                 <p className="text-muted-foreground">{String(formData.otherComments)}</p>
               </div>
             )}
@@ -459,25 +460,25 @@ const Handbook = () => {
     // 1. Egenerklæring om HMS
     {
       id: "self-declaration",
-      title: "1. Egenerklæring om HMS",
+      title: t("auto.1_egenerklaering_om_hms"),
       status: hasSelfDeclaration ? "complete" as const : "incomplete" as const,
       stepIndex: -1,
       icon: PenTool,
       content: hasSelfDeclaration && selfDeclaration ? (
         <div className="space-y-3 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">
-            Virksomheten bekrefter at det arbeides systematisk med HMS i henhold til Internkontrollforskriften.
+            {t("auto.virksomheten_bekrefter_at_det_arbeides_s")}
           </p>
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="space-y-1">
-              <p className="font-medium text-xs text-muted-foreground">Daglig leder</p>
+              <p className="font-medium text-xs text-muted-foreground">{t("auto.daglig_leder")}</p>
               <p className="text-foreground">{selfDeclaration.manager_name}</p>
               {selfDeclaration.manager_signed_at && (
                 <p className="text-xs">Signert: {format(new Date(selfDeclaration.manager_signed_at), "d. MMM yyyy", { locale: nb })}</p>
               )}
             </div>
             <div className="space-y-1">
-              <p className="font-medium text-xs text-muted-foreground">Representant for ansatte</p>
+              <p className="font-medium text-xs text-muted-foreground">{t("auto.representant_for_ansatte")}</p>
               <p className="text-foreground">{selfDeclaration.employee_rep_name}</p>
               {selfDeclaration.employee_rep_signed_at && (
                 <p className="text-xs">Signert: {format(new Date(selfDeclaration.employee_rep_signed_at), "d. MMM yyyy", { locale: nb })}</p>
@@ -487,7 +488,7 @@ const Handbook = () => {
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Egenerklæring om HMS er ikke signert. Gå til Oppsett for å signere.
+          {t("auto.egenerklaering_om_hms_er_ikke_signert_ga")}
         </p>
       ),
       summary: hasSelfDeclaration ? "Signert og gyldig" : "Ikke signert",
@@ -498,7 +499,7 @@ const Handbook = () => {
     ...(requiresVerneombud ? [
       {
         id: "verneombud-selected",
-        title: "2. Valg av verneombud",
+        title: t("auto.2_valg_av_verneombud"),
         // Use hasAnyVerneombud which checks all three sources: formal agreement, profile, AI setup
         status: hasAnyVerneombud ? "complete" as const : "incomplete" as const,
         stepIndex: -1,
@@ -510,16 +511,16 @@ const Handbook = () => {
             return (
               <div className="space-y-3 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">
-                  Valgt verneombud iht. arbeidsmiljøloven § 6-1.
+                  {t("auto.valgt_verneombud_iht_arbeidsmiljoeloven_")}
                 </p>
                 <div className="space-y-2 pt-2">
                   <div className="space-y-1">
-                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="font-medium text-xs text-muted-foreground">{t("auto.verneombud")}</p>
                     <p className="text-foreground">{verneombudAgreement.verneombud_name}</p>
                   </div>
                   {verneombudAgreement.election_method && (
                     <div className="space-y-1">
-                      <p className="font-medium text-xs text-muted-foreground">Valgmetode</p>
+                      <p className="font-medium text-xs text-muted-foreground">{t("auto.valgmetode_2")}</p>
                       <p className="text-foreground">
                         {verneombudAgreement.election_method === "election" ? "Valg blant ansatte" :
                          verneombudAgreement.election_method === "appointment" ? "Utpekt av arbeidsgiver" :
@@ -544,7 +545,7 @@ const Handbook = () => {
                     )}
                   </div>
                   {verneombudAgreement.training_completed && (
-                    <p className="text-xs text-success font-medium">Opplæring gjennomført</p>
+                    <p className="text-xs text-success font-medium">{t("auto.opplaering_gjennomfoert")}</p>
                   )}
                 </div>
               </div>
@@ -557,11 +558,11 @@ const Handbook = () => {
             return (
               <div className="space-y-3 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">
-                  Verneombud registrert via Organisering.
+                  {t("auto.verneombud_registrert_via_organisering")}
                 </p>
                 <div className="space-y-2 pt-2">
                   <div className="space-y-1">
-                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="font-medium text-xs text-muted-foreground">{t("auto.verneombud")}</p>
                     <p className="text-foreground">{fullName}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -569,7 +570,7 @@ const Handbook = () => {
                       {employeeCount} ansatte
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      Fra organisering
+                      {t("auto.fra_organisering")}
                     </Badge>
                   </div>
                 </div>
@@ -582,11 +583,11 @@ const Handbook = () => {
             return (
               <div className="space-y-3 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">
-                  Verneombud registrert via AI-oppsett.
+                  {t("auto.verneombud_registrert_via_ai_oppsett")}
                 </p>
                 <div className="space-y-2 pt-2">
                   <div className="space-y-1">
-                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="font-medium text-xs text-muted-foreground">{t("auto.verneombud")}</p>
                     <p className="text-foreground">{verneombudFromAiSetup.personName}</p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -594,7 +595,7 @@ const Handbook = () => {
                       {employeeCount} ansatte
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      Fra AI-oppsett
+                      {t("auto.fra_ai_oppsett")}
                     </Badge>
                   </div>
                 </div>
@@ -613,16 +614,16 @@ const Handbook = () => {
             return (
               <div className="space-y-3 text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">
-                  Valgt verneombud iht. arbeidsmiljøloven § 6-1.
+                  {t("auto.valgt_verneombud_iht_arbeidsmiljoeloven_")}
                 </p>
                 <div className="space-y-2 pt-2">
                   <div className="space-y-1">
-                    <p className="font-medium text-xs text-muted-foreground">Verneombud</p>
+                    <p className="font-medium text-xs text-muted-foreground">{t("auto.verneombud")}</p>
                     <p className="text-foreground">{verneombudRole.personName}</p>
                   </div>
                   {verneombudRole.electedBy && (
                     <div className="space-y-1">
-                      <p className="font-medium text-xs text-muted-foreground">Valgt av</p>
+                      <p className="font-medium text-xs text-muted-foreground">{t("auto.valgt_av")}</p>
                       <p className="text-foreground">{verneombudRole.electedBy}</p>
                     </div>
                   )}
@@ -642,7 +643,7 @@ const Handbook = () => {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground italic">
-                    Valgperioden er 2 år fra valgdato.
+                    {t("auto.valgperioden_er_2_aar_fra_valgdato")}
                   </p>
                 </div>
               </div>
@@ -651,7 +652,7 @@ const Handbook = () => {
           
           return (
             <p className="text-sm text-muted-foreground">
-              Virksomheter med 5 eller flere ansatte skal ha verneombud. Gå til HMS aktiviteter for å registrere valgt verneombud.
+              {t("auto.virksomheter_med_5_eller_flere_ansatte_s")}
             </p>
           );
         })(),
@@ -679,17 +680,17 @@ const Handbook = () => {
       // Companies with less than 5 employees can have exemption agreement
       {
         id: "verneombud-exemption",
-        title: "2. Avtale om fritak fra verneombud",
+        title: t("auto.2_avtale_om_fritak_fra_verneombud"),
         status: hasVerneombudExemption ? ("complete" as const) : ("incomplete" as const),
         stepIndex: -1,
         icon: UserCheck,
         content: hasVerneombudExemption && verneombudExemption ? (
           <div className="space-y-3 text-sm text-muted-foreground">
             <p className="font-medium text-foreground">
-              Avtale om fritak fra kravet om verneombud iht. arbeidsmiljøloven § 6-1.
+              {t("auto.avtale_om_fritak_fra_kravet_om_verneombu")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Gjelder kun for virksomheter med færre enn 5 ansatte.
+              {t("auto.gjelder_kun_for_virksomheter_med_faerre_")}
             </p>
             <div className="space-y-2 pt-2">
               <div className="flex items-center gap-2">
@@ -703,12 +704,12 @@ const Handbook = () => {
                 )}
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-xs text-muted-foreground">Arbeidsgiver</p>
+                <p className="font-medium text-xs text-muted-foreground">{t("auto.arbeidsgiver")}</p>
                 <p className="text-foreground">{verneombudExemption.employer_name}</p>
               </div>
               {verneombudExemption.employee_signatures && verneombudExemption.employee_signatures.length > 0 && (
                 <div className="space-y-1">
-                  <p className="font-medium text-xs text-muted-foreground">Ansatte som har signert</p>
+                  <p className="font-medium text-xs text-muted-foreground">{t("auto.ansatte_som_har_signert")}</p>
                   <p className="text-foreground">
                     {verneombudExemption.employee_signatures.map((e) => e.name).join(", ")}
                   </p>
@@ -718,7 +719,7 @@ const Handbook = () => {
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Avtale om fritak fra verneombud er ikke signert. Gå til Oppsett for å signere. Dette gjelder kun for virksomheter med færre enn 5 ansatte.
+            {t("auto.avtale_om_fritak_fra_verneombud_er_ikke_")}
           </p>
         ),
         summary: hasVerneombudExemption
@@ -741,7 +742,7 @@ const Handbook = () => {
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-muted-foreground">Ingen mål er definert ennå.</p>
+        <p className="text-sm text-muted-foreground">{t("auto.ingen_maal_er_definert_ennaa")}</p>
       ),
       summary: `${goals.length} mål definert`,
     },
@@ -780,7 +781,7 @@ const Handbook = () => {
           ) : null}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Organisering er ikke definert ennå.</p>
+        <p className="text-sm text-muted-foreground">{t("auto.organisering_er_ikke_definert_ennaa")}</p>
       ),
       summary: (organization?.roles?.length ?? 0) > 0 
         ? `${organization?.roles?.length} roller definert` 
@@ -815,7 +816,7 @@ const Handbook = () => {
           )}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Ingen risikovurderinger er utført ennå.</p>
+        <p className="text-sm text-muted-foreground">{t("auto.ingen_risikovurderinger_er_utfoert_ennaa")}</p>
       ),
       summary: `${riskAssessment?.risks?.length ?? 0} risikoer identifisert`,
     },
@@ -846,7 +847,7 @@ const Handbook = () => {
           )}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Ingen handlingsplan er opprettet ennå.</p>
+        <p className="text-sm text-muted-foreground">{t("auto.ingen_handlingsplan_er_opprettet_ennaa")}</p>
       ),
       summary: `${actionPlan?.actions?.length ?? 0} tiltak`,
     },
@@ -925,7 +926,7 @@ const Handbook = () => {
                     {/* Purpose */}
                     {translatedRoutine.purpose && (
                       <div>
-                        <p className="text-xs font-medium text-foreground mb-1">Formål:</p>
+                        <p className="text-xs font-medium text-foreground mb-1">{t("auto.formaal_3")}</p>
                         <p className="text-sm text-muted-foreground">{translatedRoutine.purpose}</p>
                       </div>
                     )}
@@ -933,7 +934,7 @@ const Handbook = () => {
                     {/* Responsibility */}
                     {translatedRoutine.responsibility && (
                       <div>
-                        <p className="text-xs font-medium text-foreground mb-1">Ansvar:</p>
+                        <p className="text-xs font-medium text-foreground mb-1">{t("auto.ansvar_2")}</p>
                         <p className="text-sm text-muted-foreground">{translatedRoutine.responsibility}</p>
                       </div>
                     )}
@@ -941,7 +942,7 @@ const Handbook = () => {
                     {/* Procedure */}
                     {translatedRoutine.procedure && (
                       <div>
-                        <p className="text-xs font-medium text-foreground mb-1">Fremgangsmåte:</p>
+                        <p className="text-xs font-medium text-foreground mb-1">{t("auto.fremgangsmaate_2")}</p>
                         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{translatedRoutine.procedure}</p>
                       </div>
                     )}
@@ -949,7 +950,7 @@ const Handbook = () => {
                     {/* Examples - keep original as these aren't translated */}
                     {routine.examples && (
                       <div>
-                        <p className="text-xs font-medium text-foreground mb-1">Eksempler:</p>
+                        <p className="text-xs font-medium text-foreground mb-1">{t("auto.eksempler_2")}</p>
                         <p className="text-sm text-muted-foreground">{routine.examples}</p>
                       </div>
                     )}
@@ -957,7 +958,7 @@ const Handbook = () => {
                     {/* Remember - keep original as these aren't translated */}
                     {routine.remember && (
                       <div className="bg-warning/10 border border-warning/20 rounded p-2">
-                        <p className="text-xs font-medium text-warning mb-1">Husk:</p>
+                        <p className="text-xs font-medium text-warning mb-1">{t("auto.husk_2")}</p>
                         <p className="text-sm text-muted-foreground">{routine.remember}</p>
                       </div>
                     )}
@@ -968,7 +969,7 @@ const Handbook = () => {
           })}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Ingen rutiner er lagt til ennå.</p>
+        <p className="text-sm text-muted-foreground">{t("auto.ingen_rutiner_er_lagt_til_ennaa")}</p>
       ),
       summary: `${routines?.routines?.length ?? 0} rutiner`,
     },
@@ -2040,10 +2041,10 @@ const Handbook = () => {
 
       // OPTIONAL: AUDIT FORM SECTIONS
       const auditFormOptions = [
-        { include: includeAnnualHmsInPdf, formType: "annual_hms" as FormType, label: "Årlig HMS-revisjon" },
-        { include: includeElkontrollInPdf, formType: "elkontroll" as FormType, label: "El-Kontroll" },
-        { include: includeFysiskeForholdInPdf, formType: "fysiske_forhold" as FormType, label: "Fysiske arbeidsforhold" },
-        { include: includeDagligDriftInPdf, formType: "daglig_drift" as FormType, label: "Daglig drift" },
+        { include: includeAnnualHmsInPdf, formType: "annual_hms" as FormType, label: t("auto.aarlig_hms_revisjon") },
+        { include: includeElkontrollInPdf, formType: "elkontroll" as FormType, label: t("auto.el_kontroll") },
+        { include: includeFysiskeForholdInPdf, formType: "fysiske_forhold" as FormType, label: t("auto.fysiske_arbeidsforhold") },
+        { include: includeDagligDriftInPdf, formType: "daglig_drift" as FormType, label: t("auto.daglig_drift") },
       ];
 
       for (const option of auditFormOptions) {
@@ -2375,12 +2376,12 @@ const Handbook = () => {
           <div className="p-4 rounded-2xl bg-warning/10 mb-4">
             <Building2 className="w-8 h-8 text-warning" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">Ingen bedrift tilknyttet</h3>
+          <h3 className="text-xl font-semibold mb-2">{t("auto.ingen_bedrift_tilknyttet")}</h3>
           <p className="text-muted-foreground max-w-md mb-6">
-            Du må være tilknyttet en bedrift for å se håndboken.
+            {t("auto.du_maa_vaere_tilknyttet_en_bedrift_for_a_2")}
           </p>
           <Button onClick={() => navigate("/")} variant="outline">
-            Gå til dashboard
+            {t("auto.gaa_til_dashboard")}
           </Button>
         </div>
       </AppLayout>
@@ -2397,9 +2398,9 @@ const Handbook = () => {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">IK-Handbok</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.ik_handbok")}</h1>
             <p className="text-muted-foreground">
-              Din bedrifts internkontrolldokumentasjon
+              {t("auto.din_bedrifts_internkontrolldokumentasjon")}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -2477,9 +2478,9 @@ const Handbook = () => {
                 className="bg-card rounded-xl border border-border shadow-lg max-w-md w-full p-6"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className="text-lg font-semibold mb-2">Eksporter HMS-håndbok</h3>
+                <h3 className="text-lg font-semibold mb-2">{t("auto.eksporter_hms_haandbok")}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Seksjon 1-5 inkluderes alltid. Velg hvilke tilleggsseksjoner du vil ha med:
+                  {t("auto.seksjon_1_5_inkluderes_alltid_velg_hvilk")}
                 </p>
                 
                 <div className="space-y-3 mb-6">
@@ -2507,7 +2508,7 @@ const Handbook = () => {
                   
                   <div className="flex items-center justify-between py-2 border-b border-border">
                     <Label htmlFor="include-annual-hms" className="text-sm cursor-pointer">
-                      8. Årlig HMS-revisjon
+                      {t("auto.8_aarlig_hms_revisjon")}
                     </Label>
                     <Switch
                       id="include-annual-hms"
@@ -2518,7 +2519,7 @@ const Handbook = () => {
                   
                   <div className="flex items-center justify-between py-2 border-b border-border">
                     <Label htmlFor="include-elkontroll" className="text-sm cursor-pointer">
-                      9. El-Kontroll
+                      {t("auto.9_el_kontroll")}
                     </Label>
                     <Switch
                       id="include-elkontroll"
@@ -2529,7 +2530,7 @@ const Handbook = () => {
                   
                   <div className="flex items-center justify-between py-2 border-b border-border">
                     <Label htmlFor="include-fysiske" className="text-sm cursor-pointer">
-                      10. Fysiske arbeidsforhold
+                      {t("auto.10_fysiske_arbeidsforhold")}
                     </Label>
                     <Switch
                       id="include-fysiske"
@@ -2540,7 +2541,7 @@ const Handbook = () => {
                   
                   <div className="flex items-center justify-between py-2">
                     <Label htmlFor="include-daglig" className="text-sm cursor-pointer">
-                      11. Daglig drift
+                      {t("auto.11_daglig_drift")}
                     </Label>
                     <Switch
                       id="include-daglig"
@@ -2597,15 +2598,15 @@ const Handbook = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                   <p className="text-3xl font-bold">{completeSections}/{totalRequiredSections}</p>
-                  <p className="text-sm text-primary-foreground/70">Seksjoner fullført</p>
+                  <p className="text-sm text-primary-foreground/70">{t("auto.seksjoner_fullfoert")}</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold">{goals.length + (riskAssessment?.risks?.length ?? 0) + (actionPlan?.actions?.length ?? 0) + (routines?.routines?.length ?? 0) + deviations.length}</p>
-                  <p className="text-sm text-primary-foreground/70">Elementer totalt</p>
+                  <p className="text-sm text-primary-foreground/70">{t("auto.elementer_totalt")}</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold">{totalRequiredSections > 0 ? Math.round((completeSections / totalRequiredSections) * 100) : 0}%</p>
-                  <p className="text-sm text-primary-foreground/70">Komplett</p>
+                  <p className="text-sm text-primary-foreground/70">{t("auto.komplett")}</p>
                 </div>
               </div>
             </div>
@@ -2619,7 +2620,7 @@ const Handbook = () => {
           transition={{ delay: 0.2 }}
           className="space-y-4"
         >
-          <h2 className="text-lg font-semibold">Innhold</h2>
+          <h2 className="text-lg font-semibold">{t("auto.innhold")}</h2>
           
           <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
             <div className="divide-y divide-border">
@@ -2694,10 +2695,10 @@ const Handbook = () => {
                                       onCheckedChange={setIncludeDeviations}
                                     />
                                     <Label htmlFor="include-deviations" className="text-sm cursor-pointer">
-                                      Inkluder avvik i håndboken
+                                      {t("auto.inkluder_avvik_i_haandboken")}
                                     </Label>
                                   </div>
-                                  <span className="text-xs text-muted-foreground">Valgfritt</span>
+                                  <span className="text-xs text-muted-foreground">{t("auto.valgfritt")}</span>
                                 </div>
                               )}
                               {section.content}
@@ -2729,12 +2730,12 @@ const Handbook = () => {
           transition={{ delay: 0.4 }}
           className="bg-card rounded-xl border border-border p-6 shadow-card"
         >
-          <h3 className="font-semibold mb-4">Eksportvalg</h3>
+          <h3 className="font-semibold mb-4">{t("auto.eksportvalg")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { label: "Komplett handbok", format: "PDF", icon: BookOpen, action: () => navigate("/setup?step=5&from=handbook&section=Komplett handbok") },
-              { label: "Kun risikovurderinger", format: "PDF", icon: AlertTriangle, action: () => navigate("/setup?step=2&from=handbook&section=Risikovurderinger") },
-              { label: "Handlingsplan", format: "PDF", icon: FileText, action: () => navigate("/setup?step=3&from=handbook&section=Handlingsplan") },
+              { label: t("auto.komplett_handbok"), format: "PDF", icon: BookOpen, action: () => navigate("/setup?step=5&from=handbook&section=Komplett handbok") },
+              { label: t("auto.kun_risikovurderinger"), format: "PDF", icon: AlertTriangle, action: () => navigate("/setup?step=2&from=handbook&section=Risikovurderinger") },
+              { label: t("auto.handlingsplan"), format: "PDF", icon: FileText, action: () => navigate("/setup?step=3&from=handbook&section=Handlingsplan") },
             ].map((option, index) => (
               <button
                 key={index}
@@ -2814,54 +2815,54 @@ const Handbook = () => {
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">1. Mål for internkontroll</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.1_maal_for_internkontroll")}</h2>
           ${goals.length > 0 
             ? `<ul>${goals.map(g => `<li>${g.goal_text}</li>`).join("")}</ul>` 
-            : "<p>Ingen mål definert.</p>"
+            : "<p>{t("auto.ingen_maal_definert")}</p>"
           }
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">2. Organisering og ansvar</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.2_organisering_og_ansvar")}</h2>
           <div>${(organization?.roles?.length ?? 0) > 0 
             ? `<p style="white-space: pre-wrap;">${organization?.roles?.map(r => `${r.title}${r.personName ? ` (${r.personName})` : ''}`).join(', ')}</p>`
             : (organization?.description 
                 ? (looksLikeHtml(organization.description) 
                     ? DOMPurify.sanitize(organization.description) 
                     : `<p style="white-space: pre-wrap;">${organization.description.substring(0, 500)}</p>`)
-                : "<p>Ikke definert</p>")}</div>
+                : "<p>{t("auto.ikke_definert")}</p>")}</div>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">3. Risikovurderinger</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.3_risikovurderinger")}</h2>
           <p>${(riskAssessment?.risks?.length ?? 0)} risikoer identifisert</p>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">4. Handlingsplan</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.4_handlingsplan")}</h2>
           <p>${(actionPlan?.actions?.length ?? 0)} tiltak registrert</p>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">5. Rutiner og prosedyrer</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.5_rutiner_og_prosedyrer")}</h2>
           ${(routines?.routines?.length ?? 0) > 0 
             ? `<ul>${routines?.routines.slice(0, 10).map(r => `<li>${r.routine_number}: ${r.routine_name}</li>`).join("")}</ul>` 
-            : "<p>Ingen rutiner registrert.</p>"
+            : "<p>{t("auto.ingen_rutiner_registrert")}</p>"
           }
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">6. Avviksbehandling</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.6_avviksbehandling")}</h2>
           <p>${deviations.length} avvik totalt, ${openDeviationsCount} åpne</p>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">7. Revisjoner og evaluering</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.7_revisjoner_og_evaluering")}</h2>
           <p>${completedAuditsCount} revisjoner gjennomført</p>
         </div>
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
-          <p>Denne oppsummeringen ble sendt fra HMS-systemet. For komplett handbok, last ned PDF.</p>
+          <p>{t("auto.denne_oppsummeringen_ble_sendt_fra_hms_s")}</p>
         </div>
       </body>
       </html>

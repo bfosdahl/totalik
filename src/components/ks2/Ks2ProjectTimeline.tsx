@@ -47,15 +47,16 @@ import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { jsPDF } from "jspdf";
+import { t } from "@/i18n/t";
 
 const CATEGORIES = [
-  { value: "oppstart", label: "Oppstart", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  { value: "grunnarbeid", label: "Grunnarbeid", color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" },
-  { value: "konstruksjon", label: "Konstruksjon", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-  { value: "tekking", label: "Tekking", color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
-  { value: "innvendig", label: "Innvendig arbeid", color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200" },
-  { value: "ferdigstillelse", label: "Ferdigstillelse", color: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200" },
-  { value: "general", label: "Generelt", color: "bg-muted text-muted-foreground" },
+  { value: "oppstart", label: t("auto.oppstart"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
+  { value: "grunnarbeid", label: t("auto.grunnarbeid"), color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" },
+  { value: "konstruksjon", label: t("auto.konstruksjon"), color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  { value: "tekking", label: t("auto.tekking"), color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
+  { value: "innvendig", label: t("auto.innvendig_arbeid"), color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200" },
+  { value: "ferdigstillelse", label: t("auto.ferdigstillelse"), color: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200" },
+  { value: "general", label: t("auto.generelt"), color: "bg-muted text-muted-foreground" },
 ];
 
 interface Ks2ProjectTimelineProps {
@@ -287,7 +288,7 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
             Prosjekttidslinje
           </h2>
           <p className="text-sm text-muted-foreground">
-            Dokumenter prosjektets utvikling med bilder
+            {t("auto.dokumenter_prosjektets_utvikling_med_bil")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -312,16 +313,16 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Tittel *</Label>
+                  <Label>{t("auto.tittel_2")}</Label>
                   <Input
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="F.eks. Grunnmur ferdigstøpt"
+                    placeholder={t("auto.f_eks_grunnmur_ferdigstoept")}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Dato *</Label>
+                    <Label>{t("auto.dato_2")}</Label>
                     <Input
                       type="date"
                       value={formData.event_date}
@@ -329,7 +330,7 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
                     />
                   </div>
                   <div>
-                    <Label>Kategori</Label>
+                    <Label>{t("auto.kategori")}</Label>
                     <Select
                       value={formData.category}
                       onValueChange={(v) => setFormData({ ...formData, category: v })}
@@ -348,16 +349,16 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
                   </div>
                 </div>
                 <div>
-                  <Label>Beskrivelse</Label>
+                  <Label>{t("auto.beskrivelse")}</Label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Beskriv hva som ble gjort..."
+                    placeholder={t("auto.beskriv_hva_som_ble_gjort")}
                     rows={3}
                   />
                 </div>
                 <div>
-                  <Label>Bilder</Label>
+                  <Label>{t("auto.bilder")}</Label>
                   <div className="mt-2 space-y-3">
                     {formData.photo_paths.length > 0 && (
                       <div className="flex flex-wrap gap-2">
@@ -395,7 +396,7 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
                 </div>
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button
                     onClick={handleSubmit}
@@ -478,9 +479,9 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
         <Card>
           <CardContent className="py-12 text-center">
             <Milestone className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Ingen hendelser ennå</h3>
+            <h3 className="text-lg font-medium mb-2">{t("auto.ingen_hendelser_ennaa")}</h3>
             <p className="text-muted-foreground mb-4">
-              Legg til hendelser for å dokumentere prosjektets utvikling
+              {t("auto.legg_til_hendelser_for_aa_dokumentere_pr")}
             </p>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
@@ -515,15 +516,15 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett hendelse?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_hendelse")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Er du sikker på at du vil slette denne hendelsen? Handlingen kan ikke angres.
+              {t("auto.er_du_sikker_paa_at_du_vil_slette_denne__4")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

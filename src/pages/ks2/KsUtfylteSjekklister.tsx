@@ -17,6 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { generateFilledChecklistPdf } from "@/utils/ksFilledChecklistPdf";
 import { toast } from "sonner";
 import { ContinueChecklistDialog } from "@/components/ks/ContinueChecklistDialog";
+import { t } from "@/i18n/t";
 
 interface FilledChecklist {
   id: string;
@@ -124,9 +125,9 @@ export default function KsUtfylteSjekklister() {
     try {
       const projectInfo = projects[checklist.project_id];
       await generateFilledChecklistPdf(checklist, projectInfo || null);
-      toast.success("PDF lastet ned");
+      toast.success(t("auto.pdf_lastet_ned"));
     } catch {
-      toast.error("Kunne ikke generere PDF");
+      toast.error(t("auto.kunne_ikke_generere_pdf"));
     }
     setDownloadingId(null);
   };
@@ -143,7 +144,7 @@ export default function KsUtfylteSjekklister() {
       }
       toast.success(`${items.length} PDF-er lastet ned`);
     } catch {
-      toast.error("Kunne ikke generere PDF-er");
+      toast.error(t("auto.kunne_ikke_generere_pdf_er"));
     }
     setDownloadingProject(null);
   };
@@ -209,7 +210,7 @@ export default function KsUtfylteSjekklister() {
               size="sm"
               className="shrink-0 text-xs"
               onClick={(e) => { e.stopPropagation(); setContinueChecklist(checklist); }}
-              title="Fortsett utfylling"
+              title={t("auto.fortsett_utfylling")}
             >
               <Play className="w-3 h-3 mr-1" />
               Fortsett
@@ -221,7 +222,7 @@ export default function KsUtfylteSjekklister() {
             className="shrink-0"
             disabled={downloadingId === checklist.id}
             onClick={(e) => { e.stopPropagation(); downloadSingle(checklist); }}
-            title="Last ned PDF"
+            title={t("auto.last_ned_pdf")}
           >
             {downloadingId === checklist.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
           </Button>
@@ -268,8 +269,8 @@ export default function KsUtfylteSjekklister() {
     <AppLayout>
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Utfylte sjekklister</h1>
-          <p className="text-muted-foreground mt-1">Alle gjennomførte og pågående egenkontroller</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("auto.utfylte_sjekklister")}</h1>
+          <p className="text-muted-foreground mt-1">{t("auto.alle_gjennomfoerte_og_paagaaende_egenkon")}</p>
         </div>
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -282,7 +283,7 @@ export default function KsUtfylteSjekklister() {
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Søk i sjekklister eller prosjekter..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder={t("auto.soek_i_sjekklister_eller_prosjekter")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {filtered.length === 0 ? (
@@ -340,7 +341,7 @@ export default function KsUtfylteSjekklister() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                   <FolderOpen className="w-4 h-4" />
-                  <span>Uten prosjekt</span>
+                  <span>{t("auto.uten_prosjekt")}</span>
                   <Badge variant="secondary" className="text-xs">{grouped.noProject.length}</Badge>
                 </div>
                 <div className="space-y-2 pl-2">

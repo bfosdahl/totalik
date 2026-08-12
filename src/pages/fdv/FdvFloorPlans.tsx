@@ -41,6 +41,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface FloorPlan {
   id: string;
@@ -126,7 +127,7 @@ export default function FdvFloorPlans() {
       setFloorPlans(plansWithSignedUrls);
     } catch (error) {
       console.error("Error fetching floor plans:", error);
-      toast.error("Kunne ikke hente etasjeplaner");
+      toast.error(t("auto.kunne_ikke_hente_etasjeplaner"));
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +139,7 @@ export default function FdvFloorPlans() {
 
   const handleNewPlan = () => {
     if (activeBuildings.length === 0) {
-      toast.error("Du må opprette et bygg først");
+      toast.error(t("auto.du_maa_opprette_et_bygg_foerst"));
       navigate("/fdv/bygg");
       return;
     }
@@ -154,7 +155,7 @@ export default function FdvFloorPlans() {
 
   const handleSelectBuilding = () => {
     if (!selectedBuilding) {
-      toast.error("Velg et bygg");
+      toast.error(t("auto.velg_et_bygg"));
       return;
     }
     setSelectBuildingOpen(false);
@@ -193,11 +194,11 @@ export default function FdvFloorPlans() {
         }
       }
 
-      toast.success("Etasjeplan slettet");
+      toast.success(t("auto.etasjeplan_slettet"));
       await fetchFloorPlans();
     } catch (error) {
       console.error("Error deleting floor plan:", error);
-      toast.error("Kunne ikke slette etasjeplan");
+      toast.error(t("auto.kunne_ikke_slette_etasjeplan"));
     } finally {
       setDeleteDialogOpen(false);
       setPlanToDelete(null);
@@ -239,7 +240,7 @@ export default function FdvFloorPlans() {
           .eq("id", editingPlan.id);
 
         if (error) throw error;
-        toast.success("Etasjeplan oppdatert");
+        toast.success(t("auto.etasjeplan_oppdatert"));
       } else {
         // Create new
         const { error } = await supabase
@@ -254,7 +255,7 @@ export default function FdvFloorPlans() {
           });
 
         if (error) throw error;
-        toast.success("Etasjeplan lagret");
+        toast.success(t("auto.etasjeplan_lagret"));
       }
 
       setEditorOpen(false);
@@ -262,7 +263,7 @@ export default function FdvFloorPlans() {
       await fetchFloorPlans();
     } catch (error) {
       console.error("Error saving floor plan:", error);
-      toast.error("Kunne ikke lagre etasjeplan");
+      toast.error(t("auto.kunne_ikke_lagre_etasjeplan"));
     }
   };
 
@@ -281,7 +282,7 @@ export default function FdvFloorPlans() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading plan:", error);
-      toast.error("Kunne ikke laste ned etasjeplan");
+      toast.error(t("auto.kunne_ikke_laste_ned_etasjeplan"));
     }
   };
 
@@ -303,7 +304,7 @@ export default function FdvFloorPlans() {
               Etasjeplaner
             </h1>
             <p className="text-muted-foreground mt-1">
-              Tegn enkle skisser av byggets etasjer med nødutganger, rom og utstyr
+              {t("auto.tegn_enkle_skisser_av_byggets_etasjer_me")}
             </p>
           </div>
           <Button onClick={handleNewPlan} className="gap-2">
@@ -314,14 +315,14 @@ export default function FdvFloorPlans() {
 
         {/* Floor Plans Grid */}
         {isLoading || buildingsLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Laster etasjeplaner...</div>
+          <div className="text-center py-12 text-muted-foreground">{t("auto.laster_etasjeplaner")}</div>
         ) : floorPlans.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <PenTool className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Ingen etasjeplaner</h3>
+              <h3 className="text-lg font-medium mb-2">{t("auto.ingen_etasjeplaner")}</h3>
               <p className="text-muted-foreground mb-4 text-center max-w-md">
-                Lag enkle skisser av byggets etasjer med nødutganger, toaletter, kontorer og sikkerhetsutstyr
+                {t("auto.lag_enkle_skisser_av_byggets_etasjer_med")}
               </p>
               <Button onClick={handleNewPlan} className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -400,12 +401,12 @@ export default function FdvFloorPlans() {
       <Dialog open={selectBuildingOpen} onOpenChange={setSelectBuildingOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Velg bygg</DialogTitle>
+            <DialogTitle>{t("auto.velg_bygg")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Select value={selectedBuilding} onValueChange={setSelectedBuilding}>
               <SelectTrigger>
-                <SelectValue placeholder="Velg et bygg" />
+                <SelectValue placeholder={t("auto.velg_et_bygg")} />
               </SelectTrigger>
               <SelectContent>
                 {activeBuildings.map((building) => (
@@ -417,10 +418,10 @@ export default function FdvFloorPlans() {
             </Select>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setSelectBuildingOpen(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={handleSelectBuilding} disabled={!selectedBuilding}>
-                Fortsett
+                {t("auto.fortsett")}
               </Button>
             </div>
           </div>
@@ -470,16 +471,16 @@ export default function FdvFloorPlans() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett etasjeplan</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_etasjeplan")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{planToDelete?.floor_name}"?
               Denne handlingen kan ikke angres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

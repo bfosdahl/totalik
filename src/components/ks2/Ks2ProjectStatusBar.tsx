@@ -6,6 +6,7 @@ import { CheckCircle2, AlertTriangle, Clock, TrendingUp } from "lucide-react";
 import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
 import { useKsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface Ks2ProjectStatusBarProps {
   className?: string;
@@ -57,7 +58,7 @@ export function Ks2ProjectStatusBar({ className }: Ks2ProjectStatusBarProps) {
           <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="w-24 md:w-40">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-xs text-muted-foreground hidden md:inline">Fremdrift</span>
+              <span className="text-xs text-muted-foreground hidden md:inline">{t("auto.fremdrift")}</span>
               <span className="text-xs font-medium">{statusData.progressPercent}%</span>
             </div>
             <Progress 

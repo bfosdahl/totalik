@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useKsModule2Statistics } from "@/hooks/useKsModule2Statistics";
 import { useNavigate } from "react-router-dom";
+import { t } from "@/i18n/t";
 import {
   BarChart,
   Bar,
@@ -53,7 +54,7 @@ export default function Ks2Statistikk() {
   if (error || !stats) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Kunne ikke laste statistikk</p>
+        <p className="text-muted-foreground">{t("auto.kunne_ikke_laste_statistikk")}</p>
       </div>
     );
   }
@@ -73,8 +74,8 @@ export default function Ks2Statistikk() {
         className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Statistikk og KPI-er</h1>
-          <p className="text-muted-foreground mt-1">Oversikt over alle KS-prosjekter</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t("auto.statistikk_og_kpi_er")}</h1>
+          <p className="text-muted-foreground mt-1">{t("auto.oversikt_over_alle_ks_prosjekter")}</p>
         </div>
         <Badge variant="outline" className="w-fit">
           <BarChart3 className="h-3.5 w-3.5 mr-1" />
@@ -94,7 +95,7 @@ export default function Ks2Statistikk() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Aktive prosjekter</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("auto.aktive_prosjekter")}</p>
                 <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.activeProjects}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -112,7 +113,7 @@ export default function Ks2Statistikk() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Sjekklister</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("auto.sjekklister")}</p>
                 <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.completedChecklists}/{stats.totalChecklists}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -121,7 +122,7 @@ export default function Ks2Statistikk() {
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between gap-2 text-sm mb-1">
-                <span className="text-muted-foreground">Fullføringsgrad</span>
+                <span className="text-muted-foreground">{t("auto.fullfoeringsgrad")}</span>
                 <span className="font-medium">{stats.checklistCompletionRate}%</span>
               </div>
               <Progress value={stats.checklistCompletionRate} className="h-2" />
@@ -134,7 +135,7 @@ export default function Ks2Statistikk() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Avvik</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("auto.avvik")}</p>
                 <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.openDeviations}</p>
                 <p className="text-xs text-muted-foreground">åpne av {stats.totalDeviations}</p>
               </div>
@@ -144,7 +145,7 @@ export default function Ks2Statistikk() {
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between gap-2 text-sm mb-1">
-                <span className="text-muted-foreground">Lukkingsgrad</span>
+                <span className="text-muted-foreground">{t("auto.lukkingsgrad")}</span>
                 <span className="font-medium">{stats.deviationClosureRate}%</span>
               </div>
               <Progress value={stats.deviationClosureRate} className="h-2" />
@@ -157,7 +158,7 @@ export default function Ks2Statistikk() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Vernerunder</p>
+                <p className="text-sm font-medium text-muted-foreground">{t("auto.vernerunder")}</p>
                 <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.completedVernerunder}/{stats.totalVernerunder}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -166,7 +167,7 @@ export default function Ks2Statistikk() {
             </div>
             <div className="mt-4">
               <div className="flex items-center justify-between gap-2 text-sm mb-1">
-                <span className="text-muted-foreground">Gjennomføringsgrad</span>
+                <span className="text-muted-foreground">{t("auto.gjennomfoeringsgrad")}</span>
                 <span className="font-medium">{stats.vernerundeCompletionRate}%</span>
               </div>
               <Progress value={stats.vernerundeCompletionRate} className="h-2" />
@@ -185,8 +186,8 @@ export default function Ks2Statistikk() {
         {/* Deviation Trend Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Avvikstrend</CardTitle>
-            <CardDescription>Åpnede og lukkede avvik siste 6 måneder</CardDescription>
+            <CardTitle className="text-base sm:text-lg">{t("auto.avvikstrend")}</CardTitle>
+            <CardDescription>{t("auto.aapnede_og_lukkede_avvik_siste_6_maanede")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[250px] sm:h-[300px] overflow-hidden">
@@ -228,8 +229,8 @@ export default function Ks2Statistikk() {
         {/* Checklists by Month */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Sjekklister per måned</CardTitle>
-            <CardDescription>Fullførte og totale sjekklister</CardDescription>
+            <CardTitle className="text-base sm:text-lg">{t("auto.sjekklister_per_maaned")}</CardTitle>
+            <CardDescription>{t("auto.fullfoerte_og_totale_sjekklister")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[250px] sm:h-[300px] overflow-hidden">
@@ -265,7 +266,7 @@ export default function Ks2Statistikk() {
         {/* Deviations by Category */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Avvik per kategori</CardTitle>
+            <CardTitle className="text-base sm:text-lg">{t("auto.avvik_per_kategori")}</CardTitle>
           </CardHeader>
           <CardContent>
             {stats.deviationsByCategory.length > 0 ? (
@@ -300,7 +301,7 @@ export default function Ks2Statistikk() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-8">Ingen avvik registrert</p>
+              <p className="text-sm text-muted-foreground text-center py-8">{t("auto.ingen_avvik_registrert")}</p>
             )}
           </CardContent>
         </Card>
@@ -309,11 +310,11 @@ export default function Ks2Statistikk() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base sm:text-lg">Prosjektoversikt</CardTitle>
-              <CardDescription>Status per prosjekt</CardDescription>
+              <CardTitle className="text-base sm:text-lg">{t("auto.prosjektoversikt")}</CardTitle>
+              <CardDescription>{t("auto.status_per_prosjekt")}</CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={() => navigate('/ks')}>
-              Se alle
+              {t("auto.se_alle")}
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </CardHeader>
@@ -322,11 +323,11 @@ export default function Ks2Statistikk() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 font-medium text-muted-foreground">Prosjekt</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">Sjekklister</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">Avvik</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">Vernerunder</th>
-                    <th className="text-center py-2 font-medium text-muted-foreground">Status</th>
+                    <th className="text-left py-2 font-medium text-muted-foreground">{t("auto.prosjekt")}</th>
+                    <th className="text-center py-2 font-medium text-muted-foreground">{t("auto.sjekklister")}</th>
+                    <th className="text-center py-2 font-medium text-muted-foreground">{t("auto.avvik")}</th>
+                    <th className="text-center py-2 font-medium text-muted-foreground">{t("auto.vernerunder")}</th>
+                    <th className="text-center py-2 font-medium text-muted-foreground">{t("auto.status_2")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -352,7 +353,7 @@ export default function Ks2Statistikk() {
                             {project.open_deviations} åpne
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-xs">0 åpne</Badge>
+                          <Badge variant="secondary" className="text-xs">{t("auto.0_aapne")}</Badge>
                         )}
                       </td>
                       <td className="text-center py-3">
@@ -371,7 +372,7 @@ export default function Ks2Statistikk() {
               
               {stats.projectStats.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  Ingen prosjekter funnet
+                  {t("auto.ingen_prosjekter_funnet")}
                 </p>
               )}
             </div>
@@ -391,28 +392,28 @@ export default function Ks2Statistikk() {
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
                   <Users className="h-4 w-4" />
-                  <span className="text-sm">Underleverandører</span>
+                  <span className="text-sm">{t("auto.underleverandoerer")}</span>
                 </div>
                 <p className="text-2xl font-bold">{stats.totalSubcontractors}</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
                   <Target className="h-4 w-4" />
-                  <span className="text-sm">Gjennomsnitt fullføring</span>
+                  <span className="text-sm">{t("auto.gjennomsnitt_fullfoering")}</span>
                 </div>
                 <p className="text-2xl font-bold">{stats.checklistCompletionRate}%</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
                   <TrendingDown className="h-4 w-4" />
-                  <span className="text-sm">Åpne avvik</span>
+                  <span className="text-sm">{t("auto.aapne_avvik")}</span>
                 </div>
                 <p className="text-2xl font-bold text-amber-600">{stats.openDeviations}</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="text-sm">Lukkede avvik</span>
+                  <span className="text-sm">{t("auto.lukkede_avvik")}</span>
                 </div>
                 <p className="text-2xl font-bold text-green-600">{stats.closedDeviations}</p>
               </div>

@@ -18,13 +18,14 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { SignaturePad } from "@/components/ks2/SignaturePad";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { t } from "@/i18n/t";
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  draft: { label: "Utkast", variant: "secondary" },
-  pending: { label: "Venter på godkjenning", variant: "outline" },
-  approved: { label: "Godkjent", variant: "default" },
-  rejected: { label: "Avvist", variant: "destructive" },
-  completed: { label: "Fullført", variant: "default" },
+  draft: { label: t("auto.utkast"), variant: "secondary" },
+  pending: { label: t("auto.venter_paa_godkjenning_2"), variant: "outline" },
+  approved: { label: t("auto.godkjent"), variant: "default" },
+  rejected: { label: t("auto.avvist"), variant: "destructive" },
+  completed: { label: t("auto.fullfoert"), variant: "default" },
 };
 
 export default function Ks2Endringsmeldinger() {
@@ -87,15 +88,15 @@ export default function Ks2Endringsmeldinger() {
     const materialsRaw = parseFloat(formData.material_cost);
 
     if (formData.estimated_hours && isNaN(hoursRaw)) {
-      toast.error("Ugyldig verdi for estimerte timer");
+      toast.error(t("auto.ugyldig_verdi_for_estimerte_timer"));
       return;
     }
     if (formData.hourly_rate && isNaN(rateRaw)) {
-      toast.error("Ugyldig verdi for timepris");
+      toast.error(t("auto.ugyldig_verdi_for_timepris"));
       return;
     }
     if (formData.material_cost && isNaN(materialsRaw)) {
-      toast.error("Ugyldig verdi for materialkostnad");
+      toast.error(t("auto.ugyldig_verdi_for_materialkostnad"));
       return;
     }
 
@@ -177,7 +178,7 @@ export default function Ks2Endringsmeldinger() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Endringsmeldinger</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t("auto.endringsmeldinger")}</h1>
           <p className="text-muted-foreground text-sm">
             {project?.project_name || "Prosjekt"}
           </p>
@@ -191,49 +192,49 @@ export default function Ks2Endringsmeldinger() {
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Ny endringsmelding</DialogTitle>
+              <DialogTitle>{t("auto.ny_endringsmelding")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="title">Tittel *</Label>
+                <Label htmlFor="title">{t("auto.tittel_2")}</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="F.eks. Ekstra stikkontakter i kjøkken"
+                  placeholder={t("auto.f_eks_ekstra_stikkontakter_i_kjoekken")}
                 />
               </div>
               <div>
-                <Label htmlFor="description">Beskrivelse</Label>
+                <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Detaljert beskrivelse av endringen..."
+                  placeholder={t("auto.detaljert_beskrivelse_av_endringen")}
                   rows={3}
                 />
               </div>
               <div>
-                <Label htmlFor="reason">Årsak til endring</Label>
+                <Label htmlFor="reason">{t("auto.aarsak_til_endring_2")}</Label>
                 <Input
                   id="reason"
                   value={formData.reason}
                   onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                  placeholder="F.eks. Kundens ønske"
+                  placeholder={t("auto.f_eks_kundens_oenske")}
                 />
               </div>
               <div>
-                <Label htmlFor="requested_by">Bestilt av</Label>
+                <Label htmlFor="requested_by">{t("auto.bestilt_av")}</Label>
                 <Input
                   id="requested_by"
                   value={formData.requested_by}
                   onChange={(e) => setFormData({ ...formData, requested_by: e.target.value })}
-                  placeholder="Navn på bestiller"
+                  placeholder={t("auto.navn_paa_bestiller")}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="estimated_hours">Timer</Label>
+                  <Label htmlFor="estimated_hours">{t("auto.timer")}</Label>
                   <Input
                     id="estimated_hours"
                     type="number"
@@ -266,7 +267,7 @@ export default function Ks2Endringsmeldinger() {
               </div>
               {(formData.estimated_hours || formData.hourly_rate || formData.material_cost) && (
                 <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground">Estimert totalkostnad:</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.estimert_totalkostnad")}</p>
                   <p className="text-lg font-semibold">
                     {(
                       (parseFloat(formData.estimated_hours) || 0) *
@@ -278,19 +279,19 @@ export default function Ks2Endringsmeldinger() {
                 </div>
               )}
               <div>
-                <Label htmlFor="internal_notes">Interne notater</Label>
+                <Label htmlFor="internal_notes">{t("auto.interne_notater")}</Label>
                 <Textarea
                   id="internal_notes"
                   value={formData.internal_notes}
                   onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
-                  placeholder="Notater som kun er synlige for bedriften..."
+                  placeholder={t("auto.notater_som_kun_er_synlige_for_bedriften")}
                   rows={2}
                 />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={handleCreate} disabled={!formData.title || isCreating}>
                 {isCreating ? "Oppretter..." : "Opprett"}
@@ -304,13 +305,13 @@ export default function Ks2Endringsmeldinger() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Totalt</p>
+            <p className="text-sm text-muted-foreground">{t("auto.totalt")}</p>
             <p className="text-2xl font-bold">{changeOrders.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Venter godkjenning</p>
+            <p className="text-sm text-muted-foreground">{t("auto.venter_godkjenning")}</p>
             <p className="text-2xl font-bold text-amber-600">
               {changeOrders.filter((o) => o.status === "pending").length}
             </p>
@@ -318,7 +319,7 @@ export default function Ks2Endringsmeldinger() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Godkjent sum</p>
+            <p className="text-sm text-muted-foreground">{t("auto.godkjent_sum")}</p>
             <p className="text-2xl font-bold text-green-600">
               {totalApproved.toLocaleString("nb-NO")} kr
             </p>
@@ -326,7 +327,7 @@ export default function Ks2Endringsmeldinger() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Ventende sum</p>
+            <p className="text-sm text-muted-foreground">{t("auto.ventende_sum")}</p>
             <p className="text-2xl font-bold text-amber-600">
               {totalPending.toLocaleString("nb-NO")} kr
             </p>
@@ -339,7 +340,7 @@ export default function Ks2Endringsmeldinger() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk på tittel eller nummer..."
+            placeholder={t("auto.soek_paa_tittel_eller_nummer")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -347,15 +348,15 @@ export default function Ks2Endringsmeldinger() {
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Alle statuser" />
+            <SelectValue placeholder={t("auto.alle_statuser")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle statuser</SelectItem>
-            <SelectItem value="draft">Utkast</SelectItem>
-            <SelectItem value="pending">Venter på godkjenning</SelectItem>
-            <SelectItem value="approved">Godkjent</SelectItem>
-            <SelectItem value="rejected">Avvist</SelectItem>
-            <SelectItem value="completed">Fullført</SelectItem>
+            <SelectItem value="all">{t("auto.alle_statuser")}</SelectItem>
+            <SelectItem value="draft">{t("auto.utkast")}</SelectItem>
+            <SelectItem value="pending">{t("auto.venter_paa_godkjenning_2")}</SelectItem>
+            <SelectItem value="approved">{t("auto.godkjent")}</SelectItem>
+            <SelectItem value="rejected">{t("auto.avvist")}</SelectItem>
+            <SelectItem value="completed">{t("auto.fullfoert")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -365,9 +366,9 @@ export default function Ks2Endringsmeldinger() {
         <Card>
           <CardContent className="p-8 text-center">
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Ingen endringsmeldinger</h3>
+            <h3 className="text-lg font-medium mb-2">{t("auto.ingen_endringsmeldinger")}</h3>
             <p className="text-muted-foreground mb-4">
-              Opprett en ny endringsmelding for å registrere tilleggsarbeid.
+              {t("auto.opprett_en_ny_endringsmelding_for_aa_reg")}
             </p>
             <Button onClick={() => setIsCreateOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -457,13 +458,13 @@ export default function Ks2Endringsmeldinger() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nr.</TableHead>
-                <TableHead>Tittel</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Bestilt av</TableHead>
-                <TableHead>Dato</TableHead>
-                <TableHead className="text-right">Beløp</TableHead>
-                <TableHead className="text-right">Handlinger</TableHead>
+                <TableHead>{t("auto.nr_2")}</TableHead>
+                <TableHead>{t("auto.tittel")}</TableHead>
+                <TableHead>{t("auto.status_2")}</TableHead>
+                <TableHead>{t("auto.bestilt_av")}</TableHead>
+                <TableHead>{t("auto.dato")}</TableHead>
+                <TableHead className="text-right">{t("auto.beloep")}</TableHead>
+                <TableHead className="text-right">{t("auto.handlinger")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -548,7 +549,7 @@ export default function Ks2Endringsmeldinger() {
       <Dialog open={isApproveOpen} onOpenChange={setIsApproveOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Kundegodkjenning</DialogTitle>
+            <DialogTitle>{t("auto.kundegodkjenning")}</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-4 py-4">
@@ -567,11 +568,11 @@ export default function Ks2Endringsmeldinger() {
                   id="approvalName"
                   value={approvalName}
                   onChange={(e) => setApprovalName(e.target.value)}
-                  placeholder="Ola Nordmann"
+                  placeholder={t("auto.ola_nordmann")}
                 />
               </div>
               <div>
-                <Label>Kundens signatur</Label>
+                <Label>{t("auto.kundens_signatur")}</Label>
                 <SignaturePad
                   onSave={setApprovalSignature}
                   existingSignature={approvalSignature}
@@ -581,7 +582,7 @@ export default function Ks2Endringsmeldinger() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsApproveOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleApprove} disabled={!approvalName}>
               <Check className="h-4 w-4 mr-2" />

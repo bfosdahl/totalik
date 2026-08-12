@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 import {
   Dialog,
   DialogContent,
@@ -67,9 +68,9 @@ export default function Ks2ProjectNotes() {
       setShowDialog(false);
       setTitle("");
       setContent("");
-      toast.success("Notat opprettet");
+      toast.success(t("auto.notat_opprettet"));
     },
-    onError: () => toast.error("Kunne ikke opprette notat"),
+    onError: () => toast.error(t("auto.kunne_ikke_opprette_notat")),
   });
 
   const deleteNote = useMutation({
@@ -79,7 +80,7 @@ export default function Ks2ProjectNotes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project-notes", projectId] });
-      toast.success("Notat slettet");
+      toast.success(t("auto.notat_slettet"));
     },
   });
 
@@ -108,8 +109,8 @@ export default function Ks2ProjectNotes() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <StickyNote className="w-12 h-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Ingen notater ennå</p>
-            <p className="text-sm text-muted-foreground">Legg til notater for å holde oversikt over prosjektet</p>
+            <p className="text-muted-foreground">{t("auto.ingen_notater_ennaa")}</p>
+            <p className="text-sm text-muted-foreground">{t("auto.legg_til_notater_for_aa_holde_oversikt_o")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -143,23 +144,23 @@ export default function Ks2ProjectNotes() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nytt notat</DialogTitle>
+            <DialogTitle>{t("auto.nytt_notat")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input
-              placeholder="Tittel"
+              placeholder={t("auto.tittel")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
             <Textarea
-              placeholder="Skriv notatet ditt her..."
+              placeholder={t("auto.skriv_notatet_ditt_her")}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={6}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>{t("auto.avbryt")}</Button>
             <Button onClick={() => createNote.mutate()} disabled={!content.trim() || createNote.isPending}>
               {createNote.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Lagre

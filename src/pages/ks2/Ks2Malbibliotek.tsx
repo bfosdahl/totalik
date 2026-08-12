@@ -48,6 +48,7 @@ import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { isTemplateRelevant, INDUSTRY_LABEL } from "@/lib/industries";
+import { t } from "@/i18n/t";
 import {
   Select,
   SelectContent,
@@ -245,7 +246,7 @@ export default function Ks2Malbibliotek() {
 
         if (error && error.code !== "23505") throw error;
         setHiddenSystemTemplates(prev => new Set(prev).add(key));
-        toast.success("Mal skjult fra biblioteket");
+        toast.success(t("auto.mal_skjult_fra_biblioteket"));
       } else {
         const { error } = await supabase
           .from("company_ks_selected_templates")
@@ -260,11 +261,11 @@ export default function Ks2Malbibliotek() {
           next.delete(key);
           return next;
         });
-        toast.success("Mal vises igjen");
+        toast.success(t("auto.mal_vises_igjen"));
       }
     } catch (error) {
       console.error("Error toggling hidden KS template:", error);
-      toast.error("Kunne ikke oppdatere synlighet");
+      toast.error(t("auto.kunne_ikke_oppdatere_synlighet"));
     }
   };
 
@@ -334,10 +335,10 @@ export default function Ks2Malbibliotek() {
       if (error) throw error;
 
       window.open(data.signedUrl, "_blank");
-      toast.success("Dokumentet åpnes i ny fane");
+      toast.success(t("auto.dokumentet_aapnes_i_ny_fane"));
     } catch (error) {
       console.error("Download error:", error);
-      toast.error("Kunne ikke laste ned dokumentet");
+      toast.error(t("auto.kunne_ikke_laste_ned_dokumentet"));
     }
   };
 
@@ -361,7 +362,7 @@ export default function Ks2Malbibliotek() {
 
   const handleSaveCustomRoutine = async () => {
     if (!customRoutineName.trim()) {
-      toast.error("Vennligst fyll inn navn på rutinen");
+      toast.error(t("auto.vennligst_fyll_inn_navn_paa_rutinen"));
       return;
     }
 
@@ -426,7 +427,7 @@ export default function Ks2Malbibliotek() {
 
   const handleSaveCustomChecklist = async () => {
     if (!customChecklistName.trim()) {
-      toast.error("Vennligst fyll inn navn på sjekklisten");
+      toast.error(t("auto.vennligst_fyll_inn_navn_paa_sjekklisten"));
       return;
     }
 
@@ -438,7 +439,7 @@ export default function Ks2Malbibliotek() {
         description: cp.description?.trim() || undefined,
       }));
     if (validCheckpoints.length === 0) {
-      toast.error("Legg til minst ett sjekkpunkt");
+      toast.error(t("auto.legg_til_minst_ett_sjekkpunkt"));
       return;
     }
 
@@ -507,7 +508,7 @@ export default function Ks2Malbibliotek() {
   if (isLoading || isLoadingProject || isLoadingProjectRoutines || isLoadingCompanyRoutines || isLoadingCompanyChecklists) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Laster malbibliotek...</div>
+        <div className="text-muted-foreground">{t("auto.laster_malbibliotek")}</div>
       </div>
     );
   }
@@ -517,9 +518,9 @@ export default function Ks2Malbibliotek() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Malbibliotek</h1>
+          <h1 className="text-2xl font-bold">{t("auto.malbibliotek")}</h1>
           <p className="text-muted-foreground">
-            Bla gjennom og bruk sjekkliste-maler, rutiner og dokumenter fra systemleverandøren
+            {t("auto.bla_gjennom_og_bruk_sjekkliste_maler_rut")}
           </p>
         </div>
         <Button onClick={() => openAddDialog('checklist')} className="shrink-0">
@@ -532,7 +533,7 @@ export default function Ks2Malbibliotek() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Søk etter maler, rutiner og dokumenter..."
+          placeholder={t("auto.soek_etter_maler_rutiner_og_dokumenter")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
@@ -549,7 +550,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{projectChecklists.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Sjekklister</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.sjekklister")}</p>
               </div>
             </div>
           </CardContent>
@@ -562,7 +563,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{projectRoutines.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Rutiner</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.rutiner")}</p>
               </div>
             </div>
           </CardContent>
@@ -575,7 +576,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{companyRoutines.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Dine rutiner</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.dine_rutiner")}</p>
               </div>
             </div>
           </CardContent>
@@ -588,7 +589,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{companyChecklistTemplates.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Dine sjekklister</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.dine_sjekklister")}</p>
               </div>
             </div>
           </CardContent>
@@ -601,7 +602,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <div>
                 <p className="text-xl sm:text-2xl font-bold">{projectDocuments.length}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Dokumenter</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("auto.dokumenter")}</p>
               </div>
             </div>
           </CardContent>
@@ -612,26 +613,26 @@ export default function Ks2Malbibliotek() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="checklists" className="gap-2">
             <ClipboardList className="h-4 w-4" />
-            <span className="hidden sm:inline">Sjekklister</span>
+            <span className="hidden sm:inline">{t("auto.sjekklister")}</span>
           </TabsTrigger>
           <TabsTrigger value="custom-checklists" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Dine sjekklister</span>
-            <span className="sm:hidden">Dine</span>
+            <span className="hidden sm:inline">{t("auto.dine_sjekklister")}</span>
+            <span className="sm:hidden">{t("auto.dine")}</span>
           </TabsTrigger>
           <TabsTrigger value="routines" className="gap-2">
             <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Rutiner</span>
+            <span className="hidden sm:inline">{t("auto.rutiner")}</span>
           </TabsTrigger>
           <TabsTrigger value="custom-routines" className="gap-2">
             <PenLine className="h-4 w-4" />
-            <span className="hidden sm:inline">Dine rutiner</span>
-            <span className="sm:hidden">Dine</span>
+            <span className="hidden sm:inline">{t("auto.dine_rutiner")}</span>
+            <span className="sm:hidden">{t("auto.dine")}</span>
           </TabsTrigger>
           <TabsTrigger value="documents" className="gap-2">
             <FolderOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Dokumenter</span>
-            <span className="sm:hidden">Dok.</span>
+            <span className="hidden sm:inline">{t("auto.dokumenter")}</span>
+            <span className="sm:hidden">{t("auto.dok_2")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -639,7 +640,7 @@ export default function Ks2Malbibliotek() {
           <div className="flex flex-wrap items-center gap-2 text-sm">
             {companyIndustries.length > 0 ? (
               <>
-                <span className="text-muted-foreground">Bransjer:</span>
+                <span className="text-muted-foreground">{t("auto.bransjer_2")}</span>
                 {companyIndustries.map((k) => (
                   <Badge key={k} variant="secondary" className="text-xs">
                     {INDUSTRY_LABEL[k] || k}
@@ -655,7 +656,7 @@ export default function Ks2Malbibliotek() {
               </>
             ) : (
               <span className="text-muted-foreground text-xs">
-                Tips: Velg bransjer under Innstillinger → Bedriftsinformasjon for å filtrere biblioteket.
+                {t("auto.tips_velg_bransjer_under_innstillinger_b")}
               </span>
             )}
           </div>
@@ -677,7 +678,7 @@ export default function Ks2Malbibliotek() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <ClipboardList className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen sjekkliste-maler funnet</p>
+                <p>{t("auto.ingen_sjekkliste_maler_funnet")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -731,13 +732,13 @@ export default function Ks2Malbibliotek() {
                                   <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium truncate">{template.template_name}</span>
                                     {template.is_mandatory && (
-                                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">Obl.</Badge>
+                                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">{t("auto.obl")}</Badge>
                                     )}
                                     {template.is_locked && (
                                       <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
                                     )}
                                     {isHidden && (
-                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Skjult</Badge>
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{t("auto.skjult")}</Badge>
                                     )}
                                   </div>
                                   {template.description && (
@@ -802,7 +803,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-checklists" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Sjekklister du oppretter her lagres i firmabiblioteket og er tilgjengelig i <strong>alle prosjekter</strong>.
+              {t("auto.sjekklister_du_oppretter_her_lagres_i_fi")} <strong>{t("auto.alle_prosjekter_2")}</strong>.
             </p>
             <Button onClick={openCreateCustomChecklist}>
               <Plus className="h-4 w-4 mr-2" />
@@ -814,8 +815,8 @@ export default function Ks2Malbibliotek() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <ClipboardList className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="mb-2">Ingen egne sjekkliste-maler opprettet</p>
-                <p className="text-sm">Opprett din første sjekkliste-mal ved å klikke på knappen ovenfor</p>
+                <p className="mb-2">{t("auto.ingen_egne_sjekkliste_maler_opprettet")}</p>
+                <p className="text-sm">{t("auto.opprett_din_foerste_sjekkliste_mal_ved_a")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -865,7 +866,7 @@ export default function Ks2Malbibliotek() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen rutine-maler funnet</p>
+                <p>{t("auto.ingen_rutine_maler_funnet")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -918,13 +919,13 @@ export default function Ks2Malbibliotek() {
                                   <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium truncate">{routine.routine_name}</span>
                                     {routine.is_mandatory && (
-                                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">Obl.</Badge>
+                                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 shrink-0">{t("auto.obl")}</Badge>
                                     )}
                                     {routine.is_locked && (
                                       <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
                                     )}
                                     {isHidden && (
-                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Skjult</Badge>
+                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">{t("auto.skjult")}</Badge>
                                     )}
                                   </div>
                                   {routine.description && (
@@ -989,7 +990,7 @@ export default function Ks2Malbibliotek() {
         <TabsContent value="custom-routines" className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Rutiner du oppretter her lagres i firmabiblioteket og er tilgjengelig i <strong>alle prosjekter</strong>.
+              {t("auto.rutiner_du_oppretter_her_lagres_i_firmab")} <strong>{t("auto.alle_prosjekter_2")}</strong>.
             </p>
             <Button onClick={openCreateCustomRoutine}>
               <Plus className="h-4 w-4 mr-2" />
@@ -1001,8 +1002,8 @@ export default function Ks2Malbibliotek() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <PenLine className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="mb-2">Ingen egne rutiner opprettet</p>
-                <p className="text-sm">Opprett din første rutine ved å klikke på knappen ovenfor</p>
+                <p className="mb-2">{t("auto.ingen_egne_rutiner_opprettet")}</p>
+                <p className="text-sm">{t("auto.opprett_din_foerste_rutine_ved_aa_klikke")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -1037,7 +1038,7 @@ export default function Ks2Malbibliotek() {
                         className="h-7 px-2 text-xs"
                         onClick={() => handleAddCompanyRoutineToProject(routine)}
                         disabled={isImportingRoutine}
-                        title="Legg til i dette prosjektet"
+                        title={t("auto.legg_til_i_dette_prosjektet")}
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
@@ -1061,8 +1062,8 @@ export default function Ks2Malbibliotek() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Ingen dokumenter tilgjengelig</p>
-                <p className="text-sm mt-1">Dokumenter vil bli lagt til av systemadministrator</p>
+                <p>{t("auto.ingen_dokumenter_tilgjengelig")}</p>
+                <p className="text-sm mt-1">{t("auto.dokumenter_vil_bli_lagt_til_av_systemadm")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -1149,7 +1150,7 @@ export default function Ks2Malbibliotek() {
                                       )}
                                       {doc.is_mandatory && (
                                         <Badge variant="destructive" className="text-xs">
-                                          Obligatorisk
+                                          {t("auto.obligatorisk")}
                                         </Badge>
                                       )}
                                     </div>
@@ -1205,7 +1206,7 @@ export default function Ks2Malbibliotek() {
                           })}
                           
                           {filteredFolderDocs.length === 0 && (
-                            <p className="text-sm text-muted-foreground py-2">Ingen dokumenter i denne mappen</p>
+                            <p className="text-sm text-muted-foreground py-2">{t("auto.ingen_dokumenter_i_denne_mappen")}</p>
                           )}
                         </div>
                         
@@ -1348,7 +1349,7 @@ export default function Ks2Malbibliotek() {
           </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedChecklist(null)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
             {selectedChecklist && !addedChecklistIds.includes(selectedChecklist.id) && (
               <Button onClick={() => {
@@ -1407,7 +1408,7 @@ export default function Ks2Malbibliotek() {
           </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedRoutine(null)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
             {selectedRoutine && !addedRoutineIds.includes(selectedRoutine.id) && (
               <Button onClick={() => {
@@ -1439,17 +1440,17 @@ export default function Ks2Malbibliotek() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="routine-name">Navn på rutine *</Label>
+              <Label htmlFor="routine-name">{t("auto.navn_paa_rutine_2")}</Label>
               <Input
                 id="routine-name"
                 value={customRoutineName}
                 onChange={(e) => setCustomRoutineName(e.target.value)}
-                placeholder="F.eks. Rutine for kvalitetskontroll"
+                placeholder={t("auto.f_eks_rutine_for_kvalitetskontroll")}
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="routine-category">Kategori</Label>
+              <Label htmlFor="routine-category">{t("auto.kategori")}</Label>
               <Select value={customRoutineCategory} onValueChange={setCustomRoutineCategory}>
                 <SelectTrigger>
                   <SelectValue />
@@ -1463,29 +1464,29 @@ export default function Ks2Malbibliotek() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="routine-description">Beskrivelse</Label>
+              <Label htmlFor="routine-description">{t("auto.beskrivelse")}</Label>
               <Input
                 id="routine-description"
                 value={customRoutineDescription}
                 onChange={(e) => setCustomRoutineDescription(e.target.value)}
-                placeholder="Kort beskrivelse av rutinen"
+                placeholder={t("auto.kort_beskrivelse_av_rutinen_2")}
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="routine-content">Innhold</Label>
+              <Label htmlFor="routine-content">{t("auto.innhold")}</Label>
               <Textarea
                 id="routine-content"
                 value={customRoutineContent}
                 onChange={(e) => setCustomRoutineContent(e.target.value)}
-                placeholder="Skriv rutinens fullstendige innhold her..."
+                placeholder={t("auto.skriv_rutinens_fullstendige_innhold_her")}
                 rows={10}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCustomRoutineDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleSaveCustomRoutine}
@@ -1514,17 +1515,17 @@ export default function Ks2Malbibliotek() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="checklist-name">Navn på sjekkliste *</Label>
+              <Label htmlFor="checklist-name">{t("auto.navn_paa_sjekkliste")}</Label>
               <Input
                 id="checklist-name"
                 value={customChecklistName}
                 onChange={(e) => setCustomChecklistName(e.target.value)}
-                placeholder="F.eks. Kontroll av våtrom"
+                placeholder={t("auto.f_eks_kontroll_av_vaatrom")}
               />
             </div>
             
             <div className="space-y-2">
-              <Label>Kategori</Label>
+              <Label>{t("auto.kategori")}</Label>
               <div className="flex items-center gap-2 mb-2">
                 <Checkbox
                   id="use-new-category"
@@ -1532,7 +1533,7 @@ export default function Ks2Malbibliotek() {
                   onCheckedChange={(checked) => setCustomChecklistUseNewCategory(!!checked)}
                 />
                 <label htmlFor="use-new-category" className="text-sm cursor-pointer">
-                  Opprett egen kategori
+                  {t("auto.opprett_egen_kategori")}
                 </label>
               </div>
               {customChecklistUseNewCategory ? (
@@ -1556,17 +1557,17 @@ export default function Ks2Malbibliotek() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="checklist-description">Beskrivelse</Label>
+              <Label htmlFor="checklist-description">{t("auto.beskrivelse")}</Label>
               <Input
                 id="checklist-description"
                 value={customChecklistDescription}
                 onChange={(e) => setCustomChecklistDescription(e.target.value)}
-                placeholder="Kort beskrivelse av sjekklisten"
+                placeholder={t("auto.kort_beskrivelse_av_sjekklisten")}
               />
             </div>
             
             <div className="space-y-2">
-              <Label>Sjekkpunkter *</Label>
+              <Label>{t("auto.sjekkpunkter_2")}</Label>
               <div className="space-y-3">
                 {customChecklistCheckpoints.map((cp, index) => (
                   <div key={index} className="flex gap-2 items-start">
@@ -1602,7 +1603,7 @@ export default function Ks2Malbibliotek() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCustomChecklistDialog(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleSaveCustomChecklist}

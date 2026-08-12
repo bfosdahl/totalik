@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useCompanyUsers, type CompanyUser } from "@/hooks/useCompanyUsers";
 import { Loader2 } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface UserSelectProps {
   value: string;
@@ -44,7 +45,7 @@ const UserSelect: React.FC<UserSelectProps> = ({
     return (
       <div className={`flex items-center h-9 px-3 border border-input rounded-md bg-background ${className}`}>
         <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-sm text-muted-foreground">Laster...</span>
+        <span className="ml-2 text-sm text-muted-foreground">{t("auto.laster")}</span>
       </div>
     );
   }
@@ -58,7 +59,7 @@ const UserSelect: React.FC<UserSelectProps> = ({
             setCustomValue(e.target.value);
             onValueChange(e.target.value);
           }}
-          placeholder="Skriv inn navn..."
+          placeholder={t("auto.skriv_inn_navn")}
           disabled={disabled}
           className={className}
         />

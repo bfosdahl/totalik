@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getSafeModuleSettings } from "@/lib/moduleDefaults";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
+import { t } from "@/i18n/t";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -215,11 +216,11 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         throw moduleError;
       }
 
-      toast.success("IK-MAT oppsett fullført!");
+      toast.success(t("auto.ik_mat_oppsett_fullfoert"));
       onComplete();
     } catch (error) {
       console.error("Error saving generated content:", error);
-      toast.error("Kunne ikke lagre innholdet. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_lagre_innholdet_proev_igjen"));
     } finally {
       setIsSaving(false);
     }
@@ -309,14 +310,14 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       });
 
       if (response.status === 429) {
-        toast.error("For mange forespørsler. Vennligst vent litt og prøv igjen.");
+        toast.error(t("auto.for_mange_forespoersler_vennligst_vent_l"));
         setIsLoading(false);
         isStreamingRef.current = false;
         return;
       }
 
       if (response.status === 402) {
-        toast.error("Kreditter oppbrukt. Kontakt administrator.");
+        toast.error(t("auto.kreditter_oppbrukt_kontakt_administrator"));
         setIsLoading(false);
         isStreamingRef.current = false;
         return;
@@ -403,7 +404,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         setWasInterrupted(true);
       } else {
         console.error("Error:", error);
-        toast.error("Noe gikk galt. Vennligst prøv igjen.");
+        toast.error(t("auto.noe_gikk_galt_vennligst_proev_igjen"));
       }
     } finally {
       setIsLoading(false);
@@ -434,7 +435,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
           IK-MAT Assistent
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          La AI-assistenten hjelpe deg med å sette opp et komplett matsikkerhetssystem tilpasset din virksomhet.
+          {t("auto.la_ai_assistenten_hjelpe_deg_med_aa_sett")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
@@ -481,13 +482,13 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
             {isSaving && (
               <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
-                <p className="text-xs sm:text-sm text-success font-medium">Setter opp IK-MAT systemet ditt...</p>
+                <p className="text-xs sm:text-sm text-success font-medium">{t("auto.setter_opp_ik_mat_systemet_ditt")}</p>
               </div>
             )}
             {wasInterrupted && !isLoading && (
               <div className="flex flex-col items-center justify-center gap-2 p-3 sm:p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
                 <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-400 font-medium text-center">
-                  Det ser ut som svaret ble avbrutt. Vil du prøve på nytt?
+                  {t("auto.det_ser_ut_som_svaret_ble_avbrutt_vil_du")}
                 </p>
                 <Button
                   variant="outline"
@@ -510,7 +511,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Skriv ditt svar her..."
+              placeholder={t("auto.skriv_ditt_svar_her")}
               disabled={isLoading || isSaving}
               className="flex-1 text-base sm:text-sm"
             />

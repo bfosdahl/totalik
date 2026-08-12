@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { format, isPast, isToday } from "date-fns";
 import { nb } from "date-fns/locale";
 import type { Json } from "@/integrations/supabase/types";
+import { t } from "@/i18n/t";
 
 interface ActionItem {
   id: string;
@@ -139,10 +140,10 @@ export function OppfolgingTab() {
         }], { onConflict: "company_id,department_id" });
 
       if (error) throw error;
-      toast.success("Lagret");
+      toast.success(t("auto.lagret"));
     } catch (error) {
       console.error("Error saving:", error);
-      toast.error("Kunne ikke lagre");
+      toast.error(t("auto.kunne_ikke_lagre_2"));
     } finally {
       setIsSaving(false);
     }
@@ -170,13 +171,13 @@ export function OppfolgingTab() {
   // Delete action
   const deleteAction = (id: string) => {
     setActions(actions.filter(a => a.id !== id));
-    toast.success("Tiltak slettet");
+    toast.success(t("auto.tiltak_slettet"));
   };
 
   // Quick complete
   const quickComplete = (id: string) => {
     updateAction(id, { status: "utført" });
-    toast.success("Tiltak fullført");
+    toast.success(t("auto.tiltak_fullfoert"));
   };
 
   // Helper to safely parse dates
@@ -189,16 +190,16 @@ export function OppfolgingTab() {
   // Get status info
   const getStatusInfo = (action: ActionItem) => {
     if (action.status === "utført") {
-      return { label: "Utført", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" };
+      return { label: t("auto.utfoert"), icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" };
     }
     const deadlineDate = safeParseDate(action.deadline);
     if (deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate)) {
-      return { label: "Forfalt", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" };
+      return { label: t("auto.forfalt"), icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" };
     }
     if (action.status === "pågår") {
-      return { label: "Pågår", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" };
+      return { label: t("auto.paagaar"), icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" };
     }
-    return { label: "Planlagt", icon: Calendar, color: "text-muted-foreground", bg: "bg-muted/50" };
+    return { label: t("auto.planlagt"), icon: Calendar, color: "text-muted-foreground", bg: "bg-muted/50" };
   };
 
   // Filter actions
@@ -247,7 +248,7 @@ export function OppfolgingTab() {
         >
           <CardContent className="p-4">
             <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Totalt tiltak</div>
+            <div className="text-sm text-muted-foreground">{t("auto.totalt_tiltak")}</div>
           </CardContent>
         </Card>
         <Card 
@@ -256,7 +257,7 @@ export function OppfolgingTab() {
         >
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-orange-600">{stats.open}</div>
-            <div className="text-sm text-muted-foreground">Åpne</div>
+            <div className="text-sm text-muted-foreground">{t("auto.aapne")}</div>
           </CardContent>
         </Card>
         <Card 
@@ -265,7 +266,7 @@ export function OppfolgingTab() {
         >
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-            <div className="text-sm text-muted-foreground">Forfalt</div>
+            <div className="text-sm text-muted-foreground">{t("auto.forfalt")}</div>
           </CardContent>
         </Card>
         <Card 
@@ -274,7 +275,7 @@ export function OppfolgingTab() {
         >
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-            <div className="text-sm text-muted-foreground">Fullført</div>
+            <div className="text-sm text-muted-foreground">{t("auto.fullfoert")}</div>
           </CardContent>
         </Card>
       </div>
@@ -285,7 +286,7 @@ export function OppfolgingTab() {
           <CardContent className="p-4 flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-red-600" />
             <span className="text-sm text-red-700">
-              <strong>{stats.overdue} tiltak</strong> har gått over frist og må følges opp
+              <strong>{stats.overdue} tiltak</strong> {t("auto.har_gaatt_over_frist_og_maa_foelges_opp")}
             </span>
           </CardContent>
         </Card>
@@ -308,13 +309,13 @@ export function OppfolgingTab() {
              filter === "forfalt" ? "Forfalte tiltak" :
              "Fullførte tiltak"} ({filteredActions.length})
           </CardTitle>
-          <CardDescription>Klikk på et tiltak for å redigere</CardDescription>
+          <CardDescription>{t("auto.klikk_paa_et_tiltak_for_aa_redigere")}</CardDescription>
         </CardHeader>
         <CardContent>
           {filteredActions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p>Ingen tiltak å vise</p>
+              <p>{t("auto.ingen_tiltak_aa_vise")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -336,7 +337,7 @@ export function OppfolgingTab() {
                       // Edit mode
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground">Tiltak</label>
+                          <label className="text-xs font-medium text-muted-foreground">{t("auto.tiltak")}</label>
                           <Textarea 
                             value={action.action_description}
                             onChange={(e) => updateAction(action.id, { action_description: e.target.value })}
@@ -345,20 +346,20 @@ export function OppfolgingTab() {
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           <div>
-                            <label className="text-xs font-medium text-muted-foreground">Status</label>
+                            <label className="text-xs font-medium text-muted-foreground">{t("auto.status_2")}</label>
                             <Select value={action.status} onValueChange={(v: any) => updateAction(action.id, { status: v })}>
                               <SelectTrigger className="mt-1">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="planlagt">Planlagt</SelectItem>
-                                <SelectItem value="pågår">Pågår</SelectItem>
-                                <SelectItem value="utført">Utført</SelectItem>
+                                <SelectItem value="planlagt">{t("auto.planlagt")}</SelectItem>
+                                <SelectItem value="pågår">{t("auto.paagaar")}</SelectItem>
+                                <SelectItem value="utført">{t("auto.utfoert")}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                           <div>
-                            <label className="text-xs font-medium text-muted-foreground">Ansvarlig</label>
+                            <label className="text-xs font-medium text-muted-foreground">{t("auto.ansvarlig_2")}</label>
                             <Input 
                               value={action.responsible || ""}
                               onChange={(e) => updateAction(action.id, { responsible: e.target.value })}
@@ -366,7 +367,7 @@ export function OppfolgingTab() {
                             />
                           </div>
                           <div>
-                            <label className="text-xs font-medium text-muted-foreground">Frist</label>
+                            <label className="text-xs font-medium text-muted-foreground">{t("auto.frist_2")}</label>
                             <Input 
                               type="date"
                               value={action.deadline || ""}
@@ -375,24 +376,24 @@ export function OppfolgingTab() {
                             />
                           </div>
                           <div>
-                            <label className="text-xs font-medium text-muted-foreground">Prioritet</label>
+                            <label className="text-xs font-medium text-muted-foreground">{t("auto.prioritet")}</label>
                             <Select value={action.priority || "medium"} onValueChange={(v: any) => updateAction(action.id, { priority: v })}>
                               <SelectTrigger className="mt-1">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="lav">Lav</SelectItem>
-                                <SelectItem value="medium">Medium</SelectItem>
-                                <SelectItem value="høy">Høy</SelectItem>
-                                <SelectItem value="kritisk">Kritisk</SelectItem>
+                                <SelectItem value="lav">{t("auto.lav")}</SelectItem>
+                                <SelectItem value="medium">{t("auto.medium")}</SelectItem>
+                                <SelectItem value="høy">{t("auto.hoey")}</SelectItem>
+                                <SelectItem value="kritisk">{t("auto.kritisk")}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-muted-foreground">Notater</label>
+                          <label className="text-xs font-medium text-muted-foreground">{t("auto.notater")}</label>
                           <Textarea 
-                            placeholder="Legg til notater om oppfølging..."
+                            placeholder={t("auto.legg_til_notater_om_oppfoelging")}
                             value={action.notes || ""}
                             onChange={(e) => updateAction(action.id, { notes: e.target.value })}
                             className="mt-1"

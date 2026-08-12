@@ -23,6 +23,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface AddChemicalDialogProps {
   open: boolean;
@@ -127,7 +128,7 @@ export const AddChemicalDialog = ({
 
   const handleCreateNew = () => {
     if (!productName.trim()) {
-      toast.error("Produktnavn er påkrevd");
+      toast.error(t("auto.produktnavn_er_paakrevd"));
       return;
     }
 
@@ -162,7 +163,7 @@ export const AddChemicalDialog = ({
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      toast.error("Kun PDF-filer er støttet");
+      toast.error(t("auto.kun_pdf_filer_er_stoettet"));
       return;
     }
 
@@ -177,7 +178,7 @@ export const AddChemicalDialog = ({
         
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-          toast.error("Du må være logget inn");
+          toast.error(t("auto.du_maa_vaere_logget_inn"));
           setIsParsing(false);
           return;
         }
@@ -188,21 +189,21 @@ export const AddChemicalDialog = ({
 
         if (response.error) {
           console.error("SDS parse error:", response.error);
-          toast.error("Kunne ikke lese sikkerhetsdatabladet automatisk");
+          toast.error(t("auto.kunne_ikke_lese_sikkerhetsdatabladet_aut"));
         } else if (response.data?.success) {
           const parsed = response.data.data;
           if (parsed.product_name) setProductName(parsed.product_name);
           if (parsed.manufacturer) setManufacturer(parsed.manufacturer);
           if (parsed.danger_classes?.length) setDangerClasses(parsed.danger_classes);
           if (parsed.notes) setNotes(parsed.notes);
-          toast.success("Sikkerhetsdatablad analysert!");
+          toast.success(t("auto.sikkerhetsdatablad_analysert"));
         }
         setIsParsing(false);
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error("SDS parse error:", error);
-      toast.error("Feil ved lesing av sikkerhetsdatablad");
+      toast.error(t("auto.feil_ved_lesing_av_sikkerhetsdatablad"));
       setIsParsing(false);
     }
   };
@@ -219,14 +220,14 @@ export const AddChemicalDialog = ({
             Legg til stoff i stoffkartoteket
           </DialogTitle>
           <DialogDescription>
-            Søk i det globale registeret eller opprett et nytt stoff
+            {t("auto.soek_i_det_globale_registeret_eller_oppr")}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "search" | "new")}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="search">Søk i register</TabsTrigger>
-            <TabsTrigger value="new">Opprett nytt</TabsTrigger>
+            <TabsTrigger value="search">{t("auto.soek_i_register")}</TabsTrigger>
+            <TabsTrigger value="new">{t("auto.opprett_nytt")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="search" className="space-y-4 mt-4">
@@ -294,27 +295,27 @@ export const AddChemicalDialog = ({
                       </Label>
                       <Input
                         id="location"
-                        placeholder="F.eks. Kjemikalskap A, Lager 2"
+                        placeholder={t("auto.f_eks_kjemikalskap_a_lager_2")}
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="quantity">Mengde</Label>
+                      <Label htmlFor="quantity">{t("auto.mengde")}</Label>
                       <Input
                         id="quantity"
-                        placeholder="F.eks. 5 liter, 2 kg"
+                        placeholder={t("auto.f_eks_5_liter_2_kg")}
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="customNotes">Egne notater</Label>
+                      <Label htmlFor="customNotes">{t("auto.egne_notater")}</Label>
                       <Textarea
                         id="customNotes"
-                        placeholder="Lokale risikovurderinger, bruksanvisninger, etc."
+                        placeholder={t("auto.lokale_risikovurderinger_bruksanvisninge")}
                         value={customNotes}
                         onChange={(e) => setCustomNotes(e.target.value)}
                         rows={3}
@@ -325,7 +326,7 @@ export const AddChemicalDialog = ({
 
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setSelectedChemical(null)}>
-                    Velg annet stoff
+                    {t("auto.velg_annet_stoff")}
                   </Button>
                   <Button onClick={handleAddExisting} disabled={isAdding}>
                     {isAdding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -392,20 +393,20 @@ export const AddChemicalDialog = ({
             <div className="grid gap-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="productName" className="required">Produktnavn *</Label>
+                  <Label htmlFor="productName" className="required">{t("auto.produktnavn")}</Label>
                   <Input
                     id="productName"
-                    placeholder="F.eks. Zalo oppvaskmiddel"
+                    placeholder={t("auto.f_eks_zalo_oppvaskmiddel")}
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="manufacturer">Produsent/Leverandør</Label>
+                  <Label htmlFor="manufacturer">{t("auto.produsent_leverandoer")}</Label>
                   <Input
                     id="manufacturer"
-                    placeholder="F.eks. Lilleborg AS"
+                    placeholder={t("auto.f_eks_lilleborg_as")}
                     value={manufacturer}
                     onChange={(e) => setManufacturer(e.target.value)}
                   />
@@ -413,21 +414,21 @@ export const AddChemicalDialog = ({
               </div>
 
               <div>
-                <Label htmlFor="casNumber">CAS-nummer</Label>
+                <Label htmlFor="casNumber">{t("auto.cas_nummer")}</Label>
                 <Input
                   id="casNumber"
-                  placeholder="F.eks. 7732-18-5"
+                  placeholder={t("auto.f_eks_7732_18_5")}
                   value={casNumber}
                   onChange={(e) => setCasNumber(e.target.value)}
                   className="font-mono"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Unikt identifikasjonsnummer fra Chemical Abstracts Service
+                  {t("auto.unikt_identifikasjonsnummer_fra_chemical")}
                 </p>
               </div>
 
               <div>
-                <Label>Fareklasser</Label>
+                <Label>{t("auto.fareklasser")}</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {DANGER_CLASSES.map((dc) => (
                     <Badge
@@ -449,10 +450,10 @@ export const AddChemicalDialog = ({
               </div>
 
               <div>
-                <Label htmlFor="notes">Notater fra SDS</Label>
+                <Label htmlFor="notes">{t("auto.notater_fra_sds")}</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Førstehjelpstiltak, lagringsanvisninger, verneutstyr..."
+                  placeholder={t("auto.foerstehjelpstiltak_lagringsanvisninger_")}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={3}
@@ -469,16 +470,16 @@ export const AddChemicalDialog = ({
                     </Label>
                     <Input
                       id="newLocation"
-                      placeholder="F.eks. Kjemikalskap A"
+                      placeholder={t("auto.f_eks_kjemikalskap_a")}
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="newQuantity">Mengde</Label>
+                    <Label htmlFor="newQuantity">{t("auto.mengde")}</Label>
                     <Input
                       id="newQuantity"
-                      placeholder="F.eks. 5 liter"
+                      placeholder={t("auto.f_eks_5_liter")}
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
                     />
@@ -489,7 +490,7 @@ export const AddChemicalDialog = ({
 
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button 
                 onClick={handleCreateNew} 

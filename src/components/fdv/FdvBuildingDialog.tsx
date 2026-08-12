@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FdvBuilding, FDV_BUILDING_TYPE_LABELS, FDV_OWNER_TYPE_LABELS, FDV_USAGE_TYPE_LABELS } from "@/types/fdv";
+import { t } from "@/i18n/t";
 
 const buildingSchema = z.object({
   name: z.string().min(1, "Navn er påkrevd"),
@@ -141,16 +142,16 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Basic Info */}
             <div className="space-y-4">
-              <h3 className="font-medium">Grunnleggende informasjon</h3>
+              <h3 className="font-medium">{t("auto.grunnleggende_informasjon")}</h3>
               
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Byggnavn *</FormLabel>
+                    <FormLabel>{t("auto.byggnavn")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="F.eks. Hovedkontor" {...field} />
+                      <Input placeholder={t("auto.f_eks_hovedkontor")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,9 +164,9 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="address"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Adresse</FormLabel>
+                      <FormLabel>{t("auto.adresse")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Gateadresse" {...field} />
+                        <Input placeholder={t("auto.gateadresse")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -176,7 +177,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="postal_code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Postnr</FormLabel>
+                      <FormLabel>{t("auto.postnr")}</FormLabel>
                       <FormControl>
                         <Input placeholder="0000" {...field} />
                       </FormControl>
@@ -191,9 +192,9 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                 name="city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>By</FormLabel>
+                    <FormLabel>{t("auto.by")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Poststed" {...field} />
+                      <Input placeholder={t("auto.poststed")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -203,7 +204,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
 
             {/* Building Details */}
             <div className="space-y-4">
-              <h3 className="font-medium">Bygningsdetaljer</h3>
+              <h3 className="font-medium">{t("auto.bygningsdetaljer")}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -211,11 +212,11 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="building_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Type bygg</FormLabel>
+                      <FormLabel>{t("auto.type_bygg")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Velg type" />
+                            <SelectValue placeholder={t("auto.velg_type")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -234,11 +235,11 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="owner_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Eierforhold</FormLabel>
+                      <FormLabel>{t("auto.eierforhold")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Velg" />
+                            <SelectValue placeholder={t("auto.velg_2")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -271,7 +272,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="floors"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Antall etasjer</FormLabel>
+                      <FormLabel>{t("auto.antall_etasjer")}</FormLabel>
                       <FormControl>
                         <Input type="number" min={1} {...field} />
                       </FormControl>
@@ -285,11 +286,11 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="usage_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Bruk</FormLabel>
+                      <FormLabel>{t("auto.bruk")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Velg" />
+                            <SelectValue placeholder={t("auto.velg_2")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -308,16 +309,16 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Status</FormLabel>
+                      <FormLabel>{t("auto.status_2")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Velg" />
+                            <SelectValue placeholder={t("auto.velg_2")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="aktiv">Aktiv</SelectItem>
-                          <SelectItem value="inaktiv">Inaktiv</SelectItem>
+                          <SelectItem value="aktiv">{t("auto.aktiv")}</SelectItem>
+                          <SelectItem value="inaktiv">{t("auto.inaktiv")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -329,7 +330,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
 
             {/* Contacts */}
             <div className="space-y-4">
-              <h3 className="font-medium">Kontaktpersoner</h3>
+              <h3 className="font-medium">{t("auto.kontaktpersoner")}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
@@ -337,9 +338,9 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="internal_contact_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Intern kontakt</FormLabel>
+                      <FormLabel>{t("auto.intern_kontakt")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Navn" {...field} />
+                        <Input placeholder={t("auto.navn_2")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -350,7 +351,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="internal_contact_phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefon</FormLabel>
+                      <FormLabel>{t("auto.telefon")}</FormLabel>
                       <FormControl>
                         <Input placeholder="+47" {...field} />
                       </FormControl>
@@ -363,7 +364,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="internal_contact_email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>E-post</FormLabel>
+                      <FormLabel>{t("auto.e_post_2")}</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="epost@firma.no" {...field} />
                       </FormControl>
@@ -381,7 +382,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                     <FormItem>
                       <FormLabel>Ekstern kontakt (utleier/drift)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Navn" {...field} />
+                        <Input placeholder={t("auto.navn_2")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -392,7 +393,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="external_contact_phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefon</FormLabel>
+                      <FormLabel>{t("auto.telefon")}</FormLabel>
                       <FormControl>
                         <Input placeholder="+47" {...field} />
                       </FormControl>
@@ -405,7 +406,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
                   name="external_contact_email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>E-post</FormLabel>
+                      <FormLabel>{t("auto.e_post_2")}</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="epost@firma.no" {...field} />
                       </FormControl>
@@ -422,10 +423,10 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notater</FormLabel>
+                  <FormLabel>{t("auto.notater")}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Eventuelle merknader om bygget..."
+                      placeholder={t("auto.eventuelle_merknader_om_bygget")}
                       className="min-h-[100px]"
                       {...field} 
                     />
@@ -437,7 +438,7 @@ export function FdvBuildingDialog({ open, onOpenChange, building, onSave }: FdvB
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button type="submit">
                 {building ? "Lagre endringer" : "Opprett bygg"}

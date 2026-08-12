@@ -21,6 +21,7 @@ import { nb } from "date-fns/locale";
 import { TravelExpenseReport } from "@/hooks/useTravelExpenseReports";
 import { generateTravelExpensePDF } from "@/utils/travelExpensePdf";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 const statusLabels: Record<string, string> = {
   draft: "Utkast",
@@ -59,7 +60,7 @@ export function TravelExpenseList({
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">
-          Laster reiseregninger...
+          {t("auto.laster_reiseregninger")}
         </CardContent>
       </Card>
     );
@@ -88,13 +89,13 @@ export function TravelExpenseList({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nr</TableHead>
-                  <TableHead>Formål</TableHead>
-                  <TableHead>Reisemål</TableHead>
-                  <TableHead>Periode</TableHead>
-                  <TableHead className="text-right">Beløp</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Handlinger</TableHead>
+                  <TableHead>{t("auto.nr")}</TableHead>
+                  <TableHead>{t("auto.formaal")}</TableHead>
+                  <TableHead>{t("auto.reisemaal_2")}</TableHead>
+                  <TableHead>{t("auto.periode")}</TableHead>
+                  <TableHead className="text-right">{t("auto.beloep")}</TableHead>
+                  <TableHead>{t("auto.status_2")}</TableHead>
+                  <TableHead className="text-right">{t("auto.handlinger")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -116,28 +117,28 @@ export function TravelExpenseList({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewReport(report)} title="Se detaljer">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewReport(report)} title={t("auto.se_detaljer")}>
                           <Eye className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownloadPdf(report)} title="Last ned PDF">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDownloadPdf(report)} title={t("auto.last_ned_pdf")}>
                           <Download className="w-3.5 h-3.5" />
                         </Button>
                         {report.status === "draft" && (
                           <>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onSubmit(report.id)} title="Send til godkjenning">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onSubmit(report.id)} title={t("auto.send_til_godkjenning")}>
                               <Send className="w-3.5 h-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteId(report.id)} title="Slett">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteId(report.id)} title={t("auto.slett")}>
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </>
                         )}
                         {report.status === "submitted" && isAdmin && (
                           <>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600" onClick={() => onApprove(report.id)} title="Godkjenn">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-green-600" onClick={() => onApprove(report.id)} title={t("auto.godkjenn")}>
                               <Check className="w-3.5 h-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setRejectId(report.id); setRejectReason(""); }} title="Avvis">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setRejectId(report.id); setRejectReason(""); }} title={t("auto.avvis")}>
                               <X className="w-3.5 h-3.5" />
                             </Button>
                           </>
@@ -162,15 +163,15 @@ export function TravelExpenseList({
           {viewReport && (
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-2">
-                <div><span className="text-muted-foreground">Reisemål:</span> {viewReport.destination}</div>
-                <div><span className="text-muted-foreground">Avreisested:</span> {viewReport.departure_location}</div>
-                <div><span className="text-muted-foreground">Avreise:</span> {format(parseISO(viewReport.departure_date), "dd.MM.yyyy")}</div>
-                <div><span className="text-muted-foreground">Retur:</span> {format(parseISO(viewReport.return_date), "dd.MM.yyyy")}</div>
+                <div><span className="text-muted-foreground">{t("auto.reisemaal_3")}</span> {viewReport.destination}</div>
+                <div><span className="text-muted-foreground">{t("auto.avreisested_2")}</span> {viewReport.departure_location}</div>
+                <div><span className="text-muted-foreground">{t("auto.avreise")}</span> {format(parseISO(viewReport.departure_date), "dd.MM.yyyy")}</div>
+                <div><span className="text-muted-foreground">{t("auto.retur")}</span> {format(parseISO(viewReport.return_date), "dd.MM.yyyy")}</div>
               </div>
               <div className="border-t pt-3 space-y-1">
                 <div className="flex justify-between"><span>Kjøregodtgjørelse ({viewReport.total_km} km)</span><span>{Number(viewReport.mileage_amount).toFixed(2)} kr</span></div>
                 {Number(viewReport.passenger_supplement) > 0 && (
-                  <div className="flex justify-between"><span>Passasjertillegg</span><span>{Number(viewReport.passenger_supplement).toFixed(2)} kr</span></div>
+                  <div className="flex justify-between"><span>{t("auto.passasjertillegg")}</span><span>{Number(viewReport.passenger_supplement).toFixed(2)} kr</span></div>
                 )}
                 {Number(viewReport.diet_amount) > 0 && (
                   <div className="flex justify-between"><span>Diett ({viewReport.diet_days} dager)</span><span>{Number(viewReport.diet_amount).toFixed(2)} kr</span></div>
@@ -179,16 +180,16 @@ export function TravelExpenseList({
                   <div className="flex justify-between"><span>Overnatting ({viewReport.accommodation_days} netter)</span><span>{Number(viewReport.accommodation_amount).toFixed(2)} kr</span></div>
                 )}
                 {Number(viewReport.other_expenses_total) > 0 && (
-                  <div className="flex justify-between"><span>Andre utlegg</span><span>{Number(viewReport.other_expenses_total).toFixed(2)} kr</span></div>
+                  <div className="flex justify-between"><span>{t("auto.andre_utlegg")}</span><span>{Number(viewReport.other_expenses_total).toFixed(2)} kr</span></div>
                 )}
                 <div className="flex justify-between font-bold border-t pt-2 text-base">
-                  <span>Totalt</span>
+                  <span>{t("auto.totalt")}</span>
                   <span className="text-primary">{Number(viewReport.total_amount).toFixed(2)} kr</span>
                 </div>
               </div>
               {viewReport.rejection_reason && (
                 <div className="bg-destructive/10 text-destructive rounded p-3 text-sm">
-                  <strong>Avvisningsgrunn:</strong> {viewReport.rejection_reason}
+                  <strong>{t("auto.avvisningsgrunn")}</strong> {viewReport.rejection_reason}
                 </div>
               )}
               {viewReport.approved_by_name && (
@@ -197,7 +198,7 @@ export function TravelExpenseList({
                 </div>
               )}
               {viewReport.notes && (
-                <div className="text-muted-foreground"><strong>Merknad:</strong> {viewReport.notes}</div>
+                <div className="text-muted-foreground"><strong>{t("auto.merknad_2")}</strong> {viewReport.notes}</div>
               )}
             </div>
           )}
@@ -208,13 +209,13 @@ export function TravelExpenseList({
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett reiseregning</AlertDialogTitle>
-            <AlertDialogDescription>Er du sikker på at du vil slette denne reiseregningen?</AlertDialogDescription>
+            <AlertDialogTitle>{t("auto.slett_reiseregning")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("auto.er_du_sikker_paa_at_du_vil_slette_denne__3")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => { if (deleteId) onDelete(deleteId); setDeleteId(null); }}>
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -224,16 +225,16 @@ export function TravelExpenseList({
       <Dialog open={!!rejectId} onOpenChange={() => setRejectId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Avvis reiseregning</DialogTitle>
+            <DialogTitle>{t("auto.avvis_reiseregning")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Label>Grunn for avvisning *</Label>
-            <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder="Skriv grunn for avvisning..." rows={3} />
+            <Label>{t("auto.grunn_for_avvisning")}</Label>
+            <Textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} placeholder={t("auto.skriv_grunn_for_avvisning")} rows={3} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectId(null)}>Avbryt</Button>
+            <Button variant="outline" onClick={() => setRejectId(null)}>{t("auto.avbryt")}</Button>
             <Button variant="destructive" onClick={() => { if (rejectId && rejectReason) { onReject({ reportId: rejectId, reason: rejectReason }); setRejectId(null); } }} disabled={!rejectReason}>
-              Avvis
+              {t("auto.avvis")}
             </Button>
           </DialogFooter>
         </DialogContent>

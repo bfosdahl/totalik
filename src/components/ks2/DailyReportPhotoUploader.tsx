@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { compressImageFile, compressDataUrl } from "@/utils/imageCompression";
+import { t } from "@/i18n/t";
 
 export interface DailyReportPhoto {
   path: string;
@@ -127,7 +128,7 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
       toast.success(`${uploaded.length} bilde${uploaded.length > 1 ? "r" : ""} lastet opp`);
     } catch (err: any) {
       console.error("Photo upload error:", err);
-      toast.error("Kunne ikke laste opp bilde");
+      toast.error(t("auto.kunne_ikke_laste_opp_bilde"));
     } finally {
       setUploading(false);
       setPhase("idle");
@@ -188,7 +189,7 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
                 type="button"
                 onClick={() => removePhoto(photo)}
                 className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-label="Fjern bilde"
+                aria-label={t("auto.fjern_bilde")}
               >
                 <X className="h-3 w-3" />
               </button>

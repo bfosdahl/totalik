@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { Department } from "@/hooks/useDepartments";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { t } from "@/i18n/t";
 
 interface Routine {
   id: string;
@@ -65,7 +66,7 @@ const DepartmentRoutines = () => {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Kunne ikke laste data");
+        toast.error(t("auto.kunne_ikke_laste_data"));
       } finally {
         setIsLoading(false);
       }
@@ -136,11 +137,11 @@ const DepartmentRoutines = () => {
 
       if (updateError) throw updateError;
 
-      toast.success("Rutiner lagret");
+      toast.success(t("auto.rutiner_lagret"));
       setHasChanges(false);
     } catch (error) {
       console.error("Error saving routines:", error);
-      toast.error("Kunne ikke lagre rutiner");
+      toast.error(t("auto.kunne_ikke_lagre_rutiner"));
     } finally {
       setIsSaving(false);
     }
@@ -194,7 +195,7 @@ const DepartmentRoutines = () => {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            Rutinene beskriver hvordan avdelingen håndterer ulike HMS-relaterte aktiviteter og situasjoner.
+            {t("auto.rutinene_beskriver_hvordan_avdelingen_ha")}
           </AlertDescription>
         </Alert>
 
@@ -202,7 +203,7 @@ const DepartmentRoutines = () => {
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Ingen rutiner er definert for denne avdelingen.</p>
+              <p>{t("auto.ingen_rutiner_er_definert_for_denne_avde")}</p>
               <Button onClick={handleAddRoutine} className="mt-4">
                 <Plus className="h-4 w-4 mr-2" />
                 Legg til første rutine
@@ -244,24 +245,24 @@ const DepartmentRoutines = () => {
                     <CardContent className="space-y-4 pt-0">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Rutinens navn</label>
+                          <label className="text-sm font-medium">{t("auto.rutinens_navn")}</label>
                           <Input
                             value={routine.routine_name}
                             onChange={(e) => handleUpdateRoutine(routine.id, "routine_name", e.target.value)}
-                            placeholder="Navn på rutinen"
+                            placeholder={t("auto.navn_paa_rutinen")}
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Kategori</label>
+                          <label className="text-sm font-medium">{t("auto.kategori")}</label>
                           <Input
                             value={routine.category}
                             onChange={(e) => handleUpdateRoutine(routine.id, "category", e.target.value)}
-                            placeholder="F.eks. Sikkerhet, Helse, Miljø"
+                            placeholder={t("auto.f_eks_sikkerhet_helse_miljoe")}
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Formål</label>
+                        <label className="text-sm font-medium">{t("auto.formaal")}</label>
                         <Textarea
                           value={routine.purpose}
                           onChange={(e) => handleUpdateRoutine(routine.id, "purpose", e.target.value)}
@@ -270,19 +271,19 @@ const DepartmentRoutines = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Ansvar</label>
+                        <label className="text-sm font-medium">{t("auto.ansvar")}</label>
                         <Input
                           value={routine.responsibility}
                           onChange={(e) => handleUpdateRoutine(routine.id, "responsibility", e.target.value)}
-                          placeholder="Hvem er ansvarlig for denne rutinen?"
+                          placeholder={t("auto.hvem_er_ansvarlig_for_denne_rutinen")}
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Prosedyre</label>
+                        <label className="text-sm font-medium">{t("auto.prosedyre")}</label>
                         <Textarea
                           value={routine.procedure}
                           onChange={(e) => handleUpdateRoutine(routine.id, "procedure", e.target.value)}
-                          placeholder="Beskriv trinnvis hvordan rutinen utføres..."
+                          placeholder={t("auto.beskriv_trinnvis_hvordan_rutinen_utfoere")}
                           rows={6}
                         />
                       </div>

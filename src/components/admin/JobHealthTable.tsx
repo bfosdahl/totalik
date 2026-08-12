@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Activity, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 interface JobRun {
   job_name: string;
@@ -116,17 +117,17 @@ export function JobHealthTable() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Laster …</p>
+        <p className="text-sm text-muted-foreground">{t("auto.laster_3")}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-muted-foreground">
-                <th className="py-2 pr-3 font-medium">Jobb</th>
-                <th className="py-2 pr-3 font-medium">Status</th>
-                <th className="py-2 pr-3 font-medium">Siste kjøring</th>
-                <th className="py-2 pr-3 font-medium">Varsler</th>
-                <th className="py-2 pr-3 font-medium">Varighet</th>
+                <th className="py-2 pr-3 font-medium">{t("auto.jobb")}</th>
+                <th className="py-2 pr-3 font-medium">{t("auto.status_2")}</th>
+                <th className="py-2 pr-3 font-medium">{t("auto.siste_kjoering")}</th>
+                <th className="py-2 pr-3 font-medium">{t("auto.varsler")}</th>
+                <th className="py-2 pr-3 font-medium">{t("auto.varighet")}</th>
               </tr>
             </thead>
             <tbody>

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Library, Search, Loader2, Check } from "lucide-react";
 import { useCompanyKsRoutines, CompanyKsRoutine } from "@/hooks/useCompanyKsRoutines";
+import { t } from "@/i18n/t";
 
 interface ImportCompanyRoutinesDialogProps {
   open: boolean;
@@ -76,7 +77,7 @@ export function ImportCompanyRoutinesDialog({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk i firmaets rutiner..."
+            placeholder={t("auto.soek_i_firmaets_rutiner")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -135,7 +136,7 @@ export function ImportCompanyRoutinesDialog({
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="secondary" className="text-xs">{r.category}</Badge>
                         {isImported && (
-                          <span className="text-xs text-green-600">Allerede importert</span>
+                          <span className="text-xs text-green-600">{t("auto.allerede_importert")}</span>
                         )}
                       </div>
                     </div>
@@ -152,7 +153,7 @@ export function ImportCompanyRoutinesDialog({
           </span>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={handleImport}

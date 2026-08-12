@@ -11,6 +11,7 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface QuickAction {
   id: string;
@@ -23,35 +24,35 @@ interface QuickAction {
 const quickActions: QuickAction[] = [
   { 
     id: "timer", 
-    label: "Registrer timer", 
+    label: t("auto.registrer_timer"), 
     icon: Clock, 
     path: "/timer",
     color: "bg-primary text-primary-foreground"
   },
   { 
     id: "egenkontroll", 
-    label: "Ny egenkontroll", 
+    label: t("auto.ny_egenkontroll"), 
     icon: ClipboardCheck, 
     path: "/egenkontroller?new=true",
     color: "bg-sky-500 text-white"
   },
   { 
     id: "avvik", 
-    label: "Registrer avvik", 
+    label: t("auto.registrer_avvik"), 
     icon: AlertTriangle, 
     path: "/avvik?new=true",
     color: "bg-orange-500 text-white"
   },
   { 
     id: "sja", 
-    label: "Ny SJA", 
+    label: t("auto.ny_sja"), 
     icon: FileText, 
     path: "/hms/sja?new=true",
     color: "bg-emerald-500 text-white"
   },
   { 
     id: "vernerunde", 
-    label: "Ny vernerunde", 
+    label: t("auto.ny_vernerunde"), 
     icon: HardHat, 
     path: "/hms/vernerunder?new=true",
     color: "bg-blue-500 text-white"

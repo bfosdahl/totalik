@@ -21,6 +21,7 @@ import {
   X
 } from "lucide-react";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 export interface RoutinesStepRef {
   save: () => Promise<void>;
@@ -800,7 +801,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
   const addRoutineFromLibrary = (routine: Omit<RoutineItem, 'id'>) => {
     const exists = routines.some(r => r.routine_number === routine.routine_number);
     if (exists) {
-      toast.error("Denne rutinen er allerede lagt til");
+      toast.error(t("auto.denne_rutinen_er_allerede_lagt_til"));
       return;
     }
     
@@ -831,13 +832,13 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
 
   const removeRoutine = (id: string) => {
     setRoutines(routines.filter(r => r.id !== id));
-    toast.success("Rutine fjernet");
+    toast.success(t("auto.rutine_fjernet"));
   };
 
   const updateRoutine = (updatedRoutine: RoutineItem) => {
     setRoutines(routines.map(r => r.id === updatedRoutine.id ? updatedRoutine : r));
     setEditingRoutine(null);
-    toast.success("Rutine oppdatert");
+    toast.success(t("auto.rutine_oppdatert"));
   };
 
   const toggleExpanded = (id: string) => {
@@ -852,11 +853,11 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
 
   const handleSave = async () => {
     if (routines.length === 0) {
-      toast.error("Legg til minst én rutine før du lagrer");
+      toast.error(t("auto.legg_til_minst_n_rutine_foer_du_lagrer"));
       return;
     }
     await onSave({ routines });
-    toast.success("Rutiner lagret");
+    toast.success(t("auto.rutiner_lagret"));
   };
 
   // Expose save method to parent via ref
@@ -878,13 +879,13 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[80vh]">
             <DialogHeader>
-              <DialogTitle>Rutinebibliotek</DialogTitle>
+              <DialogTitle>{t("auto.rutinebibliotek")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Søk i rutiner..."
+                  placeholder={t("auto.soek_i_rutiner")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -948,7 +949,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
             <CardContent className="flex flex-col items-center justify-center py-8 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mb-3" />
               <p className="text-muted-foreground">
-                Ingen rutiner lagt til ennå. Velg fra biblioteket eller opprett egne.
+                {t("auto.ingen_rutiner_lagt_til_ennaa_velg_fra_bi")}
               </p>
             </CardContent>
           </Card>
@@ -981,7 +982,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
                       <div className="flex items-center gap-1 ml-2">
                         {routine.is_predefined && (
                           <Badge variant="secondary" className="text-xs">
-                            Forhåndsdefinert
+                            {t("auto.forhaandsdefinert")}
                           </Badge>
                         )}
                         <Button
@@ -1005,19 +1006,19 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
                     <CardContent className="pt-0 px-4 pb-4 space-y-3 text-sm">
                       {routine.purpose && (
                         <div>
-                          <p className="font-medium text-muted-foreground">Formål</p>
+                          <p className="font-medium text-muted-foreground">{t("auto.formaal")}</p>
                           <p className="whitespace-pre-wrap">{routine.purpose}</p>
                         </div>
                       )}
                       {routine.responsibility && (
                         <div>
-                          <p className="font-medium text-muted-foreground">Ansvar</p>
+                          <p className="font-medium text-muted-foreground">{t("auto.ansvar")}</p>
                           <p className="whitespace-pre-wrap">{routine.responsibility}</p>
                         </div>
                       )}
                       {routine.procedure && (
                         <div>
-                          <p className="font-medium text-muted-foreground">Fremgangsmåte</p>
+                          <p className="font-medium text-muted-foreground">{t("auto.fremgangsmaate")}</p>
                           <p className="whitespace-pre-wrap">{routine.procedure}</p>
                         </div>
                       )}
@@ -1034,7 +1035,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
       <Dialog open={!!editingRoutine} onOpenChange={() => setEditingRoutine(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Rediger rutine</DialogTitle>
+            <DialogTitle>{t("auto.rediger_rutine")}</DialogTitle>
           </DialogHeader>
           {editingRoutine && (
             <RoutineEditForm
@@ -1050,7 +1051,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
       <div className="flex justify-end pt-4 border-t border-border">
         <Button onClick={handleSave} disabled={isSaving} className="gap-2">
           {isSaving ? (
-            <>Lagrer...</>
+            <>{t("auto.lagrer")}</>
           ) : (
             <>
               <Save className="w-4 h-4" />
@@ -1077,7 +1078,7 @@ function RoutineEditForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.routine_name.trim()) {
-      toast.error("Rutinenavn er påkrevd");
+      toast.error(t("auto.rutinenavn_er_paakrevd"));
       return;
     }
     onSave(form);
@@ -1087,35 +1088,35 @@ function RoutineEditForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Rutine Nr.</label>
+          <label className="text-sm font-medium">{t("auto.rutine_nr")}</label>
           <Input
             value={form.routine_number}
             onChange={(e) => setForm({ ...form, routine_number: e.target.value })}
-            placeholder="F.eks. 1160"
+            placeholder={t("auto.f_eks_1160")}
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Kategori</label>
+          <label className="text-sm font-medium">{t("auto.kategori")}</label>
           <Input
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
-            placeholder="F.eks. Helse, Miljø og Sikkerhet"
+            placeholder={t("auto.f_eks_helse_miljoe_og_sikkerhet")}
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Rutinenavn *</label>
+        <label className="text-sm font-medium">{t("auto.rutinenavn")}</label>
         <Input
           value={form.routine_name}
           onChange={(e) => setForm({ ...form, routine_name: e.target.value })}
-          placeholder="Navn på rutinen"
+          placeholder={t("auto.navn_paa_rutinen")}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Formål</label>
+        <label className="text-sm font-medium">{t("auto.formaal")}</label>
         <Textarea
           value={form.purpose}
           onChange={(e) => setForm({ ...form, purpose: e.target.value })}
@@ -1125,41 +1126,41 @@ function RoutineEditForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Ansvar</label>
+        <label className="text-sm font-medium">{t("auto.ansvar")}</label>
         <Textarea
           value={form.responsibility}
           onChange={(e) => setForm({ ...form, responsibility: e.target.value })}
-          placeholder="Hvem har ansvar for hva..."
+          placeholder={t("auto.hvem_har_ansvar_for_hva")}
           rows={3}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Fremgangsmåte</label>
+        <label className="text-sm font-medium">{t("auto.fremgangsmaate")}</label>
         <Textarea
           value={form.procedure}
           onChange={(e) => setForm({ ...form, procedure: e.target.value })}
-          placeholder="Beskriv steg-for-steg fremgangsmåte..."
+          placeholder={t("auto.beskriv_steg_for_steg_fremgangsmaate")}
           rows={6}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Eksempler</label>
+        <label className="text-sm font-medium">{t("auto.eksempler")}</label>
         <Textarea
           value={form.examples}
           onChange={(e) => setForm({ ...form, examples: e.target.value })}
-          placeholder="Relevante eksempler..."
+          placeholder={t("auto.relevante_eksempler")}
           rows={3}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Husk</label>
+        <label className="text-sm font-medium">{t("auto.husk")}</label>
         <Textarea
           value={form.remember}
           onChange={(e) => setForm({ ...form, remember: e.target.value })}
-          placeholder="Viktige påminnelser..."
+          placeholder={t("auto.viktige_paaminnelser")}
           rows={2}
         />
       </div>

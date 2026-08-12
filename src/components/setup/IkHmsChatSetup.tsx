@@ -14,6 +14,7 @@ import { SetupStepIndicator, HMS_SETUP_STEPS } from "./SetupStepIndicator";
 import { InlineHmsDeclaration } from "./InlineHmsDeclaration";
 import { InlineVerneombudStep } from "./InlineVerneombudStep";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
+import { t } from "@/i18n/t";
 
 interface Message {
   role: "user" | "assistant";
@@ -275,9 +276,9 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
         postal_code: postalCode, city: city, employee_count: brregInfo.employees,
       }).eq("id", companyId);
 
-      if (error) { toast.error("Kunne ikke lagre bedriftsinformasjon"); }
+      if (error) { toast.error(t("auto.kunne_ikke_lagre_bedriftsinformasjon")); }
       else {
-        toast.success("Bedriftsinformasjon oppdatert!");
+        toast.success(t("auto.bedriftsinformasjon_oppdatert"));
         queryClient.invalidateQueries({ queryKey: ["company"] });
         await refreshCompany();
       }
@@ -416,8 +417,8 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
         signal: abortControllerRef.current.signal,
       });
 
-      if (response.status === 429) { toast.error("For mange forespørsler. Vent litt."); setIsLoading(false); return; }
-      if (response.status === 402) { toast.error("Kreditter oppbrukt."); setIsLoading(false); return; }
+      if (response.status === 429) { toast.error(t("auto.for_mange_forespoersler_vent_litt")); setIsLoading(false); return; }
+      if (response.status === 402) { toast.error(t("auto.kreditter_oppbrukt")); setIsLoading(false); return; }
       if (!response.ok || !response.body) throw new Error("Failed to start stream");
 
       const reader = response.body.getReader();
@@ -470,7 +471,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
         setWasInterrupted(true);
       } else {
         console.error("Error:", error);
-        toast.error("Noe gikk galt. Prøv igjen.");
+        toast.error(t("auto.noe_gikk_galt_proev_igjen"));
       }
     } finally {
       setIsLoading(false);
@@ -744,7 +745,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           queryClient.invalidateQueries({ queryKey: ["department-action-plans"] });
           queryClient.invalidateQueries({ queryKey: ["department-routines"] });
           queryClient.invalidateQueries({ queryKey: ["company-modules"] });
-          toast.success("HMS-oppsett for avdelingen fullført!");
+          toast.success(t("auto.hms_oppsett_for_avdelingen_fullfoert"));
           setIsSaving(false);
           clearChatState(companyId, departmentId);
           onComplete();
@@ -897,34 +898,34 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         const industryCode = pendingBrregInfo?.industryCode || "";
         
         const allLaws: Array<{ law_name: string; category: string; description: string; link: string; is_employee_based?: boolean; employee_threshold?: number }> = [
-          { law_name: "Arbeidsmiljøloven", category: "Arbeidsmiljø", description: "Lov om arbeidsmiljø, arbeidstid og stillingsvern", link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62" },
-          { law_name: "Internkontrollforskriften", category: "HMS", description: "Krav til systematisk HMS-arbeid", link: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
-          { law_name: "Forskrift om organisering, ledelse og medvirkning", category: "Organisering", description: "Krav til organisering av arbeidet", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1355" },
-          { law_name: "Arbeidsplassforskriften", category: "Arbeidsplass", description: "Krav til utforming av arbeidsplasser", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1356" },
-          { law_name: "Forskrift om utførelse av arbeid", category: "Arbeid", description: "Krav til sikker utførelse av arbeid", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1357" },
-          { law_name: "Forskrift om tiltaks- og grenseverdier", category: "Grenseverdier", description: "Grenseverdier for forurensninger", link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1358" },
-          { law_name: "Brann- og eksplosjonsvernloven", category: "Brannvern", description: "Krav til forebygging av brann", link: "https://lovdata.no/dokument/NL/lov/2002-06-14-20" },
+          { law_name: "Arbeidsmiljøloven", category: "Arbeidsmiljø", description: t("auto.lov_om_arbeidsmiljoe_arbeidstid_og_still"), link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62" },
+          { law_name: "Internkontrollforskriften", category: "HMS", description: t("auto.krav_til_systematisk_hms_arbeid"), link: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
+          { law_name: "Forskrift om organisering, ledelse og medvirkning", category: "Organisering", description: t("auto.krav_til_organisering_av_arbeidet"), link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1355" },
+          { law_name: "Arbeidsplassforskriften", category: "Arbeidsplass", description: t("auto.krav_til_utforming_av_arbeidsplasser"), link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1356" },
+          { law_name: "Forskrift om utførelse av arbeid", category: "Arbeid", description: t("auto.krav_til_sikker_utfoerelse_av_arbeid"), link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1357" },
+          { law_name: "Forskrift om tiltaks- og grenseverdier", category: "Grenseverdier", description: t("auto.grenseverdier_for_forurensninger"), link: "https://lovdata.no/dokument/SF/forskrift/2011-12-06-1358" },
+          { law_name: "Brann- og eksplosjonsvernloven", category: "Brannvern", description: t("auto.krav_til_forebygging_av_brann"), link: "https://lovdata.no/dokument/NL/lov/2002-06-14-20" },
         ];
 
-        if (employeeCount >= 5) allLaws.push({ law_name: "Krav om verneombud", category: "Organisering", description: "Virksomheter med 5+ ansatte må ha verneombud", link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62/KAPITTEL_7", is_employee_based: true, employee_threshold: 5 });
-        if (employeeCount >= 30) allLaws.push({ law_name: "Krav om arbeidsmiljøutvalg (AMU)", category: "Organisering", description: "Virksomheter med 30+ ansatte skal ha AMU", link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62/KAPITTEL_7#§7-1", is_employee_based: true, employee_threshold: 30 });
+        if (employeeCount >= 5) allLaws.push({ law_name: "Krav om verneombud", category: "Organisering", description: t("auto.virksomheter_med_5_ansatte_maa_ha_verneo"), link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62/KAPITTEL_7", is_employee_based: true, employee_threshold: 5 });
+        if (employeeCount >= 30) allLaws.push({ law_name: "Krav om arbeidsmiljøutvalg (AMU)", category: "Organisering", description: t("auto.virksomheter_med_30_ansatte_skal_ha_amu"), link: "https://lovdata.no/dokument/NL/lov/2005-06-17-62/KAPITTEL_7#§7-1", is_employee_based: true, employee_threshold: 30 });
 
         const lowerIndustry = industryName.toLowerCase();
         if (lowerIndustry.includes("bygg") || lowerIndustry.includes("anlegg") || industryCode.startsWith("41") || industryCode.startsWith("42") || industryCode.startsWith("43")) {
-          allLaws.push({ law_name: "Byggherreforskriften", category: "Bygg og anlegg", description: "Krav til sikkerhet på bygge-/anleggsplasser", link: "https://lovdata.no/dokument/SF/forskrift/2009-08-03-1028" });
+          allLaws.push({ law_name: "Byggherreforskriften", category: "Bygg og anlegg", description: t("auto.krav_til_sikkerhet_paa_bygge_anleggsplas"), link: "https://lovdata.no/dokument/SF/forskrift/2009-08-03-1028" });
         }
         if (lowerIndustry.includes("restaurant") || lowerIndustry.includes("mat") || lowerIndustry.includes("spisested")) {
-          allLaws.push({ law_name: "Matloven", category: "Mattrygghet", description: "Krav til trygg mat", link: "https://lovdata.no/dokument/NL/lov/2003-12-19-124" });
-          allLaws.push({ law_name: "Næringsmiddelhygieneforskriften", category: "Mattrygghet", description: "Krav til hygiene i næringsmiddelvirksomheter", link: "https://lovdata.no/dokument/SF/forskrift/2008-12-22-1623" });
+          allLaws.push({ law_name: "Matloven", category: "Mattrygghet", description: t("auto.krav_til_trygg_mat"), link: "https://lovdata.no/dokument/NL/lov/2003-12-19-124" });
+          allLaws.push({ law_name: "Næringsmiddelhygieneforskriften", category: "Mattrygghet", description: t("auto.krav_til_hygiene_i_naeringsmiddelvirksom"), link: "https://lovdata.no/dokument/SF/forskrift/2008-12-22-1623" });
         }
         if (lowerIndustry.includes("frisør") || lowerIndustry.includes("skjønnhet")) {
-          allLaws.push({ law_name: "Forskrift om hygienekrav for frisør- og hudpleievirksomhet", category: "Hygiene", description: "Hygienekrav for frisør og hudpleie", link: "https://lovdata.no/dokument/SF/forskrift/1998-06-06-581" });
+          allLaws.push({ law_name: "Forskrift om hygienekrav for frisør- og hudpleievirksomhet", category: "Hygiene", description: t("auto.hygienekrav_for_frisoer_og_hudpleie"), link: "https://lovdata.no/dokument/SF/forskrift/1998-06-06-581" });
         }
         if (lowerIndustry.includes("transport")) {
-          allLaws.push({ law_name: "Vegtrafikkloven", category: "Transport", description: "Regler for trafikk", link: "https://lovdata.no/dokument/NL/lov/1965-06-18-4" });
+          allLaws.push({ law_name: "Vegtrafikkloven", category: "Transport", description: t("auto.regler_for_trafikk"), link: "https://lovdata.no/dokument/NL/lov/1965-06-18-4" });
         }
         if (lowerIndustry.includes("industri") || lowerIndustry.includes("produksjon")) {
-          allLaws.push({ law_name: "Maskinforskriften", category: "Maskiner", description: "Krav til maskiner og sikkerhetsutstyr", link: "https://lovdata.no/dokument/SF/forskrift/2009-05-20-544" });
+          allLaws.push({ law_name: "Maskinforskriften", category: "Maskiner", description: t("auto.krav_til_maskiner_og_sikkerhetsutstyr"), link: "https://lovdata.no/dokument/SF/forskrift/2009-05-20-544" });
         }
 
         const { data: existingLaws } = await supabase.from("company_laws_regulations").select("id").eq("company_id", companyId).limit(1);
@@ -1049,7 +1050,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           console.error("Failed to track suggestion stats (non-critical):", statsError);
         }
 
-        toast.success("HMS-oppsett fullført! 🎉");
+        toast.success(t("auto.hms_oppsett_fullfoert"));
         setIsSaving(false);
         clearChatState(companyId, departmentId);
         onComplete();
@@ -1164,13 +1165,13 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
             {isSaving && (
               <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
-                <p className="text-xs sm:text-sm text-success font-medium">Setter opp HMS-systemet ditt...</p>
+                <p className="text-xs sm:text-sm text-success font-medium">{t("auto.setter_opp_hms_systemet_ditt")}</p>
               </div>
             )}
 
             {wasInterrupted && !isLoading && (
               <div className="flex flex-col items-center justify-center gap-2 p-3 sm:p-4 bg-muted rounded-lg border">
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Svaret ble avbrutt. Prøv igjen?</p>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t("auto.svaret_ble_avbrutt_proev_igjen")}</p>
                 <Button variant="outline" size="sm" onClick={retryLastMessage} className="gap-2">
                   <RefreshCcw className="h-4 w-4" /> Prøv igjen
                 </Button>
@@ -1188,10 +1189,10 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           {showPasteMode ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs sm:text-sm font-medium text-muted-foreground">📋 Lim inn kravtekst</p>
-                <Button variant="ghost" size="sm" onClick={() => setShowPasteMode(false)} className="text-xs">Avbryt</Button>
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground">{t("auto.lim_inn_kravtekst")}</p>
+                <Button variant="ghost" size="sm" onClick={() => setShowPasteMode(false)} className="text-xs">{t("auto.avbryt")}</Button>
               </div>
-              <Textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} placeholder="Lim inn tekst fra forskrifter, tilsyn e.l." className="min-h-[120px] text-sm" disabled={isLoading || isSaving} />
+              <Textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} placeholder={t("auto.lim_inn_tekst_fra_forskrifter_tilsyn_e_l")} className="min-h-[120px] text-sm" disabled={isLoading || isSaving} />
               <Button onClick={() => { if (pasteText.trim()) { setInput(`Sett opp HMS basert på følgende krav:\n\n${pasteText.trim()}`); setShowPasteMode(false); setPasteText(""); setTimeout(() => handleSend(), 100); } }} disabled={isLoading || isSaving || !pasteText.trim()} className="w-full gap-2">
                 <Send className="w-4 h-4" /> Send kravtekst
               </Button>
@@ -1199,7 +1200,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           ) : (
             <div className="flex gap-2">
               {currentStep >= 3 && (
-                <Button variant="outline" size="icon" onClick={() => setShowPasteMode(true)} disabled={isLoading || isSaving} title="Lim inn kravtekst" className="shrink-0">
+                <Button variant="outline" size="icon" onClick={() => setShowPasteMode(true)} disabled={isLoading || isSaving} title={t("auto.lim_inn_kravtekst_2")} className="shrink-0">
                   <ClipboardPaste className="w-4 h-4" />
                 </Button>
               )}
@@ -1222,13 +1223,13 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
       {/* Help text */}
       {messages.length <= 2 && (
         <div className="bg-muted/50 rounded-lg p-3 sm:p-4 text-xs sm:text-sm text-muted-foreground">
-          <p className="font-medium mb-2">💡 Slik fungerer oppsettet:</p>
+          <p className="font-medium mb-2">{t("auto.slik_fungerer_oppsettet")}</p>
           <ul className="space-y-1 list-disc list-inside">
-            <li>Vi går gjennom 9 steg som fyller ut håndboken din</li>
-            <li>Du signerer egenerklæring og avklarer verneombud</li>
-            <li>AI-en foreslår mål, risiko, handlingsplaner og rutiner</li>
-            <li>Lover og forskrifter legges til automatisk</li>
-            <li>Du kan alltid gjøre endringer etterpå</li>
+            <li>{t("auto.vi_gaar_gjennom_9_steg_som_fyller_ut_haa")}</li>
+            <li>{t("auto.du_signerer_egenerklaering_og_avklarer_v")}</li>
+            <li>{t("auto.ai_en_foreslaar_maal_risiko_handlingspla")}</li>
+            <li>{t("auto.lover_og_forskrifter_legges_til_automati")}</li>
+            <li>{t("auto.du_kan_alltid_gjoere_endringer_etterpaa")}</li>
           </ul>
         </div>
       )}

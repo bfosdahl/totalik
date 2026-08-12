@@ -20,6 +20,7 @@ import { StartTripInput } from "@/hooks/useDrivingLog";
 import { useCompanyVehicles } from "@/hooks/useCompanyVehicles";
 import { format } from "date-fns";
 import { Car } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface StartTripDialogProps {
   open: boolean;
@@ -86,22 +87,22 @@ export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastO
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Start ny tur</DialogTitle>
+          <DialogTitle>{t("auto.start_ny_tur")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="st-date">Dato</Label>
+              <Label htmlFor="st-date">{t("auto.dato")}</Label>
               <Input id="st-date" type="date" value={tripDate} onChange={e => setTripDate(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="st-type">Type kjøring</Label>
+              <Label htmlFor="st-type">{t("auto.type_kjoering_2")}</Label>
               <Select value={tripType} onValueChange={setTripType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="business">Yrkeskjøring</SelectItem>
-                  <SelectItem value="commute">Arbeidsreise</SelectItem>
-                  <SelectItem value="private">Privat</SelectItem>
+                  <SelectItem value="business">{t("auto.yrkeskjoering")}</SelectItem>
+                  <SelectItem value="commute">{t("auto.arbeidsreise")}</SelectItem>
+                  <SelectItem value="private">{t("auto.privat")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -111,9 +112,9 @@ export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastO
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5"><Car className="h-3.5 w-3.5" /> Velg bil fra bilpark</Label>
               <Select value={selectedVehicleId} onValueChange={handleVehicleChange}>
-                <SelectTrigger><SelectValue placeholder="Velg bil..." /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("auto.velg_bil")} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={MANUAL}>Skriv inn manuelt</SelectItem>
+                  <SelectItem value={MANUAL}>{t("auto.skriv_inn_manuelt")}</SelectItem>
                   {activeVehicles.map((v) => (
                     <SelectItem key={v.id} value={v.id}>
                       {v.license_plate} {[v.make, v.model].filter(Boolean).join(" ") && `– ${[v.make, v.model].filter(Boolean).join(" ")}`}
@@ -125,39 +126,39 @@ export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastO
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="st-start">Startsted *</Label>
-            <Input id="st-start" value={startLocation} onChange={e => setStartLocation(e.target.value)} placeholder="F.eks. Kontoret, Oslo" required />
+            <Label htmlFor="st-start">{t("auto.startsted")}</Label>
+            <Input id="st-start" value={startLocation} onChange={e => setStartLocation(e.target.value)} placeholder={t("auto.f_eks_kontoret_oslo")} required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="st-km">Km-stand start *</Label>
-            <Input id="st-km" type="number" step="0.1" value={odometerStart} onChange={e => setOdometerStart(e.target.value)} placeholder="F.eks. 45230" required />
+            <Label htmlFor="st-km">{t("auto.km_stand_start_3")}</Label>
+            <Input id="st-km" type="number" step="0.1" value={odometerStart} onChange={e => setOdometerStart(e.target.value)} placeholder={t("auto.f_eks_45230")} required />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="st-purpose">Formål (valgfritt nå, kan fylles ut ved avslutning)</Label>
-            <Input id="st-purpose" value={purpose} onChange={e => setPurpose(e.target.value)} placeholder="F.eks. Kundemøte" />
+            <Input id="st-purpose" value={purpose} onChange={e => setPurpose(e.target.value)} placeholder={t("auto.f_eks_kundemoete")} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="st-vehicle">Biltype</Label>
+              <Label htmlFor="st-vehicle">{t("auto.biltype_2")}</Label>
               <Select value={vehicleType} onValueChange={setVehicleType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="company">Firmabil</SelectItem>
-                  <SelectItem value="private">Privatbil</SelectItem>
+                  <SelectItem value="company">{t("auto.firmabil")}</SelectItem>
+                  <SelectItem value="private">{t("auto.privatbil")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="st-reg">Reg.nr</Label>
-              <Input id="st-reg" value={vehicleRegistration} onChange={e => setVehicleRegistration(e.target.value)} placeholder="AB 12345" />
+              <Label htmlFor="st-reg">{t("auto.reg_nr")}</Label>
+              <Input id="st-reg" value={vehicleRegistration} onChange={e => setVehicleRegistration(e.target.value)} placeholder={t("auto.ab_12345")} />
             </div>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("auto.avbryt")}</Button>
             <Button type="submit" disabled={isPending || !startLocation || !odometerStart}>
               {isPending ? "Starter..." : "Start tur"}
             </Button>

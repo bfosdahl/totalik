@@ -28,6 +28,7 @@ import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 import { AllowanceTypesSettings } from "@/components/settings/AllowanceTypesSettings";
 import { CompanyTrashBinSettings } from "@/components/settings/CompanyTrashBinSettings";
 import { DataExportSettings } from "@/components/settings/DataExportSettings";
+import { t } from "@/i18n/t";
 
 type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances" | "trash";
 
@@ -42,55 +43,55 @@ const settingsSections: SettingsSectionConfig[] = [
   {
     id: "company",
     icon: Building2,
-    title: "Bedriftsinformasjon",
-    description: "Administrer bedriftsdetaljer og kontaktinfo",
+    title: t("auto.bedriftsinformasjon"),
+    description: t("auto.administrer_bedriftsdetaljer_og_kontakti"),
   },
   {
     id: "users",
     icon: Users,
-    title: "Brukere og tilgang",
-    description: "Administrer brukere og tilgangsrettigheter",
+    title: t("auto.brukere_og_tilgang"),
+    description: t("auto.administrer_brukere_og_tilgangsrettighet"),
   },
   {
     id: "departments",
     icon: Layers,
-    title: "Avdelinger",
-    description: "Organiser bedriften i avdelinger",
+    title: t("auto.avdelinger"),
+    description: t("auto.organiser_bedriften_i_avdelinger"),
   },
   {
     id: "allowances",
     icon: Wallet,
-    title: "Lønn & tilleggssatser",
-    description: "Definer satser for diett, kilometer, reisetimer og andre tillegg",
+    title: t("auto.loenn_tilleggssatser"),
+    description: t("auto.definer_satser_for_diett_kilometer_reise"),
   },
   {
     id: "notifications",
     icon: Bell,
-    title: "Varsler",
-    description: "Konfigurer e-postvarsler og påminnelser",
+    title: t("auto.varsler"),
+    description: t("auto.konfigurer_e_postvarsler_og_paaminnelser"),
   },
   {
     id: "security",
     icon: Shield,
-    title: "Sikkerhet",
-    description: "Passord, tofaktorautentisering og sikkerhetspolicyer",
+    title: t("auto.sikkerhet"),
+    description: t("auto.passord_tofaktorautentisering_og_sikkerh"),
   },
   {
     id: "customization",
     icon: Palette,
-    title: "Tilpasning",
-    description: "Logo, farger og utseende",
+    title: t("auto.tilpasning"),
+    description: t("auto.logo_farger_og_utseende"),
   },
   {
     id: "data",
     icon: Database,
-    title: "Data og eksport",
+    title: t("auto.data_og_eksport"),
     description: "Last ned full kopi av bedriftens data (GDPR)",
   },
   {
     id: "trash",
     icon: Trash2,
-    title: "Papirkurv",
+    title: t("auto.papirkurv"),
     description: "Gjenopprett slettet innhold (90 dager)",
   },
 ];
@@ -234,9 +235,9 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-1"
         >
-          <h1 className="text-2xl font-bold tracking-tight">Innstillinger</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("auto.innstillinger")}</h1>
           <p className="text-muted-foreground">
-            Administrer systeminnstillinger og preferanser
+            {t("auto.administrer_systeminnstillinger_og_prefe")}
           </p>
         </motion.div>
 
@@ -286,9 +287,9 @@ const Settings = () => {
               <Smartphone className="w-6 h-6 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold mb-2">Last ned mobilapp</h3>
+              <h3 className="font-semibold mb-2">{t("auto.last_ned_mobilapp")}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Installer Athena HMS på mobilen din for rask tilgang til kursbevis og dokumenter
+                {t("auto.installer_athena_hms_paa_mobilen_din_for")}
               </p>
               <Button onClick={() => navigate("/install")} className="gap-2">
                 <Download className="w-4 h-4" />

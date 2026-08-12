@@ -12,6 +12,7 @@ import { KsModule2Project } from "@/hooks/useKsModule2Projects";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useToast } from "@/hooks/use-toast";
 import Ks2ProjectMap from "@/components/ks2/Ks2ProjectMap";
+import { t } from "@/i18n/t";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -153,10 +154,10 @@ export default function Ks2Prosjektinfo() {
         .eq("id", projectId);
 
       if (error) throw error;
-      toast({ title: "Prosjekt oppdatert" });
+      toast({ title: t("auto.prosjekt_oppdatert") });
     } catch (error) {
       console.error("Error saving:", error);
-      toast({ title: "Feil", description: "Kunne ikke lagre", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_lagre_2"), variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -172,11 +173,11 @@ export default function Ks2Prosjektinfo() {
         .eq("id", projectId);
 
       if (error) throw error;
-      toast({ title: "Prosjekt slettet" });
+      toast({ title: t("auto.prosjekt_slettet") });
       navigate("/ks");
     } catch (error) {
       console.error("Error deleting:", error);
-      toast({ title: "Feil", description: "Kunne ikke slette", variant: "destructive" });
+      toast({ title: t("auto.feil"), description: t("auto.kunne_ikke_slette"), variant: "destructive" });
     }
   };
 
@@ -192,8 +193,8 @@ export default function Ks2Prosjektinfo() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Prosjektinfo</h1>
-          <p className="text-muted-foreground">Rediger prosjektdetaljer</p>
+          <h1 className="text-2xl font-bold">{t("auto.prosjektinfo")}</h1>
+          <p className="text-muted-foreground">{t("auto.rediger_prosjektdetaljer")}</p>
         </div>
         <div className="flex gap-2">
           <AlertDialog>
@@ -205,16 +206,15 @@ export default function Ks2Prosjektinfo() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Slett prosjekt?</AlertDialogTitle>
+                <AlertDialogTitle>{t("auto.slett_prosjekt")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Dette vil permanent slette prosjektet og all tilhørende data.
-                  Denne handlingen kan ikke angres.
+                  {t("auto.dette_vil_permanent_slette_prosjektet_og")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
-                  Slett prosjekt
+                  {t("auto.slett_prosjekt_2")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -230,62 +230,62 @@ export default function Ks2Prosjektinfo() {
         {/* Basic Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Grunnleggende info</CardTitle>
+            <CardTitle className="text-lg">{t("auto.grunnleggende_info")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Prosjektnavn *</Label>
+              <Label>{t("auto.prosjektnavn_2")}</Label>
               <Input
                 value={formData.project_name}
                 onChange={(e) => handleChange("project_name", e.target.value)}
               />
             </div>
             <div>
-              <Label>Prosjektnummer</Label>
+              <Label>{t("auto.prosjektnummer")}</Label>
               <Input value={formData.project_number} disabled className="bg-muted" />
             </div>
             <div>
-              <Label>Adresse</Label>
+              <Label>{t("auto.adresse")}</Label>
               <Input
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
               />
             </div>
             <div>
-              <Label>Gnr/Bnr</Label>
+              <Label>{t("auto.gnr_bnr")}</Label>
               <Input
                 value={formData.gnr_bnr}
                 onChange={(e) => handleChange("gnr_bnr", e.target.value)}
               />
             </div>
             <div>
-              <Label>Status</Label>
+              <Label>{t("auto.status_2")}</Label>
               <Select value={formData.status} onValueChange={(v) => handleChange("status", v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="planned">Planlagt</SelectItem>
-                  <SelectItem value="active">Aktiv</SelectItem>
-                  <SelectItem value="handover">Overtakelse</SelectItem>
-                  <SelectItem value="warranty">Garanti</SelectItem>
-                  <SelectItem value="completed">Avsluttet</SelectItem>
+                  <SelectItem value="planned">{t("auto.planlagt")}</SelectItem>
+                  <SelectItem value="active">{t("auto.aktiv")}</SelectItem>
+                  <SelectItem value="handover">{t("auto.overtakelse")}</SelectItem>
+                  <SelectItem value="warranty">{t("auto.garanti")}</SelectItem>
+                  <SelectItem value="completed">{t("auto.avsluttet")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Entreprenørform</Label>
+              <Label>{t("auto.entreprenoerform")}</Label>
               <Select
                 value={formData.contractor_type}
                 onValueChange={(v) => handleChange("contractor_type", v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg..." />
+                  <SelectValue placeholder={t("auto.velg")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="total">Totalentreprenør</SelectItem>
-                  <SelectItem value="hoved">Hovedentreprenør</SelectItem>
-                  <SelectItem value="under">Underentreprenør</SelectItem>
+                  <SelectItem value="total">{t("auto.totalentreprenoer")}</SelectItem>
+                  <SelectItem value="hoved">{t("auto.hovedentreprenoer")}</SelectItem>
+                  <SelectItem value="under">{t("auto.underentreprenoer")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -302,39 +302,39 @@ export default function Ks2Prosjektinfo() {
         {/* Client */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Byggherre</CardTitle>
+            <CardTitle className="text-lg">{t("auto.byggherre")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Navn</Label>
+              <Label>{t("auto.navn_2")}</Label>
               <Input
                 value={formData.client_name}
                 onChange={(e) => handleChange("client_name", e.target.value)}
               />
             </div>
             <div>
-              <Label>Org.nr</Label>
+              <Label>{t("auto.org_nr")}</Label>
               <Input
                 value={formData.client_org_number}
                 onChange={(e) => handleChange("client_org_number", e.target.value)}
               />
             </div>
             <div>
-              <Label>Kontaktperson</Label>
+              <Label>{t("auto.kontaktperson_2")}</Label>
               <Input
                 value={formData.client_contact_person}
                 onChange={(e) => handleChange("client_contact_person", e.target.value)}
               />
             </div>
             <div>
-              <Label>Telefon</Label>
+              <Label>{t("auto.telefon")}</Label>
               <Input
                 value={formData.client_phone}
                 onChange={(e) => handleChange("client_phone", e.target.value)}
               />
             </div>
             <div className="sm:col-span-2">
-              <Label>E-post</Label>
+              <Label>{t("auto.e_post_2")}</Label>
               <Input
                 type="email"
                 value={formData.client_email}
@@ -347,14 +347,14 @@ export default function Ks2Prosjektinfo() {
         {/* Organization */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Organisasjon</CardTitle>
+            <CardTitle className="text-lg">{t("auto.organisasjon")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Prosjektleder</Label>
+              <Label>{t("auto.prosjektleder")}</Label>
               <Select value={formData.project_leader_id} onValueChange={handleSelectLeader}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Velg..." />
+                  <SelectValue placeholder={t("auto.velg")} />
                 </SelectTrigger>
                 <SelectContent>
                   {users.map((user) => (
@@ -366,14 +366,14 @@ export default function Ks2Prosjektinfo() {
               </Select>
             </div>
             <div>
-              <Label>SHA-koordinator KP</Label>
+              <Label>{t("auto.sha_koordinator_kp")}</Label>
               <Input
                 value={formData.sha_coordinator_kp}
                 onChange={(e) => handleChange("sha_coordinator_kp", e.target.value)}
               />
             </div>
             <div>
-              <Label>SHA-koordinator KU</Label>
+              <Label>{t("auto.sha_koordinator_ku")}</Label>
               <Input
                 value={formData.sha_coordinator_ku}
                 onChange={(e) => handleChange("sha_coordinator_ku", e.target.value)}
@@ -389,23 +389,23 @@ export default function Ks2Prosjektinfo() {
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Navn på samarbeidspartner</Label>
+              <Label>{t("auto.navn_paa_samarbeidspartner")}</Label>
               <Input
                 value={formData.partner_name}
                 onChange={(e) => handleChange("partner_name", e.target.value)}
-                placeholder="F.eks. Byggherre AS"
+                placeholder={t("auto.f_eks_byggherre_as")}
               />
             </div>
             <div>
-              <Label>Org.nr. samarbeidspartner</Label>
+              <Label>{t("auto.org_nr_samarbeidspartner")}</Label>
               <Input
                 value={formData.partner_org_number}
                 onChange={(e) => handleChange("partner_org_number", e.target.value)}
-                placeholder="F.eks. 999 999 999"
+                placeholder={t("auto.f_eks_999_999_999")}
               />
             </div>
             <div>
-              <Label>Partner-logo</Label>
+              <Label>{t("auto.partner_logo")}</Label>
               <div className="flex items-center gap-3">
                 {formData.partner_logo_url && (
                   <img src={formData.partner_logo_url} alt="Partner-logo" className="h-12 w-auto rounded border bg-white object-contain p-1" />
@@ -427,9 +427,9 @@ export default function Ks2Prosjektinfo() {
                       if (upErr) throw upErr;
                       const { data: pub } = supabase.storage.from("company-logos").getPublicUrl(safeName);
                       handleChange("partner_logo_url", pub.publicUrl);
-                      toast({ title: "Logo lastet opp – husk å lagre prosjektet" });
+                      toast({ title: t("auto.logo_lastet_opp_husk_aa_lagre_prosjektet") });
                     } catch (err: any) {
-                      toast({ title: "Feil", description: err.message || "Opplasting feilet", variant: "destructive" });
+                      toast({ title: t("auto.feil"), description: err.message || "Opplasting feilet", variant: "destructive" });
                     } finally {
                       setIsUploadingLogo(false);
                       e.target.value = "";
@@ -438,11 +438,11 @@ export default function Ks2Prosjektinfo() {
                 />
                 {formData.partner_logo_url && (
                   <Button type="button" variant="outline" size="sm" onClick={() => handleChange("partner_logo_url", "")}>
-                    Fjern
+                    {t("auto.fjern")}
                   </Button>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">PNG eller JPG. Vises ved siden av bedriftslogo på dagsrapport-PDF.</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("auto.png_eller_jpg_vises_ved_siden_av_bedrift")}</p>
             </div>
           </CardContent>
         </Card>
@@ -450,11 +450,11 @@ export default function Ks2Prosjektinfo() {
         {/* Dates & Contract */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Tid og økonomi</CardTitle>
+            <CardTitle className="text-lg">{t("auto.tid_og_oekonomi")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label>Planlagt oppstart</Label>
+              <Label>{t("auto.planlagt_oppstart")}</Label>
               <Input
                 type="date"
                 value={formData.planned_start_date}
@@ -462,7 +462,7 @@ export default function Ks2Prosjektinfo() {
               />
             </div>
             <div>
-              <Label>Planlagt ferdig</Label>
+              <Label>{t("auto.planlagt_ferdig")}</Label>
               <Input
                 type="date"
                 value={formData.planned_end_date}
@@ -483,12 +483,12 @@ export default function Ks2Prosjektinfo() {
         {/* Description */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Beskrivelse</CardTitle>
+            <CardTitle className="text-lg">{t("auto.beskrivelse")}</CardTitle>
           </CardHeader>
           <CardContent>
             <Textarea
               rows={5}
-              placeholder="Beskriv prosjektet..."
+              placeholder={t("auto.beskriv_prosjektet")}
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
             />

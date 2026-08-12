@@ -14,6 +14,7 @@ import { useAdminKsTemplates, CHECKLIST_CATEGORIES } from "@/hooks/useAdminKsTem
 import { useCompanyKsChecklistTemplates } from "@/hooks/useCompanyKsChecklistTemplates";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const TRADES = [
   "Tømrer", "Murer", "Betongarbeider", "Rørlegger", "Elektriker",
@@ -43,7 +44,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
 
   const handleGenerate = async () => {
     if (!tema.trim()) {
-      toast.error("Skriv inn et tema for sjekklisten");
+      toast.error(t("auto.skriv_inn_et_tema_for_sjekklisten"));
       return;
     }
     setIsGenerating(true);
@@ -61,7 +62,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setResult(data.checklist);
-      toast.success("Sjekkliste generert!");
+      toast.success(t("auto.sjekkliste_generert"));
     } catch (err: any) {
       console.error("AI generation error:", err);
       toast.error(err.message || "Kunne ikke generere sjekkliste");
@@ -101,13 +102,13 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
         savedId = created.id;
       }
       console.log("[AiChecklistDialog] Saved template id:", savedId, "category:", finalCategory);
-      toast.success("Sjekkliste-mal lagret!", {
+      toast.success(t("auto.sjekkliste_mal_lagret"), {
         description: isSystemAdmin
           ? "Finn den under Admin → Sjekklistemaler"
           : "Finn den under KS Bygg → Sjekklister (Mine maler)",
         duration: 8000,
         action: isSystemAdmin ? undefined : {
-          label: "Åpne",
+          label: t("auto.aapne"),
           onClick: () => navigate("/ks/ik-ks/sjekklister"),
         },
       });
@@ -198,9 +199,9 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
             {!result && (
               <div className="space-y-4">
                 <div>
-                  <Label>Tema / Tittel *</Label>
+                  <Label>{t("auto.tema_tittel")}</Label>
                   <Input
-                    placeholder="F.eks. Sjekkliste for montering av vinduer"
+                    placeholder={t("auto.f_eks_sjekkliste_for_montering_av_vindue")}
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
                   />
@@ -208,11 +209,11 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Kategori</Label>
+                    <Label>{t("auto.kategori")}</Label>
                     {isCustomKategori ? (
                       <div className="flex gap-2">
                         <Input
-                          placeholder="Skriv egen kategori..."
+                          placeholder={t("auto.skriv_egen_kategori")}
                           value={kategori}
                           onChange={(e) => setKategori(e.target.value)}
                           autoFocus
@@ -242,24 +243,24 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Velg kategori" />
+                          <SelectValue placeholder={t("auto.velg_kategori")} />
                         </SelectTrigger>
                         <SelectContent>
                           {CHECKLIST_CATEGORIES.map((cat) => (
                             <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                           ))}
                           <SelectItem value="__custom__" className="text-blue-600 font-medium">
-                            + Egen kategori...
+                            {t("auto.egen_kategori")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     )}
                   </div>
                   <div>
-                    <Label>Fag / Håndverk</Label>
+                    <Label>{t("auto.fag_haandverk")}</Label>
                     <Select value={trade} onValueChange={setTrade}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg fag" />
+                        <SelectValue placeholder={t("auto.velg_fag")} />
                       </SelectTrigger>
                       <SelectContent>
                         {TRADES.map((t) => (
@@ -272,23 +273,23 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
 
                 <div>
                   <Label className="flex items-center gap-1">
-                    Tilknyttet rutine
+                    {t("auto.tilknyttet_rutine")}
                     <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
                   </Label>
                   <Input
-                    placeholder="F.eks. Rutine for kontroll av vinduer og dører"
+                    placeholder={t("auto.f_eks_rutine_for_kontroll_av_vinduer_og_")}
                     value={rutineRef}
                     onChange={(e) => setRutineRef(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Skriv inn rutinen denne sjekklisten skal knyttes til
+                    {t("auto.skriv_inn_rutinen_denne_sjekklisten_skal")}
                   </p>
                 </div>
 
                 <div>
-                  <Label>Tilleggsdetaljer</Label>
+                  <Label>{t("auto.tilleggsdetaljer")}</Label>
                   <Textarea
-                    placeholder="Beskriv spesifikke krav, standarder eller fokusområder..."
+                    placeholder={t("auto.beskriv_spesifikke_krav_standarder_eller")}
                     value={detaljer}
                     onChange={(e) => setDetaljer(e.target.value)}
                     rows={3}
@@ -320,7 +321,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
               <div className="space-y-4">
                 <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
                   <div>
-                    <Label className="text-xs text-muted-foreground">Malnavn</Label>
+                    <Label className="text-xs text-muted-foreground">{t("auto.malnavn")}</Label>
                     <Input
                       value={result.template_name}
                       onChange={(e) => setResult((prev: any) => ({ ...prev, template_name: e.target.value }))}
@@ -328,7 +329,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Beskrivelse</Label>
+                    <Label className="text-xs text-muted-foreground">{t("auto.beskrivelse")}</Label>
                     <Textarea
                       value={result.description}
                       onChange={(e) => setResult((prev: any) => ({ ...prev, description: e.target.value }))}
@@ -359,7 +360,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                             <Input
                               value={cp.help_text || ""}
                               onChange={(e) => handleEditCheckpoint(idx, "help_text", e.target.value)}
-                              placeholder="Hjelpetekst..."
+                              placeholder={t("auto.hjelpetekst")}
                               className="text-xs text-muted-foreground"
                             />
                           </div>
@@ -379,7 +380,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
 
                 {result.related_standards?.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-semibold mb-1">Relaterte standarder</h4>
+                    <h4 className="text-sm font-semibold mb-1">{t("auto.relaterte_standarder")}</h4>
                     <div className="flex gap-1 flex-wrap">
                       {result.related_standards.map((std: string, i: number) => (
                         <Badge key={i} variant="outline" className="text-xs">{std}</Badge>

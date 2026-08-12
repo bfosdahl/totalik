@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useKsModule2AccessLog } from "@/hooks/useKsModule2ProjectAccess";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 interface Ks2AccessLogDialogProps {
   open: boolean;
@@ -19,11 +20,11 @@ interface Ks2AccessLogDialogProps {
 }
 
 const actionLabels: Record<string, { label: string; color: string }> = {
-  login: { label: "Innlogging", color: "bg-green-100 text-green-800" },
-  logout: { label: "Utlogging", color: "bg-gray-100 text-gray-800" },
-  view: { label: "Visning", color: "bg-blue-100 text-blue-800" },
-  checklist_complete: { label: "Sjekkliste fullført", color: "bg-purple-100 text-purple-800" },
-  deviation_created: { label: "Avvik registrert", color: "bg-orange-100 text-orange-800" },
+  login: { label: t("auto.innlogging"), color: "bg-green-100 text-green-800" },
+  logout: { label: t("auto.utlogging"), color: "bg-gray-100 text-gray-800" },
+  view: { label: t("auto.visning"), color: "bg-blue-100 text-blue-800" },
+  checklist_complete: { label: t("auto.sjekkliste_fullfoert"), color: "bg-purple-100 text-purple-800" },
+  deviation_created: { label: t("auto.avvik_registrert_2"), color: "bg-orange-100 text-orange-800" },
 };
 
 export function Ks2AccessLogDialog({ 
@@ -42,17 +43,17 @@ export function Ks2AccessLogDialog({
             Tilgangslogg
           </DialogTitle>
           <DialogDescription>
-            Oversikt over innlogginger og aktivitet fra gjestebrukere
+            {t("auto.oversikt_over_innlogginger_og_aktivitet_")}
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="h-[400px] pr-4">
           {isLoading ? (
-            <p className="text-center py-8 text-muted-foreground">Laster...</p>
+            <p className="text-center py-8 text-muted-foreground">{t("auto.laster")}</p>
           ) : logs.length === 0 ? (
             <div className="text-center py-8">
               <Activity className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Ingen aktivitet registrert ennå</p>
+              <p className="text-muted-foreground">{t("auto.ingen_aktivitet_registrert_ennaa")}</p>
             </div>
           ) : (
             <div className="space-y-3">

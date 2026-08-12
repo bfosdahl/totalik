@@ -33,6 +33,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { applyImportedHmsSetup, type ImportedHmsData } from "@/lib/applyImportedHmsSetup";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
+import { t } from "@/i18n/t";
 
 interface ExtractedData {
   firmanavn: string | null;
@@ -80,7 +81,7 @@ export default function AdminCustomerImport() {
       }
       // Check file size (max 10MB)
       if (selectedFile.size > 10 * 1024 * 1024) {
-        toast.error("Filen er for stor. Maks 10MB");
+        toast.error(t("auto.filen_er_for_stor_maks_10mb_2"));
         return;
       }
       setFile(selectedFile);
@@ -92,7 +93,7 @@ export default function AdminCustomerImport() {
 
   const handleProcess = async () => {
     if (!file && !textContent.trim()) {
-      toast.error("Last opp en fil eller lim inn tekst");
+      toast.error(t("auto.last_opp_en_fil_eller_lim_inn_tekst"));
       return;
     }
 
@@ -103,7 +104,7 @@ export default function AdminCustomerImport() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Du må være logget inn");
+        toast.error(t("auto.du_maa_vaere_logget_inn"));
         return;
       }
 
@@ -150,7 +151,7 @@ export default function AdminCustomerImport() {
 
       if (result.success && result.data) {
         setExtractedData(result.data);
-        toast.success("Dokumentet ble analysert!");
+        toast.success(t("auto.dokumentet_ble_analysert"));
       } else {
         throw new Error('Ingen data returnert');
       }
@@ -177,7 +178,7 @@ export default function AdminCustomerImport() {
     
     // Store extracted data in session storage for the create company flow
     sessionStorage.setItem('customer-import-data', JSON.stringify(extractedData));
-    toast.success("Data lagret. Gå til bedriftsopprettelse for å fortsette.");
+    toast.success(t("auto.data_lagret_gaa_til_bedriftsopprettelse_"));
     navigate('/admin/companies');
   };
 
@@ -252,8 +253,8 @@ export default function AdminCustomerImport() {
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <h2 className="text-lg font-semibold">Ingen tilgang</h2>
-            <p className="text-muted-foreground">Du må være systemadministrator for å bruke denne funksjonen.</p>
+            <h2 className="text-lg font-semibold">{t("auto.ingen_tilgang")}</h2>
+            <p className="text-muted-foreground">{t("auto.du_maa_vaere_systemadministrator_for_aa_")}</p>
           </CardContent>
         </Card>
       </div>
@@ -269,7 +270,7 @@ export default function AdminCustomerImport() {
             AI Kunde-import
           </h1>
           <p className="text-muted-foreground">
-            Last opp kunde-PDF eller lim inn tekst for å ekstrahere HMS-data automatisk
+            {t("auto.last_opp_kunde_pdf_eller_lim_inn_tekst_f")}
           </p>
         </div>
         {(file || textContent || extractedData) && (
@@ -289,7 +290,7 @@ export default function AdminCustomerImport() {
               Last opp dokument
             </CardTitle>
             <CardDescription>
-              Last opp en PDF eller bilde, eller lim inn tekst direkte
+              {t("auto.last_opp_en_pdf_eller_bilde_eller_lim_in")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -319,7 +320,7 @@ export default function AdminCustomerImport() {
                     <div className="space-y-2">
                       <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
                       <p className="text-muted-foreground">
-                        Klikk for å laste opp eller dra og slipp
+                        {t("auto.klikk_for_aa_laste_opp_eller_dra_og_slip")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         PDF, PNG eller JPG (maks 10MB)
@@ -338,10 +339,10 @@ export default function AdminCustomerImport() {
 
             {/* Text Input */}
             <div className="space-y-2">
-              <Label htmlFor="text-content">Lim inn tekst</Label>
+              <Label htmlFor="text-content">{t("auto.lim_inn_tekst")}</Label>
               <Textarea
                 id="text-content"
-                placeholder="Lim inn tekst fra kundens dokument her..."
+                placeholder={t("auto.lim_inn_tekst_fra_kundens_dokument_her")}
                 value={textContent}
                 onChange={(e) => {
                   setTextContent(e.target.value);
@@ -375,7 +376,7 @@ export default function AdminCustomerImport() {
                 <div className="flex items-start gap-2">
                   <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                   <div>
-                    <p className="font-medium text-destructive">Feil ved analyse</p>
+                    <p className="font-medium text-destructive">{t("auto.feil_ved_analyse")}</p>
                     <p className="text-sm text-muted-foreground">{error}</p>
                   </div>
                 </div>
@@ -400,7 +401,7 @@ export default function AdminCustomerImport() {
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" />
                 <p className="text-muted-foreground">
-                  Last opp et dokument for å se ekstrahert data her
+                  {t("auto.last_opp_et_dokument_for_aa_se_ekstraher")}
                 </p>
               </div>
             )}
@@ -408,7 +409,7 @@ export default function AdminCustomerImport() {
             {isProcessing && (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground">AI analyserer dokumentet...</p>
+                <p className="text-muted-foreground">{t("auto.ai_analyserer_dokumentet")}</p>
               </div>
             )}
 
@@ -424,19 +425,19 @@ export default function AdminCustomerImport() {
                     <div className="grid gap-2 text-sm">
                       {extractedData.firmanavn && (
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Firma:</span>
+                          <span className="text-muted-foreground">{t("auto.firma")}</span>
                           <span className="font-medium">{extractedData.firmanavn}</span>
                         </div>
                       )}
                       {extractedData.organisasjonsnummer && (
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Org.nr:</span>
+                          <span className="text-muted-foreground">{t("auto.org_nr_2")}</span>
                           <span className="font-medium">{extractedData.organisasjonsnummer}</span>
                         </div>
                       )}
                       {extractedData.bransje && (
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Bransje:</span>
+                          <span className="text-muted-foreground">{t("auto.bransje")}</span>
                           <Badge variant="secondary">{extractedData.bransje}</Badge>
                         </div>
                       )}
@@ -524,13 +525,13 @@ export default function AdminCustomerImport() {
                         <div className="grid gap-2 text-sm">
                           {extractedData.organisasjon.dagligLeder && (
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Daglig leder:</span>
+                              <span className="text-muted-foreground">{t("auto.daglig_leder_2")}</span>
                               <span className="font-medium">{extractedData.organisasjon.dagligLeder}</span>
                             </div>
                           )}
                           {extractedData.organisasjon.verneombud && (
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Verneombud:</span>
+                              <span className="text-muted-foreground">{t("auto.verneombud_2")}</span>
                               <span className="font-medium">{extractedData.organisasjon.verneombud}</span>
                             </div>
                           )}
@@ -572,7 +573,7 @@ export default function AdminCustomerImport() {
                   {/* Additional Info */}
                   {extractedData.tilleggsinformasjon && (
                     <div className="space-y-2">
-                      <h3 className="font-semibold">Tilleggsinformasjon</h3>
+                      <h3 className="font-semibold">{t("auto.tilleggsinformasjon_2")}</h3>
                       <p className="text-sm text-muted-foreground">
                         {extractedData.tilleggsinformasjon}
                       </p>

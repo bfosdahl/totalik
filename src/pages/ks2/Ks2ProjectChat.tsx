@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { t } from "@/i18n/t";
 
 interface Message {
   id?: string;
@@ -194,7 +195,7 @@ export default function Ks2ProjectChat() {
       }));
     } catch (err) {
       console.error("Error executing action:", err);
-      toast.error("Kunne ikke utføre handlingen");
+      toast.error(t("auto.kunne_ikke_utfoere_handlingen"));
     }
   }, [projectId, profile?.company_id, profile?.first_name, profile?.last_name]);
 
@@ -294,7 +295,7 @@ export default function Ks2ProjectChat() {
     } catch (error) {
       console.error("Project chat error:", error);
       setMessages(prev => [...prev, { role: "assistant", content: "Beklager, det oppsto en feil. Prøv igjen." }]);
-      toast.error("Feil ved kommunikasjon med AI");
+      toast.error(t("auto.feil_ved_kommunikasjon_med_ai"));
     } finally {
       setIsLoading(false);
     }
@@ -305,7 +306,7 @@ export default function Ks2ProjectChat() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Laster chat...</p>
+          <p className="text-muted-foreground">{t("auto.laster_chat")}</p>
         </div>
       </div>
     );
@@ -318,7 +319,7 @@ export default function Ks2ProjectChat() {
           <Sparkles className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="font-medium">Prosjekt-assistenten</h3>
+          <h3 className="font-medium">{t("auto.prosjekt_assistenten")}</h3>
           <p className="text-xs text-muted-foreground">
             Låst til: {projectContext?.project?.project_name || "Laster..."} ({projectContext?.project?.project_number || ""})
           </p>
@@ -380,7 +381,7 @@ export default function Ks2ProjectChat() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Spør om sjekklister, rutiner, SAK10-krav..."
+            placeholder={t("auto.spoer_om_sjekklister_rutiner_sak10_krav")}
             disabled={isLoading}
           />
           <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>

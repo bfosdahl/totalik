@@ -57,6 +57,7 @@ import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { generateMeetingPdf } from "@/utils/ksModule2MeetingPdf";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 const MEETING_TYPES = [
   "Byggemøte",
@@ -132,8 +133,8 @@ export default function Ks2Motereferater() {
   const handleCreateMeeting = async () => {
     if (!formData.title || !formData.meeting_date) {
       toast({
-        title: "Feil",
-        description: "Tittel og dato er påkrevd",
+        title: t("auto.feil"),
+        description: t("auto.tittel_og_dato_er_paakrevd"),
         variant: "destructive",
       });
       return;
@@ -275,8 +276,8 @@ export default function Ks2Motereferater() {
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast({
-        title: "Feil",
-        description: "Kunne ikke generere PDF",
+        title: t("auto.feil"),
+        description: t("auto.kunne_ikke_generere_pdf"),
         variant: "destructive",
       });
     }
@@ -287,8 +288,8 @@ export default function Ks2Motereferater() {
     
     if (emailParticipants.length === 0) {
       toast({
-        title: "Ingen mottakere",
-        description: "Ingen deltakere har registrert e-post",
+        title: t("auto.ingen_mottakere"),
+        description: t("auto.ingen_deltakere_har_registrert_e_post"),
         variant: "destructive",
       });
       return;
@@ -313,14 +314,14 @@ export default function Ks2Motereferater() {
       await updateMeeting(meeting.id, { status: "sent" });
 
       toast({
-        title: "Sendt",
+        title: t("auto.sendt"),
         description: `Møtereferat sendt til ${emailParticipants.length} deltaker(e)`,
       });
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
-        title: "Feil",
-        description: "Kunne ikke sende e-post",
+        title: t("auto.feil"),
+        description: t("auto.kunne_ikke_sende_e_post"),
         variant: "destructive",
       });
     } finally {
@@ -331,11 +332,11 @@ export default function Ks2Motereferater() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500">Fullført</Badge>;
+        return <Badge className="bg-green-500">{t("auto.fullfoert")}</Badge>;
       case "sent":
-        return <Badge className="bg-blue-500">Sendt</Badge>;
+        return <Badge className="bg-blue-500">{t("auto.sendt")}</Badge>;
       default:
-        return <Badge variant="secondary">Utkast</Badge>;
+        return <Badge variant="secondary">{t("auto.utkast")}</Badge>;
     }
   };
 
@@ -359,8 +360,8 @@ export default function Ks2Motereferater() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Møtereferater</h1>
-          <p className="text-muted-foreground">Dokumenter og del møter fra prosjektet</p>
+          <h1 className="text-2xl font-bold">{t("auto.moetereferater")}</h1>
+          <p className="text-muted-foreground">{t("auto.dokumenter_og_del_moeter_fra_prosjektet")}</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -373,25 +374,25 @@ export default function Ks2Motereferater() {
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Totalt</div>
+            <div className="text-sm text-muted-foreground">{t("auto.totalt")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-yellow-600">{stats.draft}</div>
-            <div className="text-sm text-muted-foreground">Utkast</div>
+            <div className="text-sm text-muted-foreground">{t("auto.utkast")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-            <div className="text-sm text-muted-foreground">Fullført</div>
+            <div className="text-sm text-muted-foreground">{t("auto.fullfoert")}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-2xl font-bold text-blue-600">{stats.sent}</div>
-            <div className="text-sm text-muted-foreground">Sendt</div>
+            <div className="text-sm text-muted-foreground">{t("auto.sendt")}</div>
           </CardContent>
         </Card>
       </div>
@@ -401,7 +402,7 @@ export default function Ks2Motereferater() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Søk i møtereferater..."
+            placeholder={t("auto.soek_i_moetereferater")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -409,13 +410,13 @@ export default function Ks2Motereferater() {
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("auto.status_2")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle</SelectItem>
-            <SelectItem value="draft">Utkast</SelectItem>
-            <SelectItem value="completed">Fullført</SelectItem>
-            <SelectItem value="sent">Sendt</SelectItem>
+            <SelectItem value="all">{t("auto.alle")}</SelectItem>
+            <SelectItem value="draft">{t("auto.utkast")}</SelectItem>
+            <SelectItem value="completed">{t("auto.fullfoert")}</SelectItem>
+            <SelectItem value="sent">{t("auto.sendt")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -425,9 +426,9 @@ export default function Ks2Motereferater() {
         <Card>
           <CardContent className="py-12 text-center">
             <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-medium mb-2">Ingen møtereferater</h3>
+            <h3 className="font-medium mb-2">{t("auto.ingen_moetereferater")}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Opprett ditt første møtereferat for å komme i gang
+              {t("auto.opprett_ditt_foerste_moetereferat_for_aa")}
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
@@ -547,7 +548,7 @@ export default function Ks2Motereferater() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Møtetype</Label>
+                <Label>{t("auto.moetetype")}</Label>
                 <Select
                   value={formData.meeting_type}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, meeting_type: value }))}
@@ -563,7 +564,7 @@ export default function Ks2Motereferater() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Dato og tid *</Label>
+                <Label>{t("auto.dato_og_tid")}</Label>
                 <Input
                   type="datetime-local"
                   value={formData.meeting_date}
@@ -573,26 +574,26 @@ export default function Ks2Motereferater() {
             </div>
 
             <div className="space-y-2">
-              <Label>Tittel *</Label>
+              <Label>{t("auto.tittel_2")}</Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="F.eks. Byggemøte #12"
+                placeholder={t("auto.f_eks_byggemoete_12")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Sted</Label>
+              <Label>{t("auto.sted")}</Label>
               <Input
                 value={formData.location}
                 onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="F.eks. Byggeplass eller Teams"
+                placeholder={t("auto.f_eks_byggeplass_eller_teams")}
               />
             </div>
 
             {/* Participants */}
             <div className="space-y-2">
-              <Label>Deltakere</Label>
+              <Label>{t("auto.deltakere")}</Label>
               {formData.participants.length > 0 && (
                 <div className="space-y-2 mb-2">
                   {formData.participants.map((p, i) => (
@@ -615,17 +616,17 @@ export default function Ks2Motereferater() {
               )}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <Input
-                  placeholder="Navn"
+                  placeholder={t("auto.navn_2")}
                   value={newParticipant.name}
                   onChange={(e) => setNewParticipant(prev => ({ ...prev, name: e.target.value }))}
                 />
                 <Input
-                  placeholder="Rolle"
+                  placeholder={t("auto.rolle")}
                   value={newParticipant.role}
                   onChange={(e) => setNewParticipant(prev => ({ ...prev, role: e.target.value }))}
                 />
                 <Input
-                  placeholder="E-post"
+                  placeholder={t("auto.e_post_2")}
                   type="email"
                   value={newParticipant.email}
                   onChange={(e) => setNewParticipant(prev => ({ ...prev, email: e.target.value }))}
@@ -638,21 +639,21 @@ export default function Ks2Motereferater() {
             </div>
 
             <div className="space-y-2">
-              <Label>Agenda</Label>
+              <Label>{t("auto.agenda")}</Label>
               <Textarea
                 value={formData.agenda}
                 onChange={(e) => setFormData(prev => ({ ...prev, agenda: e.target.value }))}
-                placeholder="Hovedpunkter for møtet..."
+                placeholder={t("auto.hovedpunkter_for_moetet")}
                 rows={3}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Generelle notater</Label>
+              <Label>{t("auto.generelle_notater")}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Oppsummering og øvrige notater..."
+                placeholder={t("auto.oppsummering_og_oevrige_notater")}
                 rows={3}
               />
             </div>
@@ -695,21 +696,21 @@ export default function Ks2Motereferater() {
                 {/* Meeting info */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Nummer</span>
+                    <span className="text-muted-foreground">{t("auto.nummer")}</span>
                     <p className="font-medium">{selectedMeeting.meeting_number}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Type</span>
+                    <span className="text-muted-foreground">{t("auto.type")}</span>
                     <p className="font-medium">{selectedMeeting.meeting_type}</p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Dato</span>
+                    <span className="text-muted-foreground">{t("auto.dato")}</span>
                     <p className="font-medium">
                       {format(new Date(selectedMeeting.meeting_date), "d. MMM yyyy HH:mm", { locale: nb })}
                     </p>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Sted</span>
+                    <span className="text-muted-foreground">{t("auto.sted")}</span>
                     <p className="font-medium">{selectedMeeting.location || "-"}</p>
                   </div>
                 </div>
@@ -717,7 +718,7 @@ export default function Ks2Motereferater() {
                 {/* Participants */}
                 {selectedMeeting.participants.length > 0 && (
                   <div>
-                    <h4 className="font-medium mb-2">Deltakere</h4>
+                    <h4 className="font-medium mb-2">{t("auto.deltakere")}</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedMeeting.participants.map((p, i) => (
                         <Badge key={i} variant="secondary">
@@ -731,7 +732,7 @@ export default function Ks2Motereferater() {
                 {/* Agenda */}
                 {selectedMeeting.agenda && (
                   <div>
-                    <h4 className="font-medium mb-2">Agenda</h4>
+                    <h4 className="font-medium mb-2">{t("auto.agenda")}</h4>
                     <p className="text-sm whitespace-pre-wrap">{selectedMeeting.agenda}</p>
                   </div>
                 )}
@@ -740,7 +741,7 @@ export default function Ks2Motereferater() {
 
                 {/* Meeting items */}
                 <div>
-                  <h4 className="font-medium mb-4">Saker og oppfølgingspunkter</h4>
+                  <h4 className="font-medium mb-4">{t("auto.saker_og_oppfoelgingspunkter")}</h4>
                   
                   {meetingItems.length > 0 ? (
                     <div className="space-y-3">
@@ -757,7 +758,7 @@ export default function Ks2Motereferater() {
                                 </div>
                                 {item.decision && (
                                   <p className="text-sm text-muted-foreground mt-1">
-                                    <strong>Beslutning:</strong> {item.decision}
+                                    <strong>{t("auto.beslutning")}</strong> {item.decision}
                                   </p>
                                 )}
                                 <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
@@ -778,9 +779,9 @@ export default function Ks2Motereferater() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="open">Åpen</SelectItem>
-                                    <SelectItem value="in_progress">Pågår</SelectItem>
-                                    <SelectItem value="completed">Fullført</SelectItem>
+                                    <SelectItem value="open">{t("auto.aapen")}</SelectItem>
+                                    <SelectItem value="in_progress">{t("auto.paagaar")}</SelectItem>
+                                    <SelectItem value="completed">{t("auto.fullfoert")}</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <Button
@@ -797,21 +798,21 @@ export default function Ks2Motereferater() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Ingen saker registrert</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.ingen_saker_registrert")}</p>
                   )}
 
                   {/* Add new item */}
                   <Card className="mt-4">
                     <CardContent className="p-4">
-                      <h5 className="text-sm font-medium mb-3">Legg til ny sak</h5>
+                      <h5 className="text-sm font-medium mb-3">{t("auto.legg_til_ny_sak")}</h5>
                       <div className="space-y-3">
                         <Input
-                          placeholder="Sak/tema"
+                          placeholder={t("auto.sak_tema")}
                           value={newItemData.topic}
                           onChange={(e) => setNewItemData(prev => ({ ...prev, topic: e.target.value }))}
                         />
                         <Textarea
-                          placeholder="Beslutning"
+                          placeholder={t("auto.beslutning_2")}
                           value={newItemData.decision}
                           onChange={(e) => setNewItemData(prev => ({ ...prev, decision: e.target.value }))}
                           rows={2}
@@ -822,7 +823,7 @@ export default function Ks2Motereferater() {
                             onValueChange={(value) => setNewItemData(prev => ({ ...prev, responsible_name: value }))}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Ansvarlig" />
+                              <SelectValue placeholder={t("auto.ansvarlig_2")} />
                             </SelectTrigger>
                             <SelectContent>
                               {users.map(user => (
@@ -852,7 +853,7 @@ export default function Ks2Motereferater() {
                   <>
                     <Separator />
                     <div>
-                      <h4 className="font-medium mb-2">Notater</h4>
+                      <h4 className="font-medium mb-2">{t("auto.notater")}</h4>
                       <p className="text-sm whitespace-pre-wrap">{selectedMeeting.notes}</p>
                     </div>
                   </>
@@ -863,7 +864,7 @@ export default function Ks2Motereferater() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
             {selectedMeeting && (
               <>
@@ -887,15 +888,15 @@ export default function Ks2Motereferater() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett møtereferat</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_moetereferat")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{selectedMeeting?.title}"? 
               Dette kan ikke angres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteMeeting}>Slett</AlertDialogAction>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteMeeting}>{t("auto.slett")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

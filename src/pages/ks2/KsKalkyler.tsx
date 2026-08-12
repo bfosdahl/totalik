@@ -21,6 +21,7 @@ import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -102,8 +103,8 @@ export default function KsKalkyler() {
       <div className="container mx-auto py-6 space-y-6 max-w-6xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Kalkyler</h1>
-            <p className="text-muted-foreground">Opprett og administrer prosjektkalkyler</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("auto.kalkyler")}</h1>
+            <p className="text-muted-foreground">{t("auto.opprett_og_administrer_prosjektkalkyler")}</p>
           </div>
           <Dialog open={isNewOpen} onOpenChange={setIsNewOpen}>
             <DialogTrigger asChild>
@@ -111,16 +112,16 @@ export default function KsKalkyler() {
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] flex flex-col">
               <DialogHeader>
-                <DialogTitle>Ny kalkyle</DialogTitle>
-                <DialogDescription>Opprett en ny prosjektkalkyle</DialogDescription>
+                <DialogTitle>{t("auto.ny_kalkyle")}</DialogTitle>
+                <DialogDescription>{t("auto.opprett_en_ny_prosjektkalkyle")}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4 flex-1 overflow-y-auto">
                 <div className="space-y-2">
-                  <Label>Tittel *</Label>
-                  <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="F.eks. Rehabilitering Storgata 5" />
+                  <Label>{t("auto.tittel_2")}</Label>
+                  <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder={t("auto.f_eks_rehabilitering_storgata_5")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Koble til prosjekt</Label>
+                  <Label>{t("auto.koble_til_prosjekt")}</Label>
                   <Select value={newProjectId} onValueChange={(val) => {
                     setNewProjectId(val === "__none__" ? "" : val);
                     if (val !== "__none__") {
@@ -132,7 +133,7 @@ export default function KsKalkyler() {
                       <SelectValue placeholder="Velg prosjekt (valgfritt)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">Ingen prosjekt</SelectItem>
+                      <SelectItem value="__none__">{t("auto.ingen_prosjekt")}</SelectItem>
                       {allProjects.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
                           {p.number} – {p.name}
@@ -142,16 +143,16 @@ export default function KsKalkyler() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Kunde</Label>
-                  <Input value={newClient} onChange={(e) => setNewClient(e.target.value)} placeholder="Kundenavn" />
+                  <Label>{t("auto.kunde")}</Label>
+                  <Input value={newClient} onChange={(e) => setNewClient(e.target.value)} placeholder={t("auto.kundenavn")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Beskrivelse</Label>
-                  <Textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="Kort beskrivelse..." rows={3} />
+                  <Label>{t("auto.beskrivelse")}</Label>
+                  <Textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder={t("auto.kort_beskrivelse_2")} rows={3} />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsNewOpen(false)}>Avbryt</Button>
+                <Button variant="outline" onClick={() => setIsNewOpen(false)}>{t("auto.avbryt")}</Button>
                 <Button onClick={handleCreate} disabled={!newTitle.trim() || createCalculation.isPending}>
                   {createCalculation.isPending ? "Oppretter..." : "Opprett"}
                 </Button>
@@ -166,7 +167,7 @@ export default function KsKalkyler() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-amber-500/10"><Pencil className="w-5 h-5 text-amber-500" /></div>
-                <div><p className="text-2xl font-bold">{drafts.length}</p><p className="text-sm text-muted-foreground">Utkast</p></div>
+                <div><p className="text-2xl font-bold">{drafts.length}</p><p className="text-sm text-muted-foreground">{t("auto.utkast")}</p></div>
               </div>
             </CardContent>
           </Card>
@@ -174,7 +175,7 @@ export default function KsKalkyler() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/10"><Clock className="w-5 h-5 text-blue-500" /></div>
-                <div><p className="text-2xl font-bold">{sent.length}</p><p className="text-sm text-muted-foreground">Sendt</p></div>
+                <div><p className="text-2xl font-bold">{sent.length}</p><p className="text-sm text-muted-foreground">{t("auto.sendt")}</p></div>
               </div>
             </CardContent>
           </Card>
@@ -182,7 +183,7 @@ export default function KsKalkyler() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-green-500/10"><CheckCircle2 className="w-5 h-5 text-green-500" /></div>
-                <div><p className="text-2xl font-bold">{accepted.length}</p><p className="text-sm text-muted-foreground">Akseptert</p></div>
+                <div><p className="text-2xl font-bold">{accepted.length}</p><p className="text-sm text-muted-foreground">{t("auto.akseptert")}</p></div>
               </div>
             </CardContent>
           </Card>
@@ -190,15 +191,15 @@ export default function KsKalkyler() {
 
         {/* List */}
         <Card>
-          <CardHeader><CardTitle>Alle kalkyler</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("auto.alle_kalkyler")}</CardTitle></CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-center py-8 text-muted-foreground">Laster...</p>
+              <p className="text-center py-8 text-muted-foreground">{t("auto.laster")}</p>
             ) : calculations.length === 0 ? (
               <div className="text-center py-12">
                 <Calculator className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-medium mb-2">Ingen kalkyler ennå</h3>
-                <p className="text-muted-foreground mb-4">Opprett din første kalkyle for å komme i gang</p>
+                <h3 className="text-lg font-medium mb-2">{t("auto.ingen_kalkyler_ennaa")}</h3>
+                <p className="text-muted-foreground mb-4">{t("auto.opprett_din_foerste_kalkyle_for_aa_komme")}</p>
                 <Button onClick={() => setIsNewOpen(true)}><Plus className="w-4 h-4 mr-2" />Ny kalkyle</Button>
               </div>
             ) : (
@@ -229,7 +230,7 @@ export default function KsKalkyler() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" onClick={(e) => handleDuplicate(calc.id, e)} title="Dupliser kalkyle">
+                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" onClick={(e) => handleDuplicate(calc.id, e)} title={t("auto.dupliser_kalkyle")}>
                         <Copy className="w-4 h-4" />
                       </Button>
                       <AlertDialog>
@@ -240,12 +241,12 @@ export default function KsKalkyler() {
                         </AlertDialogTrigger>
                         <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Slett kalkyle?</AlertDialogTitle>
-                            <AlertDialogDescription>Alle poster i kalkylen vil bli slettet permanent.</AlertDialogDescription>
+                            <AlertDialogTitle>{t("auto.slett_kalkyle")}</AlertDialogTitle>
+                            <AlertDialogDescription>{t("auto.alle_poster_i_kalkylen_vil_bli_slettet_p")}</AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                            <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => deleteCalculation.mutate(calc.id)}>Slett</AlertDialogAction>
+                            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
+                            <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => deleteCalculation.mutate(calc.id)}>{t("auto.slett")}</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -263,10 +264,10 @@ export default function KsKalkyler() {
 
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
-    case "draft": return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">Utkast</Badge>;
-    case "sent": return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30">Sendt</Badge>;
-    case "accepted": return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">Akseptert</Badge>;
-    case "rejected": return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">Avslått</Badge>;
+    case "draft": return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">{t("auto.utkast")}</Badge>;
+    case "sent": return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30">{t("auto.sendt")}</Badge>;
+    case "accepted": return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">{t("auto.akseptert")}</Badge>;
+    case "rejected": return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">{t("auto.avslaatt")}</Badge>;
     default: return <Badge variant="outline">{status}</Badge>;
   }
 }
@@ -344,7 +345,7 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
       description: editDesc || null,
     });
     setIsEditOpen(false);
-    toast.success("Kalkyle oppdatert");
+    toast.success(t("auto.kalkyle_oppdatert"));
   };
 
   const startEditItem = (item: KsCalculationItem) => {
@@ -433,8 +434,8 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
               <Pencil className="w-4 h-4 mr-1" />Rediger
             </Button>
             {calc.status === "draft" && (
-              <Button size="sm" variant="outline" onClick={() => { onUpdate.mutate({ id: calc.id, status: "sent" }); toast.success("Kalkyle merket som sendt"); }}>
-                Merk som sendt
+              <Button size="sm" variant="outline" onClick={() => { onUpdate.mutate({ id: calc.id, status: "sent" }); toast.success(t("auto.kalkyle_merket_som_sendt")); }}>
+                {t("auto.merk_som_sendt")}
               </Button>
             )}
           </div>
@@ -444,17 +445,17 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent className="max-h-[90vh] flex flex-col">
             <DialogHeader>
-              <DialogTitle>Rediger kalkyle</DialogTitle>
-              <DialogDescription>Endre informasjon om kalkylen</DialogDescription>
+              <DialogTitle>{t("auto.rediger_kalkyle")}</DialogTitle>
+              <DialogDescription>{t("auto.endre_informasjon_om_kalkylen")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4 flex-1 overflow-y-auto">
-              <div className="space-y-2"><Label>Tittel *</Label><Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
-              <div className="space-y-2"><Label>Kunde</Label><Input value={editClient} onChange={(e) => setEditClient(e.target.value)} placeholder="Kundenavn" /></div>
-              <div className="space-y-2"><Label>Beskrivelse</Label><Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={3} /></div>
+              <div className="space-y-2"><Label>{t("auto.tittel_2")}</Label><Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
+              <div className="space-y-2"><Label>{t("auto.kunde")}</Label><Input value={editClient} onChange={(e) => setEditClient(e.target.value)} placeholder={t("auto.kundenavn")} /></div>
+              <div className="space-y-2"><Label>{t("auto.beskrivelse")}</Label><Textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={3} /></div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditOpen(false)}>Avbryt</Button>
-              <Button onClick={handleSaveEdit} disabled={!editTitle.trim()}>Lagre</Button>
+              <Button variant="outline" onClick={() => setIsEditOpen(false)}>{t("auto.avbryt")}</Button>
+              <Button onClick={handleSaveEdit} disabled={!editTitle.trim()}>{t("auto.lagre")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -486,18 +487,18 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
               </CardHeader>
               <CardContent>
                 {catItems.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-3 text-center">Ingen poster – klikk + for å legge til</p>
+                  <p className="text-sm text-muted-foreground py-3 text-center">{t("auto.ingen_poster_klikk_for_aa_legge_til")}</p>
                 ) : (
                   <div className="overflow-x-auto -mx-6 px-6">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="min-w-[180px]">Beskrivelse</TableHead>
-                          <TableHead className="w-[80px]">Enhet</TableHead>
-                          <TableHead className="w-[80px] text-right">Mengde</TableHead>
-                          <TableHead className="w-[100px] text-right">Enhetspris</TableHead>
-                          <TableHead className="w-[80px] text-right">Rabatt %</TableHead>
-                          <TableHead className="w-[110px] text-right">Sum</TableHead>
+                          <TableHead className="min-w-[180px]">{t("auto.beskrivelse")}</TableHead>
+                          <TableHead className="w-[80px]">{t("auto.enhet")}</TableHead>
+                          <TableHead className="w-[80px] text-right">{t("auto.mengde")}</TableHead>
+                          <TableHead className="w-[100px] text-right">{t("auto.enhetspris")}</TableHead>
+                          <TableHead className="w-[80px] text-right">{t("auto.rabatt")}</TableHead>
+                          <TableHead className="w-[110px] text-right">{t("auto.sum")}</TableHead>
                           <TableHead className="w-[80px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -593,12 +594,12 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Legg til post</DialogTitle>
-              <DialogDescription>Legg til en ny post i kalkylen</DialogDescription>
+              <DialogTitle>{t("auto.legg_til_post")}</DialogTitle>
+              <DialogDescription>{t("auto.legg_til_en_ny_post_i_kalkylen")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Kategori</Label>
+                <Label>{t("auto.kategori")}</Label>
                 <Select value={newCategory} onValueChange={setNewCategory}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -609,12 +610,12 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Beskrivelse *</Label>
-                <Input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="F.eks. Tømrerarbeid, Gipsplater..." />
+                <Label>{t("auto.beskrivelse_2")}</Label>
+                <Input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder={t("auto.f_eks_toemrerarbeid_gipsplater")} />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="space-y-2">
-                  <Label>Enhet</Label>
+                  <Label>{t("auto.enhet")}</Label>
                   <Select value={newUnit} onValueChange={setNewUnit}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -623,22 +624,22 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Mengde</Label>
+                  <Label>{t("auto.mengde")}</Label>
                   <Input type="number" value={newQty} onChange={(e) => setNewQty(e.target.value)} min="0" step="0.5" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Enhetspris</Label>
+                  <Label>{t("auto.enhetspris")}</Label>
                   <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} min="0" placeholder="0" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-1">Rabatt <Percent className="w-3 h-3" /></Label>
+                  <Label className="flex items-center gap-1">{t("auto.rabatt_2")} <Percent className="w-3 h-3" /></Label>
                   <Input type="number" value={newDiscount} onChange={(e) => setNewDiscount(e.target.value)} min="0" max="100" placeholder="0" />
                 </div>
               </div>
               {/* Live preview */}
               {newPrice && (
                 <div className="rounded-lg bg-muted/50 p-3 text-sm">
-                  <span className="text-muted-foreground">Linje-sum: </span>
+                  <span className="text-muted-foreground">{t("auto.linje_sum")} </span>
                   <span className="font-semibold tabular-nums">
                     {fmt(lineTotal(parseFloat(newQty) || 1, parseFloat(newPrice) || 0, parseFloat(newDiscount) || 0))} kr
                   </span>
@@ -646,7 +647,7 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddOpen(false)}>Lukk</Button>
+              <Button variant="outline" onClick={() => setIsAddOpen(false)}>{t("auto.lukk")}</Button>
               <Button onClick={handleAddItem} disabled={!newDesc.trim() || !newPrice || addItem.isPending}>
                 {addItem.isPending ? "Legger til..." : "Legg til"}
               </Button>
@@ -677,14 +678,14 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
               })}
 
               <div className="border-t pt-3 mt-3 flex justify-between font-medium">
-                <span>Netto sum</span>
+                <span>{t("auto.netto_sum")}</span>
                 <span className="tabular-nums">{fmt(netTotal)} kr</span>
               </div>
 
               {/* Markup */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Påslag</span>
+                  <span className="text-muted-foreground">{t("auto.paaslag")}</span>
                   <Input type="number" className="w-20 h-8 text-right text-sm" value={markup} onChange={(e) => setMarkup(e.target.value)} onBlur={handleMarkupBlur} min="0" />
                   <span className="text-muted-foreground">%</span>
                 </div>
@@ -692,7 +693,7 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
               </div>
 
               <div className="flex justify-between text-sm font-medium">
-                <span>Sum før MVA</span>
+                <span>{t("auto.sum_foer_mva")}</span>
                 <span className="tabular-nums">{fmt(beforeVat)} kr</span>
               </div>
 
@@ -708,7 +709,7 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
 
               {/* Grand total */}
               <div className="border-t-2 border-primary/30 pt-4 mt-3 flex justify-between items-center">
-                <span className="text-lg font-bold">Totalsum inkl. MVA</span>
+                <span className="text-lg font-bold">{t("auto.totalsum_inkl_mva")}</span>
                 <span className="text-2xl font-bold text-primary tabular-nums">{fmt(grandTotal)} kr</span>
               </div>
             </div>

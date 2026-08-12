@@ -37,6 +37,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 import {
   Select,
   SelectContent,
@@ -46,14 +47,14 @@ import {
 } from "@/components/ui/select";
 
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  nabovarsel: { label: "Nabovarsel", icon: Mail, color: "bg-blue-500" },
-  soknad: { label: "Søknader", icon: FileText, color: "bg-emerald-500" },
-  ansvarsrett: { label: "Ansvarsrett", icon: Users, color: "bg-purple-500" },
-  plan: { label: "Planer", icon: ClipboardList, color: "bg-amber-500" },
-  kontroll: { label: "Kontroll", icon: Shield, color: "bg-cyan-500" },
-  ferdigattest: { label: "Ferdigattest", icon: CheckCircle, color: "bg-green-500" },
-  melding: { label: "Meldinger", icon: FileCheck, color: "bg-orange-500" },
-  annet: { label: "Annet", icon: Settings, color: "bg-gray-500" },
+  nabovarsel: { label: t("auto.nabovarsel"), icon: Mail, color: "bg-blue-500" },
+  soknad: { label: t("auto.soeknader"), icon: FileText, color: "bg-emerald-500" },
+  ansvarsrett: { label: t("auto.ansvarsrett"), icon: Users, color: "bg-purple-500" },
+  plan: { label: t("auto.planer"), icon: ClipboardList, color: "bg-amber-500" },
+  kontroll: { label: t("auto.kontroll"), icon: Shield, color: "bg-cyan-500" },
+  ferdigattest: { label: t("auto.ferdigattest"), icon: CheckCircle, color: "bg-green-500" },
+  melding: { label: t("auto.meldinger"), icon: FileCheck, color: "bg-orange-500" },
+  annet: { label: t("auto.annet"), icon: Settings, color: "bg-gray-500" },
 };
 
 export default function AdminByggesakTemplates() {
@@ -75,11 +76,11 @@ export default function AdminByggesakTemplates() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["byggesak-templates"] });
-      toast.success("Mal oppdatert");
+      toast.success(t("auto.mal_oppdatert"));
       setEditingTemplate(null);
     },
     onError: () => {
-      toast.error("Kunne ikke oppdatere mal");
+      toast.error(t("auto.kunne_ikke_oppdatere_mal"));
     },
   });
 
@@ -93,7 +94,7 @@ export default function AdminByggesakTemplates() {
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      toast.error("Kunne ikke laste opp fil");
+      toast.error(t("auto.kunne_ikke_laste_opp_fil"));
       return;
     }
 
@@ -163,9 +164,9 @@ export default function AdminByggesakTemplates() {
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">Byggesak-maler</h1>
+              <h1 className="text-2xl font-bold">{t("auto.byggesak_maler")}</h1>
               <p className="text-muted-foreground">
-                Offisielle blanketter og skjemaer fra DIBK • Last ned, fyll ut, skann og last opp
+                {t("auto.offisielle_blanketter_og_skjemaer_fra_di")}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -187,19 +188,19 @@ export default function AdminByggesakTemplates() {
         <Card className="border-l-4 border-l-emerald-500">
           <CardContent className="p-4">
             <div className="text-3xl font-bold text-emerald-600">{stats.totalTemplates}</div>
-            <div className="text-sm text-muted-foreground">Totalt maler</div>
+            <div className="text-sm text-muted-foreground">{t("auto.totalt_maler")}</div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-4">
             <div className="text-3xl font-bold text-blue-600">{stats.uploadedPdfs}</div>
-            <div className="text-sm text-muted-foreground">PDF-er lastet opp</div>
+            <div className="text-sm text-muted-foreground">{t("auto.pdf_er_lastet_opp")}</div>
           </CardContent>
         </Card>
         <Card className="border-l-4 border-l-purple-500">
           <CardContent className="p-4">
             <div className="text-3xl font-bold text-purple-600">{stats.activeCategories}</div>
-            <div className="text-sm text-muted-foreground">Kategorier med innhold</div>
+            <div className="text-sm text-muted-foreground">{t("auto.kategorier_med_innhold")}</div>
           </CardContent>
         </Card>
       </div>
@@ -209,7 +210,7 @@ export default function AdminByggesakTemplates() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Søk i maler..."
+            placeholder={t("auto.soek_i_maler")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -217,10 +218,10 @@ export default function AdminByggesakTemplates() {
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Alle kategorier" />
+            <SelectValue placeholder={t("auto.alle_kategorier")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle kategorier</SelectItem>
+            <SelectItem value="all">{t("auto.alle_kategorier")}</SelectItem>
             {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
               <SelectItem key={key} value={key}>{config.label}</SelectItem>
             ))}
@@ -384,19 +385,19 @@ export default function AdminByggesakTemplates() {
       <Dialog open={!!editingTemplate} onOpenChange={() => setEditingTemplate(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rediger mal</DialogTitle>
+            <DialogTitle>{t("auto.rediger_mal")}</DialogTitle>
             <DialogDescription>
-              Oppdater informasjon om blanketten
+              {t("auto.oppdater_informasjon_om_blanketten")}
             </DialogDescription>
           </DialogHeader>
           {editingTemplate && (
             <div className="space-y-4">
               <div>
-                <Label>Skjemanummer</Label>
+                <Label>{t("auto.skjemanummer")}</Label>
                 <Input value={editingTemplate.form_number} disabled />
               </div>
               <div>
-                <Label>Navn</Label>
+                <Label>{t("auto.navn_2")}</Label>
                 <Input 
                   value={editingTemplate.form_name}
                   onChange={(e) => setEditingTemplate({
@@ -406,7 +407,7 @@ export default function AdminByggesakTemplates() {
                 />
               </div>
               <div>
-                <Label>Beskrivelse</Label>
+                <Label>{t("auto.beskrivelse")}</Label>
                 <Input 
                   value={editingTemplate.description || ""}
                   onChange={(e) => setEditingTemplate({
@@ -416,21 +417,21 @@ export default function AdminByggesakTemplates() {
                 />
               </div>
               <div>
-                <Label>Versjon</Label>
+                <Label>{t("auto.versjon")}</Label>
                 <Input 
                   value={editingTemplate.version || ""}
                   onChange={(e) => setEditingTemplate({
                     ...editingTemplate,
                     version: e.target.value
                   })}
-                  placeholder="f.eks. 2024, TEK17"
+                  placeholder={t("auto.f_eks_2024_tek17")}
                 />
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTemplate(null)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={() => editingTemplate && updateTemplate.mutate(editingTemplate)}

@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { z } from "zod";
+import { t } from "@/i18n/t";
 
 interface SecuritySettingsProps {
   onBack: () => void;
@@ -109,9 +110,9 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
           email: newEmail,
         });
         if (emailError) throw emailError;
-        toast.success("En bekreftelseslenke er sendt til din nye e-postadresse. Sjekk innboksen.");
+        toast.success(t("auto.en_bekreftelseslenke_er_sendt_til_din_ny"));
       } else {
-        toast.success("Profil oppdatert!");
+        toast.success(t("auto.profil_oppdatert"));
       }
 
       setEditingProfile(false);
@@ -162,7 +163,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
 
       if (updateError) throw updateError;
 
-      toast.success("Passord oppdatert!");
+      toast.success(t("auto.passord_oppdatert"));
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -214,7 +215,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
 
       if (verifyError) throw verifyError;
 
-      toast.success("Tofaktorautentisering er aktivert!");
+      toast.success(t("auto.tofaktorautentisering_er_aktivert"));
       setMfaEnabled(true);
       setQrCode(null);
       setTotpSecret(null);
@@ -238,7 +239,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
 
       if (error) throw error;
 
-      toast.success("Tofaktorautentisering er deaktivert");
+      toast.success(t("auto.tofaktorautentisering_er_deaktivert"));
       setMfaEnabled(false);
       setMfaFactorId(null);
     } catch (error: any) {
@@ -266,7 +267,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
   const copySecret = () => {
     if (totpSecret) {
       navigator.clipboard.writeText(totpSecret);
-      toast.success("Hemmelighet kopiert til utklippstavle");
+      toast.success(t("auto.hemmelighet_kopiert_til_utklippstavle"));
     }
   };
 
@@ -286,9 +287,9 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Sikkerhet</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.sikkerhet")}</h1>
             <p className="text-muted-foreground">
-              Passord og tofaktorautentisering
+              {t("auto.passord_og_tofaktorautentisering")}
             </p>
           </div>
         </div>
@@ -304,11 +305,11 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <User className="w-5 h-5 text-primary" />
-            <h3 className="text-lg font-semibold">Brukernavn og e-post</h3>
+            <h3 className="text-lg font-semibold">{t("auto.brukernavn_og_e_post")}</h3>
           </div>
           {!editingProfile && (
             <Button variant="outline" size="sm" onClick={() => setEditingProfile(true)}>
-              Rediger
+              {t("auto.rediger")}
             </Button>
           )}
         </div>
@@ -317,26 +318,26 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
           <div className="space-y-4 max-w-md">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="first-name">Fornavn</Label>
+                <Label htmlFor="first-name">{t("auto.fornavn")}</Label>
                 <Input
                   id="first-name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Fornavn"
+                  placeholder={t("auto.fornavn")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="last-name">Etternavn</Label>
+                <Label htmlFor="last-name">{t("auto.etternavn")}</Label>
                 <Input
                   id="last-name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Etternavn"
+                  placeholder={t("auto.etternavn")}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-postadresse</Label>
+              <Label htmlFor="email">{t("auto.e_postadresse")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -349,7 +350,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Ved endring av e-post vil du motta en bekreftelseslenke på den nye adressen.
+                {t("auto.ved_endring_av_e_post_vil_du_motta_en_be")}
               </p>
             </div>
             <div className="flex gap-2">
@@ -369,14 +370,14 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
                 setLastName(profile?.last_name || "");
                 setNewEmail(profile?.email || "");
               }}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-3 max-w-md">
             <div className="flex justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Navn</span>
+              <span className="text-muted-foreground">{t("auto.navn_2")}</span>
               <span className="font-medium">
                 {profile?.first_name || profile?.last_name
                   ? `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim()
@@ -384,7 +385,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
               </span>
             </div>
             <div className="flex justify-between py-2">
-              <span className="text-muted-foreground">E-post</span>
+              <span className="text-muted-foreground">{t("auto.e_post_2")}</span>
               <span className="font-medium">{profile?.email || "Ikke angitt"}</span>
             </div>
           </div>
@@ -400,12 +401,12 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
       >
         <div className="flex items-center gap-3 mb-6">
           <Key className="w-5 h-5 text-primary" />
-          <h3 className="text-lg font-semibold">Endre passord</h3>
+          <h3 className="text-lg font-semibold">{t("auto.endre_passord")}</h3>
         </div>
 
         <div className="space-y-4 max-w-md">
           <div className="space-y-2">
-            <Label htmlFor="current-password">Nåværende passord</Label>
+            <Label htmlFor="current-password">{t("auto.naavaerende_passord")}</Label>
             <div className="relative">
               <Input
                 id="current-password"
@@ -425,7 +426,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new-password">Nytt passord</Label>
+            <Label htmlFor="new-password">{t("auto.nytt_passord")}</Label>
             <div className="relative">
               <Input
                 id="new-password"
@@ -463,7 +464,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Bekreft nytt passord</Label>
+            <Label htmlFor="confirm-password">{t("auto.bekreft_nytt_passord")}</Label>
             <Input
               id="confirm-password"
               type="password"
@@ -515,7 +516,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
         </div>
 
         <p className="text-sm text-muted-foreground mb-6">
-          Legg til et ekstra lag med sikkerhet ved å kreve en kode fra autentiseringsappen din ved innlogging.
+          {t("auto.legg_til_et_ekstra_lag_med_sikkerhet_ved")}
         </p>
 
         {loadingMfa ? (
@@ -528,9 +529,9 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
             <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
               <Check className="w-5 h-5 text-green-500" />
               <div>
-                <p className="font-medium text-green-700 dark:text-green-400">2FA er aktivert</p>
+                <p className="font-medium text-green-700 dark:text-green-400">{t("auto.2fa_er_aktivert")}</p>
                 <p className="text-sm text-green-600 dark:text-green-500">
-                  Kontoen din er beskyttet med tofaktorautentisering
+                  {t("auto.kontoen_din_er_beskyttet_med_tofaktoraut")}
                 </p>
               </div>
             </div>
@@ -553,14 +554,14 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
           <div className="space-y-6">
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
-                <p className="text-sm font-medium mb-2">1. Skann QR-koden</p>
+                <p className="text-sm font-medium mb-2">{t("auto.1_skann_qr_koden")}</p>
                 <div className="bg-white p-4 rounded-lg inline-block">
                   <img src={qrCode} alt="QR Code" className="w-48 h-48" />
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium mb-2">Eller skriv inn manuelt:</p>
+                  <p className="text-sm font-medium mb-2">{t("auto.eller_skriv_inn_manuelt")}</p>
                   <div className="flex items-center gap-2">
                     <code className="px-3 py-2 bg-secondary rounded text-sm font-mono break-all">
                       {totpSecret}
@@ -571,7 +572,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-2">2. Skriv inn koden fra appen</p>
+                  <p className="text-sm font-medium mb-2">{t("auto.2_skriv_inn_koden_fra_appen")}</p>
                   <div className="flex items-center gap-3">
                     <Input
                       type="text"
@@ -596,7 +597,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
               </div>
             </div>
             <Button variant="outline" onClick={cancelEnrollment}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
           </div>
         ) : (

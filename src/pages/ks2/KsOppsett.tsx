@@ -11,6 +11,7 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const KsOppsett = () => {
   const navigate = useNavigate();
@@ -189,13 +190,13 @@ const KsOppsett = () => {
           });
       }
 
-      toast.success("KS-systemet er satt opp!");
+      toast.success(t("auto.ks_systemet_er_satt_opp"));
       setSetupCompleted(true);
       setIsRestarting(false);
       await refetchModules();
     } catch (err) {
       console.error("Error saving KS setup:", err);
-      toast.error("Kunne ikke lagre oppsettet. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_lagre_oppsettet_proev_igjen"));
     } finally {
       setIsSaving(false);
     }
@@ -207,7 +208,7 @@ const KsOppsett = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Forbereder KS-oppsett...</p>
+            <p className="text-muted-foreground">{t("auto.forbereder_ks_oppsett")}</p>
           </div>
         </div>
       </AppLayout>
@@ -248,7 +249,7 @@ const KsOppsett = () => {
             KS Grunnlag – Oppsett-hjelper
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Sett opp bedriftens kvalitetssikringssystem iht. SAK10 §10-1
+            {t("auto.sett_opp_bedriftens_kvalitetssikringssys")}
           </p>
         </div>
 
@@ -257,32 +258,32 @@ const KsOppsett = () => {
             <Alert className="border-success bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <AlertDescription className="text-success text-sm sm:text-base">
-                KS-systemet er satt opp! Sjekklister, rutiner og kvalitetsmål er klare til bruk.
+                {t("auto.ks_systemet_er_satt_opp_sjekklister_ruti")}
               </AlertDescription>
             </Alert>
 
             <div className="bg-muted/50 rounded-lg p-4 sm:p-6 space-y-3">
-              <h3 className="font-semibold text-base sm:text-lg">Hva nå?</h3>
+              <h3 className="font-semibold text-base sm:text-lg">{t("auto.hva_naa")}</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>✅ Sjekklister er lagt til i malsystemet</p>
-                <p>✅ Rutiner er opprettet for din bedrift</p>
-                <p>✅ Kvalitetsmål er definert</p>
-                <p className="mt-2">Du kan tilpasse alt videre under KS Grunnlag i menyen.</p>
+                <p>{t("auto.sjekklister_er_lagt_til_i_malsystemet")}</p>
+                <p>{t("auto.rutiner_er_opprettet_for_din_bedrift")}</p>
+                <p>{t("auto.kvalitetsmaal_er_definert")}</p>
+                <p className="mt-2">{t("auto.du_kan_tilpasse_alt_videre_under_ks_grun")}</p>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button onClick={() => navigate('/ks')} className="w-full sm:w-auto">
-                Gå til Mine prosjekter
+                {t("auto.gaa_til_mine_prosjekter")}
               </Button>
               <Button variant="outline" onClick={() => navigate('/ks/ik-ks/sjekklister')} className="w-full sm:w-auto">
-                Se sjekklister
+                {t("auto.se_sjekklister")}
               </Button>
               <Button variant="outline" onClick={() => navigate('/ks/ik-ks/rutiner')} className="w-full sm:w-auto">
-                Se rutiner
+                {t("auto.se_rutiner")}
               </Button>
               <Button variant="ghost" onClick={() => setShowRestartDialog(true)} className="w-full sm:w-auto">
-                Kjør oppsett på nytt
+                {t("auto.kjoer_oppsett_paa_nytt")}
               </Button>
             </div>
           </div>
@@ -291,7 +292,7 @@ const KsOppsett = () => {
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-                <p className="text-muted-foreground">Lagrer KS-oppsettet...</p>
+                <p className="text-muted-foreground">{t("auto.lagrer_ks_oppsettet")}</p>
               </div>
             </div>
           ) : (
@@ -310,17 +311,17 @@ const KsOppsett = () => {
                 Kjør oppsett på nytt?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Dette vil starte et nytt KS-oppsett. Eksisterende sjekklister og rutiner beholdes.
+                {t("auto.dette_vil_starte_et_nytt_ks_oppsett_eksi")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowRestartDialog(false);
                 setIsRestarting(true);
                 setSetupCompleted(false);
               }}>
-                Start nytt oppsett
+                {t("auto.start_nytt_oppsett")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

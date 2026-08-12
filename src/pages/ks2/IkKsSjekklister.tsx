@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { QuickFillChecklistDialog } from "@/components/ks/QuickFillChecklistDialog";
 import { AiChecklistDialog } from "@/components/admin/AiChecklistDialog";
 import { PlayCircle } from "lucide-react";
+import { t } from "@/i18n/t";
 import {
   Collapsible,
   CollapsibleContent,
@@ -49,11 +50,11 @@ import {
 } from "@/components/ui/collapsible";
 
 const CATEGORIES = [
-  { value: "general", label: "Generelt" },
-  { value: "inspection", label: "Befaring" },
-  { value: "control", label: "Kontroll" },
-  { value: "quality", label: "Kvalitet" },
-  { value: "safety", label: "Sikkerhet" },
+  { value: "general", label: t("auto.generelt") },
+  { value: "inspection", label: t("auto.befaring") },
+  { value: "control", label: t("auto.kontroll") },
+  { value: "quality", label: t("auto.kvalitet") },
+  { value: "safety", label: t("auto.sikkerhet") },
 ];
 
 export default function IkKsSjekklister() {
@@ -153,9 +154,9 @@ export default function IkKsSjekklister() {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Sjekklistemaler</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("auto.sjekklistemaler")}</h1>
             <p className="text-muted-foreground mt-1">
-              Bedriftens sjekklistemaler for bruk i prosjekter
+              {t("auto.bedriftens_sjekklistemaler_for_bruk_i_pr")}
             </p>
           </div>
           
@@ -170,12 +171,12 @@ export default function IkKsSjekklister() {
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
-                  <DialogTitle>Velg maler fra malbiblioteket</DialogTitle>
+                  <DialogTitle>{t("auto.velg_maler_fra_malbiblioteket")}</DialogTitle>
                 </DialogHeader>
                 <div className="relative mb-3">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Søk i maler..."
+                    placeholder={t("auto.soek_i_maler")}
                     className="pl-9"
                     onChange={(e) => {
                       const q = e.target.value.toLowerCase();
@@ -218,7 +219,7 @@ export default function IkKsSjekklister() {
                     })}
                     {(!adminTemplates || adminTemplates.length === 0) && (
                       <p className="text-center text-muted-foreground py-8">
-                        Ingen maler tilgjengelig
+                        {t("auto.ingen_maler_tilgjengelig")}
                       </p>
                     )}
                   </div>
@@ -235,19 +236,19 @@ export default function IkKsSjekklister() {
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Opprett sjekklistemal</DialogTitle>
+                  <DialogTitle>{t("auto.opprett_sjekklistemal")}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 mt-4">
                   <div>
-                    <label className="text-sm font-medium">Navn</label>
+                    <label className="text-sm font-medium">{t("auto.navn_2")}</label>
                     <Input
                       value={newTemplate.template_name}
                       onChange={(e) => setNewTemplate({ ...newTemplate, template_name: e.target.value })}
-                      placeholder="F.eks. Sluttbefaring"
+                      placeholder={t("auto.f_eks_sluttbefaring")}
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Kategori</label>
+                    <label className="text-sm font-medium">{t("auto.kategori")}</label>
                     <Select
                       value={newTemplate.category}
                       onValueChange={(value) => setNewTemplate({ ...newTemplate, category: value })}
@@ -263,16 +264,16 @@ export default function IkKsSjekklister() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Beskrivelse</label>
+                    <label className="text-sm font-medium">{t("auto.beskrivelse")}</label>
                     <Textarea
                       value={newTemplate.description}
                       onChange={(e) => setNewTemplate({ ...newTemplate, description: e.target.value })}
-                      placeholder="Kort beskrivelse..."
+                      placeholder={t("auto.kort_beskrivelse_2")}
                       rows={2}
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">Sjekkpunkter</label>
+                    <label className="text-sm font-medium">{t("auto.sjekkpunkter")}</label>
                     <div className="space-y-2 mt-2">
                       {newTemplate.checkpoints.map((cp, idx) => (
                         <div key={cp.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded">
@@ -292,7 +293,7 @@ export default function IkKsSjekklister() {
                         <Input
                           value={newCheckpointText}
                           onChange={(e) => setNewCheckpointText(e.target.value)}
-                          placeholder="Legg til sjekkpunkt..."
+                          placeholder={t("auto.legg_til_sjekkpunkt")}
                           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCheckpoint())}
                         />
                         <Button variant="outline" onClick={addCheckpoint}>
@@ -303,7 +304,7 @@ export default function IkKsSjekklister() {
                   </div>
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setShowNewDialog(false)}>
-                      Avbryt
+                      {t("auto.avbryt")}
                     </Button>
                     <Button onClick={handleCreate} disabled={isSaving || !newTemplate.template_name.trim()}>
                       {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -331,9 +332,9 @@ export default function IkKsSjekklister() {
             <Card>
               <CardContent className="py-12 text-center">
                 <ClipboardList className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium text-lg mb-2">Ingen sjekklistemaler ennå</h3>
+                <h3 className="font-medium text-lg mb-2">{t("auto.ingen_sjekklistemaler_ennaa")}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Opprett egne maler eller velg fra malbiblioteket
+                  {t("auto.opprett_egne_maler_eller_velg_fra_malbib")}
                 </p>
                 <div className="flex justify-center gap-2">
                   <Button variant="outline" onClick={() => setShowAdminDialog(true)}>
@@ -480,11 +481,11 @@ function TemplateCard({
               <div className="space-y-4 pt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Navn</label>
+                    <label className="text-xs font-medium text-muted-foreground">{t("auto.navn_2")}</label>
                     <Input value={editName} onChange={e => setEditName(e.target.value)} className="mt-1" />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Kategori</label>
+                    <label className="text-xs font-medium text-muted-foreground">{t("auto.kategori")}</label>
                     <Select value={editCategory} onValueChange={setEditCategory}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -494,7 +495,7 @@ function TemplateCard({
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground">Beskrivelse</label>
+                  <label className="text-xs font-medium text-muted-foreground">{t("auto.beskrivelse")}</label>
                   <Textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} rows={2} className="mt-1" />
                 </div>
 
@@ -526,7 +527,7 @@ function TemplateCard({
                       <Input
                         value={addText}
                         onChange={e => setAddText(e.target.value)}
-                        placeholder="Legg til nytt sjekkpunkt..."
+                        placeholder={t("auto.legg_til_nytt_sjekkpunkt")}
                         className="h-8 text-sm"
                         onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addEditCheckpoint())}
                       />
@@ -568,7 +569,7 @@ function TemplateCard({
                     </div>
                   ))}
                   {template.checkpoints.length === 0 && (
-                    <p className="text-sm text-muted-foreground italic py-2">Ingen sjekkpunkter lagt til ennå</p>
+                    <p className="text-sm text-muted-foreground italic py-2">{t("auto.ingen_sjekkpunkter_lagt_til_ennaa")}</p>
                   )}
                 </div>
                 <div className="flex justify-end gap-2 mt-4 pt-3 border-t">

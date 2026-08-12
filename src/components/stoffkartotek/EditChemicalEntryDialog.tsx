@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalChemicalRegistry, CompanyChemicalEntry } from "@/hooks/useGlobalChemicalRegistry";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface EditChemicalEntryDialogProps {
   open: boolean;
@@ -81,7 +82,7 @@ export const EditChemicalEntryDialog = ({
             Rediger stoffinformasjon
           </DialogTitle>
           <DialogDescription>
-            Oppdater bedriftsspesifikk informasjon for dette stoffet
+            {t("auto.oppdater_bedriftsspesifikk_informasjon_f")}
           </DialogDescription>
         </DialogHeader>
 
@@ -133,40 +134,40 @@ export const EditChemicalEntryDialog = ({
             </Label>
             <Input
               id="location"
-              placeholder="F.eks. Kjemikalskap A, Lager 2"
+              placeholder={t("auto.f_eks_kjemikalskap_a_lager_2")}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
           </div>
 
           <div>
-            <Label htmlFor="quantity">Mengde</Label>
+            <Label htmlFor="quantity">{t("auto.mengde")}</Label>
             <Input
               id="quantity"
-              placeholder="F.eks. 5 liter, 2 kg"
+              placeholder={t("auto.f_eks_5_liter_2_kg")}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
           </div>
 
           <div>
-            <Label htmlFor="customNotes">Egne notater</Label>
+            <Label htmlFor="customNotes">{t("auto.egne_notater")}</Label>
             <Textarea
               id="customNotes"
-              placeholder="Lokale risikovurderinger, bruksanvisninger, verneutstyr..."
+              placeholder={t("auto.lokale_risikovurderinger_bruksanvisninge_2")}
               value={customNotes}
               onChange={(e) => setCustomNotes(e.target.value)}
               rows={4}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Disse notatene er kun synlige for din bedrift
+              {t("auto.disse_notatene_er_kun_synlige_for_din_be")}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleSave} disabled={isUpdating}>
             {isUpdating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

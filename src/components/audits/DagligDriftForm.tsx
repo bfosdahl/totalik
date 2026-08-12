@@ -16,6 +16,7 @@ import { getLocalDateString } from '@/lib/dateUtils';
 import SavedFormsList from './SavedFormsList';
 import EditableChecklistSection from './EditableChecklistSection';
 import UserSelect from './UserSelect';
+import { t } from "@/i18n/t";
 
 import { 
   MessageSquare, 
@@ -226,7 +227,7 @@ const DagligDriftForm = () => {
         onSelect={handleSelectResponse}
         onCreateNew={handleCreateNew}
         isDeleting={isSaving}
-        title="Daglig drift"
+        title={t("auto.daglig_drift")}
       />
     );
   }
@@ -242,14 +243,14 @@ const DagligDriftForm = () => {
         {/* Basic Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Kartlegging av daglig drift</CardTitle>
+            <CardTitle>{t("auto.kartlegging_av_daglig_drift")}</CardTitle>
             <CardDescription>
-              Kartlegging av den daglige driften i bedriften
+              {t("auto.kartlegging_av_den_daglige_driften_i_bed")}
             </CardDescription>
           </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="companyName">Bedriftsnavn</Label>
+            <Label htmlFor="companyName">{t("auto.bedriftsnavn")}</Label>
             <Input
               id="companyName"
               value={formData.companyName}
@@ -257,7 +258,7 @@ const DagligDriftForm = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="date">Dato</Label>
+            <Label htmlFor="date">{t("auto.dato")}</Label>
             <Input
               id="date"
               type="date"
@@ -266,7 +267,7 @@ const DagligDriftForm = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="participants">Deltakere</Label>
+            <Label htmlFor="participants">{t("auto.deltakere")}</Label>
             <Input
               id="participants"
               value={formData.participants}
@@ -274,11 +275,11 @@ const DagligDriftForm = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="auditor">Utført av</Label>
+            <Label htmlFor="auditor">{t("auto.utfoert_av")}</Label>
             <UserSelect
               value={formData.auditor}
               onValueChange={(value) => setFormData(prev => ({ ...prev, auditor: value }))}
-              placeholder="Velg ansvarlig"
+              placeholder={t("auto.velg_ansvarlig")}
             />
           </div>
         </CardContent>
@@ -305,7 +306,7 @@ const DagligDriftForm = () => {
               </CardHeader>
               <CardContent>
                 <Textarea
-                  placeholder="Skriv inn andre ting som bør kartlegges..."
+                  placeholder={t("auto.skriv_inn_andre_ting_som_boer_kartlegges")}
                   value={formData.otherComments}
                   onChange={(e) => setFormData(prev => ({ ...prev, otherComments: e.target.value }))}
                   rows={4}
@@ -340,11 +341,11 @@ const DagligDriftForm = () => {
       {/* Signatures */}
       <Card>
         <CardHeader>
-          <CardTitle>Signaturer</CardTitle>
+          <CardTitle>{t("auto.signaturer")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="auditorSignature">Kartleggers signatur</Label>
+            <Label htmlFor="auditorSignature">{t("auto.kartleggers_signatur")}</Label>
             <Input
               id="auditorSignature"
               value={formData.auditorSignature}
@@ -352,7 +353,7 @@ const DagligDriftForm = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="managerSignature">Daglig leders signatur</Label>
+            <Label htmlFor="managerSignature">{t("auto.daglig_leders_signatur")}</Label>
             <Input
               id="managerSignature"
               value={formData.managerSignature}

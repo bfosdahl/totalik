@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UserSelect from "./UserSelect";
+import { t } from "@/i18n/t";
 
 interface ActionRow {
   id: string;
@@ -37,7 +38,7 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
         <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
         <Button type="button" variant="outline" size="sm" onClick={onAdd} className="gap-1 h-10 sm:h-9">
           <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Legg til</span>
+          <span className="hidden sm:inline">{t("auto.legg_til")}</span>
         </Button>
       </CardHeader>
       <CardContent>
@@ -63,27 +64,27 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Tiltak</Label>
+                  <Label className="text-sm font-medium">{t("auto.tiltak")}</Label>
                   <Input
                     value={row.action}
                     onChange={(e) => onUpdate(row.id, 'action', e.target.value)}
-                    placeholder="Beskriv tiltak..."
+                    placeholder={t("auto.beskriv_tiltak")}
                     className="h-12 text-base"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Ansvarlig</Label>
+                  <Label className="text-sm font-medium">{t("auto.ansvarlig_2")}</Label>
                   <UserSelect
                     value={row.responsible}
                     onValueChange={(value) => onUpdate(row.id, 'responsible', value)}
-                    placeholder="Velg ansvarlig"
+                    placeholder={t("auto.velg_ansvarlig")}
                     className="h-12"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Frist</Label>
+                  <Label className="text-sm font-medium">{t("auto.frist_2")}</Label>
                   <Input
                     type="date"
                     value={row.deadline}
@@ -111,9 +112,9 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Tiltak</th>
-                  <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground w-36">Ansvarlig</th>
-                  <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground w-36">Frist</th>
+                  <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">{t("auto.tiltak")}</th>
+                  <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground w-36">{t("auto.ansvarlig_2")}</th>
+                  <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground w-36">{t("auto.frist_2")}</th>
                   <th className="w-10"></th>
                 </tr>
               </thead>
@@ -124,7 +125,7 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
                       <Input
                         value={row.action}
                         onChange={(e) => onUpdate(row.id, 'action', e.target.value)}
-                        placeholder="Beskriv tiltak..."
+                        placeholder={t("auto.beskriv_tiltak")}
                         className="h-9"
                       />
                     </td>
@@ -132,7 +133,7 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
                       <UserSelect
                         value={row.responsible}
                         onValueChange={(value) => onUpdate(row.id, 'responsible', value)}
-                        placeholder="Velg ansvarlig"
+                        placeholder={t("auto.velg_ansvarlig")}
                         className="h-9"
                       />
                     </td>

@@ -11,6 +11,7 @@ import { LogoUpload } from "@/components/setup/LogoUpload";
 import { useNavigate } from "react-router-dom";
 import { getModuleDefaultSettings } from "@/lib/moduleDefaults";
 import { IndustriesMultiSelect } from "@/components/settings/IndustriesMultiSelect";
+import { t } from "@/i18n/t";
 
 interface CompanyInfoSettingsProps {
   onBack: () => void;
@@ -74,12 +75,12 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
 
   const handleCreateCompany = async () => {
     if (!profile?.user_id) {
-      toast.error("Du må være logget inn for å opprette en bedrift");
+      toast.error(t("auto.du_maa_vaere_logget_inn_for_aa_opprette_"));
       return;
     }
 
     if (!formData.name.trim()) {
-      toast.error("Bedriftsnavn er påkrevd");
+      toast.error(t("auto.bedriftsnavn_er_paakrevd"));
       return;
     }
 
@@ -144,7 +145,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
       await refreshProfile();
       await refreshCompany();
       
-      toast.success("Bedrift opprettet! Du kan nå begynne oppsettet.");
+      toast.success(t("auto.bedrift_opprettet_du_kan_naa_begynne_opp"));
       
       // Navigate to setup
       navigate("/setup");
@@ -158,12 +159,12 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
 
   const handleSave = async () => {
     if (!company?.id) {
-      toast.error("Ingen bedrift funnet");
+      toast.error(t("auto.ingen_bedrift_funnet"));
       return;
     }
 
     if (!formData.name.trim()) {
-      toast.error("Bedriftsnavn er påkrevd");
+      toast.error(t("auto.bedriftsnavn_er_paakrevd"));
       return;
     }
 
@@ -189,7 +190,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
       // Refresh company data in context
       await refreshCompany();
       
-      toast.success("Bedriftsinformasjon oppdatert!");
+      toast.success(t("auto.bedriftsinformasjon_oppdatert"));
     } catch (error: any) {
       console.error("Error updating company:", error);
       toast.error(error.message || "Kunne ikke oppdatere bedriftsinformasjon");
@@ -216,9 +217,9 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
               <Building2 className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Opprett bedrift</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t("auto.opprett_bedrift")}</h1>
               <p className="text-muted-foreground">
-                Fyll inn bedriftsinformasjon for å komme i gang
+                {t("auto.fyll_inn_bedriftsinformasjon_for_aa_komm")}
               </p>
             </div>
           </div>
@@ -234,19 +235,19 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
           <div className="space-y-6">
             {/* Company Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Bedriftsnavn *</Label>
+              <Label htmlFor="name">{t("auto.bedriftsnavn_2")}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
-                placeholder="Skriv inn bedriftsnavn"
+                placeholder={t("auto.skriv_inn_bedriftsnavn")}
                 autoFocus
               />
             </div>
 
             {/* Org Number */}
             <div className="space-y-2">
-              <Label htmlFor="org_number">Organisasjonsnummer</Label>
+              <Label htmlFor="org_number">{t("auto.organisasjonsnummer")}</Label>
               <Input
                 id="org_number"
                 value={formData.org_number}
@@ -257,19 +258,19 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
 
             {/* Address */}
             <div className="space-y-2">
-              <Label htmlFor="address">Adresse</Label>
+              <Label htmlFor="address">{t("auto.adresse")}</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
-                placeholder="Gateadresse"
+                placeholder={t("auto.gateadresse")}
               />
             </div>
 
             {/* Postal Code & City */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="postal_code">Postnummer</Label>
+                <Label htmlFor="postal_code">{t("auto.postnummer")}</Label>
                 <Input
                   id="postal_code"
                   value={formData.postal_code}
@@ -278,12 +279,12 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="city">Sted</Label>
+                <Label htmlFor="city">{t("auto.sted")}</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => handleChange("city", e.target.value)}
-                  placeholder="By/sted"
+                  placeholder={t("auto.by_sted")}
                 />
               </div>
             </div>
@@ -291,7 +292,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
             {/* Contact Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Telefon</Label>
+                <Label htmlFor="phone">{t("auto.telefon")}</Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -301,7 +302,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">E-post</Label>
+                <Label htmlFor="email">{t("auto.e_post_2")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -358,9 +359,9 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
             <Building2 className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Bedriftsinformasjon</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t("auto.bedriftsinformasjon")}</h1>
             <p className="text-muted-foreground">
-              Administrer bedriftsdetaljer og kontaktinfo
+              {t("auto.administrer_bedriftsdetaljer_og_kontakti")}
             </p>
           </div>
         </div>
@@ -376,7 +377,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
         <div className="space-y-6">
           {/* Logo */}
           <div className="space-y-2">
-            <Label>Bedriftslogo</Label>
+            <Label>{t("auto.bedriftslogo")}</Label>
             <LogoUpload
               currentLogoUrl={formData.logo_url}
               onLogoChange={handleLogoChange}
@@ -386,18 +387,18 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
 
           {/* Company Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Bedriftsnavn *</Label>
+            <Label htmlFor="name">{t("auto.bedriftsnavn_2")}</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Skriv inn bedriftsnavn"
+              placeholder={t("auto.skriv_inn_bedriftsnavn")}
             />
           </div>
 
           {/* Org Number */}
           <div className="space-y-2">
-            <Label htmlFor="org_number">Organisasjonsnummer</Label>
+            <Label htmlFor="org_number">{t("auto.organisasjonsnummer")}</Label>
             <Input
               id="org_number"
               value={formData.org_number}
@@ -408,19 +409,19 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
 
           {/* Address */}
           <div className="space-y-2">
-            <Label htmlFor="address">Adresse</Label>
+            <Label htmlFor="address">{t("auto.adresse")}</Label>
             <Input
               id="address"
               value={formData.address}
               onChange={(e) => handleChange("address", e.target.value)}
-              placeholder="Gateadresse"
+              placeholder={t("auto.gateadresse")}
             />
           </div>
 
           {/* Postal Code & City */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="postal_code">Postnummer</Label>
+              <Label htmlFor="postal_code">{t("auto.postnummer")}</Label>
               <Input
                 id="postal_code"
                 value={formData.postal_code}
@@ -429,12 +430,12 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="city">Sted</Label>
+              <Label htmlFor="city">{t("auto.sted")}</Label>
               <Input
                 id="city"
                 value={formData.city}
                 onChange={(e) => handleChange("city", e.target.value)}
-                placeholder="By/sted"
+                placeholder={t("auto.by_sted")}
               />
             </div>
           </div>
@@ -442,7 +443,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
           {/* Contact Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefon</Label>
+              <Label htmlFor="phone">{t("auto.telefon")}</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -452,7 +453,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-post</Label>
+              <Label htmlFor="email">{t("auto.e_post_2")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -465,11 +466,9 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
 
           {/* Industries */}
           <div className="space-y-2 pt-2 border-t border-border">
-            <Label>Bransjer</Label>
+            <Label>{t("auto.bransjer")}</Label>
             <p className="text-sm text-muted-foreground">
-              Velg bransjene bedriften jobber innen. Malbiblioteket filtreres da automatisk til
-              relevante sjekklister og rutiner. Du kan velge flere hvis dere har f.eks. både
-              tømrere, malere og elektrikere. La stå tomt for å vise alt.
+              {t("auto.velg_bransjene_bedriften_jobber_innen_ma")}
             </p>
             <IndustriesMultiSelect
               value={formData.industries}

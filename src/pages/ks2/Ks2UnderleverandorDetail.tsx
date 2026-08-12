@@ -13,12 +13,13 @@ import { Ks2SubcontractorEvaluation } from "@/components/ks2/Ks2SubcontractorEva
 import { Ks2SubcontractorDocumentUpload } from "@/components/ks2/Ks2SubcontractorDocumentUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  pending: { label: "Venter på gransking", color: "bg-yellow-100 text-yellow-800", icon: Clock },
-  approved: { label: "Godkjent", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  approved_with_remarks: { label: "Godkjent med merknader", color: "bg-blue-100 text-blue-800", icon: AlertCircle },
-  rejected: { label: "Avvist", color: "bg-red-100 text-red-800", icon: XCircle },
+  pending: { label: t("auto.venter_paa_gransking"), color: "bg-yellow-100 text-yellow-800", icon: Clock },
+  approved: { label: t("auto.godkjent"), color: "bg-green-100 text-green-800", icon: CheckCircle },
+  approved_with_remarks: { label: t("auto.godkjent_med_merknader"), color: "bg-blue-100 text-blue-800", icon: AlertCircle },
+  rejected: { label: t("auto.avvist"), color: "bg-red-100 text-red-800", icon: XCircle },
 };
 
 const documentTypeLabels: Record<string, string> = {
@@ -64,19 +65,19 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
 
       if (error) throw error;
 
-      toast.success("Invitasjon sendt på nytt!", {
-        description: "En e-post med innloggingslenke er sendt.",
+      toast.success(t("auto.invitasjon_sendt_paa_nytt"), {
+        description: t("auto.en_e_post_med_innloggingslenke_er_sendt"),
       });
     } catch (error) {
       console.error("Error resending invitation:", error);
-      toast.error("Kunne ikke sende invitasjon");
+      toast.error(t("auto.kunne_ikke_sende_invitasjon_2"));
     } finally {
       setResending(false);
     }
   };
 
-  if (isLoading) return <p className="text-center py-8 text-muted-foreground">Laster...</p>;
-  if (!subcontractor) return <p className="text-center py-8 text-muted-foreground">Underleverandør ikke funnet</p>;
+  if (isLoading) return <p className="text-center py-8 text-muted-foreground">{t("auto.laster")}</p>;
+  if (!subcontractor) return <p className="text-center py-8 text-muted-foreground">{t("auto.underleverandoer_ikke_funnet")}</p>;
 
   const status = statusConfig[subcontractor.approval_status];
   const StatusIcon = status.icon;
@@ -114,22 +115,22 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">E-post:</span>
+                <span className="text-muted-foreground">{t("auto.e_post_3")}</span>
                 <span className="ml-2 font-medium">{access.email}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Tilgangsnivå:</span>
+                <span className="text-muted-foreground">{t("auto.tilgangsnivaa_2")}</span>
                 <span className="ml-2 font-medium">{access.access_level === 'guest' ? 'Gjest' : 'Full UE'}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Status:</span>
+                <span className="text-muted-foreground">{t("auto.status")}</span>
                 <Badge variant="outline" className="ml-2">
                   {access.status === 'invited' ? 'Invitert' : access.status === 'active' ? 'Aktiv' : access.status === 'expired' ? 'Utløpt' : 'Fjernet'}
                 </Badge>
               </div>
               {access.last_login && (
                 <div>
-                  <span className="text-muted-foreground">Siste innlogging:</span>
+                  <span className="text-muted-foreground">{t("auto.siste_innlogging")}</span>
                   <span className="ml-2">{format(new Date(access.last_login), 'dd.MM.yyyy HH:mm', { locale: nb })}</span>
                 </div>
               )}
@@ -170,17 +171,17 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Building2 className="h-4 w-4" />Firmainformasjon</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {subcontractor.org_number && <div className="flex justify-between"><span className="text-muted-foreground">Org.nr</span><span>{subcontractor.org_number}</span></div>}
-            {subcontractor.trade && <div className="flex justify-between"><span className="text-muted-foreground">Fag</span><span>{subcontractor.trade}</span></div>}
-            {subcontractor.contract_value && <div className="flex justify-between"><span className="text-muted-foreground">Verdi</span><span>{subcontractor.contract_value.toLocaleString('nb-NO')} kr</span></div>}
+            {subcontractor.org_number && <div className="flex justify-between"><span className="text-muted-foreground">{t("auto.org_nr")}</span><span>{subcontractor.org_number}</span></div>}
+            {subcontractor.trade && <div className="flex justify-between"><span className="text-muted-foreground">{t("auto.fag")}</span><span>{subcontractor.trade}</span></div>}
+            {subcontractor.contract_value && <div className="flex justify-between"><span className="text-muted-foreground">{t("auto.verdi")}</span><span>{subcontractor.contract_value.toLocaleString('nb-NO')} kr</span></div>}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Phone className="h-4 w-4" />Kontakt</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {subcontractor.contact_person && <div className="flex justify-between"><span className="text-muted-foreground">Navn</span><span>{subcontractor.contact_person}</span></div>}
-            {subcontractor.contact_phone && <div className="flex justify-between"><span className="text-muted-foreground">Tlf</span><a href={`tel:${subcontractor.contact_phone}`} className="text-primary">{subcontractor.contact_phone}</a></div>}
-            {subcontractor.contact_email && <div className="flex justify-between"><span className="text-muted-foreground">E-post</span><a href={`mailto:${subcontractor.contact_email}`} className="text-primary truncate ml-2">{subcontractor.contact_email}</a></div>}
+            {subcontractor.contact_person && <div className="flex justify-between"><span className="text-muted-foreground">{t("auto.navn_2")}</span><span>{subcontractor.contact_person}</span></div>}
+            {subcontractor.contact_phone && <div className="flex justify-between"><span className="text-muted-foreground">{t("auto.tlf")}</span><a href={`tel:${subcontractor.contact_phone}`} className="text-primary">{subcontractor.contact_phone}</a></div>}
+            {subcontractor.contact_email && <div className="flex justify-between"><span className="text-muted-foreground">{t("auto.e_post_2")}</span><a href={`mailto:${subcontractor.contact_email}`} className="text-primary truncate ml-2">{subcontractor.contact_email}</a></div>}
           </CardContent>
         </Card>
       </div>
@@ -188,7 +189,7 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
       {(subcontractor.start_date || subcontractor.end_date) && (
         <Card><CardContent className="p-4 flex items-center gap-4 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">Periode:</span>
+          <span className="text-muted-foreground">{t("auto.periode_2")}</span>
           <span>{subcontractor.start_date && format(new Date(subcontractor.start_date), 'dd.MM.yyyy', { locale: nb })}{subcontractor.start_date && subcontractor.end_date && ' - '}{subcontractor.end_date && format(new Date(subcontractor.end_date), 'dd.MM.yyyy', { locale: nb })}</span>
         </CardContent></Card>
       )}
@@ -205,14 +206,14 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
         <TabsContent value="documents">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Dokumenter</CardTitle>
+              <CardTitle className="text-lg">{t("auto.dokumenter")}</CardTitle>
               <Button size="sm" onClick={() => setShowUploadDialog(true)}><Upload className="h-4 w-4 mr-2" />Last opp</Button>
             </CardHeader>
             <CardContent>
-              {docsLoading ? <p className="text-sm text-muted-foreground">Laster...</p> : documents.length === 0 ? (
+              {docsLoading ? <p className="text-sm text-muted-foreground">{t("auto.laster")}</p> : documents.length === 0 ? (
                 <div className="text-center py-8">
                   <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">Ingen dokumenter</p>
+                  <p className="text-muted-foreground">{t("auto.ingen_dokumenter")}</p>
                   <Button variant="outline" size="sm" className="mt-3" onClick={() => setShowUploadDialog(true)}><Upload className="h-4 w-4 mr-2" />Last opp</Button>
                 </div>
               ) : (

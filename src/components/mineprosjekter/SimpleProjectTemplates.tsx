@@ -14,46 +14,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { t } from "@/i18n/t";
 
 interface SimpleProjectTemplatesProps {
   projectId: string;
 }
 
 const CHECKLIST_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  tomrerarbeid: { label: "Tømrerarbeid", icon: Hammer, color: "bg-amber-500" },
-  vatrom: { label: "Våtrom", icon: Droplets, color: "bg-blue-500" },
-  betong: { label: "Betong", icon: Box, color: "bg-slate-500" },
-  tak: { label: "Tak", icon: Home, color: "bg-orange-500" },
-  fasade: { label: "Fasade", icon: Layers, color: "bg-emerald-500" },
-  grunn: { label: "Grunn og fundamenter", icon: Mountain, color: "bg-stone-500" },
-  sluttkontroll: { label: "Sluttkontroll", icon: ClipboardCheck, color: "bg-green-500" },
-  forprosjekt: { label: "Førprosjekt", icon: FolderCog, color: "bg-purple-500" },
-  underentreprenor: { label: "Underentreprenør", icon: Users, color: "bg-indigo-500" },
-  uk: { label: "Uavhengig kontroll", icon: Shield, color: "bg-red-500" },
-  general: { label: "Generelt", icon: Settings, color: "bg-gray-500" },
+  tomrerarbeid: { label: t("auto.toemrerarbeid"), icon: Hammer, color: "bg-amber-500" },
+  vatrom: { label: t("auto.vaatrom"), icon: Droplets, color: "bg-blue-500" },
+  betong: { label: t("auto.betong"), icon: Box, color: "bg-slate-500" },
+  tak: { label: t("auto.tak"), icon: Home, color: "bg-orange-500" },
+  fasade: { label: t("auto.fasade"), icon: Layers, color: "bg-emerald-500" },
+  grunn: { label: t("auto.grunn_og_fundamenter"), icon: Mountain, color: "bg-stone-500" },
+  sluttkontroll: { label: t("auto.sluttkontroll"), icon: ClipboardCheck, color: "bg-green-500" },
+  forprosjekt: { label: t("auto.foerprosjekt"), icon: FolderCog, color: "bg-purple-500" },
+  underentreprenor: { label: t("auto.underentreprenoer"), icon: Users, color: "bg-indigo-500" },
+  uk: { label: t("auto.uavhengig_kontroll"), icon: Shield, color: "bg-red-500" },
+  general: { label: t("auto.generelt"), icon: Settings, color: "bg-gray-500" },
 };
 
 const ROUTINE_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  kvalitetssikring: { label: "Kvalitetssikring - Generelt", icon: FileCheck, color: "bg-blue-500" },
-  avvikshåndtering: { label: "Avvikshåndtering", icon: AlertTriangle, color: "bg-amber-500" },
-  dokumentstyring: { label: "Dokumentstyring", icon: BookText, color: "bg-purple-500" },
-  underentreprenor: { label: "Underentreprenørkontroll", icon: Users, color: "bg-indigo-500" },
-  hms: { label: "HMS på byggeplass", icon: Shield, color: "bg-green-500" },
-  opplæring: { label: "Opplæring", icon: GraduationCap, color: "bg-cyan-500" },
-  kontroll: { label: "Kontroll", icon: Search, color: "bg-orange-500" },
-  general: { label: "Generelt", icon: Cog, color: "bg-gray-500" },
+  kvalitetssikring: { label: t("auto.kvalitetssikring_generelt"), icon: FileCheck, color: "bg-blue-500" },
+  avvikshåndtering: { label: t("auto.avvikshaandtering"), icon: AlertTriangle, color: "bg-amber-500" },
+  dokumentstyring: { label: t("auto.dokumentstyring"), icon: BookText, color: "bg-purple-500" },
+  underentreprenor: { label: t("auto.underentreprenoerkontroll"), icon: Users, color: "bg-indigo-500" },
+  hms: { label: t("auto.hms_paa_byggeplass"), icon: Shield, color: "bg-green-500" },
+  opplæring: { label: t("auto.opplaering"), icon: GraduationCap, color: "bg-cyan-500" },
+  kontroll: { label: t("auto.kontroll"), icon: Search, color: "bg-orange-500" },
+  general: { label: t("auto.generelt"), icon: Cog, color: "bg-gray-500" },
 };
 
 const DOCUMENT_CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string }> = {
-  checklist: { label: "Sjekkliste-mal", icon: CheckSquare, color: "bg-blue-500" },
-  form: { label: "Skjema", icon: FileText, color: "bg-purple-500" },
-  routine: { label: "Rutine", icon: BookText, color: "bg-emerald-500" },
-  building_case: { label: "Byggesak", icon: Building, color: "bg-amber-500" },
-  contract: { label: "Kontrakt", icon: FileSignature, color: "bg-indigo-500" },
-  samsvar: { label: "Samsvarserklæring", icon: Scale, color: "bg-green-500" },
-  nabovarsel: { label: "Nabovarsel", icon: Bell, color: "bg-orange-500" },
+  checklist: { label: t("auto.sjekkliste_mal"), icon: CheckSquare, color: "bg-blue-500" },
+  form: { label: t("auto.skjema"), icon: FileText, color: "bg-purple-500" },
+  routine: { label: t("auto.rutine"), icon: BookText, color: "bg-emerald-500" },
+  building_case: { label: t("auto.byggesak"), icon: Building, color: "bg-amber-500" },
+  contract: { label: t("auto.kontrakt"), icon: FileSignature, color: "bg-indigo-500" },
+  samsvar: { label: t("auto.samsvarserklaering"), icon: Scale, color: "bg-green-500" },
+  nabovarsel: { label: t("auto.nabovarsel"), icon: Bell, color: "bg-orange-500" },
   fdv: { label: "FDV", icon: Wrench, color: "bg-cyan-500" },
-  other: { label: "Annet", icon: FolderOpen, color: "bg-gray-500" },
+  other: { label: t("auto.annet"), icon: FolderOpen, color: "bg-gray-500" },
 };
 
 export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProps) {
@@ -75,12 +76,12 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
       const url = await getDocumentUrl(filePath);
       if (url) {
         window.open(url, "_blank");
-        toast.success("Dokument åpnet");
+        toast.success(t("auto.dokument_aapnet"));
       } else {
-        toast.error("Kunne ikke hente dokument");
+        toast.error(t("auto.kunne_ikke_hente_dokument"));
       }
     } catch (error) {
-      toast.error("Kunne ikke laste ned dokument");
+      toast.error(t("auto.kunne_ikke_laste_ned_dokument"));
     } finally {
       setDownloadingId(null);
     }
@@ -184,7 +185,7 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{item.description}</p>
                     )}
                     {item.is_mandatory && (
-                      <Badge variant="outline" className="mt-1 text-xs">Obligatorisk</Badge>
+                      <Badge variant="outline" className="mt-1 text-xs">{t("auto.obligatorisk")}</Badge>
                     )}
                   </div>
                   {type === 'document' ? (
@@ -236,7 +237,7 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
               <CheckSquare className="w-4 h-4 text-primary" />
               <div>
                 <p className="text-xl font-bold">{checklistTemplates.length}</p>
-                <p className="text-xs text-muted-foreground">Sjekklister</p>
+                <p className="text-xs text-muted-foreground">{t("auto.sjekklister")}</p>
               </div>
             </div>
           </Card>
@@ -245,7 +246,7 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
               <FileText className="w-4 h-4 text-primary" />
               <div>
                 <p className="text-xl font-bold">{routineTemplates.length}</p>
-                <p className="text-xs text-muted-foreground">Rutiner</p>
+                <p className="text-xs text-muted-foreground">{t("auto.rutiner")}</p>
               </div>
             </div>
           </Card>
@@ -254,7 +255,7 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
               <Download className="w-4 h-4 text-primary" />
               <div>
                 <p className="text-xl font-bold">{documents.length}</p>
-                <p className="text-xs text-muted-foreground">Dokumenter</p>
+                <p className="text-xs text-muted-foreground">{t("auto.dokumenter")}</p>
               </div>
             </div>
           </Card>
@@ -264,7 +265,7 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
-            placeholder="Søk etter maler, rutiner og dokumenter..."
+            placeholder={t("auto.soek_etter_maler_rutiner_og_dokumenter")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -275,21 +276,21 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="checklists" className="gap-2">
               <CheckSquare className="w-4 h-4" />
-              <span className="hidden sm:inline">Sjekklister</span>
+              <span className="hidden sm:inline">{t("auto.sjekklister")}</span>
             </TabsTrigger>
             <TabsTrigger value="routines" className="gap-2">
               <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Rutiner</span>
+              <span className="hidden sm:inline">{t("auto.rutiner")}</span>
             </TabsTrigger>
             <TabsTrigger value="documents" className="gap-2">
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Dokumenter</span>
+              <span className="hidden sm:inline">{t("auto.dokumenter")}</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="checklists">
             {Object.keys(groupedChecklists).length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Ingen sjekkliste-maler tilgjengelig</p>
+              <p className="text-muted-foreground text-center py-8">{t("auto.ingen_sjekkliste_maler_tilgjengelig")}</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {Object.entries(groupedChecklists)
@@ -308,7 +309,7 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
 
           <TabsContent value="routines">
             {Object.keys(groupedRoutines).length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Ingen rutine-maler tilgjengelig</p>
+              <p className="text-muted-foreground text-center py-8">{t("auto.ingen_rutine_maler_tilgjengelig")}</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {Object.entries(groupedRoutines)
@@ -327,7 +328,7 @@ export function SimpleProjectTemplates({ projectId }: SimpleProjectTemplatesProp
 
           <TabsContent value="documents">
             {Object.keys(groupedDocuments).length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">Ingen dokumenter tilgjengelig</p>
+              <p className="text-muted-foreground text-center py-8">{t("auto.ingen_dokumenter_tilgjengelig")}</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {Object.entries(groupedDocuments)

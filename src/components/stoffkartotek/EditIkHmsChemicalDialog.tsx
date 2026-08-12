@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { t } from "@/i18n/t";
 
 interface IkHmsStoffkartotek {
   id: string;
@@ -87,7 +88,7 @@ export function EditIkHmsChemicalDialog({
       });
     } catch (error) {
       console.error("Error loading product:", error);
-      toast.error("Kunne ikke laste stoffinformasjon");
+      toast.error(t("auto.kunne_ikke_laste_stoffinformasjon"));
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +96,7 @@ export function EditIkHmsChemicalDialog({
 
   const handleSave = async () => {
     if (!formData.product_name.trim()) {
-      toast.error("Produktnavn er påkrevd");
+      toast.error(t("auto.produktnavn_er_paakrevd"));
       return;
     }
 
@@ -116,11 +117,11 @@ export function EditIkHmsChemicalDialog({
       if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ["ik-hms-stoffkartotek", companyId] });
-      toast.success("Stoff oppdatert");
+      toast.success(t("auto.stoff_oppdatert"));
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving product:", error);
-      toast.error("Kunne ikke oppdatere stoff");
+      toast.error(t("auto.kunne_ikke_oppdatere_stoff"));
     } finally {
       setIsSaving(false);
     }
@@ -139,7 +140,7 @@ export function EditIkHmsChemicalDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Rediger stoff</DialogTitle>
+          <DialogTitle>{t("auto.rediger_stoff")}</DialogTitle>
         </DialogHeader>
         
         {isLoading ? (
@@ -149,29 +150,29 @@ export function EditIkHmsChemicalDialog({
         ) : (
           <div className="space-y-4 pt-4">
             <div>
-              <Label htmlFor="edit_product_name">Produktnavn *</Label>
+              <Label htmlFor="edit_product_name">{t("auto.produktnavn")}</Label>
               <Input
                 id="edit_product_name"
                 value={formData.product_name}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, product_name: e.target.value }))
                 }
-                placeholder="F.eks. Aceton"
+                placeholder={t("auto.f_eks_aceton")}
               />
             </div>
             <div>
-              <Label htmlFor="edit_manufacturer">Produsent/leverandør</Label>
+              <Label htmlFor="edit_manufacturer">{t("auto.produsent_leverandoer_2")}</Label>
               <Input
                 id="edit_manufacturer"
                 value={formData.manufacturer}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, manufacturer: e.target.value }))
                 }
-                placeholder="F.eks. Jotun"
+                placeholder={t("auto.f_eks_jotun")}
               />
             </div>
             <div>
-              <Label>Fareklasser</Label>
+              <Label>{t("auto.fareklasser")}</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {DANGER_CLASSES.map((dc) => (
                   <Badge
@@ -186,25 +187,25 @@ export function EditIkHmsChemicalDialog({
               </div>
             </div>
             <div>
-              <Label htmlFor="edit_location">Lagringssted</Label>
+              <Label htmlFor="edit_location">{t("auto.lagringssted")}</Label>
               <Input
                 id="edit_location"
                 value={formData.location}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, location: e.target.value }))
                 }
-                placeholder="F.eks. Kjemikalieskap A"
+                placeholder={t("auto.f_eks_kjemikalieskap_a")}
               />
             </div>
             <div>
-              <Label htmlFor="edit_notes">Notater</Label>
+              <Label htmlFor="edit_notes">{t("auto.notater")}</Label>
               <Textarea
                 id="edit_notes"
                 value={formData.notes}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, notes: e.target.value }))
                 }
-                placeholder="Tilleggsinformasjon..."
+                placeholder={t("auto.tilleggsinformasjon")}
                 rows={3}
               />
             </div>
@@ -224,7 +225,7 @@ export function EditIkHmsChemicalDialog({
                 )}
               </Button>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
             </div>
           </div>

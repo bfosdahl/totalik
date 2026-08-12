@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { t } from "@/i18n/t";
 
 const ROUTINE_CATEGORIES: Record<string, string> = {
   kvalitetssikring: "Kvalitetssikring - Generelt",
@@ -110,7 +111,7 @@ export default function Ks2Rutiner() {
         await markAsImplemented(templateId);
       }
     } catch (error) {
-      toast.error("Kunne ikke oppdatere");
+      toast.error(t("auto.kunne_ikke_oppdatere_2"));
     }
   };
 
@@ -242,8 +243,8 @@ export default function Ks2Rutiner() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Rutinebank</h2>
-          <p className="text-muted-foreground">Rutiner som gjelder for dette prosjektet</p>
+          <h2 className="text-2xl font-bold">{t("auto.rutinebank")}</h2>
+          <p className="text-muted-foreground">{t("auto.rutiner_som_gjelder_for_dette_prosjektet")}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={() => setShowImportDialog(true)}>
@@ -258,9 +259,9 @@ export default function Ks2Rutiner() {
         <Card className="border-dashed">
           <CardContent className="py-8 text-center">
             <Library className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Ingen rutiner lagt til</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_rutiner_lagt_til")}</h3>
             <p className="text-muted-foreground mb-4">
-              Hent inn rutiner fra firmabiblioteket, eller gå til malbiblioteket for admin-maler.
+              {t("auto.hent_inn_rutiner_fra_firmabiblioteket_el")}
             </p>
             <div className="flex gap-2 justify-center flex-wrap">
               <Button onClick={() => setShowImportDialog(true)}>
@@ -288,7 +289,7 @@ export default function Ks2Rutiner() {
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Søk rutiner..."
+                    placeholder={t("auto.soek_rutiner")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9"
@@ -495,8 +496,8 @@ export default function Ks2Rutiner() {
           
            <Tabs defaultValue="content" className="flex-1 overflow-hidden flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="content">Innhold</TabsTrigger>
-              <TabsTrigger value="approval">Godkjenning</TabsTrigger>
+              <TabsTrigger value="content">{t("auto.innhold")}</TabsTrigger>
+              <TabsTrigger value="approval">{t("auto.godkjenning")}</TabsTrigger>
               <TabsTrigger value="checklists">
                 Sjekklister ({viewingRoutine?.linked_checklist_ids?.length || 0})
               </TabsTrigger>
@@ -508,19 +509,19 @@ export default function Ks2Rutiner() {
                 <div className="bg-muted/50 rounded-lg p-3 space-y-2 text-sm">
                   <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="font-medium text-foreground">Kategori:</span>
+                      <span className="font-medium text-foreground">{t("auto.kategori_3")}</span>
                       {viewingRoutine?.routine_template?.category}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="font-medium text-foreground">Versjon:</span>
+                      <span className="font-medium text-foreground">{t("auto.versjon_2")}</span>
                       v{viewingRoutine?.routine_template?.version || "1"}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="font-medium text-foreground">Opprettet:</span>
+                      <span className="font-medium text-foreground">{t("auto.opprettet")}</span>
                       {viewingRoutine?.created_at ? format(new Date(viewingRoutine.created_at), "dd.MM.yyyy", { locale: nb }) : "—"}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="font-medium text-foreground">Sist revidert:</span>
+                      <span className="font-medium text-foreground">{t("auto.sist_revidert")}</span>
                       {viewingRoutine?.updated_at ? format(new Date(viewingRoutine.updated_at), "dd.MM.yyyy", { locale: nb }) : "—"}
                     </div>
                   </div>
@@ -542,7 +543,7 @@ export default function Ks2Rutiner() {
                 
                 {viewingRoutine?.routine_template?.description && (
                   <div>
-                    <h4 className="font-medium mb-1">Beskrivelse</h4>
+                    <h4 className="font-medium mb-1">{t("auto.beskrivelse")}</h4>
                     <p className="text-sm text-muted-foreground">
                       {viewingRoutine.routine_template.description}
                     </p>
@@ -551,7 +552,7 @@ export default function Ks2Rutiner() {
                 
                 {viewingRoutine?.routine_template?.content && (
                   <div>
-                    <h4 className="font-medium mb-2">Innhold</h4>
+                    <h4 className="font-medium mb-2">{t("auto.innhold")}</h4>
                     <div className="bg-muted/50 rounded-lg p-4 text-sm whitespace-pre-wrap">
                       {viewingRoutine.routine_template.content}
                     </div>
@@ -560,14 +561,14 @@ export default function Ks2Rutiner() {
 
                 {!viewingRoutine?.routine_template?.content && !viewingRoutine?.routine_template?.description && (
                   <p className="text-muted-foreground text-sm">
-                    Ingen innhold tilgjengelig for denne rutinen.
+                    {t("auto.ingen_innhold_tilgjengelig_for_denne_rut")}
                   </p>
                 )}
               </TabsContent>
 
               <TabsContent value="approval" className="mt-0 space-y-4">
                 <div>
-                  <h4 className="font-medium mb-3">Godkjent av</h4>
+                  <h4 className="font-medium mb-3">{t("auto.godkjent_av")}</h4>
                   <div className="space-y-3">
                     <div className="flex gap-2">
                       <Button
@@ -592,10 +593,10 @@ export default function Ks2Rutiner() {
                         onValueChange={(value) => handleSetApprover(value === "__none__" ? "" : value)}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Velg godkjenner..." />
+                          <SelectValue placeholder={t("auto.velg_godkjenner")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__none__">Ingen valgt</SelectItem>
+                          <SelectItem value="__none__">{t("auto.ingen_valgt")}</SelectItem>
                           {users.map((user) => (
                             <SelectItem key={user.id} value={getUserDisplayName(user)}>
                               {getUserDisplayName(user)}
@@ -606,7 +607,7 @@ export default function Ks2Rutiner() {
                     ) : (
                       <div className="flex gap-2">
                         <Input
-                          placeholder="Skriv inn navn..."
+                          placeholder={t("auto.skriv_inn_navn")}
                           value={freetextApprover}
                           onChange={(e) => setFreetextApprover(e.target.value)}
                         />
@@ -646,7 +647,7 @@ export default function Ks2Rutiner() {
 
               <TabsContent value="checklists" className="mt-0 space-y-4">
                 <div>
-                  <h4 className="font-medium mb-3">Koblede sjekklister</h4>
+                  <h4 className="font-medium mb-3">{t("auto.koblede_sjekklister")}</h4>
                   
                   {getLinkedChecklists().length > 0 ? (
                     <div className="space-y-2 mb-4">
@@ -674,18 +675,18 @@ export default function Ks2Rutiner() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground mb-4">
-                      Ingen sjekklister er koblet til denne rutinen ennå.
+                      {t("auto.ingen_sjekklister_er_koblet_til_denne_ru")}
                     </p>
                   )}
 
                   {getAvailableChecklists().length > 0 && (
                     <div>
-                      <h5 className="text-sm font-medium mb-2">Legg til sjekkliste</h5>
+                      <h5 className="text-sm font-medium mb-2">{t("auto.legg_til_sjekkliste")}</h5>
                       <Select
                         onValueChange={(value) => handleLinkChecklist(value)}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Velg sjekkliste å koble..." />
+                          <SelectValue placeholder={t("auto.velg_sjekkliste_aa_koble")} />
                         </SelectTrigger>
                         <SelectContent>
                           {getAvailableChecklists().map((checklist) => (
@@ -704,7 +705,7 @@ export default function Ks2Rutiner() {
                   {checklistTemplates.length === 0 && (
                     <div className="text-center py-4">
                       <p className="text-sm text-muted-foreground mb-2">
-                        Ingen sjekklister er lagt til i prosjektet.
+                        {t("auto.ingen_sjekklister_er_lagt_til_i_prosjekt")}
                       </p>
                       <Button 
                         variant="outline" 
@@ -725,7 +726,7 @@ export default function Ks2Rutiner() {
 
           <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setViewingRoutine(null)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
             {!viewingRoutine?.is_implemented && (
               <Button onClick={() => {
@@ -752,8 +753,8 @@ export default function Ks2Rutiner() {
           
           <Tabs defaultValue="content" className="flex-1 overflow-hidden flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="content">Innhold</TabsTrigger>
-              <TabsTrigger value="approval">Godkjenning</TabsTrigger>
+              <TabsTrigger value="content">{t("auto.innhold")}</TabsTrigger>
+              <TabsTrigger value="approval">{t("auto.godkjenning")}</TabsTrigger>
               <TabsTrigger value="checklists">
                 Sjekklister ({viewingCustomRoutine ? getLinkedTemplates(viewingCustomRoutine.id).length : 0})
               </TabsTrigger>
@@ -766,20 +767,20 @@ export default function Ks2Rutiner() {
                   <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
                     {viewingCustomRoutine?.routine_number && (
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <span className="font-medium text-foreground">Rutine nr:</span>
+                        <span className="font-medium text-foreground">{t("auto.rutine_nr_2")}</span>
                         <span className="font-mono">{viewingCustomRoutine.routine_number}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="font-medium text-foreground">Kategori:</span>
+                      <span className="font-medium text-foreground">{t("auto.kategori_3")}</span>
                       {ROUTINE_CATEGORIES[viewingCustomRoutine?.category || 'general'] || viewingCustomRoutine?.category}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="font-medium text-foreground">Opprettet:</span>
+                      <span className="font-medium text-foreground">{t("auto.opprettet")}</span>
                       {viewingCustomRoutine?.created_at ? format(new Date(viewingCustomRoutine.created_at), "dd.MM.yyyy", { locale: nb }) : "—"}
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="font-medium text-foreground">Sist revidert:</span>
+                      <span className="font-medium text-foreground">{t("auto.sist_revidert")}</span>
                       {viewingCustomRoutine?.updated_at ? format(new Date(viewingCustomRoutine.updated_at), "dd.MM.yyyy", { locale: nb }) : "—"}
                     </div>
                   </div>
@@ -799,7 +800,7 @@ export default function Ks2Rutiner() {
                 
                 {viewingCustomRoutine?.description && (
                   <div>
-                    <h4 className="font-medium mb-1">Beskrivelse</h4>
+                    <h4 className="font-medium mb-1">{t("auto.beskrivelse")}</h4>
                     <p className="text-sm text-muted-foreground">
                       {viewingCustomRoutine.description}
                     </p>
@@ -808,7 +809,7 @@ export default function Ks2Rutiner() {
                 
                 {viewingCustomRoutine?.content && (
                   <div>
-                    <h4 className="font-medium mb-2">Innhold</h4>
+                    <h4 className="font-medium mb-2">{t("auto.innhold")}</h4>
                     <div className="bg-muted/50 rounded-lg p-4 text-sm whitespace-pre-wrap">
                       {viewingCustomRoutine.content}
                     </div>
@@ -817,14 +818,14 @@ export default function Ks2Rutiner() {
 
                 {!viewingCustomRoutine?.content && !viewingCustomRoutine?.description && (
                   <p className="text-muted-foreground text-sm">
-                    Ingen innhold tilgjengelig for denne rutinen.
+                    {t("auto.ingen_innhold_tilgjengelig_for_denne_rut")}
                   </p>
                 )}
               </TabsContent>
               
               <TabsContent value="approval" className="mt-0 space-y-4">
                 <div>
-                  <h4 className="font-medium mb-2">Godkjent av</h4>
+                  <h4 className="font-medium mb-2">{t("auto.godkjent_av")}</h4>
                   {viewingCustomRoutine?.approved_by ? (
                     <div className="flex items-center gap-2 mb-4">
                       <Badge variant="secondary" className="gap-1">
@@ -841,7 +842,7 @@ export default function Ks2Rutiner() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground mb-4">
-                      Ingen godkjenner satt ennå.
+                      {t("auto.ingen_godkjenner_satt_ennaa")}
                     </p>
                   )}
                   
@@ -869,10 +870,10 @@ export default function Ks2Rutiner() {
                         onValueChange={(value) => handleSetCustomApprover(value === "__none__" ? "" : value)}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Velg godkjenner..." />
+                          <SelectValue placeholder={t("auto.velg_godkjenner")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__none__">Ingen valgt</SelectItem>
+                          <SelectItem value="__none__">{t("auto.ingen_valgt")}</SelectItem>
                           {users.map((user) => (
                             <SelectItem key={user.id} value={getUserDisplayName(user)}>
                               {getUserDisplayName(user)}
@@ -883,7 +884,7 @@ export default function Ks2Rutiner() {
                     ) : (
                       <div className="flex gap-2">
                         <Input
-                          placeholder="Skriv inn navn..."
+                          placeholder={t("auto.skriv_inn_navn")}
                           value={customFreetextApprover}
                           onChange={(e) => setCustomFreetextApprover(e.target.value)}
                         />
@@ -905,7 +906,7 @@ export default function Ks2Rutiner() {
               </TabsContent>
               
               <TabsContent value="checklists" className="mt-0 space-y-4">
-                <h4 className="font-medium">Koblede sjekklister</h4>
+                <h4 className="font-medium">{t("auto.koblede_sjekklister")}</h4>
                 
                 {getCustomLinkedChecklists().length > 0 ? (
                   <div className="space-y-2">
@@ -935,18 +936,18 @@ export default function Ks2Rutiner() {
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Ingen sjekklister er koblet til denne rutinen ennå.
+                    {t("auto.ingen_sjekklister_er_koblet_til_denne_ru")}
                   </p>
                 )}
 
                 {getCustomAvailableChecklists().length > 0 && (
                   <div>
-                    <h5 className="text-sm font-medium mb-2">Legg til sjekkliste</h5>
+                    <h5 className="text-sm font-medium mb-2">{t("auto.legg_til_sjekkliste")}</h5>
                     <Select
                       onValueChange={(value) => handleLinkCustomChecklist(value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg sjekkliste å koble..." />
+                        <SelectValue placeholder={t("auto.velg_sjekkliste_aa_koble")} />
                       </SelectTrigger>
                       <SelectContent>
                         {getCustomAvailableChecklists().map((checklist) => (
@@ -965,7 +966,7 @@ export default function Ks2Rutiner() {
                 {checklistTemplates.length === 0 && (
                   <div className="text-center py-4">
                     <p className="text-sm text-muted-foreground mb-2">
-                      Ingen sjekklister er lagt til i prosjektet.
+                      {t("auto.ingen_sjekklister_er_lagt_til_i_prosjekt")}
                     </p>
                     <Button 
                       variant="outline" 
@@ -985,7 +986,7 @@ export default function Ks2Rutiner() {
 
           <div className="flex justify-end gap-2 pt-4 border-t mt-4">
             <Button variant="outline" onClick={() => setViewingCustomRoutine(null)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
             <Button onClick={() => {
               if (viewingCustomRoutine) {
@@ -1009,22 +1010,22 @@ export default function Ks2Rutiner() {
               Rediger rutine
             </DialogTitle>
             <DialogDescription>
-              Rediger innholdet i rutinen nedenfor
+              {t("auto.rediger_innholdet_i_rutinen_nedenfor")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Navn på rutine *</Label>
+              <Label htmlFor="edit-name">{t("auto.navn_paa_rutine_2")}</Label>
               <Input
                 id="edit-name"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                placeholder="F.eks. Rutine for kvalitetskontroll"
+                placeholder={t("auto.f_eks_rutine_for_kvalitetskontroll")}
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="edit-category">Kategori</Label>
+              <Label htmlFor="edit-category">{t("auto.kategori")}</Label>
               <Select value={editCategory} onValueChange={setEditCategory}>
                 <SelectTrigger>
                   <SelectValue />
@@ -1038,29 +1039,29 @@ export default function Ks2Rutiner() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Beskrivelse</Label>
+              <Label htmlFor="edit-description">{t("auto.beskrivelse")}</Label>
               <Input
                 id="edit-description"
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                placeholder="Kort beskrivelse av rutinen"
+                placeholder={t("auto.kort_beskrivelse_av_rutinen_2")}
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="edit-content">Innhold</Label>
+              <Label htmlFor="edit-content">{t("auto.innhold")}</Label>
               <Textarea
                 id="edit-content"
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                placeholder="Skriv rutinens fullstendige innhold her..."
+                placeholder={t("auto.skriv_rutinens_fullstendige_innhold_her")}
                 rows={10}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingCustomRoutine(null)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button 
               onClick={handleSaveCustomRoutine}

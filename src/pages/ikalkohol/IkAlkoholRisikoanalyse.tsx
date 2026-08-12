@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, AlertTriangle, Edit, Trash2, Loader2, Sparkles, Clock } from "lucide-react";
 import { useIkAlkoholRisks, RISK_AREAS, PROBABILITY_LEVELS, CONSEQUENCE_LEVELS, RISK_LEVEL_COLORS, MEASURE_STATUSES } from "@/hooks/useIkAlkoholRisks";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { t } from "@/i18n/t";
 
 const IkAlkoholRisikoanalyse = () => {
   const navigate = useNavigate();
@@ -101,10 +102,10 @@ const IkAlkoholRisikoanalyse = () => {
               <p className="text-sm text-muted-foreground mt-1">
                 Sannsynlighet: {risk.probability} × Konsekvens: {risk.consequence} = {risk.probability * risk.consequence}
               </p>
-              {risk.existing_controls && <p className="text-sm mt-2"><span className="font-medium">Eksisterende tiltak:</span> {risk.existing_controls}</p>}
+              {risk.existing_controls && <p className="text-sm mt-2"><span className="font-medium">{t("auto.eksisterende_tiltak_2")}</span> {risk.existing_controls}</p>}
               {risk.planned_measures?.length > 0 && (
                 <div className="mt-2">
-                  <p className="text-sm font-medium">Planlagte tiltak:</p>
+                  <p className="text-sm font-medium">{t("auto.planlagte_tiltak_2")}</p>
                   <ul className="text-sm">{risk.planned_measures.map((m: string, i: number) => <li key={i}>• {m}</li>)}</ul>
                 </div>
               )}
@@ -124,8 +125,8 @@ const IkAlkoholRisikoanalyse = () => {
       <div className="container max-w-6xl mx-auto py-6 px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Risikoanalyse</h1>
-            <p className="text-muted-foreground">Risikovurdering med prikksystem</p>
+            <h1 className="text-2xl font-bold">{t("auto.risikoanalyse")}</h1>
+            <p className="text-muted-foreground">{t("auto.risikovurdering_med_prikksystem")}</p>
           </div>
           <div className="flex gap-2">
             {risks.length === 0 && (
@@ -144,37 +145,37 @@ const IkAlkoholRisikoanalyse = () => {
           <Card className="border-red-200 bg-red-50">
             <CardContent className="py-4 text-center">
               <p className="text-2xl font-bold text-red-700">{criticalRisks.length}</p>
-              <p className="text-sm text-red-600">Kritisk</p>
+              <p className="text-sm text-red-600">{t("auto.kritisk")}</p>
             </CardContent>
           </Card>
           <Card className="border-orange-200 bg-orange-50">
             <CardContent className="py-4 text-center">
               <p className="text-2xl font-bold text-orange-700">{highRisks.length}</p>
-              <p className="text-sm text-orange-600">Høy</p>
+              <p className="text-sm text-orange-600">{t("auto.hoey")}</p>
             </CardContent>
           </Card>
           <Card className="border-yellow-200 bg-yellow-50">
             <CardContent className="py-4 text-center">
               <p className="text-2xl font-bold text-yellow-700">{mediumRisks.length}</p>
-              <p className="text-sm text-yellow-600">Middels</p>
+              <p className="text-sm text-yellow-600">{t("auto.middels")}</p>
             </CardContent>
           </Card>
           <Card className="border-green-200 bg-green-50">
             <CardContent className="py-4 text-center">
               <p className="text-2xl font-bold text-green-700">{lowRisks.length}</p>
-              <p className="text-sm text-green-600">Lav</p>
+              <p className="text-sm text-green-600">{t("auto.lav")}</p>
             </CardContent>
           </Card>
         </div>
 
         {risks.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-muted-foreground">Ingen risikoer registrert</CardContent></Card>
+          <Card><CardContent className="py-8 text-center text-muted-foreground">{t("auto.ingen_risikoer_registrert")}</CardContent></Card>
         ) : (
           <div className="space-y-4">
             {criticalRisks.length > 0 && <div><h3 className="font-semibold text-red-700 mb-2 flex items-center gap-2"><AlertTriangle className="h-5 w-5" />Kritiske risikoer</h3>{criticalRisks.map(r => <RiskCard key={r.id} risk={r} />)}</div>}
-            {highRisks.length > 0 && <div><h3 className="font-semibold text-orange-700 mb-2">Høye risikoer</h3>{highRisks.map(r => <RiskCard key={r.id} risk={r} />)}</div>}
-            {mediumRisks.length > 0 && <div><h3 className="font-semibold text-yellow-700 mb-2">Middels risikoer</h3>{mediumRisks.map(r => <RiskCard key={r.id} risk={r} />)}</div>}
-            {lowRisks.length > 0 && <div><h3 className="font-semibold text-green-700 mb-2">Lave risikoer</h3>{lowRisks.map(r => <RiskCard key={r.id} risk={r} />)}</div>}
+            {highRisks.length > 0 && <div><h3 className="font-semibold text-orange-700 mb-2">{t("auto.hoeye_risikoer")}</h3>{highRisks.map(r => <RiskCard key={r.id} risk={r} />)}</div>}
+            {mediumRisks.length > 0 && <div><h3 className="font-semibold text-yellow-700 mb-2">{t("auto.middels_risikoer")}</h3>{mediumRisks.map(r => <RiskCard key={r.id} risk={r} />)}</div>}
+            {lowRisks.length > 0 && <div><h3 className="font-semibold text-green-700 mb-2">{t("auto.lave_risikoer")}</h3>{lowRisks.map(r => <RiskCard key={r.id} risk={r} />)}</div>}
           </div>
         )}
 
@@ -183,24 +184,24 @@ const IkAlkoholRisikoanalyse = () => {
             <DialogHeader><DialogTitle>{editingRisk ? 'Rediger risiko' : 'Ny risiko'}</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Risikoområde *</label>
+                <label className="text-sm font-medium">{t("auto.risikoomraade")}</label>
                 <Select value={formData.risk_area} onValueChange={(v) => {
                   const area = RISK_AREAS.find(a => a.value === v);
                   setFormData({ ...formData, risk_area: v, penalty_points: area?.points || 2 });
                 }}>
-                  <SelectTrigger><SelectValue placeholder="Velg område" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("auto.velg_omraade")} /></SelectTrigger>
                   <SelectContent>
                     {RISK_AREAS.map(a => <SelectItem key={a.value} value={a.value}>{a.label} ({a.points} prikker)</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Beskrivelse av risiko *</label>
+                <label className="text-sm font-medium">{t("auto.beskrivelse_av_risiko")}</label>
                 <Textarea value={formData.risk_description} onChange={(e) => setFormData({ ...formData, risk_description: e.target.value })} rows={2} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Sannsynlighet</label>
+                  <label className="text-sm font-medium">{t("auto.sannsynlighet_4")}</label>
                   <Select value={String(formData.probability)} onValueChange={(v) => setFormData({ ...formData, probability: Number(v) })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -209,7 +210,7 @@ const IkAlkoholRisikoanalyse = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Konsekvens</label>
+                  <label className="text-sm font-medium">{t("auto.konsekvens_4")}</label>
                   <Select value={String(formData.consequence)} onValueChange={(v) => setFormData({ ...formData, consequence: Number(v) })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -219,14 +220,14 @@ const IkAlkoholRisikoanalyse = () => {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Eksisterende tiltak</label>
+                <label className="text-sm font-medium">{t("auto.eksisterende_tiltak")}</label>
                 <Textarea value={formData.existing_controls} onChange={(e) => setFormData({ ...formData, existing_controls: e.target.value })} rows={2} />
               </div>
               <div>
-                <label className="text-sm font-medium">Planlagte tiltak</label>
+                <label className="text-sm font-medium">{t("auto.planlagte_tiltak")}</label>
                 <div className="flex gap-2 mb-2">
-                  <Input value={newMeasure} onChange={(e) => setNewMeasure(e.target.value)} placeholder="Legg til tiltak" onKeyPress={(e) => e.key === 'Enter' && addMeasure()} />
-                  <Button type="button" onClick={addMeasure}>Legg til</Button>
+                  <Input value={newMeasure} onChange={(e) => setNewMeasure(e.target.value)} placeholder={t("auto.legg_til_tiltak")} onKeyPress={(e) => e.key === 'Enter' && addMeasure()} />
+                  <Button type="button" onClick={addMeasure}>{t("auto.legg_til")}</Button>
                 </div>
                 {formData.planned_measures.length > 0 && (
                   <ul className="space-y-1">{formData.planned_measures.map((m, i) => (
@@ -236,8 +237,8 @@ const IkAlkoholRisikoanalyse = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Avbryt</Button>
-              <Button onClick={handleSave}>Lagre</Button>
+              <Button variant="outline" onClick={() => setShowDialog(false)}>{t("auto.avbryt")}</Button>
+              <Button onClick={handleSave}>{t("auto.lagre")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

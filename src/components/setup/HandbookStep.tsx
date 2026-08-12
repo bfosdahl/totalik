@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
 import { useHmsDeclarations, HmsSelfDeclaration, VerneombudExemptionAgreement } from "@/hooks/useHmsDeclarations";
 import { useAuditFormResponses } from "@/hooks/useAuditFormResponses";
+import { t } from "@/i18n/t";
 import {
   sanitizeGoals,
   sanitizeOrganization,
@@ -174,7 +175,7 @@ export function HandbookStep({
           email: data.email || undefined,
           logo_url: data.logo_url,
         });
-        toast.success("Bedriftsinformasjon oppdatert");
+        toast.success(t("auto.bedriftsinformasjon_oppdatert_2"));
       }
     } catch (error) {
       console.error("Error refreshing company info:", error);
@@ -1275,15 +1276,15 @@ export function HandbookStep({
         // Use embedded preview to avoid browser popup blockers
         setPreviewUrl(pdfUrl);
         setShowPreviewDialog(true);
-        toast.success("Forhåndsvisning klar");
+        toast.success(t("auto.forhaandsvisning_klar"));
       } else {
         doc.save(filename);
-        toast.success("IK-håndbok lastet ned!");
+        toast.success(t("auto.ik_haandbok_lastet_ned"));
       }
 
     } catch (error) {
       console.error("PDF generation error:", error);
-      toast.error("Kunne ikke generere PDF. Prøv igjen.");
+      toast.error(t("auto.kunne_ikke_generere_pdf_proev_igjen"));
     } finally {
       setIsGenerating(false);
       setIsPreviewing(false);
@@ -1300,7 +1301,7 @@ export function HandbookStep({
             Statusoversikt
           </CardTitle>
           <CardDescription>
-            Alle steg må være fullført for å generere en komplett håndbok
+            {t("auto.alle_steg_maa_vaere_fullfoert_for_aa_gen")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -1314,7 +1315,7 @@ export function HandbookStep({
               <div>
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Mål</span>
+                  <span className="text-sm font-medium">{t("auto.maal")}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {goals.length} mål definert
@@ -1331,7 +1332,7 @@ export function HandbookStep({
               <div>
                 <div className="flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Organisering</span>
+                  <span className="text-sm font-medium">{t("auto.organisering")}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {completionStatus.organization ? "Fullført" : "Mangler"}
@@ -1348,7 +1349,7 @@ export function HandbookStep({
               <div>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Risikoer</span>
+                  <span className="text-sm font-medium">{t("auto.risikoer")}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {riskAssessment?.risks.length || 0} registrert
@@ -1365,7 +1366,7 @@ export function HandbookStep({
               <div>
                 <div className="flex items-center gap-2">
                   <ClipboardList className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Handlinger</span>
+                  <span className="text-sm font-medium">{t("auto.handlinger")}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {actionPlan?.actions.length || 0} tiltak
@@ -1382,7 +1383,7 @@ export function HandbookStep({
               <div>
                 <div className="flex items-center gap-2">
                   <ListChecks className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Rutiner</span>
+                  <span className="text-sm font-medium">{t("auto.rutiner")}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {routines?.routines.length || 0} rutiner
@@ -1397,7 +1398,7 @@ export function HandbookStep({
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium">Bedriftslogo</h3>
+            <h3 className="text-sm font-medium">{t("auto.bedriftslogo")}</h3>
             <Button
               variant="ghost"
               size="sm"
@@ -1445,25 +1446,25 @@ export function HandbookStep({
       {/* Generate PDF Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Generer IK-håndbok</CardTitle>
+          <CardTitle>{t("auto.generer_ik_haandbok")}</CardTitle>
           <CardDescription>
-            Lag en profesjonell PDF-dokumentasjon av ditt internkontrollsystem
+            {t("auto.lag_en_profesjonell_pdf_dokumentasjon_av")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="font-medium mb-2">Håndboken vil inneholde:</h4>
+            <h4 className="font-medium mb-2">{t("auto.haandboken_vil_inneholde")}</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Forside med bedriftsinformasjon</li>
-              <li>• Innholdsfortegnelse</li>
-              <li>• Mål for internkontroll</li>
-              <li>• Organisering og ansvarsfordeling</li>
-              {selfDeclaration && <li>• Egenerklæring om HMS</li>}
-              {verneombudExemption && <li>• Fritak fra verneombud</li>}
-              <li>• Risikovurdering med tiltak</li>
-              <li>• Handlingsplan med status og frister</li>
-              <li>• Rutiner og prosedyrer</li>
-              <li>• Lover og forskrifter</li>
+              <li>{t("auto.forside_med_bedriftsinformasjon")}</li>
+              <li>{t("auto.innholdsfortegnelse_2")}</li>
+              <li>{t("auto.maal_for_internkontroll")}</li>
+              <li>{t("auto.organisering_og_ansvarsfordeling")}</li>
+              {selfDeclaration && <li>{t("auto.egenerklaering_om_hms_2")}</li>}
+              {verneombudExemption && <li>{t("auto.fritak_fra_verneombud")}</li>}
+              <li>{t("auto.risikovurdering_med_tiltak")}</li>
+              <li>{t("auto.handlingsplan_med_status_og_frister")}</li>
+              <li>{t("auto.rutiner_og_prosedyrer")}</li>
+              <li>{t("auto.lover_og_forskrifter_2")}</li>
               {completedForms.length > 0 && (
                 <>
                   {completedForms.map(form => {
@@ -1484,8 +1485,7 @@ export function HandbookStep({
           {!allComplete && (
             <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
               <p className="text-sm text-warning-foreground">
-                <strong>Merk:</strong> Noen steg er ikke fullført. Du kan fortsatt generere håndboken, 
-                men den vil være ufullstendig.
+                <strong>{t("auto.merk")}</strong> {t("auto.noen_steg_er_ikke_fullfoert_du_kan_forts")}
               </p>
             </div>
           )}
@@ -1539,7 +1539,7 @@ export function HandbookStep({
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center justify-between">
-              <span>Forhåndsvisning av IK-håndbok</span>
+              <span>{t("auto.forhaandsvisning_av_ik_haandbok")}</span>
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0">
@@ -1547,13 +1547,13 @@ export function HandbookStep({
               <iframe 
                 src={previewUrl} 
                 className="w-full h-full border rounded-lg"
-                title="PDF Forhåndsvisning"
+                title={t("auto.pdf_forhaandsvisning")}
               />
             )}
           </div>
           <div className="flex gap-2 justify-end pt-4 border-t flex-shrink-0">
             <Button variant="outline" onClick={() => setShowPreviewDialog(false)}>
-              Lukk
+              {t("auto.lukk")}
             </Button>
             <Button onClick={() => generatePDF(false)}>
               <Download className="w-4 h-4 mr-2" />

@@ -14,6 +14,7 @@ import { Plus, Trash2, Pencil, Loader2, Calendar, MoveRight, Undo2 } from "lucid
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 // Must match defaultActivities in HmsAarshjul
 const allDefaultActivities = [
@@ -108,7 +109,7 @@ export default function AarshjulEditDialog({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error("Navn er påkrevd");
+      toast.error(t("auto.navn_er_paakrevd"));
       return;
     }
     setIsSaving(true);
@@ -123,7 +124,7 @@ export default function AarshjulEditDialog({
           })
           .eq("id", editingId);
         if (error) throw error;
-        toast.success("Aktivitet oppdatert");
+        toast.success(t("auto.aktivitet_oppdatert"));
       } else {
         const { error } = await supabase
           .from("company_aarshjul_activities")
@@ -136,13 +137,13 @@ export default function AarshjulEditDialog({
             responsible: responsible.trim() || null,
           });
         if (error) throw error;
-        toast.success("Aktivitet lagt til");
+        toast.success(t("auto.aktivitet_lagt_til"));
       }
       resetForm();
       fetchActivities();
       onSaved();
     } catch (e: any) {
-      toast.error("Kunne ikke lagre: " + (e.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_lagre") + (e.message || "Ukjent feil"));
     } finally {
       setIsSaving(false);
     }
@@ -162,9 +163,9 @@ export default function AarshjulEditDialog({
       .delete()
       .eq("id", id);
     if (error) {
-      toast.error("Kunne ikke slette");
+      toast.error(t("auto.kunne_ikke_slette"));
     } else {
-      toast.success("Aktivitet slettet");
+      toast.success(t("auto.aktivitet_slettet"));
       fetchActivities();
       onSaved();
     }
@@ -180,7 +181,7 @@ export default function AarshjulEditDialog({
 
     // Add this month to the activity's months (if not already there)
     if (currentMonths.includes(month)) {
-      toast.info("Denne aktiviteten er allerede i denne måneden");
+      toast.info(t("auto.denne_aktiviteten_er_allerede_i_denne_ma"));
       return;
     }
 
@@ -211,7 +212,7 @@ export default function AarshjulEditDialog({
       onSaved();
       setShowStandardPicker(false);
     } catch (e: any) {
-      toast.error("Kunne ikke flytte aktivitet: " + (e.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_flytte_aktivitet") + (e.message || "Ukjent feil"));
     }
   };
 
@@ -255,7 +256,7 @@ export default function AarshjulEditDialog({
       toast.success(`${defaultActivity.name} fjernet fra ${monthName}`);
       onSaved();
     } catch (e: any) {
-      toast.error("Kunne ikke fjerne aktivitet: " + (e.message || "Ukjent feil"));
+      toast.error(t("auto.kunne_ikke_fjerne_aktivitet") + (e.message || "Ukjent feil"));
     }
   };
 
@@ -276,10 +277,10 @@ export default function AarshjulEditDialog({
         .eq("activity_id", activityId);
       hq = departmentId ? hq.eq("department_id", departmentId) : hq.is("department_id", null);
       await hq;
-      toast.success("Tilbakestilt til standard");
+      toast.success(t("auto.tilbakestilt_til_standard"));
       onSaved();
     } catch {
-      toast.error("Kunne ikke tilbakestille");
+      toast.error(t("auto.kunne_ikke_tilbakestille"));
     }
   };
 
@@ -311,7 +312,7 @@ export default function AarshjulEditDialog({
           {standardInThisMonth.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Standard HMS-aktiviteter
+                {t("auto.standard_hms_aktiviteter")}
               </p>
               <div className="space-y-1.5">
                 {standardInThisMonth.map((a) => {
@@ -322,7 +323,7 @@ export default function AarshjulEditDialog({
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{a.name}</p>
                         {isOverridden && (
-                          <p className="text-[10px] text-muted-foreground">Tilpasset plassering</p>
+                          <p className="text-[10px] text-muted-foreground">{t("auto.tilpasset_plassering")}</p>
                         )}
                       </div>
                       <div className="flex gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
@@ -331,7 +332,7 @@ export default function AarshjulEditDialog({
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7"
-                            title="Tilbakestill til standard"
+                            title={t("auto.tilbakestill_til_standard")}
                             onClick={() => handleResetToDefault(a.id)}
                           >
                             <Undo2 className="h-3.5 w-3.5" />
@@ -341,7 +342,7 @@ export default function AarshjulEditDialog({
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 text-destructive"
-                          title="Fjern fra denne måneden"
+                          title={t("auto.fjern_fra_denne_maaneden")}
                           onClick={() => handleRemoveStandardFromMonth(a.id)}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -362,7 +363,7 @@ export default function AarshjulEditDialog({
           ) : activities.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Egne aktiviteter
+                {t("auto.egne_aktiviteter")}
               </p>
               <div className="space-y-1.5">
                 {activities.map((a) => (
@@ -395,12 +396,12 @@ export default function AarshjulEditDialog({
             <div className="space-y-2 p-3 rounded-lg border bg-card">
               <p className="text-sm font-medium">Legg til standard aktivitet i {monthName}</p>
               <p className="text-xs text-muted-foreground mb-2">
-                Velg en aktivitet å legge til denne måneden. Den beholder sin originale funksjon.
+                {t("auto.velg_en_aktivitet_aa_legge_til_denne_maa")}
               </p>
               <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
                 {standardNotInThisMonth.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-3">
-                    Alle standard-aktiviteter er allerede lagt til denne måneden.
+                    {t("auto.alle_standard_aktiviteter_er_allerede_la")}
                   </p>
                 ) : (
                   standardNotInThisMonth.map((a) => (
@@ -417,7 +418,7 @@ export default function AarshjulEditDialog({
                 )}
               </div>
               <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => setShowStandardPicker(false)}>
-                Lukk
+                {t("auto.lukk")}
               </Button>
             </div>
           ) : (
@@ -438,29 +439,29 @@ export default function AarshjulEditDialog({
           {showForm ? (
             <div className="space-y-3 p-3 rounded-lg border bg-card">
               <div>
-                <Label className="text-sm">Navn *</Label>
+                <Label className="text-sm">{t("auto.navn_3")}</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="F.eks. Sommeravslutning"
+                  placeholder={t("auto.f_eks_sommeravslutning")}
                   className="mt-1"
                 />
               </div>
               <div>
-                <Label className="text-sm">Beskrivelse</Label>
+                <Label className="text-sm">{t("auto.beskrivelse")}</Label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Valgfri beskrivelse..."
+                  placeholder={t("auto.valgfri_beskrivelse")}
                   className="mt-1 min-h-[60px]"
                 />
               </div>
               <div>
-                <Label className="text-sm">Ansvarlig</Label>
+                <Label className="text-sm">{t("auto.ansvarlig_2")}</Label>
                 <Input
                   value={responsible}
                   onChange={(e) => setResponsible(e.target.value)}
-                  placeholder="F.eks. Daglig leder"
+                  placeholder={t("auto.f_eks_daglig_leder")}
                   className="mt-1"
                 />
               </div>
@@ -470,7 +471,7 @@ export default function AarshjulEditDialog({
                   {editingId ? "Oppdater" : "Legg til"}
                 </Button>
                 <Button size="sm" variant="outline" onClick={resetForm}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
               </div>
             </div>

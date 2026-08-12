@@ -33,16 +33,17 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { t } from "@/i18n/t";
 
 const handbookSections = [
-  { id: "goals", title: "1. Mål", icon: Target, description: "Mål for alkoholhåndtering" },
-  { id: "organization", title: "2. Organisering", icon: Users, description: "Roller og ansvar" },
-  { id: "risks", title: "3. Risikoanalyse", icon: AlertTriangle, description: "Risikovurdering" },
-  { id: "routines", title: "4. Rutiner", icon: FileText, description: "Skriftlige rutiner" },
-  { id: "controls", title: "5. Kontroll", icon: ClipboardList, description: "Kontrollrutiner" },
-  { id: "regulations", title: "6. Regelverk", icon: Scale, description: "Lover og forskrifter" },
-  { id: "compliance", title: "7. Samsvarssjekkliste", icon: CheckCircle2, description: "Dokumentasjonskrav" },
-  { id: "training", title: "8. Opplæring", icon: Users, description: "Signering av opplæring" },
+  { id: "goals", title: t("auto.1_maal"), icon: Target, description: t("auto.maal_for_alkoholhaandtering") },
+  { id: "organization", title: t("auto.2_organisering"), icon: Users, description: t("auto.roller_og_ansvar") },
+  { id: "risks", title: t("auto.3_risikoanalyse"), icon: AlertTriangle, description: t("auto.risikovurdering") },
+  { id: "routines", title: t("auto.4_rutiner"), icon: FileText, description: t("auto.skriftlige_rutiner") },
+  { id: "controls", title: t("auto.5_kontroll"), icon: ClipboardList, description: t("auto.kontrollrutiner") },
+  { id: "regulations", title: t("auto.6_regelverk"), icon: Scale, description: t("auto.lover_og_forskrifter") },
+  { id: "compliance", title: t("auto.7_samsvarssjekkliste"), icon: CheckCircle2, description: t("auto.dokumentasjonskrav") },
+  { id: "training", title: t("auto.8_opplaering"), icon: Users, description: t("auto.signering_av_opplaering") },
 ];
 
 export default function IkAlkoholHandbok() {
@@ -375,9 +376,9 @@ export default function IkAlkoholHandbok() {
       y += 8;
 
       const controlCategories = [
-        { title: "Daglige kontroller", items: ["Alderskontroll", "Beruselseskontroll", "Tidskontroll", "Bemanning", "Orden og sikkerhet", "Avviksregistrering"] },
-        { title: "Månedlige kontroller", items: ["Gjennomgang av avvik", "Opplæringsstatus", "Gjennomgang av risikoanalyse", "Beruselsesnivå / skjenkekultur", "Kontroll av bevillingsdokumenter"] },
-        { title: "Årlige kontroller", items: ["Årlig intern gjennomgang / revisjon", "Omsetningsoppgave til kommune"] },
+        { title: t("auto.daglige_kontroller"), items: ["Alderskontroll", "Beruselseskontroll", "Tidskontroll", "Bemanning", "Orden og sikkerhet", "Avviksregistrering"] },
+        { title: t("auto.maanedlige_kontroller"), items: ["Gjennomgang av avvik", "Opplæringsstatus", "Gjennomgang av risikoanalyse", "Beruselsesnivå / skjenkekultur", "Kontroll av bevillingsdokumenter"] },
+        { title: t("auto.aarlige_kontroller"), items: ["Årlig intern gjennomgang / revisjon", "Omsetningsoppgave til kommune"] },
       ];
 
       controlCategories.forEach((cat) => {
@@ -626,7 +627,7 @@ export default function IkAlkoholHandbok() {
             <div>
               <h1 className="text-2xl font-bold">{company?.name || "Bedrift"} - IK-Alkohol Handbok</h1>
               <p className="text-amber-200 text-sm">
-                Internkontroll for alkoholhåndtering iht. Alkoholloven
+                {t("auto.internkontroll_for_alkoholhaandtering_ih")}
               </p>
             </div>
           </div>
@@ -634,7 +635,7 @@ export default function IkAlkoholHandbok() {
           <div className="mt-4 flex items-center gap-4">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-amber-200">Ferdigstillelse</span>
+                <span className="text-sm text-amber-200">{t("auto.ferdigstillelse")}</span>
                 <span className="text-sm font-medium">{completionPercent}%</span>
               </div>
               <Progress value={completionPercent} className="h-2 bg-amber-700" />
@@ -716,7 +717,7 @@ export default function IkAlkoholHandbok() {
                   )}
                 </ul>
               ) : (
-                <p className="text-sm text-muted-foreground">Ingen mål registrert. Gå til Mål-siden for å legge til.</p>
+                <p className="text-sm text-muted-foreground">{t("auto.ingen_maal_registrert_gaa_til_maal_siden")}</p>
               )}
             </CardContent>
           </Card>
@@ -748,7 +749,7 @@ export default function IkAlkoholHandbok() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Ingen roller registrert.</p>
+                <p className="text-sm text-muted-foreground">{t("auto.ingen_roller_registrert")}</p>
               )}
             </CardContent>
           </Card>
@@ -787,7 +788,7 @@ export default function IkAlkoholHandbok() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Ingen risikoanalyse registrert.</p>
+                <p className="text-sm text-muted-foreground">{t("auto.ingen_risikoanalyse_registrert")}</p>
               )}
             </CardContent>
           </Card>
@@ -812,7 +813,7 @@ export default function IkAlkoholHandbok() {
                     <div key={routine.id} className="flex items-center gap-2 text-sm">
                       <BookOpen className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                       <span>{routine.routine_name}</span>
-                      {routine.is_mandatory && <Badge variant="outline" className="text-xs">Påkrevd</Badge>}
+                      {routine.is_mandatory && <Badge variant="outline" className="text-xs">{t("auto.paakrevd")}</Badge>}
                     </div>
                   ))}
                   {routines.length > 6 && (
@@ -820,7 +821,7 @@ export default function IkAlkoholHandbok() {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Ingen rutiner registrert.</p>
+                <p className="text-sm text-muted-foreground">{t("auto.ingen_rutiner_registrert")}</p>
               )}
             </CardContent>
           </Card>

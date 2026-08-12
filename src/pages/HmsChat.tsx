@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User, Loader2, MessageSquare, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 type Message = {
   role: "user" | "assistant";
@@ -126,7 +127,7 @@ export default function HmsChat() {
     } catch (error) {
       console.error("Chat error:", error);
       toast({
-        title: "Feil",
+        title: t("auto.feil"),
         description: error instanceof Error ? error.message : "Kunne ikke sende melding",
         variant: "destructive",
       });
@@ -152,9 +153,9 @@ export default function HmsChat() {
     <AppLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">HMS Assistent</h1>
+          <h1 className="text-3xl font-bold mb-2">{t("auto.hms_assistent_2")}</h1>
           <p className="text-muted-foreground">
-            Still spørsmål om Internkontrollforskriften og Arbeidsmiljøloven
+            {t("auto.still_spoersmaal_om_internkontrollforskr")}
           </p>
         </div>
 
@@ -164,9 +165,9 @@ export default function HmsChat() {
               <div className="flex items-center gap-2">
                 <Bot className="h-5 w-5 text-primary" />
                 <div>
-                  <CardTitle className="text-lg">IK & Arbeidsmiljø Chat</CardTitle>
+                  <CardTitle className="text-lg">{t("auto.ik_arbeidsmiljoe_chat")}</CardTitle>
                   <CardDescription>
-                    Få svar på spørsmål om HMS-regelverk
+                    {t("auto.faa_svar_paa_spoersmaal_om_hms_regelverk")}
                   </CardDescription>
                 </div>
               </div>
@@ -184,13 +185,12 @@ export default function HmsChat() {
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground py-12">
                   <MessageSquare className="h-12 w-12 mb-4 opacity-50" />
-                  <h3 className="font-medium text-lg mb-2">Velkommen til HMS Assistenten</h3>
+                  <h3 className="font-medium text-lg mb-2">{t("auto.velkommen_til_hms_assistenten")}</h3>
                   <p className="max-w-md text-sm">
-                    Jeg kan hjelpe deg med spørsmål om Internkontrollforskriften, 
-                    Arbeidsmiljøloven, HMS-rutiner, risikovurdering og mer.
+                    {t("auto.jeg_kan_hjelpe_deg_med_spoersmaal_om_int")}
                   </p>
                   <div className="mt-6 grid gap-2 text-sm">
-                    <p className="font-medium">Eksempler på spørsmål:</p>
+                    <p className="font-medium">{t("auto.eksempler_paa_spoersmaal")}</p>
                     <button 
                       className="text-left px-3 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
                       onClick={() => setInput("Hva krever Internkontrollforskriften av en liten bedrift?")}
@@ -261,7 +261,7 @@ export default function HmsChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Skriv ditt spørsmål her..."
+                  placeholder={t("auto.skriv_ditt_spoersmaal_her")}
                   className="min-h-[60px] resize-none"
                   disabled={isLoading}
                 />
@@ -278,7 +278,7 @@ export default function HmsChat() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Dette er en AI-assistent og erstatter ikke profesjonell juridisk rådgivning.
+                {t("auto.dette_er_en_ai_assistent_og_erstatter_ik")}
               </p>
             </div>
           </CardContent>
