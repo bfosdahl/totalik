@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.employment_contract_self_update_allowed(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.employment_contract_self_update_allowed(uuid) TO authenticated, service_role;
