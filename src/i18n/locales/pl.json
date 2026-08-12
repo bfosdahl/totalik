@@ -165,7 +165,8 @@
     "expand": "Rozwiń",
     "orderModule": "Zamów moduł",
     "lockedModule": "Zablokowany moduł",
-    "collapse": "Zwiń"
+    "collapse": "Zwiń",
+    "kitchenLayout": "Układ kuchni"
   },
   "dashboard": {
     "welcome": "Witaj",

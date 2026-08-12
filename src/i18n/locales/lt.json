@@ -165,7 +165,8 @@
     "expand": "Išplėsti",
     "orderModule": "Užsakyti modulį",
     "lockedModule": "Užrakintas modulis",
-    "collapse": "Suskleisti"
+    "collapse": "Suskleisti",
+    "kitchenLayout": "Virtuvės planas"
   },
   "dashboard": {
     "welcome": "Sveiki",
