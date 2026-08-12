@@ -156,15 +156,51 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     });
   }, [messages, currentStep, completedSteps, pendingBrregInfo, confirmedEmployeeCount, selectedIndustry, verneombudName, hasVerneombudExemption, companyId, departmentId]);
 
-  // Auto-scroll
+  // Auto-scroll (skip when tab is hidden - scrollIntoView is unreliable in background tabs)
   useEffect(() => {
+    if (document.hidden) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, currentStep]);
 
-  // Cleanup
+  // Tab switching: save state, keep stream alive, and recover on return
+  useEffect(() => {
+    const persist = () => {
+      if (messages.length === 0) return;
+      saveChatState(companyId, departmentId, {
+        messages,
+        currentStep,
+        completedSteps: Array.from(completedSteps),
+        pendingBrregInfo,
+        confirmedEmployeeCount,
+        selectedIndustry,
+        verneombudName,
+        hasVerneombudExemption,
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Save, but never abort the ongoing stream
+        persist();
+      } else if (isStreamingRef.current === false && isLoading) {
+        // Came back and stream died silently while hidden -> try DB fallback
+        setWasInterrupted(true);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", persist);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", persist);
+    };
+  }, [companyId, departmentId, messages, currentStep, completedSteps, pendingBrregInfo, confirmedEmployeeCount, selectedIndustry, verneombudName, hasVerneombudExemption, isLoading]);
+
+  // Cleanup - only abort if the page is actually going away, not on tab switch
   useEffect(() => {
     return () => { abortControllerRef.current?.abort(); };
   }, []);
+
 
   // When interrupted, check DB for completed fallback response
   useEffect(() => {
