@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface TimeEntry {
   id: string;
@@ -59,7 +60,7 @@ export function CopyPreviousDayButton({
 
   const handleCopy = async () => {
     if (previousDayEntries.length === 0) {
-      toast.error("Ingen timer å kopiere fra gårsdagen");
+      toast.error(t("auto.ingen_timer_aa_kopiere_fra_gaarsdagen"));
       return;
     }
 
@@ -85,7 +86,7 @@ export function CopyPreviousDayButton({
       toast.success(`Kopierte ${successCount} ${successCount === 1 ? "oppføring" : "oppføringer"} fra ${format(previousDay, "EEEE", { locale: nb })}`);
       setTimeout(() => setCopied(false), 2000);
     } else {
-      toast.error("Kunne ikke kopiere timer");
+      toast.error(t("auto.kunne_ikke_kopiere_timer"));
     }
   };
 
@@ -110,8 +111,8 @@ export function CopyPreviousDayButton({
             ) : (
               <Copy className="h-4 w-4" />
             )}
-            <span className="ml-2 hidden sm:inline">Kopier gårsdagens timer</span>
-            <span className="ml-2 sm:hidden">Kopier</span>
+            <span className="ml-2 hidden sm:inline">{t("auto.kopier_gaarsdagens_timer")}</span>
+            <span className="ml-2 sm:hidden">{t("auto.kopier")}</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>

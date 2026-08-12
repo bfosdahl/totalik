@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface StatsCardProps {
   title: string;
@@ -79,7 +80,7 @@ export function StatsCard({
               >
                 {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}%
               </span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">fra forrige måned</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">{t("auto.fra_forrige_maaned")}</span>
             </div>
           )}
         </div>

@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
+import { t } from "@/i18n/t";
 
 const DAYS_OPTIONS = [
-  { value: 14, label: "14 dager" },
-  { value: 7, label: "7 dager" },
-  { value: 3, label: "3 dager" },
-  { value: 1, label: "1 dag" },
+  { value: 14, label: t("auto.14_dager") },
+  { value: 7, label: t("auto.7_dager") },
+  { value: 3, label: t("auto.3_dager") },
+  { value: 1, label: t("auto.1_dag") },
 ];
 
 export function NotificationSettingsCard() {
@@ -64,14 +65,14 @@ export function NotificationSettingsCard() {
           Push-varsler
         </CardTitle>
         <CardDescription>
-          Motta varsler om frister, tildelinger og statusendringer
+          {t("auto.motta_varsler_om_frister_tildelinger_og_")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Push notification toggle */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label className="text-base">Aktiver push-varsler</Label>
+            <Label className="text-base">{t("auto.aktiver_push_varsler")}</Label>
             <p className="text-sm text-muted-foreground">
               {!isSupported
                 ? "Push-varsler støttes ikke i denne nettleseren"
@@ -85,7 +86,7 @@ export function NotificationSettingsCard() {
           <div className="flex items-center gap-2">
             {isSubscribed && (
               <Badge variant="secondary" className="bg-green-100 text-green-800">
-                Aktiv
+                {t("auto.aktiv")}
               </Badge>
             )}
             <Button
@@ -115,12 +116,12 @@ export function NotificationSettingsCard() {
         {settings && (
           <>
             <div className="border-t pt-4 space-y-4">
-              <h4 className="font-medium">Varseltyper</h4>
+              <h4 className="font-medium">{t("auto.varseltyper")}</h4>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="notify-deadlines">Fristvarsler</Label>
+                  <Label htmlFor="notify-deadlines">{t("auto.fristvarsler")}</Label>
                 </div>
                 <Switch
                   id="notify-deadlines"
@@ -133,7 +134,7 @@ export function NotificationSettingsCard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <UserPlus className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="notify-assignments">Tildelinger</Label>
+                  <Label htmlFor="notify-assignments">{t("auto.tildelinger")}</Label>
                 </div>
                 <Switch
                   id="notify-assignments"
@@ -146,7 +147,7 @@ export function NotificationSettingsCard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="notify-status">Statusendringer</Label>
+                  <Label htmlFor="notify-status">{t("auto.statusendringer")}</Label>
                 </div>
                 <Switch
                   id="notify-status"
@@ -160,7 +161,7 @@ export function NotificationSettingsCard() {
             {/* Deadline reminder timing */}
             {settings.notify_deadlines && (
               <div className="border-t pt-4 space-y-4">
-                <h4 className="font-medium">Påminnelse før frist</h4>
+                <h4 className="font-medium">{t("auto.paaminnelse_foer_frist")}</h4>
                 <div className="flex flex-wrap gap-3">
                   {DAYS_OPTIONS.map((option) => (
                     <div key={option.value} className="flex items-center gap-2">

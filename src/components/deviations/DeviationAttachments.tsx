@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDeviationAttachments, DeviationAttachment } from "@/hooks/useDeviationAttachments";
+import { t } from "@/i18n/t";
 
 interface DeviationAttachmentsProps {
   deviationId: string;
@@ -163,7 +164,7 @@ export function DeviationAttachments({ deviationId }: DeviationAttachmentsProps)
         </div>
       ) : attachments.length === 0 ? (
         <p className="text-sm text-muted-foreground pl-6">
-          Ingen vedlegg lagt til
+          {t("auto.ingen_vedlegg_lagt_til")}
         </p>
       ) : (
         <div className="space-y-2 pl-6">

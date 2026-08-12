@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { t } from "@/i18n/t";
 
 export interface OvertimeSegment {
   id: string;
@@ -61,7 +62,7 @@ export function OvertimeSegmentsEditor({ segments, onChange, mainStart, mainEnd 
   return (
     <div className="space-y-2 border-t pt-4">
       <div className="flex items-center justify-between">
-        <Label className="text-sm">Overtid i denne perioden</Label>
+        <Label className="text-sm">{t("auto.overtid_i_denne_perioden")}</Label>
         <Button type="button" variant="outline" size="sm" onClick={add} className="gap-1">
           <Plus className="h-3 w-3" /> Legg til
         </Button>
@@ -69,7 +70,7 @@ export function OvertimeSegmentsEditor({ segments, onChange, mainStart, mainEnd 
 
       {segments.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          Ingen overtid. Legg til ett eller flere intervaller hvis deler av perioden var overtid (50% eller 100%).
+          {t("auto.ingen_overtid_legg_til_ett_eller_flere_i")}
         </p>
       ) : (
         <div className="space-y-2">
@@ -78,20 +79,20 @@ export function OvertimeSegmentsEditor({ segments, onChange, mainStart, mainEnd 
             return (
               <div key={s.id} className="grid grid-cols-[1fr_1fr_110px_auto] gap-2 items-end bg-muted/30 p-2 rounded-md">
                 <div>
-                  <Label className="text-[10px] uppercase text-muted-foreground">Fra</Label>
+                  <Label className="text-[10px] uppercase text-muted-foreground">{t("auto.fra")}</Label>
                   <Input type="time" step={60} value={s.start} onChange={(e) => update(s.id, { start: e.target.value })} className="h-9" />
                 </div>
                 <div>
-                  <Label className="text-[10px] uppercase text-muted-foreground">Til</Label>
+                  <Label className="text-[10px] uppercase text-muted-foreground">{t("auto.til")}</Label>
                   <Input type="time" step={60} value={s.end} onChange={(e) => update(s.id, { end: e.target.value })} className="h-9" />
                 </div>
                 <div>
-                  <Label className="text-[10px] uppercase text-muted-foreground">Sats</Label>
+                  <Label className="text-[10px] uppercase text-muted-foreground">{t("auto.sats")}</Label>
                   <Select value={s.rate} onValueChange={(v) => update(s.id, { rate: v as OvertimeSegment["rate"] })}>
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="overtime_50">50% overtid</SelectItem>
-                      <SelectItem value="overtime_100">100% overtid</SelectItem>
+                      <SelectItem value="overtime_50">{t("auto.50_overtid")}</SelectItem>
+                      <SelectItem value="overtime_100">{t("auto.100_overtid")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -117,10 +118,10 @@ export function SegmentSummary({ totalHours, segments }: { totalHours: number; s
 
   return (
     <div className="rounded-md border bg-card p-3 text-sm space-y-1">
-      <div className="flex justify-between"><span className="text-muted-foreground">Normaltid</span><span className="font-medium">{normal.toFixed(2)} t</span></div>
-      {overtime_50 > 0 && <div className="flex justify-between"><span className="text-orange-600">50% overtid</span><span className="font-medium">{overtime_50.toFixed(2)} t</span></div>}
-      {overtime_100 > 0 && <div className="flex justify-between"><span className="text-red-600">100% overtid</span><span className="font-medium">{overtime_100.toFixed(2)} t</span></div>}
-      <div className="flex justify-between border-t pt-1 mt-1"><span className="font-semibold">Totalt</span><span className="font-semibold">{totalHours.toFixed(2)} t</span></div>
+      <div className="flex justify-between"><span className="text-muted-foreground">{t("auto.normaltid")}</span><span className="font-medium">{normal.toFixed(2)} t</span></div>
+      {overtime_50 > 0 && <div className="flex justify-between"><span className="text-orange-600">{t("auto.50_overtid")}</span><span className="font-medium">{overtime_50.toFixed(2)} t</span></div>}
+      {overtime_100 > 0 && <div className="flex justify-between"><span className="text-red-600">{t("auto.100_overtid")}</span><span className="font-medium">{overtime_100.toFixed(2)} t</span></div>}
+      <div className="flex justify-between border-t pt-1 mt-1"><span className="font-semibold">{t("auto.totalt")}</span><span className="font-semibold">{totalHours.toFixed(2)} t</span></div>
       {overflow && (
         <div className="flex items-center gap-1 text-xs text-destructive mt-1">
           <AlertCircle className="h-3 w-3" /> Overtid overstiger totalt antall timer

@@ -22,6 +22,7 @@ import { DailyTimeView } from "@/components/timeregistration/DailyTimeView";
 import { TimeClockQrDialog } from "@/components/timeregistration/TimeClockQrDialog";
 import { MyShiftsPanel } from "@/components/work-schedule/MyShiftsPanel";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
+import { t } from "@/i18n/t";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
 
@@ -114,9 +115,9 @@ export default function TimeRegistration() {
         {/* Header - Compact on mobile */}
         <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold">Timeregistrering</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">{t("auto.timeregistrering")}</h1>
             <p className="text-sm text-muted-foreground">
-              Registrer og administrer arbeidstimer
+              {t("auto.registrer_og_administrer_arbeidstimer")}
             </p>
           </div>
           
@@ -125,17 +126,17 @@ export default function TimeRegistration() {
             {isCompanyAdmin && (
               <Button variant="outline" size="sm" onClick={() => setQrDialogOpen(true)} className="shrink-0">
                 <QrCode className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">QR-stempling</span>
+                <span className="hidden sm:inline">{t("auto.qr_stempling")}</span>
               </Button>
             )}
             <Button variant="outline" size="sm" onClick={handleExport} className="shrink-0">
               <Download className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Eksporter</span>
+              <span className="hidden sm:inline">{t("auto.eksporter")}</span>
             </Button>
             <Button size="sm" onClick={() => setDialogOpen(true)} className="shrink-0">
               <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="sm:hidden">Timer</span>
-              <span className="hidden sm:inline">Registrer timer</span>
+              <span className="sm:hidden">{t("auto.timer")}</span>
+              <span className="hidden sm:inline">{t("auto.registrer_timer")}</span>
             </Button>
           </div>
         </div>
@@ -150,7 +151,7 @@ export default function TimeRegistration() {
               className="flex-1 sm:flex-none"
             >
               <Sun className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Dag</span>
+              <span className="hidden xs:inline">{t("auto.dag")}</span>
             </Button>
             <Button
               variant={viewMode === "week" ? "default" : "ghost"}
@@ -159,7 +160,7 @@ export default function TimeRegistration() {
               className="flex-1 sm:flex-none"
             >
               <CalendarDays className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Uke</span>
+              <span className="hidden xs:inline">{t("auto.uke")}</span>
             </Button>
             <Button
               variant={viewMode === "shifts" ? "default" : "ghost"}
@@ -168,7 +169,7 @@ export default function TimeRegistration() {
               className="flex-1 sm:flex-none"
             >
               <CalendarCheck className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Vakter</span>
+              <span className="hidden xs:inline">{t("auto.vakter")}</span>
             </Button>
             <Button
               variant={viewMode === "list" ? "default" : "ghost"}
@@ -177,7 +178,7 @@ export default function TimeRegistration() {
               className="flex-1 sm:flex-none"
             >
               <List className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Liste</span>
+              <span className="hidden xs:inline">{t("auto.liste")}</span>
             </Button>
           </div>
 
@@ -189,20 +190,20 @@ export default function TimeRegistration() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="this-week">Denne uken</SelectItem>
-                  <SelectItem value="last-week">Forrige uke</SelectItem>
-                  <SelectItem value="this-month">Denne måneden</SelectItem>
-                  <SelectItem value="last-month">Forrige måned</SelectItem>
-                  <SelectItem value="all">Alle</SelectItem>
+                  <SelectItem value="this-week">{t("auto.denne_uken")}</SelectItem>
+                  <SelectItem value="last-week">{t("auto.forrige_uke")}</SelectItem>
+                  <SelectItem value="this-month">{t("auto.denne_maaneden")}</SelectItem>
+                  <SelectItem value="last-month">{t("auto.forrige_maaned")}</SelectItem>
+                  <SelectItem value="all">{t("auto.alle")}</SelectItem>
                 </SelectContent>
               </Select>
               {isCompanyAdmin && (
                 <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
                   <SelectTrigger className="w-full sm:w-[220px]">
-                    <SelectValue placeholder="Alle ansatte" />
+                    <SelectValue placeholder={t("auto.alle_ansatte")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Alle ansatte</SelectItem>
+                    <SelectItem value="all">{t("auto.alle_ansatte")}</SelectItem>
                     {employeeOptions.map((emp) => (
                       <SelectItem key={emp.id} value={emp.id}>
                         {emp.name}
@@ -225,37 +226,37 @@ export default function TimeRegistration() {
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:mx-0 sm:px-0 scrollbar-hide">
           <Card className="min-w-[140px] sm:min-w-0 shrink-0 sm:shrink">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">Totalt timer</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">{t("auto.totalt_timer")}</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               <div className="text-xl sm:text-2xl font-bold">{totalHours.toFixed(1)}</div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
-                i valgt periode
+                {t("auto.i_valgt_periode")}
               </p>
             </CardContent>
           </Card>
           <Card className="min-w-[140px] sm:min-w-0 shrink-0 sm:shrink">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">Til godkjenning</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">{t("auto.til_godkjenning")}</CardTitle>
               <AlertCircle className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               <div className="text-xl sm:text-2xl font-bold">{pendingCount}</div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
-                venter på godkjenning
+                {t("auto.venter_paa_godkjenning")}
               </p>
             </CardContent>
           </Card>
           <Card className="min-w-[140px] sm:min-w-0 shrink-0 sm:shrink">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">Godkjent</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">{t("auto.godkjent")}</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               <div className="text-xl sm:text-2xl font-bold">{approvedCount}</div>
               <p className="text-[10px] sm:text-xs text-muted-foreground">
-                godkjente registreringer
+                {t("auto.godkjente_registreringer")}
               </p>
             </CardContent>
           </Card>
@@ -267,7 +268,7 @@ export default function TimeRegistration() {
         ) : viewMode === "day" ? (
           <Card className="overflow-hidden">
             <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">Dagsvisning</CardTitle>
+              <CardTitle className="text-base sm:text-lg">{t("auto.dagsvisning")}</CardTitle>
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
               <DailyTimeView
@@ -281,7 +282,7 @@ export default function TimeRegistration() {
         ) : viewMode === "week" ? (
           <Card className="overflow-hidden">
             <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">Ukevisning</CardTitle>
+              <CardTitle className="text-base sm:text-lg">{t("auto.ukevisning")}</CardTitle>
             </CardHeader>
             <CardContent className="p-2 sm:p-6 pt-0">
               <WeeklyTimeView
@@ -295,14 +296,14 @@ export default function TimeRegistration() {
         ) : isCompanyAdmin ? (
           <Tabs defaultValue="all" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="all">Alle ansatte</TabsTrigger>
+              <TabsTrigger value="all">{t("auto.alle_ansatte")}</TabsTrigger>
               <TabsTrigger value="pending">Til godkjenning ({pendingCount})</TabsTrigger>
-              <TabsTrigger value="mine">Mine timer</TabsTrigger>
+              <TabsTrigger value="mine">{t("auto.mine_timer")}</TabsTrigger>
             </TabsList>
             <TabsContent value="all">
               <Card>
                 <CardHeader>
-                  <CardTitle>Alle timeregistreringer</CardTitle>
+                  <CardTitle>{t("auto.alle_timeregistreringer")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <TimeEntryList
@@ -320,7 +321,7 @@ export default function TimeRegistration() {
             <TabsContent value="pending">
               <Card>
                 <CardHeader>
-                  <CardTitle>Til godkjenning</CardTitle>
+                  <CardTitle>{t("auto.til_godkjenning")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <TimeEntryList
@@ -336,7 +337,7 @@ export default function TimeRegistration() {
             <TabsContent value="mine">
               <Card>
                 <CardHeader>
-                  <CardTitle>Mine timeregistreringer</CardTitle>
+                  <CardTitle>{t("auto.mine_timeregistreringer")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <TimeEntryList
@@ -350,7 +351,7 @@ export default function TimeRegistration() {
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Mine timeregistreringer</CardTitle>
+              <CardTitle>{t("auto.mine_timeregistreringer")}</CardTitle>
             </CardHeader>
             <CardContent>
               <TimeEntryList entries={filteredEntries} onDelete={deleteEntry} />

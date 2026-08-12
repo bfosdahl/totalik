@@ -16,6 +16,7 @@ import { CopyPreviousDayButton } from "./CopyPreviousDayButton";
 import { WeeklySummaryChart } from "./WeeklySummaryChart";
 import { NewTimeEntryDialog } from "./NewTimeEntryDialog";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface TimeEntry {
   id: string;
@@ -192,7 +193,7 @@ export function DailyTimeView({
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold">{dayTotal.toFixed(1)}t</p>
-          <p className="text-xs text-muted-foreground">i dag</p>
+          <p className="text-xs text-muted-foreground">{t("auto.i_dag")}</p>
         </div>
       </div>
 
@@ -278,7 +279,7 @@ export function DailyTimeView({
           <Card>
             <CardContent className="p-6 text-center text-muted-foreground">
               <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Ingen timer registrert</p>
+              <p className="text-sm">{t("auto.ingen_timer_registrert")}</p>
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -304,7 +305,7 @@ export function DailyTimeView({
                       <div>
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-blue-500" />
-                          <span className="text-sm font-medium">Bekreftet vakt</span>
+                          <span className="text-sm font-medium">{t("auto.bekreftet_vakt")}</span>
                         </div>
                         {entry.clock_in && entry.clock_out && (
                           <p className="text-xs text-muted-foreground">

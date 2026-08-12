@@ -22,6 +22,7 @@ import {
   type AllowanceDetailRow,
 } from "@/utils/timeEntryExport";
 import { getHourBreakdown } from "@/utils/hourBreakdown";
+import { t } from "@/i18n/t";
 
 type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "custom";
 
@@ -85,7 +86,7 @@ export default function TimeOversikt() {
     a.download = `timer_${start}_${end}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("CSV lastet ned");
+    toast.success(t("auto.csv_lastet_ned"));
   };
 
   const exportXlsx = async () => {
@@ -214,10 +215,10 @@ export default function TimeOversikt() {
         parseISO(end),
         allowances
       );
-      toast.success("Excel lastet ned");
+      toast.success(t("auto.excel_lastet_ned"));
     } catch (e: any) {
       console.error(e);
-      toast.error("Kunne ikke laste ned Excel: " + (e?.message || "ukjent feil"));
+      toast.error(t("auto.kunne_ikke_laste_ned_excel") + (e?.message || "ukjent feil"));
     } finally {
       setExporting(false);
     }
@@ -228,7 +229,7 @@ export default function TimeOversikt() {
       <AppLayout>
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            Du har ikke tilgang til timeoversikten.
+            {t("auto.du_har_ikke_tilgang_til_timeoversikten")}
           </CardContent>
         </Card>
       </AppLayout>
@@ -244,10 +245,10 @@ export default function TimeOversikt() {
               <Clock className="h-7 w-7 text-primary" />
               Timeoversikt
             </h1>
-            <p className="text-muted-foreground mt-1">Alle timer på tvers av prosjekter — lønnsgrunnlag per person</p>
+            <p className="text-muted-foreground mt-1">{t("auto.alle_timer_paa_tvers_av_prosjekter_loenn")}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/time-registration")}>Til timeføring</Button>
+            <Button variant="outline" onClick={() => navigate("/time-registration")}>{t("auto.til_timefoering")}</Button>
             <Button variant="outline" onClick={exportCsv} disabled={!data || rows.length === 0}>
               <Download className="h-4 w-4 mr-2" />
               CSV
@@ -281,31 +282,31 @@ export default function TimeOversikt() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <Label className="text-xs">Fra</Label>
+                <Label className="text-xs">{t("auto.fra")}</Label>
                 <Input type="date" value={start} onChange={(e) => { setPreset("custom"); setRange((r) => ({ ...r, start: e.target.value })); }} />
               </div>
               <div>
-                <Label className="text-xs">Til</Label>
+                <Label className="text-xs">{t("auto.til")}</Label>
                 <Input type="date" value={end} onChange={(e) => { setPreset("custom"); setRange((r) => ({ ...r, end: e.target.value })); }} />
               </div>
               <div>
-                <Label className="text-xs">Søk person</Label>
-                <Input placeholder="Navn..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                <Label className="text-xs">{t("auto.soek_person")}</Label>
+                <Input placeholder={t("auto.navn")} value={search} onChange={(e) => setSearch(e.target.value)} />
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Switch id="only-approved" checked={onlyApproved} onCheckedChange={setOnlyApproved} />
-              <Label htmlFor="only-approved" className="text-sm cursor-pointer">Kun godkjente timer</Label>
+              <Label htmlFor="only-approved" className="text-sm cursor-pointer">{t("auto.kun_godkjente_timer")}</Label>
             </div>
           </CardContent>
         </Card>
 
         {/* Totals */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <SummaryCard label="Normaltimer" value={data?.totals.normal} loading={isLoading} />
-          <SummaryCard label="50% overtid" value={data?.totals.overtime_50} loading={isLoading} tone="warning" />
-          <SummaryCard label="100% overtid" value={data?.totals.overtime_100} loading={isLoading} tone="destructive" />
-          <SummaryCard label="Totalt" value={data?.totals.total} loading={isLoading} bold />
+          <SummaryCard label={t("auto.normaltimer")} value={data?.totals.normal} loading={isLoading} />
+          <SummaryCard label={t("auto.50_overtid")} value={data?.totals.overtime_50} loading={isLoading} tone="warning" />
+          <SummaryCard label={t("auto.100_overtid")} value={data?.totals.overtime_100} loading={isLoading} tone="destructive" />
+          <SummaryCard label={t("auto.totalt")} value={data?.totals.total} loading={isLoading} bold />
         </div>
 
         {/* Per person */}
@@ -320,18 +321,18 @@ export default function TimeOversikt() {
               <div className="space-y-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : rows.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground text-sm">
-                Ingen timer registrert i valgt periode
+                {t("auto.ingen_timer_registrert_i_valgt_periode")}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs text-muted-foreground uppercase">
-                      <th className="py-2 px-2">Person</th>
-                      <th className="py-2 px-2 text-right">Normal</th>
+                      <th className="py-2 px-2">{t("auto.person")}</th>
+                      <th className="py-2 px-2 text-right">{t("auto.normal")}</th>
                       <th className="py-2 px-2 text-right">50%</th>
                       <th className="py-2 px-2 text-right">100%</th>
-                      <th className="py-2 px-2 text-right font-semibold">Totalt</th>
+                      <th className="py-2 px-2 text-right font-semibold">{t("auto.totalt")}</th>
                     </tr>
                   </thead>
                   <tbody>

@@ -5,6 +5,7 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminHoursSummary } from "@/hooks/useAdminHoursSummary";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 export function AdminHoursWidget() {
   const { isCompanyAdmin, isSystemAdmin } = useAuth();
@@ -32,12 +33,12 @@ export function AdminHoursWidget() {
             <Clock className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-base md:text-lg font-semibold">Timer denne måneden</h3>
-            <p className="text-xs text-muted-foreground">Lønnsgrunnlag for hele bedriften</p>
+            <h3 className="text-base md:text-lg font-semibold">{t("auto.timer_denne_maaneden")}</h3>
+            <p className="text-xs text-muted-foreground">{t("auto.loennsgrunnlag_for_hele_bedriften")}</p>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={() => navigate("/timer/oversikt")}>
-          Se alle <ArrowRight className="h-4 w-4 ml-1" />
+          {t("auto.se_alle")} <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
 
@@ -50,9 +51,9 @@ export function AdminHoursWidget() {
       ) : (
         <>
           <div className="grid grid-cols-3 gap-3 mb-3">
-            <Stat label="Normal" value={totals?.normal ?? 0} tone="default" />
-            <Stat label="50% overtid" value={totals?.overtime_50 ?? 0} tone="warning" />
-            <Stat label="100% overtid" value={totals?.overtime_100 ?? 0} tone="destructive" />
+            <Stat label={t("auto.normal")} value={totals?.normal ?? 0} tone="default" />
+            <Stat label={t("auto.50_overtid")} value={totals?.overtime_50 ?? 0} tone="warning" />
+            <Stat label={t("auto.100_overtid")} value={totals?.overtime_100 ?? 0} tone="destructive" />
           </div>
           <div className="flex items-center justify-between text-sm border-t pt-3">
             <span className="text-muted-foreground">

@@ -112,7 +112,7 @@ export default function Employees() {
       setInviteRole("user");
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     } catch (error: any) {
-      toast.error("Kunne ikke sende invitasjon: " + error.message);
+      toast.error("Kunne ikke sende invitasjon:" + error.message);
     } finally {
       setIsInviting(false);
     }
@@ -147,12 +147,12 @@ export default function Employees() {
       }
       if (data?.error) throw new Error(data.error);
 
-      toast.success("Bruker opprettet: " + createForm.email);
+      toast.success("Bruker opprettet:" + createForm.email);
       setCreateDirectDialogOpen(false);
       setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user" });
       queryClient.invalidateQueries({ queryKey: ["employees"] });
     } catch (error: any) {
-      toast.error("Kunne ikke opprette bruker: " + error.message);
+      toast.error("Kunne ikke opprette bruker:" + error.message);
     } finally {
       setIsCreating(false);
     }

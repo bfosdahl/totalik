@@ -47,6 +47,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Use shared DeviationCategory type
 import type { DeviationCategory, DeviationStatus } from "@/hooks/useDeviations";
+import { t } from "@/i18n/t";
 
 interface Deviation {
   id: string;
@@ -79,40 +80,40 @@ interface Deviation {
 }
 
 const priorityConfig = {
-  low: { label: "Lav", color: "bg-muted text-muted-foreground" },
-  medium: { label: "Medium", color: "bg-warning/10 text-warning" },
-  high: { label: "Høy", color: "bg-destructive/10 text-destructive" },
-  critical: { label: "Kritisk", color: "bg-destructive text-destructive-foreground" },
+  low: { label: t("auto.lav"), color: "bg-muted text-muted-foreground" },
+  medium: { label: t("auto.medium"), color: "bg-warning/10 text-warning" },
+  high: { label: t("auto.hoey"), color: "bg-destructive/10 text-destructive" },
+  critical: { label: t("auto.kritisk"), color: "bg-destructive text-destructive-foreground" },
 };
 
 const statusConfig: Record<DeviationStatus, { label: string; color: string }> = {
-  open: { label: "Åpen", color: "bg-destructive/10 text-destructive" },
-  "in-progress": { label: "Under arbeid", color: "bg-warning/10 text-warning" },
-  resolved: { label: "Løst", color: "bg-success/10 text-success" },
-  closed: { label: "Lukket", color: "bg-muted text-muted-foreground" },
+  open: { label: t("auto.aapen"), color: "bg-destructive/10 text-destructive" },
+  "in-progress": { label: t("auto.under_arbeid"), color: "bg-warning/10 text-warning" },
+  resolved: { label: t("auto.loest"), color: "bg-success/10 text-success" },
+  closed: { label: t("auto.lukket"), color: "bg-muted text-muted-foreground" },
 };
 
 const categoryConfig: Record<DeviationCategory, { label: string; color: string }> = {
-  safety: { label: "HMS / Sikkerhet", color: "bg-primary/10 text-primary" },
-  quality: { label: "Kvalitet", color: "bg-blue-500/10 text-blue-600" },
-  environment: { label: "Miljø", color: "bg-green-500/10 text-green-600" },
-  process: { label: "Prosess", color: "bg-purple-500/10 text-purple-600" },
-  equipment: { label: "Utstyr", color: "bg-orange-500/10 text-orange-600" },
-  personnel: { label: "Personell", color: "bg-pink-500/10 text-pink-600" },
-  documentation: { label: "Dokumentasjon", color: "bg-slate-500/10 text-slate-600" },
-  other: { label: "Annet", color: "bg-muted text-muted-foreground" },
-  temperature: { label: "Temperaturavvik", color: "bg-red-500/10 text-red-600" },
-  cleaning: { label: "Renhold", color: "bg-yellow-500/10 text-yellow-600" },
-  pest_control: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
-  allergen: { label: "Allergenhåndtering", color: "bg-purple-500/10 text-purple-600" },
-  traceability: { label: "Sporbarhet", color: "bg-cyan-500/10 text-cyan-600" },
-  hygiene: { label: "Hygiene", color: "bg-pink-500/10 text-pink-600" },
-  storage: { label: "Lagring", color: "bg-blue-500/10 text-blue-600" },
-  pests: { label: "Skadedyr", color: "bg-orange-500/10 text-orange-600" },
-  expiry: { label: "Utgått holdbarhet", color: "bg-amber-500/10 text-amber-600" },
-  contamination: { label: "Krysskontaminering", color: "bg-rose-500/10 text-rose-600" },
-  receiving: { label: "Varemottak", color: "bg-teal-500/10 text-teal-600" },
-  other_food: { label: "Annet matsikkerhet", color: "bg-muted text-muted-foreground" },
+  safety: { label: t("auto.hms_sikkerhet"), color: "bg-primary/10 text-primary" },
+  quality: { label: t("auto.kvalitet"), color: "bg-blue-500/10 text-blue-600" },
+  environment: { label: t("auto.miljoe"), color: "bg-green-500/10 text-green-600" },
+  process: { label: t("auto.prosess"), color: "bg-purple-500/10 text-purple-600" },
+  equipment: { label: t("auto.utstyr"), color: "bg-orange-500/10 text-orange-600" },
+  personnel: { label: t("auto.personell"), color: "bg-pink-500/10 text-pink-600" },
+  documentation: { label: t("auto.dokumentasjon"), color: "bg-slate-500/10 text-slate-600" },
+  other: { label: t("auto.annet"), color: "bg-muted text-muted-foreground" },
+  temperature: { label: t("auto.temperaturavvik"), color: "bg-red-500/10 text-red-600" },
+  cleaning: { label: t("auto.renhold"), color: "bg-yellow-500/10 text-yellow-600" },
+  pest_control: { label: t("auto.skadedyr"), color: "bg-orange-500/10 text-orange-600" },
+  allergen: { label: t("auto.allergenhaandtering"), color: "bg-purple-500/10 text-purple-600" },
+  traceability: { label: t("auto.sporbarhet"), color: "bg-cyan-500/10 text-cyan-600" },
+  hygiene: { label: t("auto.hygiene"), color: "bg-pink-500/10 text-pink-600" },
+  storage: { label: t("auto.lagring"), color: "bg-blue-500/10 text-blue-600" },
+  pests: { label: t("auto.skadedyr"), color: "bg-orange-500/10 text-orange-600" },
+  expiry: { label: t("auto.utgaatt_holdbarhet"), color: "bg-amber-500/10 text-amber-600" },
+  contamination: { label: t("auto.krysskontaminering"), color: "bg-rose-500/10 text-rose-600" },
+  receiving: { label: t("auto.varemottak"), color: "bg-teal-500/10 text-teal-600" },
+  other_food: { label: t("auto.annet_matsikkerhet"), color: "bg-muted text-muted-foreground" },
 };
 
 interface DeviationDetailDialogProps {
@@ -138,21 +139,21 @@ interface DeviationDetailDialogProps {
 
 // Categories editable in the UI (HMS + IK-MAT)
 const editableCategories: { value: DeviationCategory; label: string }[] = [
-  { value: "safety", label: "HMS / Sikkerhet" },
-  { value: "quality", label: "Kvalitet" },
-  { value: "environment", label: "Miljø" },
-  { value: "process", label: "Prosess" },
-  { value: "equipment", label: "Utstyr" },
-  { value: "personnel", label: "Personell" },
-  { value: "documentation", label: "Dokumentasjon" },
-  { value: "temperature", label: "Temperaturavvik" },
-  { value: "cleaning", label: "Renhold" },
-  { value: "hygiene", label: "Hygiene" },
-  { value: "storage", label: "Lagring" },
-  { value: "traceability", label: "Sporbarhet" },
-  { value: "allergen", label: "Allergen" },
-  { value: "pest_control", label: "Skadedyr" },
-  { value: "other", label: "Annet" },
+  { value: "safety", label: t("auto.hms_sikkerhet") },
+  { value: "quality", label: t("auto.kvalitet") },
+  { value: "environment", label: t("auto.miljoe") },
+  { value: "process", label: t("auto.prosess") },
+  { value: "equipment", label: t("auto.utstyr") },
+  { value: "personnel", label: t("auto.personell") },
+  { value: "documentation", label: t("auto.dokumentasjon") },
+  { value: "temperature", label: t("auto.temperaturavvik") },
+  { value: "cleaning", label: t("auto.renhold") },
+  { value: "hygiene", label: t("auto.hygiene") },
+  { value: "storage", label: t("auto.lagring") },
+  { value: "traceability", label: t("auto.sporbarhet") },
+  { value: "allergen", label: t("auto.allergen") },
+  { value: "pest_control", label: t("auto.skadedyr") },
+  { value: "other", label: t("auto.annet") },
 ];
 
 export function DeviationDetailDialog({ 
@@ -237,8 +238,8 @@ export function DeviationDetailDialog({
       if (success) {
         setHasFollowUpChanges(false);
         toast({
-          title: "Oppfølging lagret",
-          description: "Oppfølgingsinformasjonen ble oppdatert.",
+          title: t("auto.oppfoelging_lagret"),
+          description: t("auto.oppfoelgingsinformasjonen_ble_oppdatert"),
         });
       }
     } finally {
@@ -260,8 +261,8 @@ export function DeviationDetailDialog({
       if (success) {
         setIsEditing(false);
         toast({
-          title: "Avvik oppdatert",
-          description: "Endringene ble lagret.",
+          title: t("auto.avvik_oppdatert"),
+          description: t("auto.endringene_ble_lagret"),
         });
       }
     } finally {
@@ -282,8 +283,8 @@ export function DeviationDetailDialog({
   const handleConfirmClosure = async () => {
     if (!closureComment.trim()) {
       toast({
-        title: "Kommentar mangler",
-        description: "Skriv en kort beskrivelse av hvordan avviket ble løst.",
+        title: t("auto.kommentar_mangler"),
+        description: t("auto.skriv_en_kort_beskrivelse_av_hvordan_avv"),
         variant: "destructive",
       });
       return;
@@ -338,33 +339,33 @@ export function DeviationDetailDialog({
         </div>
 
         <div style="margin-bottom: 20px;">
-          <p><strong>Status:</strong> ${statusLabels[deviation.status] || deviation.status}</p>
-          <p><strong>Ansvarlig:</strong> ${deviation.assignee}</p>
-          <p><strong>Rapportert av:</strong> ${deviation.reporter}</p>
-          <p><strong>Opprettet:</strong> ${formatDateStr(deviation.createdAt)}</p>
-          <p><strong>Frist:</strong> ${formatDateStr(deviation.dueDate)}</p>
+          <p><strong>{t("auto.status")}</strong> ${statusLabels[deviation.status] || deviation.status}</p>
+          <p><strong>{t("auto.ansvarlig")}</strong> ${deviation.assignee}</p>
+          <p><strong>{t("auto.rapportert_av")}</strong> ${deviation.reporter}</p>
+          <p><strong>{t("auto.opprettet")}</strong> ${formatDateStr(deviation.createdAt)}</p>
+          <p><strong>{t("auto.frist")}</strong> ${formatDateStr(deviation.dueDate)}</p>
         </div>
 
         <div style="margin-bottom: 20px;">
-          <h2 style="font-size: 18px; margin-bottom: 10px;">Beskrivelse</h2>
+          <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.beskrivelse")}</h2>
           <p style="white-space: pre-wrap;">${deviation.description || "Ingen beskrivelse"}</p>
         </div>
 
         ${deviation.type === "ruh" ? `
-          ${deviation.incident_location ? `<p><strong>Hendelsessted:</strong> ${deviation.incident_location}</p>` : ""}
-          ${deviation.incident_time ? `<p><strong>Tidspunkt:</strong> ${deviation.incident_time}</p>` : ""}
-          ${deviation.incident_type ? `<p><strong>Hendelsestype:</strong> ${deviation.incident_type}</p>` : ""}
-          ${deviation.severity ? `<p><strong>Alvorlighetsgrad:</strong> ${deviation.severity}</p>` : ""}
-          ${deviation.consequences ? `<p><strong>Konsekvenser:</strong> ${deviation.consequences}</p>` : ""}
-          ${deviation.involved_persons ? `<p><strong>Involverte personer:</strong> ${deviation.involved_persons}</p>` : ""}
-          ${deviation.immediate_actions ? `<p><strong>Umiddelbare tiltak:</strong> ${deviation.immediate_actions}</p>` : ""}
-          ${deviation.preventive_measures ? `<p><strong>Forebyggende tiltak:</strong> ${deviation.preventive_measures}</p>` : ""}
-          ${deviation.root_cause_analysis ? `<p><strong>Rotårsaksanalyse:</strong> ${deviation.root_cause_analysis}</p>` : ""}
+          ${deviation.incident_location ? `<p><strong>{t("auto.hendelsessted")}</strong> ${deviation.incident_location}</p>` : ""}
+          ${deviation.incident_time ? `<p><strong>{t("auto.tidspunkt")}</strong> ${deviation.incident_time}</p>` : ""}
+          ${deviation.incident_type ? `<p><strong>{t("auto.hendelsestype")}</strong> ${deviation.incident_type}</p>` : ""}
+          ${deviation.severity ? `<p><strong>{t("auto.alvorlighetsgrad")}</strong> ${deviation.severity}</p>` : ""}
+          ${deviation.consequences ? `<p><strong>{t("auto.konsekvenser")}</strong> ${deviation.consequences}</p>` : ""}
+          ${deviation.involved_persons ? `<p><strong>{t("auto.involverte_personer")}</strong> ${deviation.involved_persons}</p>` : ""}
+          ${deviation.immediate_actions ? `<p><strong>{t("auto.umiddelbare_tiltak")}</strong> ${deviation.immediate_actions}</p>` : ""}
+          ${deviation.preventive_measures ? `<p><strong>{t("auto.forebyggende_tiltak")}</strong> ${deviation.preventive_measures}</p>` : ""}
+          ${deviation.root_cause_analysis ? `<p><strong>{t("auto.rotaarsaksanalyse")}</strong> ${deviation.root_cause_analysis}</p>` : ""}
         ` : ""}
 
         ${attachments.length > 0 ? `
           <div style="margin-bottom: 20px;">
-            <h2 style="font-size: 18px; margin-bottom: 10px;">Vedlegg</h2>
+            <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.vedlegg")}</h2>
             <ul>
               ${attachments.map(a => `<li>${a.file_name}</li>`).join("")}
             </ul>
@@ -373,7 +374,7 @@ export function DeviationDetailDialog({
 
         ${comments.length > 0 ? `
           <div style="margin-bottom: 20px;">
-            <h2 style="font-size: 18px; margin-bottom: 10px;">Kommentarer</h2>
+            <h2 style="font-size: 18px; margin-bottom: 10px;">{t("auto.kommentarer")}</h2>
             ${comments.map(c => `
               <div style="border-left: 3px solid #ddd; padding-left: 10px; margin-bottom: 10px;">
                 <p style="margin: 0; font-weight: bold;">${c.user_name}</p>
@@ -385,7 +386,7 @@ export function DeviationDetailDialog({
         ` : ""}
 
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
-          <p>Denne rapporten ble sendt fra HMS-systemet.</p>
+          <p>{t("auto.denne_rapporten_ble_sendt_fra_hms_system")}</p>
         </div>
       </body>
       </html>
@@ -523,7 +524,7 @@ export function DeviationDetailDialog({
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               className="text-lg font-semibold"
-              placeholder="Tittel"
+              placeholder={t("auto.tittel")}
             />
           ) : (
             <DialogTitle className="text-lg sm:text-xl">{deviation.title}</DialogTitle>
@@ -537,24 +538,24 @@ export function DeviationDetailDialog({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Flag className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Prioritet</span>
+                  <span className="text-sm font-medium">{t("auto.prioritet")}</span>
                 </div>
                 <Select value={editPriority} onValueChange={(v) => setEditPriority(v as Deviation["priority"])}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Lav</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">Høy</SelectItem>
-                    <SelectItem value="critical">Kritisk</SelectItem>
+                    <SelectItem value="low">{t("auto.lav")}</SelectItem>
+                    <SelectItem value="medium">{t("auto.medium")}</SelectItem>
+                    <SelectItem value="high">{t("auto.hoey")}</SelectItem>
+                    <SelectItem value="critical">{t("auto.kritisk")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Kategori</span>
+                  <span className="text-sm font-medium">{t("auto.kategori")}</span>
                 </div>
                 <Select value={editCategory} onValueChange={(v) => setEditCategory(v as DeviationCategory)}>
                   <SelectTrigger className="w-[180px]">
@@ -570,7 +571,7 @@ export function DeviationDetailDialog({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Frist</span>
+                  <span className="text-sm font-medium">{t("auto.frist_2")}</span>
                 </div>
                 <Input
                   type="date"
@@ -586,7 +587,7 @@ export function DeviationDetailDialog({
           <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
             <div className="flex items-center gap-2">
               <Flag className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Status</span>
+              <span className="text-sm font-medium">{t("auto.status_2")}</span>
             </div>
             <Select 
               value={deviation.status} 
@@ -596,10 +597,10 @@ export function DeviationDetailDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="open">Åpen</SelectItem>
-                <SelectItem value="in-progress">Under arbeid</SelectItem>
-                <SelectItem value="resolved">Løst</SelectItem>
-                <SelectItem value="closed">Lukket</SelectItem>
+                <SelectItem value="open">{t("auto.aapen")}</SelectItem>
+                <SelectItem value="in-progress">{t("auto.under_arbeid")}</SelectItem>
+                <SelectItem value="resolved">{t("auto.loest")}</SelectItem>
+                <SelectItem value="closed">{t("auto.lukket")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -615,7 +616,7 @@ export function DeviationDetailDialog({
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="min-h-[80px] text-sm"
-                placeholder="Beskrivelse av avviket..."
+                placeholder={t("auto.beskrivelse_av_avviket")}
               />
             ) : (
               <p className="text-sm text-muted-foreground leading-relaxed pl-6 whitespace-pre-wrap">
@@ -646,7 +647,7 @@ export function DeviationDetailDialog({
                     <SelectValue placeholder={deviation.assignee} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">Ikke tildelt</SelectItem>
+                    <SelectItem value="unassigned">{t("auto.ikke_tildelt")}</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {getUserDisplayName(user)}
@@ -712,14 +713,14 @@ export function DeviationDetailDialog({
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label htmlFor="immediate-actions" className="text-xs text-muted-foreground">
-                  Umiddelbare tiltak (hva ble gjort med en gang?)
+                  {t("auto.umiddelbare_tiltak_hva_ble_gjort_med_en_")}
                 </Label>
                 {onFollowUpChange ? (
                   <Textarea
                     id="immediate-actions"
                     value={immediateActions}
                     onChange={(e) => handleFollowUpFieldChange(setImmediateActions, e.target.value)}
-                    placeholder="Beskriv tiltak som ble iverksatt umiddelbart..."
+                    placeholder={t("auto.beskriv_tiltak_som_ble_iverksatt_umiddel")}
                     className="min-h-[60px] text-sm"
                   />
                 ) : (
@@ -731,14 +732,14 @@ export function DeviationDetailDialog({
               
               <div className="space-y-1.5">
                 <Label htmlFor="root-cause" className="text-xs text-muted-foreground">
-                  Rotårsaksanalyse (hvorfor skjedde det?)
+                  {t("auto.rotaarsaksanalyse_hvorfor_skjedde_det")}
                 </Label>
                 {onFollowUpChange ? (
                   <Textarea
                     id="root-cause"
                     value={rootCauseAnalysis}
                     onChange={(e) => handleFollowUpFieldChange(setRootCauseAnalysis, e.target.value)}
-                    placeholder="Beskriv underliggende årsaker..."
+                    placeholder={t("auto.beskriv_underliggende_aarsaker")}
                     className="min-h-[60px] text-sm"
                   />
                 ) : (
@@ -750,14 +751,14 @@ export function DeviationDetailDialog({
               
               <div className="space-y-1.5">
                 <Label htmlFor="preventive-measures" className="text-xs text-muted-foreground">
-                  Forebyggende tiltak (hvordan unngå i fremtiden?)
+                  {t("auto.forebyggende_tiltak_hvordan_unngaa_i_fre")}
                 </Label>
                 {onFollowUpChange ? (
                   <Textarea
                     id="preventive-measures"
                     value={preventiveMeasures}
                     onChange={(e) => handleFollowUpFieldChange(setPreventiveMeasures, e.target.value)}
-                    placeholder="Beskriv tiltak for å forhindre gjentakelse..."
+                    placeholder={t("auto.beskriv_tiltak_for_aa_forhindre_gjentake")}
                     className="min-h-[60px] text-sm"
                   />
                 ) : (
@@ -803,7 +804,7 @@ export function DeviationDetailDialog({
               Last ned PDF
             </Button>
             <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
-              Lukk
+              {t("auto.lukk")}
             </Button>
           </div>
         </div>
@@ -825,23 +826,23 @@ export function DeviationDetailDialog({
       }}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Lukk avvik</DialogTitle>
+            <DialogTitle>{t("auto.lukk_avvik")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <p className="text-sm text-muted-foreground">
-              Beskriv kort hvordan avviket ble løst eller lukket. Kommentaren lagres på avviket.
+              {t("auto.beskriv_kort_hvordan_avviket_ble_loest_e")}
             </p>
             <Textarea
               value={closureComment}
               onChange={(e) => setClosureComment(e.target.value)}
-              placeholder="F.eks. Feilen ble utbedret, rutinen oppdatert og informert til teamet."
+              placeholder={t("auto.f_eks_feilen_ble_utbedret_rutinen_oppdat")}
               className="min-h-[120px]"
               autoFocus
             />
           </div>
           <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setClosureDialogOpen(false)} disabled={isClosing}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button onClick={handleConfirmClosure} disabled={isClosing || !closureComment.trim()}>
               {isClosing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ClipboardCheck className="w-4 h-4 mr-2" />}

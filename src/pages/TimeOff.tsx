@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, Check, X, Plus, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export default function TimeOff() {
   const { profile, isCompanyAdmin, isSystemAdmin } = useAuth();
@@ -39,11 +40,11 @@ export default function TimeOff() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return <Badge className="bg-green-500">Godkjent</Badge>;
+        return <Badge className="bg-green-500">{t("auto.godkjent")}</Badge>;
       case "rejected":
-        return <Badge variant="destructive">Avslått</Badge>;
+        return <Badge variant="destructive">{t("auto.avslaatt")}</Badge>;
       default:
-        return <Badge variant="secondary">Venter</Badge>;
+        return <Badge variant="secondary">{t("auto.venter")}</Badge>;
     }
   };
 
@@ -66,7 +67,7 @@ export default function TimeOff() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <Clock className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-muted-foreground">Laster ferieforespørsler...</p>
+            <p className="text-muted-foreground">{t("auto.laster_ferieforespoersler")}</p>
           </div>
         </div>
       </AppLayout>
@@ -78,9 +79,9 @@ export default function TimeOff() {
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Ferieplanlegger</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.ferieplanlegger")}</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Søk om ferie og se oversikt over ferieforespørsler
+            {t("auto.soek_om_ferie_og_se_oversikt_over_ferief")}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -93,14 +94,14 @@ export default function TimeOff() {
           <DialogContent>
             <form onSubmit={handleSubmit}>
               <DialogHeader>
-                <DialogTitle>Ny ferieforespørsel</DialogTitle>
+                <DialogTitle>{t("auto.ny_ferieforespoersel")}</DialogTitle>
                 <DialogDescription>
-                  Fyll ut informasjon om ønsket friperiode
+                  {t("auto.fyll_ut_informasjon_om_oensket_friperiod")}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="start_date">Fra dato</Label>
+                  <Label htmlFor="start_date">{t("auto.fra_dato")}</Label>
                   <Input
                     id="start_date"
                     type="date"
@@ -110,7 +111,7 @@ export default function TimeOff() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">Til dato</Label>
+                  <Label htmlFor="end_date">{t("auto.til_dato")}</Label>
                   <Input
                     id="end_date"
                     type="date"
@@ -120,7 +121,7 @@ export default function TimeOff() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="type">Type</Label>
+                  <Label htmlFor="type">{t("auto.type")}</Label>
                   <Select
                     value={formData.type}
                     onValueChange={(value: any) => setFormData({ ...formData, type: value })}
@@ -129,18 +130,18 @@ export default function TimeOff() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ferie">Ferie</SelectItem>
-                      <SelectItem value="sykdom">Sykdom</SelectItem>
-                      <SelectItem value="permisjon">Permisjon</SelectItem>
-                      <SelectItem value="annet">Annet</SelectItem>
+                      <SelectItem value="ferie">{t("auto.ferie")}</SelectItem>
+                      <SelectItem value="sykdom">{t("auto.sykdom")}</SelectItem>
+                      <SelectItem value="permisjon">{t("auto.permisjon")}</SelectItem>
+                      <SelectItem value="annet">{t("auto.annet")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="reason">Begrunnelse (valgfri)</Label>
+                  <Label htmlFor="reason">{t("auto.begrunnelse_valgfri")}</Label>
                   <Textarea
                     id="reason"
-                    placeholder="Skriv eventuell begrunnelse..."
+                    placeholder={t("auto.skriv_eventuell_begrunnelse")}
                     value={formData.reason}
                     onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                   />
@@ -148,9 +149,9 @@ export default function TimeOff() {
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
-                <Button type="submit">Send forespørsel</Button>
+                <Button type="submit">{t("auto.send_forespoersel")}</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -160,7 +161,7 @@ export default function TimeOff() {
       {pendingRequests.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Venter på godkjenning</CardTitle>
+            <CardTitle>{t("auto.venter_paa_godkjenning_2")}</CardTitle>
             <CardDescription>
               {pendingRequests.length} forespørs{pendingRequests.length === 1 ? "el" : "ler"} venter
             </CardDescription>
@@ -198,7 +199,7 @@ export default function TimeOff() {
                           className="w-full sm:w-auto"
                         >
                           <Check className="w-4 h-4 sm:mr-1" />
-                          <span className="sm:inline">Godkjenn</span>
+                          <span className="sm:inline">{t("auto.godkjenn")}</span>
                         </Button>
                         <Button
                           size="sm"
@@ -207,7 +208,7 @@ export default function TimeOff() {
                           className="w-full sm:w-auto"
                         >
                           <X className="w-4 h-4 sm:mr-1" />
-                          <span className="sm:inline">Avslå</span>
+                          <span className="sm:inline">{t("auto.avslaa")}</span>
                         </Button>
                       </>
                     )}
@@ -221,15 +222,15 @@ export default function TimeOff() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Tidligere forespørsler</CardTitle>
+          <CardTitle>{t("auto.tidligere_forespoersler")}</CardTitle>
           <CardDescription>
-            Godkjente og avslåtte ferieforespørsler
+            {t("auto.godkjente_og_avslaatte_ferieforespoersle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {processedRequests.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Ingen tidligere forespørsler
+              {t("auto.ingen_tidligere_forespoersler")}
             </div>
           ) : (
             <div className="space-y-4">

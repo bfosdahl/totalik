@@ -4,6 +4,7 @@ import { nb } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface TimeEntry {
   id: string;
@@ -64,7 +65,7 @@ export function WeeklySummaryChart({
     <Card className={cn(className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-medium">Ukeoversikt</CardTitle>
+          <CardTitle className="text-base font-medium">{t("auto.ukeoversikt")}</CardTitle>
           <div className="text-right">
             <p className="text-2xl font-bold">{weekTotal.toFixed(1)}t</p>
             <p className="text-xs text-muted-foreground">
@@ -127,15 +128,15 @@ export function WeeklySummaryChart({
         <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm bg-primary" />
-            <span>Mål nådd</span>
+            <span>{t("auto.maal_naadd")}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--chart-3))" }} />
-            <span>Delvis</span>
+            <span>{t("auto.delvis")}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm bg-muted" />
-            <span>Ingen timer</span>
+            <span>{t("auto.ingen_timer")}</span>
           </div>
         </div>
       </CardContent>

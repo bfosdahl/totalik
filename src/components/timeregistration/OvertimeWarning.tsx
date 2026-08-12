@@ -2,6 +2,7 @@ import { AlertTriangle, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface OvertimeWarningProps {
   weeklyHours: number;
@@ -33,7 +34,7 @@ export function OvertimeWarning({
     return (
       <div className={cn("space-y-2", className)}>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Ukentlige timer</span>
+          <span className="text-muted-foreground">{t("auto.ukentlige_timer")}</span>
           <span className="font-medium">{weeklyHours.toFixed(1)} / {weeklyLimit}t</span>
         </div>
         <Progress value={weeklyPercentage} className="h-2" />

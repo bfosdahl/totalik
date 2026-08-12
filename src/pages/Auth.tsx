@@ -13,6 +13,7 @@ import { lovable } from "@/integrations/lovable";
 import { LanguageSelector } from "@/components/language/LanguageSelector";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageSeo } from "@/components/seo/PageSeo";
+import { t } from "@/i18n/t";
 
 const hasRecoveryTokenInUrl = () => {
   if (typeof window === "undefined") return false;
@@ -72,11 +73,11 @@ export default function Auth() {
   const handleSetNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 6) {
-      toast.error("Passordet må være minst 6 tegn");
+      toast.error(t("auto.passordet_maa_vaere_minst_6_tegn"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Passordene stemmer ikke overens");
+      toast.error(t("auto.passordene_stemmer_ikke_overens"));
       return;
     }
     setIsUpdatingPassword(true);
@@ -85,7 +86,7 @@ export default function Auth() {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Passordet er oppdatert! Du blir nå logget inn.");
+        toast.success(t("auto.passordet_er_oppdatert_du_blir_naa_logge"));
         setIsPasswordRecovery(false);
         navigate("/", { replace: true });
       }
@@ -171,7 +172,7 @@ export default function Auth() {
 
     if (signInError) {
       // User was created but auto-login failed — tell them to log in manually
-      toast.info("Konto opprettet! Logg inn med din e-post og passord.");
+      toast.info(t("auto.konto_opprettet_logg_inn_med_din_e_post_"));
       setIsLogin(true);
       return;
     }
@@ -238,8 +239,8 @@ export default function Auth() {
   return (
     <main className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative">
       <PageSeo
-        title="Logg inn eller registrer bedrift"
-        description="Logg inn på Total-IK eller registrer din bedrift for å komme i gang med digitalt internkontrollsystem for HMS, mat, alkohol og bygg."
+        title={t("auto.logg_inn_eller_registrer_bedrift")}
+        description={t("auto.logg_inn_paa_total_ik_eller_registrer_di")}
         path="/auth"
       />
       {/* Language selector in top right */}
@@ -270,11 +271,11 @@ export default function Auth() {
                   <KeyRound className="w-6 h-6 text-primary" />
                 </div>
               </div>
-              <h2 className="text-xl font-semibold text-center mb-2">Sett nytt passord</h2>
-              <p className="text-sm text-muted-foreground text-center mb-6">Velg et nytt passord for kontoen din.</p>
+              <h2 className="text-xl font-semibold text-center mb-2">{t("auto.sett_nytt_passord")}</h2>
+              <p className="text-sm text-muted-foreground text-center mb-6">{t("auto.velg_et_nytt_passord_for_kontoen_din")}</p>
               <form onSubmit={handleSetNewPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">Nytt passord</Label>
+                  <Label htmlFor="newPassword">{t("auto.nytt_passord")}</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -283,13 +284,13 @@ export default function Auth() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="pl-10"
-                      placeholder="Minst 6 tegn"
+                      placeholder={t("auto.minst_6_tegn")}
                       autoFocus
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Bekreft passord</Label>
+                  <Label htmlFor="confirmPassword">{t("auto.bekreft_passord")}</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -298,7 +299,7 @@ export default function Auth() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="pl-10"
-                      placeholder="Gjenta passordet"
+                      placeholder={t("auto.gjenta_passordet")}
                     />
                   </div>
                 </div>
@@ -369,7 +370,7 @@ export default function Auth() {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         className="pl-10"
-                        placeholder="Ola"
+                        placeholder={t("auto.ola")}
                       />
                     </div>
                     {errors.firstName && (
@@ -382,7 +383,7 @@ export default function Auth() {
                       id="lastName"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Nordmann"
+                      placeholder={t("auto.nordmann")}
                     />
                     {errors.lastName && (
                       <p className="text-xs text-destructive">{errors.lastName}</p>

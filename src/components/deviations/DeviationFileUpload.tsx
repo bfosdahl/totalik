@@ -9,6 +9,7 @@ import {
   Paperclip
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n/t";
 
 export interface PendingFile {
   id: string;
@@ -111,7 +112,7 @@ export function DeviationFileUpload({
 
       {files.length === 0 ? (
         <p className="text-xs text-muted-foreground pl-6">
-          Ingen vedlegg lagt til ennå
+          {t("auto.ingen_vedlegg_lagt_til_ennaa")}
         </p>
       ) : (
         <div className="space-y-2 pl-6">

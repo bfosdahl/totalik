@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTimeClock } from "@/hooks/useTimeClock";
+import { t } from "@/i18n/t";
 
 export default function TimeClock() {
   const [searchParams] = useSearchParams();
@@ -78,7 +79,7 @@ export default function TimeClock() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Clock className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Laster...</p>
+          <p className="text-muted-foreground">{t("auto.laster")}</p>
         </div>
       </div>
     );
@@ -97,7 +98,7 @@ export default function TimeClock() {
           <div className="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-2 flex items-center justify-center">
             <Clock className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-xl">Stempling</CardTitle>
+          <CardTitle className="text-xl">{t("auto.stempling")}</CardTitle>
           {qrCodeName && (
             <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
               <Building2 className="h-4 w-4" />
@@ -123,7 +124,7 @@ export default function TimeClock() {
                 <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-center">
                   <div className="flex items-center justify-center gap-2 text-amber-700 dark:text-amber-300 mb-1">
                     <Coffee className="h-5 w-5" />
-                    <span className="font-medium">Du er på pause</span>
+                    <span className="font-medium">{t("auto.du_er_paa_pause")}</span>
                   </div>
                   <p className="text-sm text-amber-600 dark:text-amber-400">
                     Siden {format(new Date(activeEntry.break_start!), "HH:mm", { locale: nb })}
@@ -133,7 +134,7 @@ export default function TimeClock() {
                 <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
                   <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-300 mb-1">
                     <CheckCircle className="h-5 w-5" />
-                    <span className="font-medium">Du er stemplet inn</span>
+                    <span className="font-medium">{t("auto.du_er_stemplet_inn")}</span>
                   </div>
                   <p className="text-sm text-green-600 dark:text-green-400">
                     Siden {format(new Date(activeEntry.clock_in), "HH:mm", { locale: nb })}
@@ -169,10 +170,10 @@ export default function TimeClock() {
               {/* Notes for clock out */}
               {!isOnBreak && (
                 <div>
-                  <Label htmlFor="notes">Notat (valgfritt)</Label>
+                  <Label htmlFor="notes">{t("auto.notat_valgfritt")}</Label>
                   <Textarea
                     id="notes"
-                    placeholder="Legg til et notat om arbeidsdagen..."
+                    placeholder={t("auto.legg_til_et_notat_om_arbeidsdagen")}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={3}
@@ -196,10 +197,10 @@ export default function TimeClock() {
               <div className="bg-muted rounded-lg p-4 text-center">
                 <div className="flex items-center justify-center gap-2 text-muted-foreground mb-1">
                   <AlertCircle className="h-5 w-5" />
-                  <span>Ikke stemplet inn</span>
+                  <span>{t("auto.ikke_stemplet_inn")}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Trykk på knappen under for å starte arbeidsdagen
+                  {t("auto.trykk_paa_knappen_under_for_aa_starte_ar")}
                 </p>
               </div>
 
