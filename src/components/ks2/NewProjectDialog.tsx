@@ -365,8 +365,8 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
+          <DialogTitle className="text-xl font-semibold">
             {selectedProjectType ? t("auto.opprett_nytt_prosjekt2") : t("auto.velg_prosjekttype")}
-            {selectedProjectType ? "Opprett nytt prosjekt" : "Velg prosjekttype"}
           </DialogTitle>
         </DialogHeader>
 
