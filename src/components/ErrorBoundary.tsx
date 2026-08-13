@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, Home, Bug, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logClientError } from "@/utils/logClientError";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { t } from "@/i18n/t";
 
 interface Props {
   children: ReactNode;
@@ -132,12 +133,12 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
                 <AlertTriangle className="w-6 h-6 text-destructive" />
               </div>
-              <CardTitle className="text-xl">Noe gikk galt</CardTitle>
+              <CardTitle className="text-xl">{t("auto.noe_gikk_galt")}</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <p className="text-center text-muted-foreground">
-                Det oppstod en uventet feil. Prøv å laste siden på nytt.
+                {t("auto.det_oppstod_en_uventet_feil_proev_aa_las")}
               </p>
 
               {error && (
@@ -166,14 +167,14 @@ export class ErrorBoundary extends Component<Props, State> {
                       </summary>
                       <div className="mt-2 space-y-2">
                         <p className="text-xs text-muted-foreground">
-                          <strong>Tidspunkt:</strong> {debugData.timestamp}
+                          <strong>{t("auto.tidspunkt")}</strong> {debugData.timestamp}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          <strong>URL:</strong> {debugData.url}
+                          <strong>{t("auto.url")}</strong> {debugData.url}
                         </p>
                         {debugData.lastNetworkRequests.length > 0 && (
                           <div>
-                            <p className="text-xs text-muted-foreground font-medium">Siste nettverksforespørsler:</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t("auto.siste_nettverksforespoersler")}</p>
                             <ul className="text-xs text-muted-foreground list-disc list-inside">
                               {debugData.lastNetworkRequests.map((req, i) => (
                                 <li key={i} className="truncate">{req}</li>
@@ -203,7 +204,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 Gå til forsiden
               </Button>
               <Button variant="outline" className="w-full sm:w-auto" onClick={this.handleRetry}>
-                Prøv igjen
+                {t("auto.proev_igjen")}
               </Button>
               <Button className="w-full sm:w-auto" onClick={this.handleReload}>
                 <RefreshCw className="w-4 h-4 mr-2" />

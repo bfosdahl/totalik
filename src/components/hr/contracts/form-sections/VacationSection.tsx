@@ -2,6 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ExtendedContractFormData } from "../ExtendedContractFormData";
+import { t } from "@/i18n/t";
 
 interface VacationSectionProps {
   formData: ExtendedContractFormData;
@@ -11,11 +12,11 @@ interface VacationSectionProps {
 export function VacationSection({ formData, onChange }: VacationSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Ferie og feriepenger</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.ferie_og_feriepenger")}</h3>
       
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="vacation_days">Feriedager per år *</Label>
+          <Label htmlFor="vacation_days">{t("auto.feriedager_per_aar")}</Label>
           <Input
             id="vacation_days"
             type="number"
@@ -47,12 +48,12 @@ export function VacationSection({ formData, onChange }: VacationSectionProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="vacation_rules">Regler for fastsetting av ferietidspunkt</Label>
+        <Label htmlFor="vacation_rules">{t("auto.regler_for_fastsetting_av_ferietidspunkt")}</Label>
         <Textarea
           id="vacation_rules"
           value={formData.vacation_rules || ''}
           onChange={(e) => onChange({ vacation_rules: e.target.value })}
-          placeholder="Beskriv prosedyrer for planlegging av ferie, frister for ferieønsker, mv. Kan vise til ferieloven."
+          placeholder={t("auto.beskriv_prosedyrer_for_planlegging_av_fe")}
           rows={2}
         />
       </div>

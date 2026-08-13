@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useKsModule2ShaPlan } from "@/hooks/useKsModule2ShaPlan";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface Props {
   projectId: string;
@@ -67,8 +68,8 @@ export function Ks2ShaPlanUpload({ projectId, onCancel }: Props) {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold">Last opp ekstern SHA-plan</h2>
-          <p className="text-muted-foreground">SHA-plan mottatt fra byggherre</p>
+          <h2 className="text-2xl font-bold">{t("auto.last_opp_ekstern_sha_plan")}</h2>
+          <p className="text-muted-foreground">{t("auto.sha_plan_mottatt_fra_byggherre")}</p>
         </div>
       </div>
 
@@ -76,7 +77,7 @@ export function Ks2ShaPlanUpload({ projectId, onCancel }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Last opp SHA-plan (PDF)</CardTitle>
-          <CardDescription>Dra og slipp filen eller klikk for å velge</CardDescription>
+          <CardDescription>{t("auto.dra_og_slipp_filen_eller_klikk_for_aa_ve")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div
@@ -112,7 +113,7 @@ export function Ks2ShaPlanUpload({ projectId, onCancel }: Props) {
               <>
                 <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-muted-foreground mb-2">
-                  Dra og slipp PDF-fil her
+                  {t("auto.dra_og_slipp_pdf_fil_her")}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">eller</p>
                 <label>
@@ -123,7 +124,7 @@ export function Ks2ShaPlanUpload({ projectId, onCancel }: Props) {
                     className="hidden"
                   />
                   <Button variant="outline" asChild>
-                    <span className="cursor-pointer">Velg fil</span>
+                    <span className="cursor-pointer">{t("auto.velg_fil")}</span>
                   </Button>
                 </label>
               </>
@@ -135,24 +136,24 @@ export function Ks2ShaPlanUpload({ projectId, onCancel }: Props) {
       {/* Metadata */}
       <Card>
         <CardHeader>
-          <CardTitle>Opplastingsinformasjon</CardTitle>
+          <CardTitle>{t("auto.opplastingsinformasjon")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Lastet opp av</Label>
+              <Label>{t("auto.lastet_opp_av")}</Label>
               <Input 
                 value={uploaderName}
                 onChange={(e) => setUploaderName(e.target.value)}
-                placeholder="Ditt navn"
+                placeholder={t("auto.ditt_navn")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Versjon</Label>
+              <Label>{t("auto.versjon")}</Label>
               <Input 
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
-                placeholder="f.eks. 1.0"
+                placeholder={t("auto.f_eks_1_0")}
               />
             </div>
           </div>
@@ -166,12 +167,12 @@ export function Ks2ShaPlanUpload({ projectId, onCancel }: Props) {
             <CheckCircle2 className="h-5 w-5 text-blue-500 mt-0.5" />
             <div>
               <p className="font-medium text-blue-700 dark:text-blue-400">
-                Hva skjer videre?
+                {t("auto.hva_skjer_videre")}
               </p>
               <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
                 <li>• SHA-planen lagres i dokumentsenteret (mappe "20 SHA")</li>
-                <li>• Du må bekrefte at planen er mottatt og implementert i vårt HMS-system</li>
-                <li>• En tilpasning opprettes automatisk der du kan dokumentere hvordan dere ivaretar kravene</li>
+                <li>{t("auto.du_maa_bekrefte_at_planen_er_mottatt_og_")}</li>
+                <li>{t("auto.en_tilpasning_opprettes_automatisk_der_d")}</li>
               </ul>
             </div>
           </div>

@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { generateChecklistPdf } from "@/utils/ikMatChecklistPdf";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 interface Checklist {
   id: string;
@@ -135,7 +136,7 @@ export const SjekklisterTab = () => {
         <Alert>
           <ClipboardList className="h-4 w-4" />
           <AlertDescription>
-            Ingen sjekklister funnet. Kjør IK/MAT oppsettet først eller opprett egne sjekklister.
+            {t("auto.ingen_sjekklister_funnet_kjoer_ik_mat_op")}
           </AlertDescription>
         </Alert>
         <CreateChecklistDialog
@@ -165,7 +166,7 @@ export const SjekklisterTab = () => {
           <div className="flex justify-end mb-3 sm:mb-4">
             <Button size="sm" className="sm:size-default" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-1.5 sm:mr-2" />
-              <span className="hidden xs:inline">Opprett</span> sjekkliste
+              <span className="hidden xs:inline">{t("auto.opprett")}</span> sjekkliste
             </Button>
           </div>
           
@@ -182,7 +183,7 @@ export const SjekklisterTab = () => {
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                           <CardTitle className="text-base sm:text-lg truncate">{checklist.name}</CardTitle>
                           {isCustom && (
-                            <Badge variant="secondary" className="text-xs flex-shrink-0">Tilpasset</Badge>
+                            <Badge variant="secondary" className="text-xs flex-shrink-0">{t("auto.tilpasset")}</Badge>
                           )}
                         </div>
                         <CardDescription className="mt-1 sm:mt-2 text-xs sm:text-sm line-clamp-2">{checklist.description}</CardDescription>
@@ -249,7 +250,7 @@ export const SjekklisterTab = () => {
             <Alert>
               <History className="h-4 w-4" />
               <AlertDescription>
-                Ingen utfylte sjekklister ennå.
+                {t("auto.ingen_utfylte_sjekklister_ennaa")}
               </AlertDescription>
             </Alert>
           ) : (
@@ -299,7 +300,7 @@ export const SjekklisterTab = () => {
 
                       {response.notes && (
                         <div className="text-sm">
-                          <span className="font-medium">Notater:</span>
+                          <span className="font-medium">{t("auto.notater_2")}</span>
                           <p className="text-muted-foreground mt-1">{response.notes}</p>
                         </div>
                       )}
@@ -318,7 +319,7 @@ export const SjekklisterTab = () => {
                             variant="outline"
                             size="icon"
                             onClick={() => handleDownloadPdf(response)}
-                            title="Last ned PDF"
+                            title={t("auto.last_ned_pdf")}
                           >
                             <Download className="h-4 w-4" />
                           </Button>
@@ -327,7 +328,7 @@ export const SjekklisterTab = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => deleteResponse(response.id)}
-                          title="Slett"
+                          title={t("auto.slett")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useIkMatScheduledTasks } from "@/hooks/useIkMatScheduledTasks";
+import { t } from "@/i18n/t";
 
 interface CreateScheduledTaskDialogProps {
   open: boolean;
@@ -84,61 +85,61 @@ export const CreateScheduledTaskDialog = ({ open, onOpenChange }: CreateSchedule
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Ny planlagt oppgave</DialogTitle>
+          <DialogTitle>{t("auto.ny_planlagt_oppgave")}</DialogTitle>
           <DialogDescription>
-            Opprett en ny oppgave som vises i kalenderen
+            {t("auto.opprett_en_ny_oppgave_som_vises_i_kalend")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Oppgavenavn *</Label>
+            <Label htmlFor="title">{t("auto.oppgavenavn")}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="F.eks. Gulv på kjøkken"
+              placeholder={t("auto.f_eks_gulv_paa_kjoekken")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Beskrivelse</Label>
+            <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Valgfri beskrivelse av oppgaven"
+              placeholder={t("auto.valgfri_beskrivelse_av_oppgaven")}
               rows={2}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Type oppgave</Label>
+              <Label>{t("auto.type_oppgave")}</Label>
               <Select value={taskType} onValueChange={setTaskType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cleaning">Renhold</SelectItem>
-                  <SelectItem value="inspection">Inspeksjon</SelectItem>
-                  <SelectItem value="temperature">Temperatur</SelectItem>
-                  <SelectItem value="other">Annet</SelectItem>
+                  <SelectItem value="cleaning">{t("auto.renhold")}</SelectItem>
+                  <SelectItem value="inspection">{t("auto.inspeksjon")}</SelectItem>
+                  <SelectItem value="temperature">{t("auto.temperatur")}</SelectItem>
+                  <SelectItem value="other">{t("auto.annet")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Frekvens</Label>
+              <Label>{t("auto.frekvens_2")}</Label>
               <Select value={frequency} onValueChange={setFrequency}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">Daglig</SelectItem>
-                  <SelectItem value="weekly">Ukentlig</SelectItem>
-                  <SelectItem value="monthly">Månedlig</SelectItem>
-                  <SelectItem value="periodisk">Periodisk</SelectItem>
+                  <SelectItem value="daily">{t("auto.daglig")}</SelectItem>
+                  <SelectItem value="weekly">{t("auto.ukentlig")}</SelectItem>
+                  <SelectItem value="monthly">{t("auto.maanedlig")}</SelectItem>
+                  <SelectItem value="periodisk">{t("auto.periodisk")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -146,7 +147,7 @@ export const CreateScheduledTaskDialog = ({ open, onOpenChange }: CreateSchedule
 
           {frequency === 'weekly' && (
             <div className="space-y-2">
-              <Label>Velg dager</Label>
+              <Label>{t("auto.velg_dager")}</Label>
               <div className="flex flex-wrap gap-2">
                 {DAYS_OF_WEEK.map((day) => (
                   <div 
@@ -172,7 +173,7 @@ export const CreateScheduledTaskDialog = ({ open, onOpenChange }: CreateSchedule
 
           {(frequency === 'monthly' || frequency === 'periodisk') && (
             <div className="space-y-2">
-              <Label>Velg dager i måneden</Label>
+              <Label>{t("auto.velg_dager_i_maaneden")}</Label>
               <div className="grid grid-cols-7 gap-1">
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
                   <Button
@@ -191,19 +192,19 @@ export const CreateScheduledTaskDialog = ({ open, onOpenChange }: CreateSchedule
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="responsible">Ansvarlig</Label>
+            <Label htmlFor="responsible">{t("auto.ansvarlig_2")}</Label>
             <Input
               id="responsible"
               value={responsible}
               onChange={(e) => setResponsible(e.target.value)}
-              placeholder="Hvem er ansvarlig for oppgaven?"
+              placeholder={t("auto.hvem_er_ansvarlig_for_oppgaven")}
             />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleSave} disabled={!title.trim() || isSaving}>
             {isSaving ? 'Lagrer...' : 'Opprett oppgave'}

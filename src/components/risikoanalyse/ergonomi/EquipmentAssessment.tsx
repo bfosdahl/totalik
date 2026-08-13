@@ -35,6 +35,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 import {
   Dialog,
   DialogContent,
@@ -133,7 +134,7 @@ function ZoneStatus({ level, type }: { level: "green" | "yellow" | "red" | "none
     actions?: string[];
   }> = {
     green: {
-      title: "GRØNN SONE",
+      title: t("auto.groenn_sone"),
       icon: CheckCircle2,
       className: "bg-green-50 border-green-300 text-green-800",
       iconClass: "text-green-600",
@@ -142,7 +143,7 @@ function ZoneStatus({ level, type }: { level: "green" | "yellow" | "red" | "none
         : "Støynivået er under nedre tiltaksverdi. Normalt arbeid.",
     },
     yellow: {
-      title: "GUL SONE – TILTAK PÅKREVD",
+      title: t("auto.gul_sone_tiltak_paakrevd"),
       icon: AlertTriangle,
       className: "bg-yellow-50 border-yellow-300 text-yellow-800",
       iconClass: "text-yellow-600",
@@ -164,7 +165,7 @@ function ZoneStatus({ level, type }: { level: "green" | "yellow" | "red" | "none
           ],
     },
     red: {
-      title: "RØD SONE – STANS ARBEIDET",
+      title: t("auto.roed_sone_stans_arbeidet"),
       icon: AlertTriangle,
       className: "bg-red-50 border-red-300 text-red-800",
       iconClass: "text-red-600",
@@ -231,7 +232,7 @@ function MaxExposureCalculator({ type }: { type: "hand_arm" | "whole_body" }) {
     <div className="p-4 border rounded-lg bg-muted/30 space-y-4">
       <div className="flex items-center gap-2">
         <Clock className="h-4 w-4 text-muted-foreground" />
-        <h4 className="font-semibold text-sm">Maksimal eksponeringstid-kalkulator</h4>
+        <h4 className="font-semibold text-sm">{t("auto.maksimal_eksponeringstid_kalkulator")}</h4>
       </div>
       <div className="grid gap-4 sm:grid-cols-3 items-end">
         <div className="space-y-1">
@@ -241,7 +242,7 @@ function MaxExposureCalculator({ type }: { type: "hand_arm" | "whole_body" }) {
             step="0.1"
             value={vibLevel}
             onChange={(e) => setVibLevel(e.target.value ? Number(e.target.value) : "")}
-            placeholder="F.eks. 5.0"
+            placeholder={t("auto.f_eks_5_0")}
           />
         </div>
         <div className="space-y-1">
@@ -286,7 +287,7 @@ function ToolRow({ tool, onUpdate, onRemove, canRemove, vibType, showNoise }: {
     <div className="p-3 border rounded-lg space-y-3">
       <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
         <div className="space-y-1 col-span-2 md:col-span-1">
-          <Label className="text-xs font-medium">Verktøy/maskin</Label>
+          <Label className="text-xs font-medium">{t("auto.verktoey_maskin")}</Label>
           <Input
             value={tool.name}
             onChange={(e) => onUpdate("name", e.target.value)}
@@ -326,12 +327,12 @@ function ToolRow({ tool, onUpdate, onRemove, canRemove, vibType, showNoise }: {
         <div className="flex flex-col justify-end gap-1">
           {tool.vibrationLevel > 0 && (
             <p className="text-xs text-muted-foreground">
-              Maks vib: <strong>{Math.round(maxVibMin)} min</strong>
+              {t("auto.maks_vib")} <strong>{Math.round(maxVibMin)} min</strong>
             </p>
           )}
           {showNoise && tool.noiseLevel >= 80 && (
             <p className="text-xs text-muted-foreground">
-              Maks støy: <strong>{Math.round(maxNoiseMin)} min</strong>
+              {t("auto.maks_stoey")} <strong>{Math.round(maxNoiseMin)} min</strong>
             </p>
           )}
           {canRemove && (
@@ -604,7 +605,7 @@ export function EquipmentAssessment() {
     },
     onError: (err) => {
       console.error("Save error:", err);
-      toast.error("Kunne ikke lagre vurdering");
+      toast.error(t("auto.kunne_ikke_lagre_vurdering"));
     },
   });
 
@@ -619,9 +620,9 @@ export function EquipmentAssessment() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["equipment-exposure-assessments"] });
-      toast.success("Vurdering slettet");
+      toast.success(t("auto.vurdering_slettet"));
     },
-    onError: () => toast.error("Kunne ikke slette"),
+    onError: () => toast.error(t("auto.kunne_ikke_slette")),
   });
 
   // === Load saved assessment ===
@@ -648,7 +649,7 @@ export function EquipmentAssessment() {
     setTools(CARPENTER_EXAMPLE_TOOLS.map((t, i) => ({ ...t, id: Date.now().toString() + i })));
     setTitle("Eksempel: Snekkerverktøy – daglig eksponering");
     setNotes("Typisk verktøybruk for en snekker/tømrer. Verdier er veiledende – sjekk alltid produsentens datablad for nøyaktige vibrasjon- og støyverdier.");
-    toast.success("Eksempelverktøy for snekker lastet inn");
+    toast.success(t("auto.eksempelverktoey_for_snekker_lastet_inn"));
   };
 
   const addTool = () => {
@@ -735,25 +736,25 @@ export function EquipmentAssessment() {
                 <Wrench className="h-5 w-5" />
                 Vibrasjon & Støy – Eksponeringskalkulator
                 {editingId && (
-                  <Badge variant="outline" className="ml-2 text-xs">Redigerer</Badge>
+                  <Badge variant="outline" className="ml-2 text-xs">{t("auto.redigerer")}</Badge>
                 )}
               </CardTitle>
               <CardDescription>
-                Beregn daglig eksponering A(8) for vibrasjoner og L<sub>EX,8h</sub> for støy per verktøy.
+                Beregn daglig eksponering A(8) for vibrasjoner og L<sub>{t("auto.ex_8h")}</sub> {t("auto.for_stoey_per_verktoey")}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               {savedAssessments.length > 0 && (
                 <Button variant="outline" size="sm" onClick={() => setShowSavedList(true)} className="gap-1.5">
                   <FolderOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">Lagrede</span>
+                  <span className="hidden sm:inline">{t("auto.lagrede")}</span>
                   <Badge variant="secondary" className="h-5 px-1.5 text-xs">{savedAssessments.length}</Badge>
                 </Button>
               )}
               {editingId && (
                 <Button variant="outline" size="sm" onClick={resetForm} className="gap-1.5">
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Ny</span>
+                  <span className="hidden sm:inline">{t("auto.ny")}</span>
                 </Button>
               )}
               <Button
@@ -764,7 +765,7 @@ export function EquipmentAssessment() {
                 className="gap-1.5"
               >
                 <FileDown className="h-4 w-4" />
-                <span className="hidden sm:inline">Eksporter PDF</span>
+                <span className="hidden sm:inline">{t("auto.eksporter_pdf")}</span>
               </Button>
               <Button
                 size="sm"
@@ -773,7 +774,7 @@ export function EquipmentAssessment() {
                 className="gap-1.5"
               >
                 {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                <span className="hidden sm:inline">Lagre</span>
+                <span className="hidden sm:inline">{t("auto.lagre")}</span>
               </Button>
             </div>
           </div>
@@ -783,26 +784,26 @@ export function EquipmentAssessment() {
           {/* Title & notes */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label className="text-sm font-medium">Tittel / beskrivelse</Label>
+              <Label className="text-sm font-medium">{t("auto.tittel_beskrivelse")}</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="F.eks. Vibrasjonsvurdering – Betongarbeid"
+                placeholder={t("auto.f_eks_vibrasjonsvurdering_betongarbeid")}
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-sm font-medium">Merknader</Label>
+              <Label className="text-sm font-medium">{t("auto.merknader")}</Label>
               <Input
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Tilleggsinformasjon..."
+                placeholder={t("auto.tilleggsinformasjon")}
               />
             </div>
           </div>
 
           {/* Vibration type selector */}
           <div className="space-y-2">
-            <Label className="font-medium">Type vibrasjon</Label>
+            <Label className="font-medium">{t("auto.type_vibrasjon")}</Label>
             <Tabs value={vibType} onValueChange={(v) => setVibType(v as "hand_arm" | "whole_body")}>
               <TabsList className="grid w-full grid-cols-2 max-w-md">
                 <TabsTrigger value="hand_arm" className="gap-1.5">
@@ -825,14 +826,14 @@ export function EquipmentAssessment() {
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div className="space-y-1">
                   <p className="font-medium flex items-center gap-1"><Vibrate className="h-3 w-3" /> Vibrasjon</p>
-                  <p>Tiltaksverdi: <span className="text-yellow-700 font-medium">{actionLimit} m/s² A(8)</span></p>
-                  <p>Grenseverdi: <span className="text-red-700 font-medium">{expLimit} m/s² A(8)</span></p>
+                  <p>{t("auto.tiltaksverdi")} <span className="text-yellow-700 font-medium">{actionLimit} m/s² A(8)</span></p>
+                  <p>{t("auto.grenseverdi")} <span className="text-red-700 font-medium">{expLimit} m/s² A(8)</span></p>
                 </div>
                 <div className="space-y-1">
                   <p className="font-medium flex items-center gap-1"><Volume2 className="h-3 w-3" /> Støy</p>
-                  <p>Nedre tiltaksverdi: <span className="text-yellow-700 font-medium">80 dB / 130 dB(C)</span></p>
-                  <p>Øvre tiltaksverdi: <span className="text-orange-700 font-medium">85 dB / 135 dB(C)</span></p>
-                  <p>Grenseverdi: <span className="text-red-700 font-medium">87 dB / 140 dB(C)</span></p>
+                  <p>{t("auto.nedre_tiltaksverdi")} <span className="text-yellow-700 font-medium">80 dB / 130 dB(C)</span></p>
+                  <p>{t("auto.oevre_tiltaksverdi")} <span className="text-orange-700 font-medium">85 dB / 135 dB(C)</span></p>
+                  <p>{t("auto.grenseverdi")} <span className="text-red-700 font-medium">87 dB / 140 dB(C)</span></p>
                 </div>
               </div>
             </AlertDescription>
@@ -847,11 +848,10 @@ export function EquipmentAssessment() {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Calculator className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-semibold">Daglig eksponeringskalkulator</h3>
+              <h3 className="font-semibold">{t("auto.daglig_eksponeringskalkulator")}</h3>
             </div>
             <p className="text-xs text-muted-foreground">
-              Legg til verktøy og fyll inn vibrasjonsnivå, støynivå og daglig brukstid.
-              Vibrasjonsnivå finnes i maskinens brukerveiledning, CE-merking eller fra leverandør.
+              {t("auto.legg_til_verktoey_og_fyll_inn_vibrasjons")}
             </p>
           </div>
 
@@ -887,10 +887,10 @@ export function EquipmentAssessment() {
               type="number"
               value={peakLevel}
               onChange={(e) => setPeakLevel(e.target.value ? Number(e.target.value) : "")}
-              placeholder="F.eks. 120"
+              placeholder={t("auto.f_eks_120")}
             />
             <p className="text-xs text-muted-foreground">
-              Toppverdi ved slag, smell, skudd eller lignende impulsstøy
+              {t("auto.toppverdi_ved_slag_smell_skudd_eller_lig")}
             </p>
           </div>
 
@@ -917,7 +917,7 @@ export function EquipmentAssessment() {
                     actionLimit={NOISE_LOWER}
                     expLimit={NOISE_LIMIT}
                     unit="dB"
-                    label="Støynivå LEX,8h"
+                    label={t("auto.stoeynivaa_lex_8h")}
                   />
                 )}
               </div>
@@ -946,7 +946,7 @@ export function EquipmentAssessment() {
                          "Helseskadelig – STANS!"}
                       </p>
                       <p className="text-sm mt-1">
-                        Daglig eksponering: <strong>{a8.toFixed(2)} m/s² A(8)</strong>
+                        {t("auto.daglig_eksponering")} <strong>{a8.toFixed(2)} m/s² A(8)</strong>
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Eksponeringsscore: {Math.round((a8 / expLimit) * 1000)}
@@ -971,7 +971,7 @@ export function EquipmentAssessment() {
                       <Volume2 className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Støynivå</p>
+                      <p className="text-sm text-muted-foreground">{t("auto.stoeynivaa")}</p>
                       <p className="font-bold">
                         {noiseZone === "green" ? "Innenfor grensene" :
                          noiseZone === "yellow" ? "Over tiltaksverdi!" :
@@ -979,7 +979,7 @@ export function EquipmentAssessment() {
                       </p>
                       {lex8h > 0 && (
                         <p className="text-sm mt-1">
-                          Daglig eksponering: <strong>{lex8h.toFixed(1)} dB L<sub>EX,8h</sub></strong>
+                          {t("auto.daglig_eksponering")} <strong>{lex8h.toFixed(1)} dB L<sub>{t("auto.ex_8h")}</sub></strong>
                         </p>
                       )}
                       {peak > 0 && (
@@ -1005,7 +1005,7 @@ export function EquipmentAssessment() {
                     hearingProtection === "tilgjengelig" ? "text-yellow-600" : "text-green-600"
                   )} />
                   <div className="text-sm">
-                    <strong>Hørselvernkrav: </strong>
+                    <strong>{t("auto.hoerselvernkrav")} </strong>
                     {hearingProtection === "påbudt" && "Hørselvern er PÅBUDT. Bruk minimum øreklokker eller støypropper."}
                     {hearingProtection === "tilgjengelig" && "Hørselvern skal være tilgjengelig for arbeidstakere."}
                     {hearingProtection === "ingen" && "Ingen krav om hørselvern basert på målt nivå."}
@@ -1023,11 +1023,9 @@ export function EquipmentAssessment() {
               {(vibZone === "yellow" || vibZone === "red") && (
                 <Alert className="border-purple-300 bg-purple-50">
                   <Info className="h-4 w-4 text-purple-600" />
-                  <AlertTitle className="text-purple-800">Helseovervaking påkrevd</AlertTitle>
+                  <AlertTitle className="text-purple-800">{t("auto.helseovervaking_paakrevd")}</AlertTitle>
                   <AlertDescription className="text-purple-700 text-sm">
-                    Arbeidstakere eksponert for vibrasjoner over tiltaksverdien skal få tilbud om 
-                    helseundersøkelse hos lege. Det kan være nødvendig å omplassere arbeidstakere 
-                    av helsemessige årsaker, særlig personer med nevropati og Raynauds fenomen.
+                    {t("auto.arbeidstakere_eksponert_for_vibrasjoner_")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -1039,40 +1037,40 @@ export function EquipmentAssessment() {
             <div>
               <p className="font-medium mb-1">Vanlige støynivåer (veiledende):</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
-                <span>Samtale: 60-70 dB</span>
-                <span>Boremaskin: 85-95 dB</span>
-                <span>Vinkelsliper: 95-105 dB</span>
-                <span>Spikerpistol: 100-115 dB</span>
+                <span>{t("auto.samtale_60_70_db")}</span>
+                <span>{t("auto.boremaskin_85_95_db")}</span>
+                <span>{t("auto.vinkelsliper_95_105_db")}</span>
+                <span>{t("auto.spikerpistol_100_115_db")}</span>
               </div>
             </div>
             <div>
-              <p className="font-medium mb-1">Hvor finner jeg vibrasjonsnivå?</p>
+              <p className="font-medium mb-1">{t("auto.hvor_finner_jeg_vibrasjonsnivaa")}</p>
               <ul className="list-disc list-inside space-y-0.5">
-                <li>Sjekk maskinens brukerveiledning eller CE-merking</li>
-                <li>Kontakt leverandøren for spesifikasjoner</li>
-                <li>Søk i VIBBASE eller lignende databaser</li>
-                <li>Utfør målinger med kalibrert måleutstyr</li>
+                <li>{t("auto.sjekk_maskinens_brukerveiledning_eller_c")}</li>
+                <li>{t("auto.kontakt_leverandoeren_for_spesifikasjone")}</li>
+                <li>{t("auto.soek_i_vibbase_eller_lignende_databaser")}</li>
+                <li>{t("auto.utfoer_maalinger_med_kalibrert_maaleutst")}</li>
               </ul>
             </div>
             {vibType === "whole_body" && (
               <div>
-                <p className="font-medium mb-1">Tiltak for helkroppsvibrasjoner:</p>
+                <p className="font-medium mb-1">{t("auto.tiltak_for_helkroppsvibrasjoner")}</p>
                 <ul className="list-disc list-inside space-y-0.5">
-                  <li>Førerhytte og stol med vibrasjonsdemping</li>
-                  <li>Dekk og hjul tilpasset underlaget</li>
-                  <li>Redusere eksponeringstiden, variere oppgaver</li>
-                  <li>Lavere fart og jevnt kjøreunderlag</li>
+                  <li>{t("auto.foererhytte_og_stol_med_vibrasjonsdempin")}</li>
+                  <li>{t("auto.dekk_og_hjul_tilpasset_underlaget")}</li>
+                  <li>{t("auto.redusere_eksponeringstiden_variere_oppga")}</li>
+                  <li>{t("auto.lavere_fart_og_jevnt_kjoereunderlag")}</li>
                 </ul>
               </div>
             )}
             {vibType === "hand_arm" && (
               <div>
-                <p className="font-medium mb-1">Tiltak for hånd-arm vibrasjoner:</p>
+                <p className="font-medium mb-1">{t("auto.tiltak_for_haand_arm_vibrasjoner")}</p>
                 <ul className="list-disc list-inside space-y-0.5">
-                  <li>Alternative arbeidsmetoder og verktøy</li>
-                  <li>Utstyr med relativt lav vibrasjon</li>
-                  <li>Kortere eksponeringstid</li>
-                  <li>Vibrasjonsdempende hansker</li>
+                  <li>{t("auto.alternative_arbeidsmetoder_og_verktoey")}</li>
+                  <li>{t("auto.utstyr_med_relativt_lav_vibrasjon")}</li>
+                  <li>{t("auto.kortere_eksponeringstid")}</li>
+                  <li>{t("auto.vibrasjonsdempende_hansker")}</li>
                 </ul>
               </div>
             )}
@@ -1091,16 +1089,16 @@ export function EquipmentAssessment() {
           </DialogHeader>
           <div className="flex-1 overflow-y-auto">
             {savedAssessments.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Ingen lagrede vurderinger</p>
+              <p className="text-center text-muted-foreground py-8">{t("auto.ingen_lagrede_vurderinger")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tittel</TableHead>
-                    <TableHead>Type</TableHead>
+                    <TableHead>{t("auto.tittel")}</TableHead>
+                    <TableHead>{t("auto.type")}</TableHead>
                     <TableHead>A(8)</TableHead>
-                    <TableHead>Sone</TableHead>
-                    <TableHead>Dato</TableHead>
+                    <TableHead>{t("auto.sone")}</TableHead>
+                    <TableHead>{t("auto.dato")}</TableHead>
                     <TableHead className="w-[80px]"></TableHead>
                   </TableRow>
                 </TableHeader>

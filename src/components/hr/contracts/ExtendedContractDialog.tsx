@@ -20,6 +20,7 @@ import { BenefitsSection } from "./form-sections/BenefitsSection";
 import { CollectiveAgreementSection } from "./form-sections/CollectiveAgreementSection";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n/t";
 
 interface ExtendedContractDialogProps {
   open: boolean;
@@ -257,18 +258,18 @@ export function ExtendedContractDialog({
 
                 <TabsContent value="notes" className="mt-0">
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-base border-b pb-2">Tilleggsopplysninger</h3>
+                    <h3 className="font-semibold text-base border-b pb-2">{t("auto.tilleggsopplysninger")}</h3>
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Særskilte vilkår / fritekst</Label>
+                      <Label htmlFor="notes">{t("auto.saerskilte_vilkaar_fritekst")}</Label>
                       <Textarea
                         id="notes"
                         value={formData.notes || ''}
                         onChange={(e) => handleChange({ notes: e.target.value })}
-                        placeholder="Skriv fritt, f.eks. «Sesongarbeider i perioden juni-august», særskilte avtaler, tillegg eller andre opplysninger som skal fremgå av avtalen..."
+                        placeholder={t("auto.skriv_fritt_f_eks_sesongarbeider_i_perio")}
                         rows={8}
                       />
                       <p className="text-xs text-muted-foreground">
-                        Teksten tas med i den signerte avtalen og i PDF-en.
+                        {t("auto.teksten_tas_med_i_den_signerte_avtalen_o")}
                       </p>
                     </div>
                   </div>
@@ -304,7 +305,7 @@ export function ExtendedContractDialog({
 
             <div className="flex gap-2">
               <Button type="button" variant="ghost" onClick={handleClose}>
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button 
                 type="submit" 

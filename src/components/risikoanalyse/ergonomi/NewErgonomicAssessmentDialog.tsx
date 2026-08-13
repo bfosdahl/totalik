@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Activity, Volume2, Vibrate, Plus, X, Wrench } from "lucide-react";
 import { useCreateErgonomicAssessment, ErgonomicAssessmentType } from "@/hooks/useErgonomicRiskAssessment";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface NewErgonomicAssessmentDialogProps {
   open: boolean;
@@ -25,25 +26,25 @@ interface NewErgonomicAssessmentDialogProps {
 const ASSESSMENT_TYPES = [
   {
     value: "muskel_skjelett" as ErgonomicAssessmentType,
-    label: "Muskel- og skjelettplager",
+    label: t("auto.muskel_og_skjelettplager"),
     icon: Activity,
-    description: "Tunge løft, arbeidsstillinger, belastningsskader",
+    description: t("auto.tunge_loeft_arbeidsstillinger_belastning"),
     color: "text-blue-600",
     bgActive: "bg-blue-50 border-blue-500",
   },
   {
     value: "vibrasjon" as ErgonomicAssessmentType,
-    label: "Vibrasjoner",
+    label: t("auto.vibrasjoner"),
     icon: Vibrate,
-    description: "Hånd-arm og helkroppsvibrasjoner",
+    description: t("auto.haand_arm_og_helkroppsvibrasjoner"),
     color: "text-purple-600",
     bgActive: "bg-purple-50 border-purple-500",
   },
   {
     value: "stoy" as ErgonomicAssessmentType,
-    label: "Støy",
+    label: t("auto.stoey"),
     icon: Volume2,
-    description: "Støyeksponering og hørselvern",
+    description: t("auto.stoeyeksponering_og_hoerselvern"),
     color: "text-orange-600",
     bgActive: "bg-orange-50 border-orange-500",
   },
@@ -120,9 +121,9 @@ export function NewErgonomicAssessmentDialog({ open, onOpenChange }: NewErgonomi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Ny ergonomisk risikovurdering</DialogTitle>
+          <DialogTitle>{t("auto.ny_ergonomisk_risikovurdering")}</DialogTitle>
           <DialogDescription>
-            Opprett en ny risikovurdering for ergonomiske forhold. Du kan velge flere typer.
+            {t("auto.opprett_en_ny_risikovurdering_for_ergono")}
           </DialogDescription>
         </DialogHeader>
 
@@ -165,35 +166,35 @@ export function NewErgonomicAssessmentDialog({ open, onOpenChange }: NewErgonomi
 
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Tittel *</Label>
+            <Label htmlFor="title">{t("auto.tittel_2")}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="F.eks. Risikovurdering lagerarbeid"
+              placeholder={t("auto.f_eks_risikovurdering_lagerarbeid")}
               required
             />
           </div>
 
           {/* Work Area */}
           <div className="space-y-2">
-            <Label htmlFor="workArea">Arbeidsområde</Label>
+            <Label htmlFor="workArea">{t("auto.arbeidsomraade")}</Label>
             <Input
               id="workArea"
               value={workArea}
               onChange={(e) => setWorkArea(e.target.value)}
-              placeholder="F.eks. Lager, Kontor, Verksted"
+              placeholder={t("auto.f_eks_lager_kontor_verksted")}
             />
           </div>
 
           {/* Job Role */}
           <div className="space-y-2">
-            <Label htmlFor="jobRole">Yrkesgruppe / Stilling</Label>
+            <Label htmlFor="jobRole">{t("auto.yrkesgruppe_stilling")}</Label>
             <Input
               id="jobRole"
               value={jobRole}
               onChange={(e) => setJobRole(e.target.value)}
-              placeholder="F.eks. Lagermedarbeider, Tømrer"
+              placeholder={t("auto.f_eks_lagermedarbeider_toemrer")}
             />
           </div>
 
@@ -205,13 +206,13 @@ export function NewErgonomicAssessmentDialog({ open, onOpenChange }: NewErgonomi
                 Verktøy / Utstyr
               </Label>
               <p className="text-sm text-muted-foreground">
-                Legg til verktøy og utstyr som skal vurderes
+                {t("auto.legg_til_verktoey_og_utstyr_som_skal_vur")}
               </p>
               <div className="flex gap-2">
                 <Input
                   value={newEquipment}
                   onChange={(e) => setNewEquipment(e.target.value)}
-                  placeholder="F.eks. Borhammer, Vinkelsliper, Kompressor"
+                  placeholder={t("auto.f_eks_borhammer_vinkelsliper_kompressor")}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -240,19 +241,19 @@ export function NewErgonomicAssessmentDialog({ open, onOpenChange }: NewErgonomi
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Beskrivelse</Label>
+            <Label htmlFor="description">{t("auto.beskrivelse")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Beskriv arbeidsoppgavene som skal vurderes..."
+              placeholder={t("auto.beskriv_arbeidsoppgavene_som_skal_vurder")}
               rows={3}
             />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isPending || !title.trim() || selectedTypes.length === 0}>
               {isPending ? "Oppretter..." : "Opprett vurdering"}

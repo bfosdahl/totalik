@@ -14,6 +14,7 @@ import { TemperatureHistoryDialog } from "@/components/ikmat/TemperatureHistoryD
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { t } from "@/i18n/t";
 
 export const TemperaturloggTab = () => {
   const { company } = useAuth();
@@ -87,16 +88,16 @@ export const TemperaturloggTab = () => {
       {/* Header actions */}
       <div className="flex flex-col gap-3">
         <p className="text-muted-foreground text-sm sm:text-base">
-          Daglig temperaturkontroll for Mattilsynet
+          {t("auto.daglig_temperaturkontroll_for_mattilsyne")}
         </p>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setHistoryDialogOpen(true)}>
             <History className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Historikk</span>
+            <span className="hidden sm:inline">{t("auto.historikk")}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={() => setEquipmentDialogOpen(true)}>
             <Settings className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Utstyr</span>
+            <span className="hidden sm:inline">{t("auto.utstyr")}</span>
           </Button>
           <Button size="sm" onClick={() => handleLogClick()} className="ml-auto sm:ml-0">
             <Plus className="h-4 w-4 mr-1 sm:mr-2" />
@@ -111,7 +112,7 @@ export const TemperaturloggTab = () => {
           <Alert className="border-green-500 bg-green-50 dark:bg-green-950/20">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-700 dark:text-green-400">
-              Alle daglige temperaturmålinger er fullført for i dag!
+              {t("auto.alle_daglige_temperaturmaalinger_er_full")}
             </AlertDescription>
           </Alert>
         ) : (
@@ -128,9 +129,9 @@ export const TemperaturloggTab = () => {
         <Card>
           <CardContent className="py-12 text-center">
             <Thermometer className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Ingen utstyr registrert</h3>
+            <h3 className="text-lg font-medium mb-2">{t("auto.ingen_utstyr_registrert")}</h3>
             <p className="text-muted-foreground mb-4">
-              Legg til kjøleskap, frysere og annet utstyr som skal temperaturlogges
+              {t("auto.legg_til_kjoeleskap_frysere_og_annet_uts")}
             </p>
             <Button onClick={() => setEquipmentDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -141,8 +142,8 @@ export const TemperaturloggTab = () => {
       ) : (
         <Tabs defaultValue="today">
           <TabsList>
-            <TabsTrigger value="today">Dagens målinger</TabsTrigger>
-            <TabsTrigger value="equipment">Utstyrsoversikt</TabsTrigger>
+            <TabsTrigger value="today">{t("auto.dagens_maalinger")}</TabsTrigger>
+            <TabsTrigger value="equipment">{t("auto.utstyrsoversikt")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="today" className="space-y-4">
@@ -184,7 +185,7 @@ export const TemperaturloggTab = () => {
             {todaysLogs.length > 0 && (
               <Card>
                 <CardHeader className="py-3 sm:py-6">
-                  <CardTitle className="text-base sm:text-lg">Registrerte målinger i dag</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">{t("auto.registrerte_maalinger_i_dag")}</CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
                     {format(new Date(), 'EEEE d. MMMM yyyy', { locale: nb })}
                   </CardDescription>
@@ -230,12 +231,12 @@ export const TemperaturloggTab = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Utstyr</TableHead>
-                          <TableHead>Temperatur</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Registrert av</TableHead>
-                          <TableHead>Tidspunkt</TableHead>
-                          <TableHead>Merknad</TableHead>
+                          <TableHead>{t("auto.utstyr")}</TableHead>
+                          <TableHead>{t("auto.temperatur")}</TableHead>
+                          <TableHead>{t("auto.status_2")}</TableHead>
+                          <TableHead>{t("auto.registrert_av")}</TableHead>
+                          <TableHead>{t("auto.tidspunkt_2")}</TableHead>
+                          <TableHead>{t("auto.merknad")}</TableHead>
                           <TableHead className="w-[80px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -295,7 +296,7 @@ export const TemperaturloggTab = () => {
             {todaysLogs.length === 0 && equipmentNeedingLog.length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  Ingen målinger å vise
+                  {t("auto.ingen_maalinger_aa_vise")}
                 </CardContent>
               </Card>
             )}
@@ -304,9 +305,9 @@ export const TemperaturloggTab = () => {
           <TabsContent value="equipment">
             <Card>
               <CardHeader className="py-3 sm:py-6">
-                <CardTitle className="text-base sm:text-lg">Registrert utstyr</CardTitle>
+                <CardTitle className="text-base sm:text-lg">{t("auto.registrert_utstyr")}</CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
-                  Kjøleskap, frysere og annet utstyr som skal temperaturlogges
+                  {t("auto.kjoeleskap_frysere_og_annet_utstyr_som_s")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-3 sm:px-6">
@@ -331,7 +332,7 @@ export const TemperaturloggTab = () => {
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-orange-600 text-xs">
-                              Venter
+                              {t("auto.venter")}
                             </Badge>
                           )}
                         </div>
@@ -353,12 +354,12 @@ export const TemperaturloggTab = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Navn</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Plassering</TableHead>
-                        <TableHead>Temperaturgrenser</TableHead>
-                        <TableHead>Frekvens</TableHead>
-                        <TableHead>Status i dag</TableHead>
+                        <TableHead>{t("auto.navn_2")}</TableHead>
+                        <TableHead>{t("auto.type")}</TableHead>
+                        <TableHead>{t("auto.plassering")}</TableHead>
+                        <TableHead>{t("auto.temperaturgrenser")}</TableHead>
+                        <TableHead>{t("auto.frekvens_2")}</TableHead>
+                        <TableHead>{t("auto.status_i_dag")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -387,7 +388,7 @@ export const TemperaturloggTab = () => {
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="text-orange-600">
-                                  Ikke registrert
+                                  {t("auto.ikke_registrert")}
                                 </Badge>
                               )}
                             </TableCell>

@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData, contractTypes } from "../ExtendedContractFormData";
+import { t } from "@/i18n/t";
 
 interface BasicInfoSectionProps {
   formData: ExtendedContractFormData;
@@ -21,11 +22,11 @@ export function BasicInfoSection({ formData, onChange, employees, loadingEmploye
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Grunnleggende informasjon</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.grunnleggende_informasjon")}</h3>
       
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="employee">Ansatt *</Label>
+          <Label htmlFor="employee">{t("auto.ansatt_2")}</Label>
           <Select
             value={formData.employee_id}
             onValueChange={(value) => onChange({ employee_id: value })}
@@ -45,7 +46,7 @@ export function BasicInfoSection({ formData, onChange, employees, loadingEmploye
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <Label htmlFor="contract_type">Avtale type *</Label>
+            <Label htmlFor="contract_type">{t("auto.avtale_type")}</Label>
             <Button
               type="button"
               variant="ghost"
@@ -65,7 +66,7 @@ export function BasicInfoSection({ formData, onChange, employees, loadingEmploye
               id="contract_type"
               value={formData.contract_type}
               onChange={(e) => onChange({ contract_type: e.target.value })}
-              placeholder="F.eks. Sesongarbeider, vikariat eller annen avtaletype"
+              placeholder={t("auto.f_eks_sesongarbeider_vikariat_eller_anne")}
               required
             />
           ) : (
@@ -93,18 +94,18 @@ export function BasicInfoSection({ formData, onChange, employees, loadingEmploye
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="position">Stilling / Tittel *</Label>
+          <Label htmlFor="position">{t("auto.stilling_tittel")}</Label>
           <Input
             id="position"
             value={formData.position}
             onChange={(e) => onChange({ position: e.target.value })}
-            placeholder="F.eks. Prosjektleder, Tømrer"
+            placeholder={t("auto.f_eks_prosjektleder_toemrer")}
             required
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="employment_percentage">Stillingsprosent *</Label>
+          <Label htmlFor="employment_percentage">{t("auto.stillingsprosent_2")}</Label>
           <Input
             id="employment_percentage"
             type="number"
@@ -117,12 +118,12 @@ export function BasicInfoSection({ formData, onChange, employees, loadingEmploye
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="work_description">Beskrivelse av arbeidet *</Label>
+        <Label htmlFor="work_description">{t("auto.beskrivelse_av_arbeidet")}</Label>
         <Textarea
           id="work_description"
           value={formData.work_description}
           onChange={(e) => onChange({ work_description: e.target.value })}
-          placeholder="Beskriv arbeidsoppgaver og ansvarsområder..."
+          placeholder={t("auto.beskriv_arbeidsoppgaver_og_ansvarsomraad")}
           rows={3}
         />
         <p className="text-xs text-muted-foreground">

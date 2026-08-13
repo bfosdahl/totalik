@@ -24,6 +24,7 @@ import {
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface Props {
   projectId: string;
@@ -131,7 +132,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
               <FileText className="h-8 w-8 text-blue-500" />
               <div className="flex-1">
                 <p className="font-medium">{shaPlan.external_file_name}</p>
-                <p className="text-sm text-muted-foreground">PDF-dokument</p>
+                <p className="text-sm text-muted-foreground">{t("auto.pdf_dokument")}</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleViewExternal}>
@@ -152,10 +153,10 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                     <Clock className="h-5 w-5 text-amber-500 mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-amber-700 dark:text-amber-400">
-                        Bekreft mottak og implementering
+                        {t("auto.bekreft_mottak_og_implementering")}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Bekreft at SHA-planen er mottatt og implementert i deres HMS-system.
+                        {t("auto.bekreft_at_sha_planen_er_mottatt_og_impl")}
                       </p>
                       <Button 
                         className="mt-3 bg-amber-500 hover:bg-amber-600"
@@ -182,7 +183,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                     <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                     <div>
                       <p className="font-medium text-emerald-700 dark:text-emerald-400">
-                        SHA-plan godkjent og implementert
+                        {t("auto.sha_plan_godkjent_og_implementert")}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Godkjent av {shaPlan.entrepreneur_approved_by} den {shaPlan.entrepreneur_approved_at ? new Date(shaPlan.entrepreneur_approved_at).toLocaleDateString("nb-NO") : ""}
@@ -212,25 +213,25 @@ export function Ks2ShaPlanView({ projectId }: Props) {
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-emerald-500" />
-              <span className="font-semibold">Prosjektinformasjon</span>
+              <span className="font-semibold">{t("auto.prosjektinformasjon")}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <div className="grid gap-4 sm:grid-cols-2 pt-4">
               <div>
-                <Label className="text-muted-foreground">Prosjekt</Label>
+                <Label className="text-muted-foreground">{t("auto.prosjekt")}</Label>
                 <p className="font-medium">{shaPlan.project_name}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Adresse</Label>
+                <Label className="text-muted-foreground">{t("auto.adresse")}</Label>
                 <p className="font-medium">{shaPlan.project_address || "Ikke angitt"}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Byggherre</Label>
+                <Label className="text-muted-foreground">{t("auto.byggherre")}</Label>
                 <p className="font-medium">{shaPlan.client_name || "Ikke angitt"}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Org.nr</Label>
+                <Label className="text-muted-foreground">{t("auto.org_nr")}</Label>
                 <p className="font-medium">{shaPlan.client_org_number || "Ikke angitt"}</p>
               </div>
               <div>
@@ -242,13 +243,13 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                 <p className="font-medium">{shaPlan.sha_coordinator_ku || "Ikke oppnevnt"}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Planlagt oppstart</Label>
+                <Label className="text-muted-foreground">{t("auto.planlagt_oppstart")}</Label>
                 <p className="font-medium">
                   {shaPlan.planned_start_date ? new Date(shaPlan.planned_start_date).toLocaleDateString("nb-NO") : "Ikke angitt"}
                 </p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Planlagt ferdigstillelse</Label>
+                <Label className="text-muted-foreground">{t("auto.planlagt_ferdigstillelse")}</Label>
                 <p className="font-medium">
                   {shaPlan.planned_end_date ? new Date(shaPlan.planned_end_date).toLocaleDateString("nb-NO") : "Ikke angitt"}
                 </p>
@@ -319,7 +320,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                         {ra.checked && (
                           <Textarea
                             className="mt-2"
-                            placeholder="Tiltak..."
+                            placeholder={t("auto.tiltak_3")}
                             value={ra.measures}
                             onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
                             rows={2}
@@ -346,7 +347,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-blue-500" />
-              <span className="font-semibold">Endringsrutine</span>
+              <span className="font-semibold">{t("auto.endringsrutine")}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -363,14 +364,14 @@ export function Ks2ShaPlanView({ projectId }: Props) {
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-purple-500" />
-              <span className="font-semibold">Signaturer</span>
+              <span className="font-semibold">{t("auto.signaturer")}</span>
             </div>
           </AccordionTrigger>
           <AccordionContent>
             <div className="grid gap-4 sm:grid-cols-3 pt-4">
               <Card>
                 <CardContent className="pt-4 text-center">
-                  <p className="text-sm text-muted-foreground">Byggherre</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.byggherre")}</p>
                   {shaPlan.client_signature ? (
                     <>
                       <CheckCircle2 className="h-8 w-8 mx-auto mt-2 text-emerald-500" />
@@ -382,9 +383,9 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                   ) : (
                     <>
                       <Clock className="h-8 w-8 mx-auto mt-2 text-muted-foreground" />
-                      <p className="text-sm mt-2 text-muted-foreground">Ikke signert</p>
+                      <p className="text-sm mt-2 text-muted-foreground">{t("auto.ikke_signert")}</p>
                       <Button variant="outline" size="sm" className="mt-2">
-                        Send til signering
+                        {t("auto.send_til_signering")}
                       </Button>
                     </>
                   )}
@@ -405,9 +406,9 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                   ) : (
                     <>
                       <Clock className="h-8 w-8 mx-auto mt-2 text-muted-foreground" />
-                      <p className="text-sm mt-2 text-muted-foreground">Ikke signert</p>
+                      <p className="text-sm mt-2 text-muted-foreground">{t("auto.ikke_signert")}</p>
                       <Button variant="outline" size="sm" className="mt-2">
-                        Send til signering
+                        {t("auto.send_til_signering")}
                       </Button>
                     </>
                   )}
@@ -428,9 +429,9 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                   ) : (
                     <>
                       <Clock className="h-8 w-8 mx-auto mt-2 text-muted-foreground" />
-                      <p className="text-sm mt-2 text-muted-foreground">Ikke signert</p>
+                      <p className="text-sm mt-2 text-muted-foreground">{t("auto.ikke_signert")}</p>
                       <Button variant="outline" size="sm" className="mt-2">
-                        Send til signering
+                        {t("auto.send_til_signering")}
                       </Button>
                     </>
                   )}

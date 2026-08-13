@@ -48,6 +48,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { DailyRoundQrDialog } from "@/components/ikmat/DailyRoundQrDialog";
+import { t } from "@/i18n/t";
 
 const TYPE_ICONS = {
   temperature: Thermometer,
@@ -138,8 +139,7 @@ export const RunderTab = () => {
               Daglige runder
             </CardTitle>
             <CardDescription>
-              Lag tilpassede runder med temperaturer, sjekklister og renhold.
-              Skann én QR-kode og gå gjennom alle stasjoner i en wizard.
+              {t("auto.lag_tilpassede_runder_med_temperaturer_s")}
             </CardDescription>
           </div>
           <Button onClick={openCreate}>
@@ -149,14 +149,14 @@ export const RunderTab = () => {
         <CardContent>
           {isLoading ? (
             <div className="text-sm text-muted-foreground py-8 text-center">
-              Laster...
+              {t("auto.laster")}
             </div>
           ) : rounds.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Route className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p className="font-medium">Ingen runder opprettet</p>
+              <p className="font-medium">{t("auto.ingen_runder_opprettet")}</p>
               <p className="text-sm mt-1">
-                Opprett en runde for å samle dagens kontroller bak én QR-kode.
+                {t("auto.opprett_en_runde_for_aa_samle_dagens_kon")}
               </p>
             </div>
           ) : (
@@ -250,7 +250,7 @@ export const RunderTab = () => {
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Rediger runde" : "Ny runde"}</DialogTitle>
             <DialogDescription>
-              Velg hvilke stasjoner som skal være med, og rekkefølgen.
+              {t("auto.velg_hvilke_stasjoner_som_skal_vaere_med")}
             </DialogDescription>
           </DialogHeader>
 
@@ -258,9 +258,9 @@ export const RunderTab = () => {
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label>Navn på runden *</Label>
+                  <Label>{t("auto.navn_paa_runden")}</Label>
                   <Input
-                    placeholder="f.eks. Morgenrunde kjøkken"
+                    placeholder={t("auto.f_eks_morgenrunde_kjoekken")}
                     value={editing.name}
                     onChange={(e) =>
                       setEditing({ ...editing, name: e.target.value })
@@ -270,7 +270,7 @@ export const RunderTab = () => {
                 <div className="space-y-1.5">
                   <Label>Beskrivelse (valgfritt)</Label>
                   <Input
-                    placeholder="Kort beskrivelse"
+                    placeholder={t("auto.kort_beskrivelse")}
                     value={editing.description}
                     onChange={(e) =>
                       setEditing({ ...editing, description: e.target.value })
@@ -281,11 +281,11 @@ export const RunderTab = () => {
 
               {/* Picker */}
               <div className="space-y-3">
-                <Label>Velg stasjoner</Label>
+                <Label>{t("auto.velg_stasjoner")}</Label>
 
                 {/* Temperatures */}
                 <StationPickerGroup
-                  title="Temperatur"
+                  title={t("auto.temperatur")}
                   icon={Thermometer}
                   items={(equipment || []).map((e) => ({
                     id: e.id,
@@ -315,7 +315,7 @@ export const RunderTab = () => {
 
                 {/* Checklists */}
                 <StationPickerGroup
-                  title="Sjekklister"
+                  title={t("auto.sjekklister")}
                   icon={ClipboardCheck}
                   items={(checklists || []).map((c) => ({
                     id: c.id,
@@ -345,7 +345,7 @@ export const RunderTab = () => {
 
                 {/* Cleaning */}
                 <StationPickerGroup
-                  title="Renhold"
+                  title={t("auto.renhold")}
                   icon={SprayCan}
                   items={(cleaningTasks || []).map((t) => ({
                     id: t.id,
@@ -450,7 +450,7 @@ export const RunderTab = () => {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditorOpen(false)}>
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={handleSave}
@@ -476,13 +476,13 @@ export const RunderTab = () => {
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett runde?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_runde")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Runden slettes permanent. Historikk over fullføringer beholdes ikke.
+              {t("auto.runden_slettes_permanent_historikk_over_")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 if (deleteId) await deleteRound.mutateAsync(deleteId);
@@ -521,7 +521,7 @@ function StationPickerGroup({
         <div className="flex items-center gap-2 text-sm font-medium mb-1">
           <Icon className="h-4 w-4" /> {title}
         </div>
-        <p className="text-xs text-muted-foreground">Ingen tilgjengelige.</p>
+        <p className="text-xs text-muted-foreground">{t("auto.ingen_tilgjengelige")}</p>
       </div>
     );
   }
@@ -596,9 +596,9 @@ function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
       </p>
 
       <div className="space-y-2">
-        <Label className="text-xs">Tittel *</Label>
+        <Label className="text-xs">{t("auto.tittel_2")}</Label>
         <Input
-          placeholder="f.eks. Visuell kontroll av kjøkken"
+          placeholder={t("auto.f_eks_visuell_kontroll_av_kjoekken")}
           value={label}
           onChange={(e) => setLabel(e.target.value)}
         />
@@ -607,7 +607,7 @@ function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
       <div className="space-y-2">
         <Label className="text-xs">Beskrivelse / instruksjon (valgfritt)</Label>
         <Textarea
-          placeholder="Hva skal sjekkes?"
+          placeholder={t("auto.hva_skal_sjekkes")}
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           rows={2}
@@ -638,7 +638,7 @@ function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
         )}
         <div className="flex gap-2">
           <Input
-            placeholder="Legg til et punkt..."
+            placeholder={t("auto.legg_til_et_punkt")}
             value={pointDraft}
             onChange={(e) => setPointDraft(e.target.value)}
             onKeyDown={(e) => {
@@ -649,7 +649,7 @@ function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
             }}
           />
           <Button type="button" variant="outline" onClick={addPoint}>
-            Legg til
+            {t("auto.legg_til")}
           </Button>
         </div>
       </div>

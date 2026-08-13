@@ -8,6 +8,7 @@ import { nb } from "date-fns/locale";
 import { MoreHorizontal, Pen, Eye, Trash2, Check, Clock, FileText, Download, Edit } from "lucide-react";
 import { generateContractPdf } from "./generateContractPdf";
 import { useAuth } from "@/contexts/AuthContext";
+import { t } from "@/i18n/t";
 
 interface ContractCardProps {
   contract: EmploymentContract;
@@ -102,7 +103,7 @@ export function ContractCard({
               ) : (
                 <Clock className="w-3 h-3 text-muted-foreground" />
               )}
-              <span>Arbeidsgiver</span>
+              <span>{t("auto.arbeidsgiver")}</span>
             </div>
             <div className="flex items-center gap-1">
               {contract.signed_by_employee ? (
@@ -110,7 +111,7 @@ export function ContractCard({
               ) : (
                 <Clock className="w-3 h-3 text-muted-foreground" />
               )}
-              <span>Arbeidstaker</span>
+              <span>{t("auto.arbeidstaker")}</span>
             </div>
           </div>
         </div>
@@ -124,7 +125,7 @@ export function ContractCard({
               className="gap-1"
             >
               <Download className="w-3 h-3" />
-              <span className="hidden sm:inline">Last ned</span>
+              <span className="hidden sm:inline">{t("auto.last_ned")}</span>
             </Button>
           )}
 

@@ -21,6 +21,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useKsModule2ShaPlan, DEFAULT_RISK_AREAS, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 interface Props {
   projectId: string;
@@ -89,8 +90,8 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
       } catch (error) {
         console.error("Error fetching project:", error);
         toast({
-          title: "Feil",
-          description: "Kunne ikke hente prosjektdata",
+          title: t("auto.feil"),
+          description: t("auto.kunne_ikke_hente_prosjektdata"),
           variant: "destructive",
         });
       } finally {
@@ -140,10 +141,10 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
   }
 
   const steps = [
-    { number: 1, title: "Prosjektinfo", icon: Building2 },
-    { number: 2, title: "Risikoområder", icon: AlertTriangle },
-    { number: 3, title: "Endringsrutine", icon: FileText },
-    { number: 4, title: "Oppsummering", icon: FileSignature },
+    { number: 1, title: t("auto.prosjektinfo"), icon: Building2 },
+    { number: 2, title: t("auto.risikoomraader"), icon: AlertTriangle },
+    { number: 3, title: t("auto.endringsrutine"), icon: FileText },
+    { number: 4, title: t("auto.oppsummering"), icon: FileSignature },
   ];
 
   return (
@@ -154,7 +155,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold">Opprett SHA-plan</h2>
+          <h2 className="text-2xl font-bold">{t("auto.opprett_sha_plan")}</h2>
           <p className="text-muted-foreground">Steg {step} av 4</p>
         </div>
       </div>
@@ -189,20 +190,20 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
       {step === 1 && (
         <Card>
           <CardHeader>
-            <CardTitle>Prosjektinformasjon</CardTitle>
-            <CardDescription>Informasjonen er automatisk hentet fra prosjektet</CardDescription>
+            <CardTitle>{t("auto.prosjektinformasjon")}</CardTitle>
+            <CardDescription>{t("auto.informasjonen_er_automatisk_hentet_fra_p")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Prosjektnavn</Label>
+                <Label>{t("auto.prosjektnavn")}</Label>
                 <Input 
                   value={projectData.project_name} 
                   onChange={(e) => setProjectData(prev => ({ ...prev, project_name: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Prosjektadresse</Label>
+                <Label>{t("auto.prosjektadresse")}</Label>
                 <Input 
                   value={projectData.project_address} 
                   onChange={(e) => setProjectData(prev => ({ ...prev, project_address: e.target.value }))}
@@ -212,14 +213,14 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Byggherre</Label>
+                <Label>{t("auto.byggherre")}</Label>
                 <Input 
                   value={projectData.client_name} 
                   onChange={(e) => setProjectData(prev => ({ ...prev, client_name: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Org.nr</Label>
+                <Label>{t("auto.org_nr")}</Label>
                 <Input 
                   value={projectData.client_org_number} 
                   onChange={(e) => setProjectData(prev => ({ ...prev, client_org_number: e.target.value }))}
@@ -228,7 +229,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label>Kontaktperson byggherre</Label>
+              <Label>{t("auto.kontaktperson_byggherre")}</Label>
               <Input 
                 value={projectData.client_contact_person} 
                 onChange={(e) => setProjectData(prev => ({ ...prev, client_contact_person: e.target.value }))}
@@ -254,7 +255,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Planlagt oppstart</Label>
+                <Label>{t("auto.planlagt_oppstart")}</Label>
                 <Input 
                   type="date"
                   value={projectData.planned_start_date} 
@@ -262,7 +263,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Planlagt ferdigstillelse</Label>
+                <Label>{t("auto.planlagt_ferdigstillelse")}</Label>
                 <Input 
                   type="date"
                   value={projectData.planned_end_date} 
@@ -279,7 +280,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
           <CardHeader>
             <CardTitle>Risikoområder (Byggherreforskriften §8 bokstav c)</CardTitle>
             <CardDescription>
-              Kryss av for relevante risikoområder, beskriv tiltak. Du kan fjerne forslag du ikke trenger og legge til egne.
+              {t("auto.kryss_av_for_relevante_risikoomraader_be")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -299,13 +300,13 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
                         <div className="flex gap-2">
                           <Input
                             className="w-20"
-                            placeholder="§/nr"
+                            placeholder={t("auto.nr_3")}
                             value={ra.paragraph}
                             onChange={(e) => handleRiskAreaChange(index, "paragraph", e.target.value)}
                           />
                           <Input
                             className="flex-1"
-                            placeholder="Beskriv risikoområde..."
+                            placeholder={t("auto.beskriv_risikoomraade")}
                             value={ra.description}
                             onChange={(e) => handleRiskAreaChange(index, "description", e.target.value)}
                           />
@@ -321,17 +322,17 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveRiskArea(index)}
-                      title="Fjern"
+                      title={t("auto.fjern")}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                   {ra.checked && (
                     <div className="pl-7">
-                      <Label className="text-sm text-muted-foreground">Tiltak for å ivareta risiko:</Label>
+                      <Label className="text-sm text-muted-foreground">{t("auto.tiltak_for_aa_ivareta_risiko")}</Label>
                       <Textarea 
                         className="mt-1"
-                        placeholder="Beskriv tiltak..."
+                        placeholder={t("auto.beskriv_tiltak")}
                         value={ra.measures}
                         onChange={(e) => handleRiskAreaChange(index, "measures", e.target.value)}
                       />
@@ -351,15 +352,15 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
       {step === 3 && (
         <Card>
           <CardHeader>
-            <CardTitle>Endringsrutine</CardTitle>
-            <CardDescription>Rutine for håndtering av endringer i SHA-planen</CardDescription>
+            <CardTitle>{t("auto.endringsrutine")}</CardTitle>
+            <CardDescription>{t("auto.rutine_for_haandtering_av_endringer_i_sh")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea 
               rows={6}
               value={changeRoutineText}
               onChange={(e) => setChangeRoutineText(e.target.value)}
-              placeholder="Beskriv rutine for endringer..."
+              placeholder={t("auto.beskriv_rutine_for_endringer")}
             />
           </CardContent>
         </Card>
@@ -368,47 +369,47 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
       {step === 4 && (
         <Card>
           <CardHeader>
-            <CardTitle>Oppsummering</CardTitle>
-            <CardDescription>Gjennomgå informasjonen før du oppretter SHA-planen</CardDescription>
+            <CardTitle>{t("auto.oppsummering")}</CardTitle>
+            <CardDescription>{t("auto.gjennomgaa_informasjonen_foer_du_opprett")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h4 className="font-medium mb-2">Prosjektinformasjon</h4>
+              <h4 className="font-medium mb-2">{t("auto.prosjektinformasjon")}</h4>
               <div className="grid gap-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Prosjekt:</span>
+                  <span className="text-muted-foreground">{t("auto.prosjekt_2")}</span>
                   <span>{projectData.project_name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Byggherre:</span>
+                  <span className="text-muted-foreground">{t("auto.byggherre_2")}</span>
                   <span>{projectData.client_name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">KP:</span>
+                  <span className="text-muted-foreground">{t("auto.kp")}</span>
                   <span>{projectData.sha_coordinator_kp || "Ikke angitt"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">KU:</span>
+                  <span className="text-muted-foreground">{t("auto.ku")}</span>
                   <span>{projectData.sha_coordinator_ku || "Ikke angitt"}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <h4 className="font-medium mb-2">Identifiserte risikoområder</h4>
+              <h4 className="font-medium mb-2">{t("auto.identifiserte_risikoomraader")}</h4>
               <div className="flex flex-wrap gap-2">
                 {riskAreas.filter(ra => ra.checked).map(ra => (
                   <Badge key={ra.id} variant="outline">{ra.paragraph}) {ra.description.substring(0, 30)}...</Badge>
                 ))}
                 {riskAreas.filter(ra => ra.checked).length === 0 && (
-                  <p className="text-sm text-muted-foreground">Ingen risikoområder valgt</p>
+                  <p className="text-sm text-muted-foreground">{t("auto.ingen_risikoomraader_valgt")}</p>
                 )}
               </div>
             </div>
 
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
               <p className="text-sm text-amber-700 dark:text-amber-400">
-                <strong>Merk:</strong> Etter opprettelse kan SHA-planen sendes til signering av byggherre, KP og KU.
+                <strong>{t("auto.merk")}</strong> {t("auto.etter_opprettelse_kan_sha_planen_sendes_")}
               </p>
             </div>
           </CardContent>
@@ -427,7 +428,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
         
         {step < 4 ? (
           <Button onClick={() => setStep(step + 1)} className="bg-emerald-500 hover:bg-emerald-600">
-            Neste
+            {t("auto.neste")}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (

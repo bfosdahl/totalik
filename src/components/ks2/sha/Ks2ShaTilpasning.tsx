@@ -17,6 +17,7 @@ import {
   FileSignature
 } from "lucide-react";
 import { useKsModule2ShaPlan, AdditionalMeasure } from "@/hooks/useKsModule2ShaPlan";
+import { t } from "@/i18n/t";
 
 interface Props {
   projectId: string;
@@ -43,9 +44,9 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Ingen SHA-plan funnet</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("auto.ingen_sha_plan_funnet")}</h3>
           <p className="text-muted-foreground text-center">
-            Du må først opprette eller laste opp en SHA-plan
+            {t("auto.du_maa_foerst_opprette_eller_laste_opp_e")}
           </p>
         </CardContent>
       </Card>
@@ -57,9 +58,9 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Opprett tilpasning</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("auto.opprett_tilpasning")}</h3>
           <p className="text-muted-foreground text-center mb-4">
-            Dokumenter hvordan dere ivaretar kravene i byggherrens SHA-plan
+            {t("auto.dokumenter_hvordan_dere_ivaretar_kravene")}
           </p>
           <Button onClick={() => createTilpasning()} disabled={isSaving}>
             {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
@@ -138,9 +139,9 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
       {/* Implementation Description */}
       <Card>
         <CardHeader>
-          <CardTitle>Hvordan vi ivaretar byggherrens krav</CardTitle>
+          <CardTitle>{t("auto.hvordan_vi_ivaretar_byggherrens_krav")}</CardTitle>
           <CardDescription>
-            Beskriv hvordan dere implementerer kravene fra SHA-planen i eget HMS-system
+            {t("auto.beskriv_hvordan_dere_implementerer_krave")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -148,7 +149,7 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
             rows={6}
             value={implementationDescription}
             onChange={(e) => { setImplementationDescription(e.target.value); setHasChanges(true); }}
-            placeholder="Beskriv hvordan dere ivaretar kravene fra SHA-planen..."
+            placeholder={t("auto.beskriv_hvordan_dere_ivaretar_kravene_fr")}
           />
         </CardContent>
       </Card>
@@ -158,9 +159,9 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Tilleggstiltak fra oss</CardTitle>
+              <CardTitle>{t("auto.tilleggstiltak_fra_oss")}</CardTitle>
               <CardDescription>
-                Eventuelle ekstra tiltak utover det som er beskrevet i SHA-planen
+                {t("auto.eventuelle_ekstra_tiltak_utover_det_som_")}
               </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={handleAddMeasure}>
@@ -172,7 +173,7 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
         <CardContent>
           {additionalMeasures.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">
-              Ingen tilleggstiltak lagt til
+              {t("auto.ingen_tilleggstiltak_lagt_til")}
             </p>
           ) : (
             <div className="space-y-4">
@@ -190,25 +191,25 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
                     </Button>
                   </div>
                   <div className="space-y-2">
-                    <Label>Beskrivelse</Label>
+                    <Label>{t("auto.beskrivelse")}</Label>
                     <Textarea 
                       value={measure.description}
                       onChange={(e) => handleUpdateMeasure(index, "description", e.target.value)}
-                      placeholder="Beskriv tiltaket..."
+                      placeholder={t("auto.beskriv_tiltaket")}
                       rows={2}
                     />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Ansvarlig</Label>
+                      <Label>{t("auto.ansvarlig_2")}</Label>
                       <Input 
                         value={measure.responsible}
                         onChange={(e) => handleUpdateMeasure(index, "responsible", e.target.value)}
-                        placeholder="Hvem er ansvarlig?"
+                        placeholder={t("auto.hvem_er_ansvarlig")}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Frist</Label>
+                      <Label>{t("auto.frist_2")}</Label>
                       <Input 
                         type="date"
                         value={measure.deadline}
@@ -231,30 +232,30 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
             Koblinger
           </CardTitle>
           <CardDescription>
-            Koble til SJA, vernerunder og avvik relatert til SHA-planen
+            {t("auto.koble_til_sja_vernerunder_og_avvik_relat")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="border rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">SJA-er</p>
+              <p className="text-sm text-muted-foreground">{t("auto.sja_er")}</p>
               <p className="text-2xl font-bold mt-1">{tilpasning.linked_sja_ids?.length || 0}</p>
               <Button variant="link" size="sm" className="mt-2">
-                Administrer
+                {t("auto.administrer")}
               </Button>
             </div>
             <div className="border rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Vernerunder</p>
+              <p className="text-sm text-muted-foreground">{t("auto.vernerunder")}</p>
               <p className="text-2xl font-bold mt-1">{tilpasning.linked_vernerunde_ids?.length || 0}</p>
               <Button variant="link" size="sm" className="mt-2">
-                Administrer
+                {t("auto.administrer")}
               </Button>
             </div>
             <div className="border rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Avvik</p>
+              <p className="text-sm text-muted-foreground">{t("auto.avvik")}</p>
               <p className="text-2xl font-bold mt-1">{tilpasning.linked_avvik_ids?.length || 0}</p>
               <Button variant="link" size="sm" className="mt-2">
-                Administrer
+                {t("auto.administrer")}
               </Button>
             </div>
           </div>

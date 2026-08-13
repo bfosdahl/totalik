@@ -12,6 +12,7 @@ import { NewTraceabilityDialog } from "@/components/ikmat/NewTraceabilityDialog"
 import { VaremottakQRCodeDialog } from "@/components/ikmat/VaremottakQRCodeDialog";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 function DocumentDownloadButton({ 
   documentPath, 
@@ -135,7 +136,7 @@ function RecordCard({
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">Batch-nummer</p>
+                  <p className="text-sm font-medium">{t("auto.batch_nummer")}</p>
                   <p className="text-sm text-muted-foreground font-mono">
                     {record.batch_number || "Ikke oppgitt"}
                   </p>
@@ -147,7 +148,7 @@ function RecordCard({
               <div className="flex items-start gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">Mottaksdato</p>
+                  <p className="text-sm font-medium">{t("auto.mottaksdato_2")}</p>
                   <p className="text-sm text-muted-foreground">
                     {format(new Date(record.receipt_date), "dd. MMM yyyy", { locale: nb })}
                   </p>
@@ -190,7 +191,7 @@ function RecordCard({
           {record.notes && (
             <div className="mt-3 pt-3 border-t">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Merknader:</span> {record.notes}
+                <span className="font-medium">{t("auto.merknader_2")}</span> {record.notes}
               </p>
             </div>
           )}
@@ -238,13 +239,13 @@ export const SporbarhetTab = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-muted-foreground">
-            Registrer og dokumenter varemottak for sporbarhet
+            {t("auto.registrer_og_dokumenter_varemottak_for_s")}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setIsQrDialogOpen(true)}>
             <QrCode className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">QR-kode</span>
+            <span className="hidden sm:inline">{t("auto.qr_kode")}</span>
           </Button>
           <Button onClick={() => setIsDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -254,16 +255,16 @@ export const SporbarhetTab = () => {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Søk i mottaksregistre</CardTitle>
+          <CardTitle>{t("auto.soek_i_mottaksregistre")}</CardTitle>
           <CardDescription>
-            Søk på produktnavn, leverandør eller batch-nummer
+            {t("auto.soek_paa_produktnavn_leverandoer_eller_b")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Søk på batch-nummer, produkt eller leverandør..."
+              placeholder={t("auto.soek_paa_batch_nummer_produkt_eller_leve")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"

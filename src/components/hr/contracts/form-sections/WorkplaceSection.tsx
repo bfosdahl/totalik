@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ExtendedContractFormData } from "../ExtendedContractFormData";
+import { t } from "@/i18n/t";
 
 interface WorkplaceSectionProps {
   formData: ExtendedContractFormData;
@@ -12,15 +13,15 @@ interface WorkplaceSectionProps {
 export function WorkplaceSection({ formData, onChange }: WorkplaceSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Arbeidssted</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.arbeidssted_2")}</h3>
       
       <div className="space-y-2">
-        <Label htmlFor="workplace_address">Arbeidsstedets adresse *</Label>
+        <Label htmlFor="workplace_address">{t("auto.arbeidsstedets_adresse")}</Label>
         <Input
           id="workplace_address"
           value={formData.workplace_address}
           onChange={(e) => onChange({ workplace_address: e.target.value })}
-          placeholder="Gateadresse, postnummer og sted"
+          placeholder={t("auto.gateadresse_postnummer_og_sted")}
         />
         <p className="text-xs text-muted-foreground">
           Jf. arbeidsmiljøloven § 14-6 c) - arbeidssted eller forretningsadresse
@@ -29,9 +30,9 @@ export function WorkplaceSection({ formData, onChange }: WorkplaceSectionProps) 
 
       <div className="flex items-center justify-between py-2">
         <div className="space-y-0.5">
-          <Label htmlFor="has_multiple_workplaces">Flere arbeidssteder</Label>
+          <Label htmlFor="has_multiple_workplaces">{t("auto.flere_arbeidssteder")}</Label>
           <p className="text-xs text-muted-foreground">
-            Arbeidstaker arbeider på forskjellige steder eller bestemmer selv
+            {t("auto.arbeidstaker_arbeider_paa_forskjellige_s")}
           </p>
         </div>
         <Switch
@@ -43,9 +44,9 @@ export function WorkplaceSection({ formData, onChange }: WorkplaceSectionProps) 
 
       <div className="flex items-center justify-between py-2">
         <div className="space-y-0.5">
-          <Label htmlFor="remote_work_allowed">Hjemmekontor / fjernarbeid</Label>
+          <Label htmlFor="remote_work_allowed">{t("auto.hjemmekontor_fjernarbeid")}</Label>
           <p className="text-xs text-muted-foreground">
-            Arbeidstaker kan jobbe helt eller delvis fra hjemmekontor
+            {t("auto.arbeidstaker_kan_jobbe_helt_eller_delvis")}
           </p>
         </div>
         <Switch
@@ -57,16 +58,16 @@ export function WorkplaceSection({ formData, onChange }: WorkplaceSectionProps) 
 
       {formData.remote_work_allowed && (
         <div className="space-y-2 pl-4 border-l-2 border-muted">
-          <Label htmlFor="remote_work_details">Detaljer om hjemmekontor/fjernarbeid</Label>
+          <Label htmlFor="remote_work_details">{t("auto.detaljer_om_hjemmekontor_fjernarbeid")}</Label>
           <Textarea
             id="remote_work_details"
             value={formData.remote_work_details || ''}
             onChange={(e) => onChange({ remote_work_details: e.target.value })}
-            placeholder="Beskriv vilkår for hjemmekontor, antall dager per uke, etc."
+            placeholder={t("auto.beskriv_vilkaar_for_hjemmekontor_antall_")}
             rows={2}
           />
           <p className="text-xs text-muted-foreground">
-            NB: Egen skriftlig avtale om hjemmekontor kreves i tillegg
+            {t("auto.nb_egen_skriftlig_avtale_om_hjemmekontor")}
           </p>
         </div>
       )}
