@@ -84,7 +84,7 @@ export default function IkAlkoholHandbok() {
   const getRiskLabel = (level: string): string => {
     if (level === "low") return "Lav";
     if (level === "medium") return "Middels";
-    if (level === "high") return "Høy";
+    if (level === "high") return t("auto.hoey");
     return "Kritisk";
   };
 
@@ -183,7 +183,7 @@ export default function IkAlkoholHandbok() {
       });
 
       // ========== 1. MÅL ==========
-      let y = addPageHeader("1. Mål for alkoholhåndtering");
+      let y = addPageHeader(t("auto.1_maal_for_alkoholhaandtering"));
       if (goals.length > 0) {
         goals.forEach((goal) => {
           y = checkPageBreak(y, 20);
@@ -211,7 +211,7 @@ export default function IkAlkoholHandbok() {
       }
 
       // ========== 2. ORGANISERING ==========
-      y = addPageHeader("2. Organisering og ansvar");
+      y = addPageHeader(t("auto.2_organisering_og_ansvar"));
       if (organization.length > 0) {
         const orgTableData = organization.map((role) => {
           const roleType = ROLE_TYPES.find(r => r.value === role.role_type);
@@ -225,7 +225,7 @@ export default function IkAlkoholHandbok() {
 
         autoTable(doc, {
           startY: y,
-          head: [["Rolle", "Navn", "Telefon", "E-post"]],
+          head: [["Rolle", t("auto.navn_2"), "Telefon", "E-post"]],
           body: orgTableData,
           margin: { left: margin, right: margin },
           styles: { fontSize: 9, cellPadding: 3 },
@@ -254,7 +254,7 @@ export default function IkAlkoholHandbok() {
 
         autoTable(doc, {
           startY: y,
-          head: [["Risikoområde", "Beskrivelse", "S", "K", "Nivå", "Eksisterende tiltak"]],
+          head: [[t("auto.risikoomraade_2"), t("auto.beskrivelse"), "S", "K", t("auto.nivaa"), "Eksisterende tiltak"]],
           body: riskTableData,
           margin: { left: margin, right: margin },
           styles: { fontSize: 8, cellPadding: 2 },
@@ -310,7 +310,7 @@ export default function IkAlkoholHandbok() {
       }
 
       // ========== 4. RUTINER ==========
-      y = addPageHeader("4. Rutiner");
+      y = addPageHeader(t("auto.4_rutiner"));
       if (routines.length > 0) {
         const groupedRoutines = routines.reduce((acc, r) => {
           const cat = ROUTINE_CATEGORIES.find(c => c.value === r.category)?.label || r.category;
@@ -376,9 +376,9 @@ export default function IkAlkoholHandbok() {
       y += 8;
 
       const controlCategories = [
-        { title: t("auto.daglige_kontroller"), items: ["Alderskontroll", "Beruselseskontroll", "Tidskontroll", "Bemanning", "Orden og sikkerhet", "Avviksregistrering"] },
-        { title: t("auto.maanedlige_kontroller"), items: ["Gjennomgang av avvik", "Opplæringsstatus", "Gjennomgang av risikoanalyse", "Beruselsesnivå / skjenkekultur", "Kontroll av bevillingsdokumenter"] },
-        { title: t("auto.aarlige_kontroller"), items: ["Årlig intern gjennomgang / revisjon", "Omsetningsoppgave til kommune"] },
+        { title: t("auto.daglige_kontroller"), items: ["Alderskontroll", "Beruselseskontroll", "Tidskontroll", "Bemanning", t("auto.orden_og_sikkerhet"), "Avviksregistrering"] },
+        { title: t("auto.maanedlige_kontroller"), items: [t("auto.gjennomgang_av_avvik"), t("auto.opplaeringsstatus"), "Gjennomgang av risikoanalyse", t("auto.beruselsesnivaa_skjenkekultur"), "Kontroll av bevillingsdokumenter"] },
+        { title: t("auto.aarlige_kontroller"), items: [t("auto.aarlig_intern_gjennomgang_revisjon"), t("auto.omsetningsoppgave_til_kommune")] },
       ];
 
       controlCategories.forEach((cat) => {
@@ -412,7 +412,7 @@ export default function IkAlkoholHandbok() {
       const categoryLabels: Record<string, string> = {
         nasjonal: "Nasjonalt lovverk",
         kommunal: "Kommunale retningslinjer",
-        veileder: "Veiledere og ressurser",
+        veileder: t("auto.veiledere_og_ressurser"),
       };
 
       const activeLovverk = lovverk.filter(l => l.is_active);
@@ -482,7 +482,7 @@ export default function IkAlkoholHandbok() {
 
         autoTable(doc, {
           startY: y,
-          head: [["Status", "Krav", "Oppfylt dato", "Oppfylt av"]],
+          head: [["Status", "Krav", t("auto.oppfylt_dato"), "Oppfylt av"]],
           body: checklistData,
           margin: { left: margin, right: margin },
           styles: { fontSize: 8, cellPadding: 3 },
@@ -513,7 +513,7 @@ export default function IkAlkoholHandbok() {
       }
 
       // ========== 8. OPPLÆRING (med analog signatur-linjer) ==========
-      y = addPageHeader("8. Opplæring – Bekreftelse på mottatt opplæring");
+      y = addPageHeader(t("auto.8_opplaering_bekreftelse_paa_mottatt_opp"));
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text("Alle ansatte skal bekrefte at de har mottatt opplæring i alkohollovgivning og internkontroll.", margin, y);
@@ -539,7 +539,7 @@ export default function IkAlkoholHandbok() {
 
         autoTable(doc, {
           startY: y,
-          head: [["Ansatt", "Dato", "Type", "Signatur"]],
+          head: [[t("auto.ansatt"), t("auto.dato"), "Type", "Signatur"]],
           body: trainingTableData,
           margin: { left: margin, right: margin },
           styles: { fontSize: 9, cellPadding: 4, minCellHeight: 12 },
@@ -625,7 +625,7 @@ export default function IkAlkoholHandbok() {
           <div className="flex items-center gap-3 mb-2">
             <Wine className="w-8 h-8" />
             <div>
-              <h1 className="text-2xl font-bold">{company?.name || "Bedrift"} - IK-Alkohol Handbok</h1>
+              <h1 className="text-2xl font-bold">{company?.name || t("auto.bedrift")} - IK-Alkohol Handbok</h1>
               <p className="text-amber-200 text-sm">
                 {t("auto.internkontroll_for_alkoholhaandtering_ih")}
               </p>

@@ -210,7 +210,7 @@ const PersonalhandbokPage = () => {
   };
 
   const handleDeleteChapter = async (chapterId: string) => {
-    if (!confirm("Er du sikker på at du vil slette dette kapittelet?")) return;
+    if (!confirm(t("auto.er_du_sikker_paa_at_du_vil_slette_dette__4"))) return;
     try {
       const { error } = await supabase
         .from("personalhandbok_chapters")
@@ -282,7 +282,7 @@ const PersonalhandbokPage = () => {
                   onClick={() => setEditMode(!editMode)}
                 >
                   {editMode ? <Eye className="w-4 h-4 mr-1.5" /> : <Edit3 className="w-4 h-4 mr-1.5" />}
-                  {editMode ? "Forhåndsvisning" : "Rediger"}
+                  {editMode ? t("auto.forhaandsvisning") : "Rediger"}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowAddDialog(true)}>
                   <Plus className="w-4 h-4 mr-1.5" />
@@ -427,7 +427,7 @@ const PersonalhandbokPage = () => {
                   <div className="flex gap-2">
                     <Button onClick={handleSaveChapter} disabled={saving}>
                       <Save className="w-4 h-4 mr-1.5" />
-                      {saving ? "Lagrer..." : "Lagre"}
+                      {saving ? "Lagrer..." : t("auto.lagre")}
                     </Button>
                     <Button variant="outline" onClick={() => setEditingChapter(null)}>
                       {t("auto.avbryt")}
