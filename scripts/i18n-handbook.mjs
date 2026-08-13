@@ -78,10 +78,11 @@ for (const file of process.argv.slice(2)) {
     });
 
     // 2) enkle strenger i strengliteraler (kun norsk UI-tekst)
-    l = l.replace(/"([^"\n]{3,200})"/g, (m, text) => {
+    l = l.replace(/"([^"\n]{3,200})"/g, (m, text, off) => {
       if (!isUiText(text)) return m;
       count++;
-      return `t("auto.${keyFor(text.trim())}")`;
+      const call = `t("auto.${keyFor(text.trim())}")`;
+      return l[off - 1] === "=" ? `{${call}}` : call;
     });
 
     return l;

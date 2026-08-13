@@ -348,44 +348,44 @@ const Handbook = () => {
                   // Get section label from sectionQuestions if available
                   const sectionLabels: Record<string, string> = {
                     // Daglig drift
-                    informasjon: "Informasjon og kommunikasjon",
-                    samarbeid: "Samarbeid og beslutninger",
+                    informasjon: t("auto.informasjon_og_kommunikasjon"),
+                    samarbeid: t("auto.samarbeid_og_beslutninger"),
                     produktivitet: "Produktivitet",
                     arbeidsavtaler: "Arbeidsavtaler",
                     arbeidstid: "Arbeidstid",
                     hms: "HMS-arbeid",
                     kompetanse: "Kompetanse",
-                    registrering: "Registrering og oppfølging",
+                    registrering: t("auto.registrering_og_oppfoelging"),
                     vernetjeneste: "Vernetjeneste",
                     forsikringer: "Forsikringer",
                     // Fysiske arbeidsforhold
                     arbeidslokaler: "Arbeidslokaler",
                     elektrisk: "Elektriske anlegg",
                     inneklima: "Inneklima",
-                    romningsveier: "Rømningsveier",
+                    romningsveier: t("auto.roemningsveier"),
                     brannsikkerhet: "Brannsikkerhet",
-                    brannfarlig: "Brann- og eksplosjonsfarlige varer",
-                    varehandtering: "Varehåndtering",
-                    orden: "Orden og renhold",
-                    avfall: "Avfallshåndtering",
+                    brannfarlig: t("auto.brann_og_eksplosjonsfarlige_varer"),
+                    varehandtering: t("auto.varehaandtering"),
+                    orden: t("auto.orden_og_renhold"),
+                    avfall: t("auto.avfallshaandtering"),
                     dataskjerm: "Dataskjermarbeid",
                     asbest: "Asbestarbeid",
                     eksterne: "Eksterne arbeidsforhold",
                     ergonomi: "Ergonomi",
                     verneutstyr: "Verneutstyr",
-                    stoy: "Støy",
+                    stoy: t("auto.stoey"),
                     arbeidsutstyr: "Arbeidsutstyr",
-                    hoyden: "Høydearbeid",
+                    hoyden: t("auto.hoeydearbeid"),
                     kjemisk: "Kjemiske stoffer",
-                    forstehjelp: "Førstehjelp",
+                    forstehjelp: t("auto.foerstehjelp"),
                     sikring: "Lastsikring",
                     lasting: "Lasting/lossing",
                     graving: "Gravearbeider",
                     sprengning: "Sprengning",
                     adr: "ADR-transport",
                     adr_uhell: "ADR-uhell",
-                    ergonomi_kjoretoy: "Ergonomi kjøretøy",
-                    hviletid: "Kjøre- og hviletid",
+                    ergonomi_kjoretoy: t("auto.ergonomi_kjoeretoey"),
+                    hviletid: t("auto.kjoere_og_hviletid"),
                     annet: "Annet",
                   };
                   
@@ -448,8 +448,8 @@ const Handbook = () => {
         icon: Icon,
         content: renderFormContent(),
         summary: latestForm 
-          ? `Fullført ${latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMM yyyy", { locale: nb }) : ""}`
-          : "Ikke utført",
+          ? `${t("auto.fullfoert")} ${latestForm.completed_at ? format(new Date(latestForm.completed_at), "d. MMM yyyy", { locale: nb }) : ""}`
+          : t("auto.ikke_utfoert"),
         linkTo: "/audits",
       };
     });
@@ -491,7 +491,7 @@ const Handbook = () => {
           {t("auto.egenerklaering_om_hms_er_ikke_signert_ga")}
         </p>
       ),
-      summary: hasSelfDeclaration ? "Signert og gyldig" : "Ikke signert",
+      summary: hasSelfDeclaration ? t("auto.signert_og_gyldig") : t("auto.ikke_signert"),
       linkTo: "/setup",
     },
     // 2. Verneombud section - different display based on employee count
@@ -522,7 +522,7 @@ const Handbook = () => {
                     <div className="space-y-1">
                       <p className="font-medium text-xs text-muted-foreground">{t("auto.valgmetode_2")}</p>
                       <p className="text-foreground">
-                        {verneombudAgreement.election_method === "election" ? "Valg blant ansatte" :
+                        {verneombudAgreement.election_method === "election" ? t("auto.valg_blant_ansatte") :
                          verneombudAgreement.election_method === "appointment" ? "Utpekt av arbeidsgiver" :
                          verneombudAgreement.election_method === "volunteer" ? "Frivillig" : 
                          verneombudAgreement.election_method}
@@ -662,17 +662,17 @@ const Handbook = () => {
           }
           if (verneombudFromProfile) {
             const fullName = [verneombudFromProfile.first_name, verneombudFromProfile.last_name].filter(Boolean).join(" ");
-            return fullName ? `${fullName} (fra organisering)` : "Registrert";
+            return fullName ? `${fullName} ${t("auto.fra_organisering_2")}` : t("auto.registrert");
           }
           if (verneombudFromAiSetup) {
-            return `${verneombudFromAiSetup.personName} (fra AI-oppsett)`;
+            return `${verneombudFromAiSetup.personName} ${t("auto.fra_ai_oppsett_2")}`;
           }
           const verneombudRole = organization?.roles?.find(r => 
             r.title?.toLowerCase().includes("verneombud")
           );
           return verneombudRole?.personName 
             ? `${verneombudRole.personName} valgt` 
-            : "Ikke registrert";
+            : t("auto.ikke_registrert");
         })(),
         linkTo: "/audits",
       }
@@ -723,15 +723,15 @@ const Handbook = () => {
           </p>
         ),
         summary: hasVerneombudExemption
-          ? `Signert av ${verneombudExemption?.employee_signatures?.length || 0} ansatte`
-          : "Ikke signert",
+          ? `${t("auto.signert_av_2")} ${verneombudExemption?.employee_signatures?.length || 0} ansatte`
+          : t("auto.ikke_signert"),
         linkTo: "/setup",
       }
     ]),
     // Goals
     {
       id: "goals",
-      title: `${sectionOffset + 1}. Mål for internkontroll`,
+      title: `${sectionOffset + 1}${t("auto.maal_for_internkontroll_3")}`,
       status: goals.length > 0 ? "complete" : "incomplete",
       stepIndex: 0,
       icon: Target,
@@ -744,12 +744,12 @@ const Handbook = () => {
       ) : (
         <p className="text-sm text-muted-foreground">{t("auto.ingen_maal_er_definert_ennaa")}</p>
       ),
-      summary: `${goals.length} mål definert`,
+      summary: `${goals.length} ${t("auto.maal_definert")}`,
     },
     // Organization
     {
       id: "organization",
-      title: `${sectionOffset + 2}. Organisering og ansvar`,
+      title: `${sectionOffset + 2}${t("auto.organisering_og_ansvar_2")}`,
       status: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? "complete" : "incomplete",
       stepIndex: 1,
       icon: Users,
@@ -784,10 +784,10 @@ const Handbook = () => {
         <p className="text-sm text-muted-foreground">{t("auto.organisering_er_ikke_definert_ennaa")}</p>
       ),
       summary: (organization?.roles?.length ?? 0) > 0 
-        ? `${organization?.roles?.length} roller definert` 
+        ? `${organization?.roles?.length} ${t("auto.roller_definert")}` 
         : (organization?.description && organization.description.trim().length > 0)
-          ? "Organisering definert"
-          : "Ikke definert",
+          ? t("auto.organisering_definert")
+          : t("auto.ikke_definert"),
     },
     // Risk assessment
     {
@@ -834,11 +834,11 @@ const Handbook = () => {
               <span className="text-muted-foreground truncate flex-1">{getActionDescription(action, idx)}</span>
               <Badge variant="outline" className={cn(
                 "ml-2",
-                action.status === "fullført" ? "border-success text-success" :
-                action.status === "pågår" ? "border-warning text-warning" :
+                action.status === t("auto.fullfoert_2") ? "border-success text-success" :
+                action.status === t("auto.paagaar_2") ? "border-warning text-warning" :
                 "border-muted-foreground text-muted-foreground"
               )}>
-                {action.status === "fullført" ? "Fullført" : action.status === "pågår" ? "Pågår" : "Ikke startet"}
+                {action.status === t("auto.fullfoert_2") ? t("auto.fullfoert") : action.status === t("auto.paagaar_2") ? t("auto.paagaar") : t("auto.ikke_startet")}
               </Badge>
             </div>
           ))}
@@ -854,7 +854,7 @@ const Handbook = () => {
     // Laws (position 7 - after Handlingsplan)
     {
       id: "laws",
-      title: `${sectionOffset + 5}. Lover og forskrifter`,
+      title: `${sectionOffset + 5}${t("auto.lover_og_forskrifter_3")}`,
       status: savedLaws.length > 0 ? "complete" as const : "incomplete" as const,
       stepIndex: -1,
       icon: Scale,
@@ -862,8 +862,8 @@ const Handbook = () => {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground mb-3">
             {savedLaws.length > 0 
-              ? "Oversikt over lover og forskrifter som gjelder for virksomheten."
-              : "Ingen lover er lagret. Gå til Lover og forskrifter for å søke opp og lagre gjeldende krav."
+              ? t("auto.oversikt_over_lover_og_forskrifter_som_g")
+              : t("auto.ingen_lover_er_lagret_gaa_til_lover_og_f")
             }
           </p>
           {savedLaws.length > 0 && (
@@ -893,13 +893,13 @@ const Handbook = () => {
           )}
         </div>
       ),
-      summary: savedLaws.length > 0 ? `${savedLaws.length} lover og forskrifter` : "Ingen lagret",
+      summary: savedLaws.length > 0 ? `${savedLaws.length} ${t("auto.lover_og_forskrifter_4")}` : t("auto.ingen_lagret"),
       linkTo: "/lover-og-forskrifter",
     },
     // Routines (position 8)
     {
       id: "routines",
-      title: `${sectionOffset + 6}. Rutiner og prosedyrer`,
+      title: `${sectionOffset + 6}${t("auto.rutiner_og_prosedyrer_3")}`,
       status: (routines?.routines?.length ?? 0) > 0 ? "complete" : "incomplete",
       stepIndex: 4,
       icon: FileCheck,
@@ -985,10 +985,10 @@ const Handbook = () => {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
             {openDeviationsCount > 0 
-              ? `${openDeviationsCount} åpne avvik, ${deviations.length - openDeviationsCount} lukkede.`
+              ? `${openDeviationsCount} ${t("auto.aapne_avvik_2")} ${deviations.length - openDeviationsCount} lukkede.`
               : deviations.length > 0 
-                ? `Alle ${deviations.length} avvik er lukket.`
-                : "Ingen avvik er registrert."
+                ? `${t("auto.alle")} ${deviations.length} ${t("auto.avvik_er_lukket")}`
+                : t("auto.ingen_avvik_er_registrert")
             }
           </p>
           {includeDeviations && deviations.length > 0 && (
@@ -1012,7 +1012,7 @@ const Handbook = () => {
                           deviation.status === "in-progress" ? "border-info text-info" :
                           "border-muted-foreground text-muted-foreground"
                         )}>
-                          {deviation.status === "closed" ? "Lukket" : deviation.status === "resolved" ? "Løst" : deviation.status === "in-progress" ? "Pågår" : "Åpen"}
+                          {deviation.status === "closed" ? "Lukket" : deviation.status === "resolved" ? t("auto.loest") : deviation.status === "in-progress" ? t("auto.paagaar") : t("auto.aapen")}
                         </Badge>
                       </div>
                     </div>
@@ -1050,27 +1050,27 @@ const Handbook = () => {
           )}
         </div>
       ),
-      summary: `${deviations.length} avvik totalt`,
+      summary: `${deviations.length} ${t("auto.avvik_totalt")}`,
       linkTo: "/deviations",
     },
     // Audits
     {
       id: "audits",
-      title: `${sectionOffset + 8}. Revisjoner og evaluering`,
+      title: `${sectionOffset + 8}${t("auto.revisjoner_og_evaluering")}`,
       status: "ongoing" as const, // Audits are ongoing - new ones are scheduled over time
       stepIndex: -1,
       icon: Search,
       content: (
         <p className="text-sm text-muted-foreground">
           {pendingAuditsCount > 0 
-            ? `${pendingAuditsCount} planlagte/pågående revisjoner som må gjennomføres.`
+            ? `${pendingAuditsCount} ${t("auto.planlagte_paagaaende_revisjoner_som_maa_")}`
             : completedAuditsCount > 0 
-              ? `${completedAuditsCount} revisjoner er gjennomført.`
-              : "Ingen revisjoner er planlagt. Gå til Revisjoner for å opprette revisjoner."
+              ? `${completedAuditsCount} ${t("auto.revisjoner_er_gjennomfoert")}`
+              : t("auto.ingen_revisjoner_er_planlagt_gaa_til_rev")
           }
         </p>
       ),
-      summary: pendingAuditsCount > 0 ? `${pendingAuditsCount} ventende revisjoner` : completedAuditsCount > 0 ? `${completedAuditsCount} gjennomført` : "Ingen revisjoner",
+      summary: pendingAuditsCount > 0 ? `${pendingAuditsCount} ${t("auto.ventende_revisjoner")}` : completedAuditsCount > 0 ? `${completedAuditsCount} ${t("auto.gjennomfoert_2")}` : t("auto.ingen_revisjoner"),
       linkTo: "/audits",
     },
     // Add dynamic audit form sections
@@ -1470,7 +1470,7 @@ const Handbook = () => {
           doc.setFont(PDF_FONT, "bold");
           doc.text("Valgmetode:", margin, yPos);
           doc.setFont(PDF_FONT, "normal");
-          const methodText = verneombudAgreement.election_method === "election" ? "Valg blant ansatte" :
+          const methodText = verneombudAgreement.election_method === "election" ? t("auto.valg_blant_ansatte") :
                             verneombudAgreement.election_method === "appointment" ? "Utpekt av arbeidsgiver" :
                             verneombudAgreement.election_method === "volunteer" ? "Frivillig" : 
                             verneombudAgreement.election_method;
@@ -1959,7 +1959,7 @@ const Handbook = () => {
       if (lawsTableData.length > 0) {
         autoTable(doc, {
           startY: yPos,
-          head: [["Lov/forskrift", "Kategori", "Beskrivelse"]],
+          head: [["Lov/forskrift", "Kategori", t("auto.beskrivelse")]],
           body: lawsTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -1992,13 +1992,13 @@ const Handbook = () => {
           d.deviation_number || "-",
           (d.title || "").substring(0, 40) + ((d.title?.length || 0) > 40 ? "..." : ""),
           d.category || "-",
-          d.status === "closed" ? "Lukket" : d.status === "resolved" ? "Løst" : d.status === "in-progress" ? "Pågår" : "Åpen",
+          d.status === "closed" ? "Lukket" : d.status === "resolved" ? t("auto.loest") : d.status === "in-progress" ? t("auto.paagaar") : t("auto.aapen"),
           d.created_at ? format(new Date(d.created_at), "dd.MM.yy") : "-",
         ]);
         
         autoTable(doc, {
           startY: yPos,
-          head: [["Nr", "Tittel", "Kategori", "Status", "Dato"]],
+          head: [["Nr", "Tittel", "Kategori", "Status", t("auto.dato")]],
           body: deviationTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -2023,13 +2023,13 @@ const Handbook = () => {
           a.audit_number || "-",
           (a.title || "").substring(0, 40),
           a.type || "-",
-          a.status === "completed" ? "Gjennomført" : a.status === "in-progress" ? "Pågår" : "Planlagt",
+          a.status === "completed" ? t("auto.gjennomfoert") : a.status === "in-progress" ? t("auto.paagaar") : "Planlagt",
           a.scheduled_date ? format(new Date(a.scheduled_date), "dd.MM.yy") : "-",
         ]);
         
         autoTable(doc, {
           startY: yPos,
-          head: [["Nr", "Tittel", "Type", "Status", "Dato"]],
+          head: [["Nr", "Tittel", "Type", "Status", t("auto.dato")]],
           body: auditTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -2079,47 +2079,47 @@ const Handbook = () => {
                 // El-kontroll sections
                 sikringsskap: "1. Sikringsskap / Fordelingstavle",
                 fastInstallasjon: "2. Fast installasjon / kabler",
-                elektriskUtstyr: "3. Elektrisk utstyr / stikk / skjøteledninger",
-                dokumentasjon: "4. Dokumentasjon og ansvar",
+                elektriskUtstyr: t("auto.3_elektrisk_utstyr_stikk_skjoeteledninge"),
+                dokumentasjon: t("auto.4_dokumentasjon_og_ansvar"),
                 // Daglig drift sections
-                informasjon: "1. Informasjon og kommunikasjon",
-                samarbeid: "2. Samarbeid og beslutninger",
-                produktivitet: "3. Produktivitet og effektivitet",
-                arbeidsavtaler: "4. Arbeidsavtaler og arbeidsreglement",
+                informasjon: t("auto.1_informasjon_og_kommunikasjon"),
+                samarbeid: t("auto.2_samarbeid_og_beslutninger"),
+                produktivitet: t("auto.3_produktivitet_og_effektivitet"),
+                arbeidsavtaler: t("auto.4_arbeidsavtaler_og_arbeidsreglement"),
                 arbeidstid: "5. Arbeidstidsbestemmelser",
                 hms: "6. HMS-arbeid",
-                kompetanse: "7. Kompetanse og opplæring",
-                registrering: "8. Registrering og oppfølging",
+                kompetanse: t("auto.7_kompetanse_og_opplaering"),
+                registrering: t("auto.8_registrering_og_oppfoelging"),
                 vernetjeneste: "9. Vernetjeneste",
                 forsikringer: "10. Forsikringer",
                 // Fysiske arbeidsforhold sections
                 arbeidslokaler: "1. Arbeidslokaler",
-                elektrisk: "2. Elektriske anlegg og utstyr",
+                elektrisk: t("auto.2_elektriske_anlegg_og_utstyr"),
                 inneklima: "3. Inneklima - lokaler",
-                romningsveier: "4. Rømningsveier / Nødutganger",
+                romningsveier: t("auto.4_roemningsveier_noedutganger"),
                 brannsikkerhet: "5. Brannsikkerhet - lokaler",
-                brannfarlig: "6. Oppbevaring av brann- og eksplosjonsfarlige varer",
-                varehandtering: "7. Varehåndtering / lager",
-                orden: "8. Orden og renhold",
-                avfall: "9. Avfallshåndtering",
+                brannfarlig: t("auto.6_oppbevaring_av_brann_og_eksplosjonsfar"),
+                varehandtering: t("auto.7_varehaandtering_lager"),
+                orden: t("auto.8_orden_og_renhold"),
+                avfall: t("auto.9_avfallshaandtering"),
                 dataskjerm: "10. Arbeid foran dataskjermen",
-                asbest: "11. Arbeid med asbestholdig materiale",
+                asbest: t("auto.11_arbeid_med_asbestholdig_materiale"),
                 eksterne: "12. Eksterne arbeidsforhold",
                 ergonomi: "13. Ergonomi – belastninger",
                 verneutstyr: "14. Bruk av personlig verneutstyr",
-                stoy: "15. Støyeksponering",
-                arbeidsutstyr: "16. Bruk av arbeidsutstyr og maskiner",
-                hoyden: "17. Arbeid i høyden",
-                kjemisk: "18. Kjemiske stoffer og gasser",
-                forstehjelp: "19. Førstehjelp og brannsikkerhet",
+                stoy: t("auto.15_stoeyeksponering"),
+                arbeidsutstyr: t("auto.16_bruk_av_arbeidsutstyr_og_maskiner"),
+                hoyden: t("auto.17_arbeid_i_hoeyden"),
+                kjemisk: t("auto.18_kjemiske_stoffer_og_gasser"),
+                forstehjelp: t("auto.19_foerstehjelp_og_brannsikkerhet"),
                 sikring: "20. Sikring av last",
-                lasting: "21. Lasting og lossing",
+                lasting: t("auto.21_lasting_og_lossing"),
                 graving: "22. Gravearbeider",
                 sprengning: "23. Sprengningsarbeider",
                 adr: "24. ADR-transport",
                 adr_uhell: "25. Uhell ved ADR-transport",
-                ergonomi_kjoretoy: "26. Ergonomi i kjøretøy",
-                hviletid: "27. Kjøre- og hviletid",
+                ergonomi_kjoretoy: t("auto.26_ergonomi_i_kjoeretoey"),
+                hviletid: t("auto.27_kjoere_og_hviletid"),
                 annet: "Andre forhold",
               };
 
@@ -2590,7 +2590,7 @@ const Handbook = () => {
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold mb-1">
-                {companyInfo?.name || "Bedrift"} - IK Handbok
+                {companyInfo?.name || t("auto.bedrift")} - IK Handbok
               </h2>
               <p className="text-primary-foreground/80 mb-4">
                 Sist oppdatert: {format(lastUpdated, "d. MMMM yyyy", { locale: nb })}
@@ -2708,7 +2708,7 @@ const Handbook = () => {
                                   size="sm"
                                   onClick={(e) => handleEditSection(section, e)}
                                 >
-                                  {section.linkTo ? "Gå til" : "Rediger i oppsettsveiviseren"}
+                                  {section.linkTo ? t("auto.gaa_til") : "Rediger i oppsettsveiviseren"}
                                 </Button>
                               </div>
                             </div>
@@ -2785,7 +2785,7 @@ const Handbook = () => {
         open={emailDialogOpen}
         onOpenChange={setEmailDialogOpen}
         documentType="handbook"
-        subject={`IK-Handbok - ${companyInfo?.name || "Bedrift"}`}
+        subject={`IK-Handbok - ${companyInfo?.name || t("auto.bedrift")}`}
         htmlContent={generateHandbookEmailHtml()}
         users={companyUsers.map(u => ({
           id: u.id,
@@ -2804,11 +2804,11 @@ const Handbook = () => {
       <html>
       <head>
         <meta charset="utf-8">
-        <title>IK-Handbok - ${companyInfo?.name || "Bedrift"}</title>
+        <title>IK-Handbok - ${companyInfo?.name || t("auto.bedrift")}</title>
       </head>
       <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #333;">
         <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h1 style="margin: 0 0 10px 0; color: #333;">${companyInfo?.name || "Bedrift"} - IK-Handbok</h1>
+          <h1 style="margin: 0 0 10px 0; color: #333;">${companyInfo?.name || t("auto.bedrift")} - IK-Handbok</h1>
           <p style="margin: 0; color: #666;">
             Sist oppdatert: ${format(new Date(), "d. MMMM yyyy", { locale: nb })}
           </p>
