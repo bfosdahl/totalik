@@ -5909,6 +5909,12 @@
     "tor": "Kt",
     "fre": "Pn",
     "loer": "Še",
-    "soen": "Se"
+    "soen": "Se",
+    "nytt_prosjekt": "Naujas projektas",
+    "arkiv": "Archyvas",
+    "alle_inkl_fullfoerte": "Visi (įsk. užbaigtus)",
+    "opprett_ditt_foerste_prosjekt": "Sukurkite savo pirmąjį projektą",
+    "proev_aa_endre_soek_eller_filter": "Pabandykite pakeisti paiešką arba filtrą",
+    "start_med_aa_opprette_et_nytt_prosjekt": "Pradėkite sukurdami naują projektą, kad pradėtumėte kokybės užtikrinimą"
   }
 }

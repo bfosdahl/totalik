@@ -5909,6 +5909,12 @@
     "tor": "Czw",
     "fre": "Pt",
     "loer": "Sob",
-    "soen": "Nd"
+    "soen": "Nd",
+    "nytt_prosjekt": "Nowy projekt",
+    "arkiv": "Archiwum",
+    "alle_inkl_fullfoerte": "Wszystkie (w tym zakończone)",
+    "opprett_ditt_foerste_prosjekt": "Utwórz swój pierwszy projekt",
+    "proev_aa_endre_soek_eller_filter": "Spróbuj zmienić wyszukiwanie lub filtr",
+    "start_med_aa_opprette_et_nytt_prosjekt": "Zacznij od utworzenia nowego projektu, aby rozpocząć zapewnianie jakości"
   }
 }
