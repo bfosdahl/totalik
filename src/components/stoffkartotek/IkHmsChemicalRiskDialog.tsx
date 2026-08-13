@@ -454,7 +454,7 @@ export function IkHmsChemicalRiskDialog({
                 <CardTitle className="text-base">{t("auto.arbeidsoppgaver")}</CardTitle>
                 <Button variant="outline" size="sm" onClick={addWorkTask}>
                   <Plus className="h-4 w-4 mr-1" />
-                  Legg til
+                  {t("auto.legg_til")}
                 </Button>
               </div>
             </CardHeader>
@@ -486,7 +486,7 @@ export function IkHmsChemicalRiskDialog({
           {/* PPE */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Påkrevd verneutstyr (PPE)</CardTitle>
+              <CardTitle className="text-base">{t("auto.paakrevd_verneutstyr_ppe")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">

@@ -353,7 +353,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
         {currentPath && (
           <Button variant="ghost" size="sm" className="ml-auto" onClick={goUp}>
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Tilbake
+            {t("auto.tilbake")}
           </Button>
         )}
       </div>
@@ -399,7 +399,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                         <DropdownMenuLabel>{t("auto.mappe")}</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => setCurrentPath(stats.fullPath)}>
                           <FolderOpen className="h-4 w-4 mr-2" />
-                          Åpne
+                          {t("auto.aapne")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -407,7 +407,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Slett mappe
+                          {t("auto.slett_mappe")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -482,7 +482,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Slett
+                          {t("auto.slett")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -562,7 +562,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ROOT_SENTINEL}>Ingen mappe (rot)</SelectItem>
+                  <SelectItem value={ROOT_SENTINEL}>{t("auto.ingen_mappe_rot")}</SelectItem>
                   {folderDropdownOptions.map((f) => (
                     <SelectItem key={f} value={f}>
                       {f}
@@ -582,7 +582,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               )}
             </div>
             <div className="space-y-2">
-              <Label>Beskrivelse (valgfritt)</Label>
+              <Label>{t("auto.beskrivelse_valgfritt")}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -623,7 +623,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ROOT_SENTINEL}>Ingen mappe (rot)</SelectItem>
+                <SelectItem value={ROOT_SENTINEL}>{t("auto.ingen_mappe_rot")}</SelectItem>
                 {folderDropdownOptions.map((f) => (
                   <SelectItem key={f} value={f}>
                     {f}
@@ -675,7 +675,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -691,7 +691,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               {folderToDeleteStats.docs > 0 || folderToDeleteStats.subs > 0 ? (
                 <>
                   <br /><br />
-                  Dette vil også slette <strong>{folderToDeleteStats.docs} dokument{folderToDeleteStats.docs === 1 ? "" : "er"}</strong>
+                  {t("auto.dette_vil_ogsaa_slette")} <strong>{folderToDeleteStats.docs} dokument{folderToDeleteStats.docs === 1 ? "" : "er"}</strong>
                   {folderToDeleteStats.subs > 0 && (
                     <> og <strong>{folderToDeleteStats.subs} undermappe{folderToDeleteStats.subs === 1 ? "" : "r"}</strong></>
                   )}
@@ -708,7 +708,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
               onClick={handleConfirmDeleteFolder}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Slett mappe
+              {t("auto.slett_mappe")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

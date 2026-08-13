@@ -584,7 +584,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                       }
                     }}
                   >
-                    Velg papir
+                    {t("auto.velg_papir")}
                   </Button>
                 </div>
               </CardContent>
@@ -646,7 +646,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til kontrollpunkt
+                {t("auto.legg_til_kontrollpunkt")}
               </Button>
             </div>
 
@@ -656,7 +656,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 setStep("template");
               }}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button 
                 className="flex-1" 
@@ -765,7 +765,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep(isCustomChecklist ? "custom" : "template")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               {!executeNow && !isPaper ? (
                 <Button
@@ -1029,7 +1029,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep("details")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button className="flex-1" onClick={() => setStep("signature")}>
                 {t("auto.gaa_til_signering")}
@@ -1065,14 +1065,14 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep("items")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button 
                 className="flex-1" 
                 onClick={() => setStep("summary")}
                 disabled={!inspectorSignature || !inspectorName}
               >
-                Gå til oppsummering
+                {t("auto.gaa_til_oppsummering")}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
@@ -1171,7 +1171,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep(isPaper ? "details" : "signature")}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button className="flex-1" onClick={() => handleCreate(false)} disabled={isSaving}>
                 {isSaving ? "Oppretter..." : isPaper ? "Opprett og venter på opplasting" : "Fullfør og lagre"}

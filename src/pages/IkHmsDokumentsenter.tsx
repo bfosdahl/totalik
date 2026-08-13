@@ -187,7 +187,7 @@ export default function IkHmsDokumentsenter() {
           className="mb-2"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Tilbake
+          {t("auto.tilbake")}
         </Button>
         <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.dokumentsenter")}</h1>
         <p className="text-muted-foreground mt-1">
@@ -478,7 +478,7 @@ export default function IkHmsDokumentsenter() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="description">Beskrivelse (valgfritt)</Label>
+                  <Label htmlFor="description">{t("auto.beskrivelse_valgfritt")}</Label>
                   <Textarea
                     id="description"
                     value={description}
@@ -710,7 +710,7 @@ export default function IkHmsDokumentsenter() {
                                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                             onClick={() => deleteDocument(doc)}
                                           >
-                                            Slett
+                                            {t("auto.slett")}
                                           </AlertDialogAction>
                                         </AlertDialogFooter>
                                       </AlertDialogContent>

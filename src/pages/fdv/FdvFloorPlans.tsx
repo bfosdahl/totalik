@@ -309,7 +309,7 @@ export default function FdvFloorPlans() {
           </div>
           <Button onClick={handleNewPlan} className="gap-2">
             <Plus className="h-4 w-4" />
-            Ny etasjeplan
+            {t("auto.ny_etasjeplan")}
           </Button>
         </div>
 
@@ -371,7 +371,7 @@ export default function FdvFloorPlans() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleEditPlan(plan)}>
                           <Pencil className="h-4 w-4 mr-2" />
-                          Rediger
+                          {t("auto.rediger")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => downloadPlan(plan)}>
                           <Download className="h-4 w-4 mr-2" />
@@ -379,7 +379,7 @@ export default function FdvFloorPlans() {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDeletePlan(plan)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Slett
+                          {t("auto.slett")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -461,7 +461,7 @@ export default function FdvFloorPlans() {
             </Button>
             <Button onClick={() => { setPreviewPlan(null); previewPlan && handleEditPlan(previewPlan); }}>
               <Pencil className="h-4 w-4 mr-2" />
-              Rediger
+              {t("auto.rediger")}
             </Button>
           </div>
         </DialogContent>

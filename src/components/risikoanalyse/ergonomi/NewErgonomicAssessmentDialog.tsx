@@ -203,7 +203,7 @@ export function NewErgonomicAssessmentDialog({ open, onOpenChange }: NewErgonomi
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Wrench className="h-4 w-4" />
-                Verktøy / Utstyr
+                {t("auto.verktoey_utstyr")}
               </Label>
               <p className="text-sm text-muted-foreground">
                 {t("auto.legg_til_verktoey_og_utstyr_som_skal_vur")}

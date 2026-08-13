@@ -202,7 +202,7 @@ export function RegisterAbsenceDialog({
 
           {/* Reason */}
           <div className="space-y-2">
-            <Label>Årsak (valgfritt)</Label>
+            <Label>{t("auto.aarsak_valgfritt")}</Label>
             <Input
               value={reason}
               onChange={(e) => setReason(e.target.value)}

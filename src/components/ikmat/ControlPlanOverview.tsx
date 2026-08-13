@@ -67,7 +67,7 @@ export const ControlPlanOverview = ({ risks, onOpenRisk }: ControlPlanOverviewPr
           {t("auto.ingen_kkp_kontroller_definert")}
         </h3>
         <p className="text-sm text-muted-foreground">
-          Merk risikoer som kritiske kontrollpunkter (KKP) for å se dem her.
+          {t("auto.merk_risikoer_som_kritiske_kontrollpunkt")}
         </p>
       </div>
     );
@@ -235,7 +235,7 @@ const ControlCard = ({ risk, onOpenRisk, showDate, showFrequency }: ControlCardP
               className="h-8"
             >
               <ExternalLink className="h-3.5 w-3.5 mr-1" />
-              Åpne
+              {t("auto.aapne")}
             </Button>
           </div>
         </div>

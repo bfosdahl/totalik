@@ -295,7 +295,7 @@ const IkMatRisikoOgTiltak = () => {
             <div className="flex justify-end">
               <Button variant="outline" onClick={handleAddRisk}>
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til risiko
+                {t("auto.legg_til_risiko")}
               </Button>
             </div>
 
@@ -311,7 +311,7 @@ const IkMatRisikoOgTiltak = () => {
                 </p>
                 <Button onClick={handleAddRisk}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Legg til første risiko
+                  {t("auto.legg_til_foerste_risiko")}
                 </Button>
               </div>
             ) : (

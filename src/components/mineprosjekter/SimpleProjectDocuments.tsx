@@ -13,7 +13,7 @@ export function SimpleProjectDocuments({ projectId }: SimpleProjectDocumentsProp
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg flex items-center gap-2">
           <FileText className="w-5 h-5" />
-          Dokumenter
+          {t("auto.dokumenter")}
         </CardTitle>
         <Button className="gap-2">
           <Upload className="w-4 h-4" />

@@ -166,7 +166,7 @@ export default function Ks2Stoffkartotek() {
           onClick={() => setAddDialogOpen(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Legg til stoff
+          {t("auto.legg_til_stoff")}
         </Button>
       </div>
 
@@ -230,7 +230,7 @@ export default function Ks2Stoffkartotek() {
               onClick={() => setAddDialogOpen(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Legg til stoff
+              {t("auto.legg_til_stoff")}
             </Button>
           </CardContent>
         </Card>
@@ -272,7 +272,7 @@ export default function Ks2Stoffkartotek() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setEditEntry(entry)}>
                           <Edit2 className="h-4 w-4 mr-2" />
-                          Rediger
+                          {t("auto.rediger")}
                         </DropdownMenuItem>
                         {entry.current_sds && (
                           <DropdownMenuItem onClick={() => handleDownloadSds(entry)}>

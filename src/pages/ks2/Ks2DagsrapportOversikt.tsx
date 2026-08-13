@@ -407,7 +407,7 @@ export default function Ks2DagsrapportOversikt() {
             ) : filtered.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
                 <AlertTriangle className="h-6 w-6 text-muted-foreground/60" />
-                Ingen rapporter matcher filtrene
+                {t("auto.ingen_rapporter_matcher_filtrene")}
               </div>
             ) : (
               <div className="overflow-x-auto">

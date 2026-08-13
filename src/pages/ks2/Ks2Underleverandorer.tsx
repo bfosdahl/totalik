@@ -156,7 +156,7 @@ export default function Ks2Underleverandorer() {
           </Button>
           <Button onClick={() => setShowNewDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Ny underleverandør
+            {t("auto.ny_underleverandoer")}
           </Button>
         </div>
       </div>

@@ -160,7 +160,7 @@ export default function KsUtfylteSjekklister() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500/10 text-green-600 border-green-200"><CheckCircle2 className="w-3 h-3 mr-1" /> Fullført</Badge>;
+        return <Badge className="bg-green-500/10 text-green-600 border-green-200"><CheckCircle2 className="w-3 h-3 mr-1" /> {t("auto.fullfoert")}</Badge>;
       case "in_progress":
         return <Badge variant="outline" className="text-amber-600 border-amber-200"><Clock className="w-3 h-3 mr-1" /> Under arbeid</Badge>;
       default:

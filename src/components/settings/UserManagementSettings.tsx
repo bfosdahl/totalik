@@ -601,11 +601,11 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCreateDirectDialogOpen(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
-            Legg til
+            {t("auto.legg_til")}
           </Button>
           <Button onClick={() => setInviteDialogOpen(true)}>
             <Mail className="w-4 h-4 mr-2" />
-            Send invitasjon
+            {t("auto.send_invitasjon")}
           </Button>
         </div>
       </motion.div>
@@ -631,11 +631,11 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setCreateDirectDialogOpen(true)}>
                 <UserPlus className="w-4 h-4 mr-2" />
-                Legg til
+                {t("auto.legg_til")}
               </Button>
               <Button onClick={() => setInviteDialogOpen(true)}>
                 <Mail className="w-4 h-4 mr-2" />
-                Send invitasjon
+                {t("auto.send_invitasjon")}
               </Button>
             </div>
           </div>
@@ -692,7 +692,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       className="bg-emerald-600 hover:bg-emerald-700"
                     >
                       <UserCheck className="w-4 h-4 mr-1" />
-                      Godkjenn
+                      {t("auto.godkjenn")}
                     </Button>
                   )}
                   {getRoleBadge(companyUser.role)}
@@ -706,12 +706,12 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => openEditDialog(companyUser)}>
                           <Edit2 className="w-4 h-4 mr-2" />
-                          Rediger
+                          {t("auto.rediger")}
                         </DropdownMenuItem>
                         {companyUser.status === "pending_approval" && (
                           <DropdownMenuItem onClick={() => handleApproveUser(companyUser)}>
                             <UserCheck className="w-4 h-4 mr-2" />
-                            Godkjenn bruker
+                            {t("auto.godkjenn_bruker")}
                           </DropdownMenuItem>
                         )}
                         {(companyUser.status === "suspended" || companyUser.status === "deleted") ? (
@@ -989,7 +989,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                     <SelectItem value="none">
                       <div className="flex items-center gap-2">
                         <Building2 className="w-4 h-4 text-muted-foreground" />
-                        Ingen avdeling
+                        {t("auto.ingen_avdeling")}
                       </div>
                     </SelectItem>
                     {departments.filter(d => d.is_active).map((dept) => (

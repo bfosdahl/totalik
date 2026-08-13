@@ -395,7 +395,7 @@ const Deviations = () => {
                   <DropdownMenuItem asChild>
                     <Link to="/install/avvik" className="flex items-center">
                       <Smartphone className="w-4 h-4 mr-2" />
-                      Last ned Avvik-appen
+                      {t("auto.last_ned_avvik_appen")}
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -472,7 +472,7 @@ const Deviations = () => {
               className="flex-shrink-0"
               onClick={() => setFilterStatus(null)}
             >
-              Alle
+              {t("auto.alle")}
             </Button>
             {Object.entries(statusConfig).map(([key, config]) => (
               <Button
@@ -518,7 +518,7 @@ const Deviations = () => {
                   </p>
                   <Button size="sm" className="gap-1.5" onClick={() => setIsDialogOpen(true)}>
                     <Plus className="w-4 h-4" />
-                    Registrer første avvik
+                    {t("auto.registrer_foerste_avvik")}
                   </Button>
                 </>
               )}

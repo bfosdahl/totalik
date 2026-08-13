@@ -584,7 +584,7 @@ export default function AdminCompanies() {
               }}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Ny bedrift
+              {t("auto.ny_bedrift")}
             </Button>
           </div>
         </motion.div>
@@ -877,7 +877,7 @@ export default function AdminCompanies() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEditDialog(company)}>
                               <Edit className="w-4 h-4 mr-2" />
-                              Rediger
+                              {t("auto.rediger")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => toggleStatusMutation.mutate({ id: company.id, status: company.status })}
@@ -932,7 +932,7 @@ export default function AdminCompanies() {
                               }}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              Slett
+                              {t("auto.slett")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -981,7 +981,7 @@ export default function AdminCompanies() {
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  Neste
+                  {t("auto.neste")}
                 </Button>
               </div>
             </div>
@@ -1051,7 +1051,7 @@ export default function AdminCompanies() {
                       className="w-full"
                     >
                       <Edit className="w-4 h-4 mr-2" />
-                      Rediger
+                      {t("auto.rediger")}
                     </Button>
                     <Button
                       variant="outline"
@@ -1121,7 +1121,7 @@ export default function AdminCompanies() {
                       }}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Slett
+                      {t("auto.slett")}
                     </Button>
                   </div>
                 </div>

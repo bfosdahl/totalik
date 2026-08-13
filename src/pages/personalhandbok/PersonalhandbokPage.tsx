@@ -286,7 +286,7 @@ const PersonalhandbokPage = () => {
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowAddDialog(true)}>
                   <Plus className="w-4 h-4 mr-1.5" />
-                  Nytt kapittel
+                  {t("auto.nytt_kapittel")}
                 </Button>
               </>
             )}
@@ -374,7 +374,7 @@ const PersonalhandbokPage = () => {
                           onClick={() => setEditingChapter({ ...selectedChapter })}
                         >
                           <Edit3 className="w-4 h-4 mr-1" />
-                          Rediger
+                          {t("auto.rediger")}
                         </Button>
                         {!selectedChapter.is_default && (
                           <Button

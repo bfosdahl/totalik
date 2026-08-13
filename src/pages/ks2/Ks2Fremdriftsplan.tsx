@@ -274,7 +274,7 @@ export default function Ks2Fremdriftsplan() {
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny milepæl
+              {t("auto.ny_milepael")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
@@ -572,7 +572,7 @@ export default function Ks2Fremdriftsplan() {
                 </p>
                 <Button onClick={() => handleOpenDialog()}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Legg til første milepæl
+                  {t("auto.legg_til_foerste_milepael")}
                 </Button>
               </CardContent>
             </Card>
@@ -662,7 +662,7 @@ export default function Ks2Fremdriftsplan() {
                         }}
                       >
                         <Plus className="h-4 w-4 mr-1" />
-                        Opprett milepæl
+                        {t("auto.opprett_milepael")}
                       </Button>
                     )}
                   </div>

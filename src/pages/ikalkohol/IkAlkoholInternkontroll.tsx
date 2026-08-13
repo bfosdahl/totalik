@@ -380,7 +380,7 @@ export default function IkAlkoholInternkontroll() {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <GraduationCap className="h-5 w-5" />
-                    Opplæringsplan
+                    {t("auto.opplaeringsplan")}
                   </CardTitle>
                   <CardDescription>
                     {t("auto.dokumenter_opplaering_for_alle_ansatte")}
@@ -396,7 +396,7 @@ export default function IkAlkoholInternkontroll() {
                   setShowTrainingDialog(true);
                 }}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Legg til
+                  {t("auto.legg_til")}
                 </Button>
               </CardHeader>
               <CardContent>
@@ -633,7 +633,7 @@ export default function IkAlkoholInternkontroll() {
             </Button>
             <Button onClick={handleSaveControl} disabled={upsertRiskControl.isPending}>
               <Save className="h-4 w-4 mr-2" />
-              Lagre
+              {t("auto.lagre")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -747,7 +747,7 @@ export default function IkAlkoholInternkontroll() {
               onClick={handleSaveLicense} 
               disabled={!licenseForm.municipality || createLicense.isPending}
             >
-              Lagre bevilling
+              {t("auto.lagre_bevilling")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -847,7 +847,7 @@ export default function IkAlkoholInternkontroll() {
               onClick={handleSaveTraining} 
               disabled={!editingTraining?.employee_name || !editingTraining?.role || !editingTraining?.training_type}
             >
-              Lagre
+              {t("auto.lagre")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -929,7 +929,7 @@ export default function IkAlkoholInternkontroll() {
               onClick={handleSaveReview} 
               disabled={!editingReview?.planned_date}
             >
-              Lagre
+              {t("auto.lagre")}
             </Button>
           </DialogFooter>
         </DialogContent>

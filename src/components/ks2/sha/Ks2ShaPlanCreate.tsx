@@ -245,7 +245,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Koordinator utførelse (KU)</Label>
+                <Label>{t("auto.koordinator_utfoerelse_ku")}</Label>
                 <Input 
                   value={projectData.sha_coordinator_ku} 
                   onChange={(e) => setProjectData(prev => ({ ...prev, sha_coordinator_ku: e.target.value }))}
@@ -278,7 +278,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
       {step === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Risikoområder (Byggherreforskriften §8 bokstav c)</CardTitle>
+            <CardTitle>{t("auto.risikoomraader_byggherreforskriften_8_bo")}</CardTitle>
             <CardDescription>
               {t("auto.kryss_av_for_relevante_risikoomraader_be")}
             </CardDescription>
@@ -343,7 +343,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
             })}
             <Button variant="outline" onClick={handleAddRiskArea} className="w-full">
               <Plus className="h-4 w-4 mr-2" />
-              Legg til eget risikoområde
+              {t("auto.legg_til_eget_risikoomraade")}
             </Button>
           </CardContent>
         </Card>
@@ -445,7 +445,7 @@ export function Ks2ShaPlanCreate({ projectId, onCancel }: Props) {
             ) : (
               <>
                 <FileSignature className="h-4 w-4 mr-2" />
-                Opprett SHA-plan
+                {t("auto.opprett_sha_plan")}
               </>
             )}
           </Button>

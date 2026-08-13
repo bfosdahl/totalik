@@ -163,7 +163,7 @@ const DepartmentGoals = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Target className="h-8 w-8 text-primary" />
-              Målsetting
+              {t("auto.maalsetting")}
             </h1>
             <p className="text-muted-foreground mt-1">
               HMS-målsetting for {department?.name}
@@ -196,7 +196,7 @@ const DepartmentGoals = () => {
               <p>{t("auto.ingen_maalsettinger_er_definert_for_denn")}</p>
               <Button onClick={handleAddGoal} className="mt-4">
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til målsetting
+                {t("auto.legg_til_maalsetting")}
               </Button>
             </CardContent>
           </Card>
@@ -231,7 +231,7 @@ const DepartmentGoals = () => {
             ))}
             <Button variant="outline" onClick={handleAddGoal} className="w-full">
               <Plus className="h-4 w-4 mr-2" />
-              Legg til flere mål
+              {t("auto.legg_til_flere_maal")}
             </Button>
           </div>
         )}

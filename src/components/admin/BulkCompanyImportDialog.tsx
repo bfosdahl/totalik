@@ -480,7 +480,7 @@ export function BulkCompanyImportDialog({
                 <Button asChild>
                   <span>
                     <Upload className="w-4 h-4 mr-2" />
-                    Velg fil
+                    {t("auto.velg_fil")}
                   </span>
                 </Button>
               </Label>

@@ -123,7 +123,7 @@ function NoCompanyMessage() {
       </p>
       <Button onClick={() => navigate("/settings?tab=company&create=true")} className="gap-2">
         <Building2 className="w-4 h-4" />
-        Opprett bedrift
+        {t("auto.opprett_bedrift")}
       </Button>
     </div>
   );
@@ -498,7 +498,7 @@ const Setup = () => {
           </div>
           <Button onClick={() => setShowSubscriptionDialog(true)} className="gap-2">
             <CreditCard className="w-4 h-4" />
-            Se vilkår og aktiver
+            {t("auto.se_vilkaar_og_aktiver")}
           </Button>
 
           <SubscriptionAcceptDialog
@@ -916,7 +916,7 @@ const Setup = () => {
               className="gap-2 shadow-lg bg-card hover:bg-secondary border-primary/30 hover:border-primary transition-colors"
             >
               <BookOpen className="w-4 h-4 text-primary" />
-              Tilbake til Handbok
+              {t("auto.tilbake_til_handbok")}
             </Button>
           </motion.div>
         </motion.div>

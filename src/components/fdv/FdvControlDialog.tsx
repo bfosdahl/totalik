@@ -197,7 +197,7 @@ export function FdvControlDialog({ open, onOpenChange, control, buildings, onSav
                 name="interval_months"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Intervall (måneder)</FormLabel>
+                    <FormLabel>{t("auto.intervall_maaneder")}</FormLabel>
                     <FormControl>
                       <Input type="number" min={1} {...field} />
                     </FormControl>

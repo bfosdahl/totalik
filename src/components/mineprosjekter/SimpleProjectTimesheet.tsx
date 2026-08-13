@@ -269,7 +269,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Beskrivelse (valgfritt)</Label>
+              <Label>{t("auto.beskrivelse_valgfritt")}</Label>
               <Textarea
                 placeholder={t("auto.hva_ble_gjort")}
                 value={formData.description}

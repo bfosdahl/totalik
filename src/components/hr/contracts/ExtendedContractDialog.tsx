@@ -298,7 +298,7 @@ export function ExtendedContractDialog({
                 onClick={goNext}
                 disabled={!canGoNext}
               >
-                Neste
+                {t("auto.neste")}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>

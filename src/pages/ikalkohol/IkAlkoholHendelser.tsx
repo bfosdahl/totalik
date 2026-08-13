@@ -146,7 +146,7 @@ export default function IkAlkoholHendelser() {
             setShowDialog(true);
           }}>
             <Plus className="h-4 w-4 mr-2" />
-            Ny hendelse
+            {t("auto.ny_hendelse")}
           </Button>
         </div>
 

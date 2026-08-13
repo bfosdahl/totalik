@@ -577,7 +577,7 @@ export default function Ks2ByggesakForm() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-3 w-3 text-green-500" />
-                    Send direkte på e-post
+                    {t("auto.send_direkte_paa_e_post")}
                   </li>
                 </ul>
               </button>
@@ -603,7 +603,7 @@ export default function Ks2ByggesakForm() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-3 w-3 text-green-500" />
-                    Håndskrevet signatur
+                    {t("auto.haandskrevet_signatur")}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-3 w-3 text-green-500" />
@@ -708,7 +708,7 @@ export default function Ks2ByggesakForm() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Send className="h-5 w-5" />
-                3. Send blankett
+                {t("auto.3_send_blankett")}
               </CardTitle>
               <CardDescription>
                 {t("auto.send_til_kommune_byggherre_eller_kunde")}
@@ -718,15 +718,15 @@ export default function Ks2ByggesakForm() {
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kommune")}>
                   <Landmark className="h-4 w-4" />
-                  Send til kommune
+                  {t("auto.send_til_kommune")}
                 </Button>
                 <Button variant="outline" className="gap-2" onClick={() => handleSendTo("byggherre")}>
                   <Building2 className="h-4 w-4" />
-                  Send til byggherre
+                  {t("auto.send_til_byggherre")}
                 </Button>
                 <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kunde")}>
                   <User className="h-4 w-4" />
-                  Send til kunde
+                  {t("auto.send_til_kunde")}
                 </Button>
               </div>
             </CardContent>
@@ -892,7 +892,7 @@ export default function Ks2ByggesakForm() {
           <div className="flex flex-col sm:flex-row gap-3 justify-end">
             <Button variant="outline" onClick={handleSave} disabled={!hasChanges || updateForm.isPending} className="gap-2">
               <Save className="h-4 w-4" />
-              Lagre utkast
+              {t("auto.lagre_utkast")}
             </Button>
             {!formData.signature && (
               <Button onClick={() => setShowSignDialog(true)} disabled={updateForm.isPending} className="gap-2">
@@ -910,7 +910,7 @@ export default function Ks2ByggesakForm() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Send className="h-5 w-5" />
-              Send blankett
+              {t("auto.send_blankett")}
             </CardTitle>
             <CardDescription>
               {t("auto.send_ferdig_utfylt_blankett_til_mottaker")}
@@ -920,15 +920,15 @@ export default function Ks2ByggesakForm() {
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kommune")}>
                 <Landmark className="h-4 w-4" />
-                Send til kommune
+                {t("auto.send_til_kommune")}
               </Button>
               <Button variant="outline" className="gap-2" onClick={() => handleSendTo("byggherre")}>
                 <Building2 className="h-4 w-4" />
-                Send til byggherre
+                {t("auto.send_til_byggherre")}
               </Button>
               <Button variant="outline" className="gap-2" onClick={() => handleSendTo("kunde")}>
                 <User className="h-4 w-4" />
-                Send til kunde
+                {t("auto.send_til_kunde")}
               </Button>
               {form.status === "signed" && (
                 <Button variant="outline" className="gap-2" onClick={handleMarkAsSent}>
@@ -984,7 +984,7 @@ export default function Ks2ByggesakForm() {
             <div className="flex items-center justify-between">
               <Button variant="outline" size="sm" onClick={clearSignature}>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Slett
+                {t("auto.slett")}
               </Button>
               <p className="text-xs text-muted-foreground">
                 Signeres av: {profile?.first_name} {profile?.last_name}

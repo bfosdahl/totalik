@@ -226,7 +226,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
               {!isEditing && (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit2 className="w-4 h-4 mr-2" />
-                  Rediger
+                  {t("auto.rediger")}
                 </Button>
               )}
             </CardHeader>
@@ -262,7 +262,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Pårørende
+                {t("auto.paaroerende")}
               </CardTitle>
               <CardDescription>{t("auto.kontaktperson_ved_noedstilfeller")}</CardDescription>
             </CardHeader>
@@ -299,11 +299,11 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                 <div className="flex gap-2 pt-2">
                   <Button onClick={handleSave} disabled={updateEmployee.isPending}>
                     <Save className="w-4 h-4 mr-2" />
-                    Lagre
+                    {t("auto.lagre")}
                   </Button>
                   <Button variant="outline" onClick={handleCancel}>
                     <X className="w-4 h-4 mr-2" />
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                 </div>
               )}
@@ -317,7 +317,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
-                Avdelingstilhørighet
+                {t("auto.avdelingstilhoerighet")}
               </CardTitle>
               <CardDescription>{t("auto.dine_avdelinger")}</CardDescription>
             </CardHeader>
@@ -339,7 +339,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                           <p className="text-sm text-muted-foreground">{t("auto.hovedenhet")}</p>
                         </div>
                       </div>
-                      <Badge variant="secondary"><Check className="w-3 h-3 mr-1" />Tilhører</Badge>
+                      <Badge variant="secondary"><Check className="w-3 h-3 mr-1" />{t("auto.tilhoerer")}</Badge>
                     </div>
                   )}
                   {departments.filter(d => d.is_active && assignedDepartmentIds.includes(d.id)).map((dept) => (
@@ -353,7 +353,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
                           {dept.city && <p className="text-sm text-muted-foreground">{dept.city}</p>}
                         </div>
                       </div>
-                      <Badge variant="secondary"><Check className="w-3 h-3 mr-1" />Tilhører</Badge>
+                      <Badge variant="secondary"><Check className="w-3 h-3 mr-1" />{t("auto.tilhoerer")}</Badge>
                     </div>
                   ))}
                   {!isAssignedToMain && departments.filter(d => d.is_active && assignedDepartmentIds.includes(d.id)).length === 0 && (
@@ -427,7 +427,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
               <p className="text-sm text-muted-foreground">{t("auto.oversikt_over_dine_kurs_med_automatisk_v")}</p>
             </div>
             <Button onClick={() => setIsAddCourseOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Legg til kurs
+              <Plus className="w-4 h-4 mr-2" /> {t("auto.legg_til_kurs")}
             </Button>
           </div>
           {coursesLoading ? (

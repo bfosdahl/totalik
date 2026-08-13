@@ -85,7 +85,7 @@ export function SensorIntegrations({
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Plug className="h-5 w-5" /> Leverandørintegrasjoner
+              <Plug className="h-5 w-5" /> {t("auto.leverandoerintegrasjoner")}
             </CardTitle>
             <CardDescription>
               {t("auto.koble_til_sensorleverandoeren_din_enten_")}
@@ -94,7 +94,7 @@ export function SensorIntegrations({
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => syncNow.mutate(undefined)} disabled={syncNow.isPending}>
               <RefreshCw className={`h-4 w-4 mr-2 ${syncNow.isPending ? 'animate-spin' : ''}`} />
-              Hent nå
+              {t("auto.hent_naa")}
             </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
@@ -165,7 +165,7 @@ export function SensorIntegrations({
                       {statusBadge(integration)}
                       {integration.has_credentials && (
                         <Badge variant="secondary" className="gap-1">
-                          <KeyRound className="h-3 w-3" /> Nøkler lagret
+                          <KeyRound className="h-3 w-3" /> {t("auto.noekler_lagret")}
                         </Badge>
                       )}
                     </div>
@@ -231,7 +231,7 @@ export function SensorIntegrations({
                     {provider && provider.credentialFields.length > 0 && (
                       <div className="space-y-3 rounded-md border p-3">
                         <p className="text-sm font-medium flex items-center gap-2">
-                          <KeyRound className="h-4 w-4" /> Innlogging hos leverandøren
+                          <KeyRound className="h-4 w-4" /> {t("auto.innlogging_hos_leverandoeren")}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {t("auto.noekler_lagres_kryptert_paa_serveren_og_")}
@@ -261,7 +261,7 @@ export function SensorIntegrations({
                             }
                             disabled={Object.keys(draft).length === 0 || saveCredentials.isPending}
                           >
-                            Lagre nøkler
+                            {t("auto.lagre_noekler")}
                           </Button>
                           {integration.has_credentials && (
                             <Button size="sm" variant="outline" onClick={() => clearCredentials.mutate(integration.id)}>
@@ -289,12 +289,12 @@ export function SensorIntegrations({
                             <PlayCircle className="h-4 w-4 mr-2" /> Test kobling
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => syncNow.mutate(integration.id)}>
-                            <RefreshCw className="h-4 w-4 mr-2" /> Hent nå
+                            <RefreshCw className="h-4 w-4 mr-2" /> {t("auto.hent_naa")}
                           </Button>
                         </>
                       )}
                       <Button size="sm" variant="ghost" onClick={() => deleteIntegration.mutate(integration.id)}>
-                        <Trash2 className="h-4 w-4 mr-2" /> Slett
+                        <Trash2 className="h-4 w-4 mr-2" /> {t("auto.slett")}
                       </Button>
                     </div>
 
@@ -319,7 +319,7 @@ export function SensorIntegrations({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5" /> Sikkerhet på webhooken
+              <ShieldCheck className="h-5 w-5" /> {t("auto.sikkerhet_paa_webhooken")}
             </CardTitle>
             <CardDescription>
               Hvis leverandøren støtter signering (HMAC-SHA256), legg inn samme hemmelige nøkkel her. Da avvises
@@ -362,7 +362,7 @@ export function SensorIntegrations({
                 })
               }
             >
-              Lagre signaturinnstillinger
+              {t("auto.lagre_signaturinnstillinger")}
             </Button>
           </CardContent>
         </Card>
@@ -371,7 +371,7 @@ export function SensorIntegrations({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ScrollText className="h-5 w-5" /> Datalogg (feilsøking)
+            <ScrollText className="h-5 w-5" /> {t("auto.datalogg_feilsoeking")}
           </CardTitle>
           <CardDescription>{t("auto.de_50_siste_datapakkene_inn_og_ut_med_st")}</CardDescription>
         </CardHeader>

@@ -287,7 +287,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              Ny befaring
+              {t("auto.ny_befaring")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -318,7 +318,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Cloud className="w-4 h-4" />
-                    Vær
+                    {t("auto.vaer")}
                   </Label>
                   <Select
                     value={formData.weather}
@@ -376,7 +376,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                   <Label>{t("auto.observasjoner_funn")}</Label>
                   <Button type="button" variant="outline" size="sm" onClick={addFinding}>
                     <Plus className="w-4 h-4 mr-1" />
-                    Legg til
+                    {t("auto.legg_til")}
                   </Button>
                 </div>
                 
@@ -466,7 +466,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
             </p>
             <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
               <Plus className="w-4 h-4" />
-              Ny befaring
+              {t("auto.ny_befaring")}
             </Button>
           </CardContent>
         </Card>
@@ -531,7 +531,7 @@ export function SimpleProjectInspections({ projectId }: SimpleProjectInspections
                           className="gap-1"
                         >
                           <CheckCircle2 className="w-4 h-4" />
-                          Fullfør
+                          {t("auto.fullfoer")}
                         </Button>
                       )}
                       <Button

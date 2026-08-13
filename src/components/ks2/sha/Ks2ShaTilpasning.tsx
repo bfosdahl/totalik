@@ -166,7 +166,7 @@ export function Ks2ShaTilpasning({ projectId }: Props) {
             </div>
             <Button variant="outline" size="sm" onClick={handleAddMeasure}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til tiltak
+              {t("auto.legg_til_tiltak")}
             </Button>
           </div>
         </CardHeader>

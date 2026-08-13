@@ -211,7 +211,7 @@ export default function IkMatSensorer() {
                 onClick={() => runWatchdog.mutate()}
                 disabled={runWatchdog.isPending}
               >
-                <ShieldAlert className="h-4 w-4 mr-2" /> Kjør sensorsjekk
+                <ShieldAlert className="h-4 w-4 mr-2" /> {t("auto.kjoer_sensorsjekk")}
               </Button>
             </CardHeader>
             <CardContent>
@@ -279,7 +279,7 @@ export default function IkMatSensorer() {
                     <span className="text-sm">{endpoint.is_active ? 'Aktivt' : 'Deaktivert'}</span>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => regenerateToken.mutate(endpoint.id)}>
-                    <RefreshCw className="h-4 w-4 mr-2" /> Ny nøkkel
+                    <RefreshCw className="h-4 w-4 mr-2" /> {t("auto.ny_noekkel")}
                   </Button>
                   <span className="text-sm text-muted-foreground">
                     Sist mottatt:{' '}
@@ -318,7 +318,7 @@ export default function IkMatSensorer() {
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" /> Legg til
+                  <Plus className="h-4 w-4 mr-2" /> {t("auto.legg_til")}
                 </Button>
               </DialogTrigger>
               <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>

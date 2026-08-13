@@ -141,7 +141,7 @@ export default function FdvControls() {
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => handleComplete(control)}>
               <Play className="h-4 w-4 mr-1" />
-              Utfør
+              {t("auto.utfoer")}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -152,11 +152,11 @@ export default function FdvControls() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => handleEdit(control)}>
                   <Pencil className="h-4 w-4 mr-2" />
-                  Rediger
+                  {t("auto.rediger")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleDelete(control)} className="text-destructive">
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Slett
+                  {t("auto.slett")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -182,7 +182,7 @@ export default function FdvControls() {
           </div>
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Ny kontroll
+            {t("auto.ny_kontroll")}
           </Button>
         </div>
 
@@ -271,7 +271,7 @@ export default function FdvControls() {
                   <p className="text-muted-foreground mb-4">{t("auto.legg_til_kontroller_for_dine_bygg")}</p>
                   <Button onClick={handleCreate} className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Ny kontroll
+                    {t("auto.ny_kontroll")}
                   </Button>
                 </CardContent>
               </Card>

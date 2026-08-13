@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { t } from "@/i18n/t";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import PendingApproval from "@/pages/PendingApproval";
@@ -67,7 +68,7 @@ export function ProtectedRoute({
             onClick={() => window.location.href = "/auth"}
             className="text-primary hover:underline text-sm"
           >
-            Tilbake til innlogging
+            {t("auto.tilbake_til_innlogging")}
           </button>
         </div>
       </div>

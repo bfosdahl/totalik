@@ -349,7 +349,7 @@ export function CreateTravelExpenseDialog({
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">{t("auto.andre_utlegg")}</h3>
                 <Button type="button" variant="outline" size="sm" onClick={addExpenseItem} className="gap-1">
-                  <Plus className="w-3 h-3" /> Legg til utlegg
+                  <Plus className="w-3 h-3" /> {t("auto.legg_til_utlegg")}
                 </Button>
               </div>
               {expenseItems.map((item, index) => (
@@ -381,7 +381,7 @@ export function CreateTravelExpenseDialog({
                       <Input className="h-8 text-xs" type="date" value={item.date} onChange={e => updateExpenseItem(index, "date", e.target.value)} />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Beløp (kr)</Label>
+                      <Label className="text-xs">{t("auto.beloep_kr")}</Label>
                       <Input className="h-8 text-xs" type="number" step="0.01" value={item.amount || ""} onChange={e => updateExpenseItem(index, "amount", parseFloat(e.target.value) || 0)} />
                     </div>
                   </div>

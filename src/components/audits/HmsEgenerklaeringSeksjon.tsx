@@ -138,7 +138,7 @@ export default function HmsEgenerklaeringSeksjon() {
                     onClick={() => setShowSelfDeclarationDialog(true)}
                   >
                     <PenLine className="w-4 h-4 mr-2" />
-                    Signer på nytt
+                    {t("auto.signer_paa_nytt")}
                   </Button>
                 </div>
               </>
@@ -150,7 +150,7 @@ export default function HmsEgenerklaeringSeksjon() {
                 </p>
                 <Button onClick={() => setShowSelfDeclarationDialog(true)}>
                   <PenLine className="w-4 h-4 mr-2" />
-                  Signer egenerklæring
+                  {t("auto.signer_egenerklaering")}
                 </Button>
               </div>
             )}

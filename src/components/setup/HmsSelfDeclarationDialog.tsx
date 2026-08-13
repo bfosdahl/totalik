@@ -165,7 +165,7 @@ export function HmsSelfDeclarationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
-            Egenerklæring om HMS
+            {t("auto.egenerklaering_om_hms")}
           </DialogTitle>
           <DialogDescription>
             {step === "info" && "Bekreftelse på systematisk HMS-arbeid"}

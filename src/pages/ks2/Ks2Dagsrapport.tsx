@@ -260,7 +260,7 @@ function DailyReportForm({
               <Input type="number" value={ownCrew} onChange={(e) => setOwnCrew(e.target.value)} min="0" />
             </div>
             <div>
-              <Label className="text-xs">UE-oppmøte (en per linje: Firma: antall)</Label>
+              <Label className="text-xs">{t("auto.ue_oppmoete_en_per_linje_firma_antall")}</Label>
               <Textarea value={subAttText} onChange={(e) => setSubAttText(e.target.value)} placeholder="Rørlegger AS: 3&#10;Elektro AS: 2" rows={3} />
             </div>
           </div>
@@ -348,7 +348,7 @@ function DailyReportForm({
         <SectionHeader id="quality" label={t("auto.kvalitetskontroller")} icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />} />
         {expandedSections.quality && (
           <div className="mt-2">
-            <Label className="text-xs">Utførte kontroller (en per linje)</Label>
+            <Label className="text-xs">{t("auto.utfoerte_kontroller_en_per_linje")}</Label>
             <Textarea value={qualityText} onChange={(e) => setQualityText(e.target.value)} placeholder="Betongprøve tatt&#10;Membransjekk våtrom" rows={3} />
           </div>
         )}
@@ -380,7 +380,7 @@ function DailyReportForm({
         <SectionHeader id="deviations" label={t("auto.avvik_registrert_i_dag")} icon={<AlertTriangle className="h-4 w-4 text-amber-500" />} />
         {expandedSections.deviations && (
           <div className="mt-2">
-            <Label className="text-xs">Avvik (en per linje)</Label>
+            <Label className="text-xs">{t("auto.avvik_en_per_linje")}</Label>
             <Textarea value={deviationsText} onChange={(e) => setDeviationsText(e.target.value)} placeholder={t("auto.feil_i_armering_2_etg")} rows={3} />
           </div>
         )}
@@ -416,11 +416,11 @@ function DailyReportForm({
         </Button>
         <Button variant="secondary" onClick={() => onSubmit(buildData(), true)} disabled={isSubmitting} className="flex-1">
           <Clock className="h-4 w-4 mr-1" />
-          Lagre utkast
+          {t("auto.lagre_utkast")}
         </Button>
         <Button onClick={() => onSubmit(buildData(), false)} disabled={isSubmitting} className="flex-1">
           <Send className="h-4 w-4 mr-1" />
-          Send inn
+          {t("auto.send_inn")}
         </Button>
       </div>
     </div>
@@ -639,7 +639,7 @@ export default function Ks2Dagsrapport() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Ny dagsrapport
+              {t("auto.ny_dagsrapport")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh]">
@@ -678,7 +678,7 @@ export default function Ks2Dagsrapport() {
             <p className="text-sm text-muted-foreground mb-4">{t("auto.opprett_din_foerste_dagsrapport_for_aa_k")}</p>
             <Button onClick={() => setIsFormOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Opprett dagsrapport
+              {t("auto.opprett_dagsrapport")}
             </Button>
           </CardContent>
         </Card>
@@ -827,7 +827,7 @@ export default function Ks2Dagsrapport() {
                         <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">HMS</h4>
                         {report.safety_meeting_held && (
                           <Badge variant="outline" className="mb-2 text-xs gap-1">
-                            <Shield className="h-3 w-3" /> Sikkerhetsmøte avholdt
+                            <Shield className="h-3 w-3" /> {t("auto.sikkerhetsmoete_avholdt")}
                           </Badge>
                         )}
                         {report.hms_incidents?.length > 0 && (
@@ -882,7 +882,7 @@ export default function Ks2Dagsrapport() {
                       {report.status === "draft" && (
                         <Button size="sm" variant="default" onClick={() => submitReport(report.id)}>
                           <Send className="h-3.5 w-3.5 mr-1" />
-                          Send inn
+                          {t("auto.send_inn")}
                         </Button>
                       )}
                       <Button
@@ -891,7 +891,7 @@ export default function Ks2Dagsrapport() {
                         onClick={() => setEditingReport(report)}
                       >
                         <Pencil className="h-3.5 w-3.5 mr-1" />
-                        Rediger
+                        {t("auto.rediger")}
                       </Button>
                       <Button
                         size="sm"
@@ -915,7 +915,7 @@ export default function Ks2Dagsrapport() {
                         <AlertDialogTrigger asChild>
                           <Button size="sm" variant="ghost" className="text-destructive">
                             <Trash2 className="h-3.5 w-3.5 mr-1" />
-                            Slett
+                            {t("auto.slett")}
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

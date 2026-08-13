@@ -798,7 +798,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                         onClick={() => setEditMonth(displayMonth)}
                       >
                         <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                        Rediger
+                        {t("auto.rediger")}
                       </Button>
                     </div>
                     {displayActivities.length > 0 ? (
@@ -882,7 +882,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                           onClick={() => setEditMonth(displayMonth)}
                         >
                           <Pencil className="h-3.5 w-3.5 mr-1" />
-                          Legg til aktivitet
+                          {t("auto.legg_til_aktivitet")}
                         </Button>
                       </div>
                     )}

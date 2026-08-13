@@ -57,7 +57,7 @@ X-Signature: sha256=<hex_signatur>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Code2 className="h-5 w-5" /> Integrasjonsguide for leverandører
+          <Code2 className="h-5 w-5" /> {t("auto.integrasjonsguide_for_leverandoerer")}
         </CardTitle>
         <CardDescription>
           {t("auto.send_denne_guiden_til_sensorleverandoere")}
@@ -111,7 +111,7 @@ X-Signature: sha256=<hex_signatur>
                 brukes mottakstidspunktet.
               </li>
               <li>
-                <code>battery</code> er valgfritt. Vi leser både prosent (0-100) og volt.
+                <code>battery</code> {t("auto.er_valgfritt_vi_leser_baade_prosent_0_10")}
               </li>
             </ul>
           </TabsContent>
@@ -149,7 +149,7 @@ X-Signature: sha256=<hex_signatur>
                 {t("auto.signer_den_raa_json_strengen_med_hmac_sh")}
               </li>
               <li>
-                Send signaturen i headeren som er konfigurert (standard: <code>{t("auto.x_signature")}</code>).
+                {t("auto.send_signaturen_i_headeren_som_er_konfig")} <code>{t("auto.x_signature")}</code>).
               </li>
               <li>
                 {t("auto.headerverdien_kan_vaere")} <code>sha256=&#123;hex&#125;</code> {t("auto.eller_bare")} <code>&#123;hex&#125;</code>.

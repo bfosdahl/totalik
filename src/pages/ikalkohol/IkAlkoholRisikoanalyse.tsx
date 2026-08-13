@@ -131,11 +131,11 @@ const IkAlkoholRisikoanalyse = () => {
           <div className="flex gap-2">
             {risks.length === 0 && (
               <Button variant="outline" onClick={() => initializeDefaultRisks.mutate()} disabled={initializeDefaultRisks.isPending}>
-                <Sparkles className="h-4 w-4 mr-2" />Legg til eksempler
+                <Sparkles className="h-4 w-4 mr-2" />{t("auto.legg_til_eksempler")}
               </Button>
             )}
             <Button onClick={() => { resetForm(); setShowDialog(true); }}>
-              <Plus className="h-4 w-4 mr-2" />Ny risiko
+              <Plus className="h-4 w-4 mr-2" />{t("auto.ny_risiko")}
             </Button>
           </div>
         </div>

@@ -413,7 +413,7 @@ export const MascotChatHelper = () => {
                   className="shrink-0 text-xs"
                 >
                   <Sparkles className="h-4 w-4 mr-1" />
-                  Neste
+                  {t("auto.neste")}
                 </Button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { t } from "@/i18n/t";
 import SignatureCanvas from "react-signature-canvas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -109,7 +110,7 @@ export function SignaturePad({
               className="text-muted-foreground"
             >
               <Eraser className="h-4 w-4 mr-1" />
-              Slett
+              {t("auto.slett")}
             </Button>
           )}
         </div>

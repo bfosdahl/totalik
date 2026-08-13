@@ -101,7 +101,7 @@ const IkHmsMaal = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Target className="h-8 w-8 text-primary" />
-              Målsetting
+              {t("auto.maalsetting")}
             </h1>
             <p className="text-muted-foreground mt-1">
               {t("auto.bedriftens_hms_maalsetting")}

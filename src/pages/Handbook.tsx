@@ -2416,11 +2416,11 @@ const Handbook = () => {
             />
             <Button variant="outline" className="gap-2" onClick={() => setEmailDialogOpen(true)}>
               <Mail className="w-4 h-4" />
-              Send på e-post
+              {t("auto.send_paa_e_post")}
             </Button>
             <Button variant="outline" className="gap-2" onClick={() => navigate("/setup?step=5&from=handbook&section=Handbok")}>
               <Eye className="w-4 h-4" />
-              Forhåndsvis
+              {t("auto.forhaandsvis")}
             </Button>
             <Button className="gap-2" onClick={() => setShowExportOptions(true)}>
               <Download className="w-4 h-4" />
@@ -2444,7 +2444,7 @@ const Handbook = () => {
                   Viser innhold på {LANGUAGE_CONFIG[currentTranslationLang].nativeName}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  (kun for denne økten)
+                  {t("auto.kun_for_denne_oekten")}
                 </span>
               </div>
               <Button
@@ -2557,7 +2557,7 @@ const Handbook = () => {
                     className="flex-1"
                     onClick={() => setShowExportOptions(false)}
                   >
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button
                     className="flex-1 gap-2"

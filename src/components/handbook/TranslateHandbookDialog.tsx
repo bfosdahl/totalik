@@ -176,7 +176,7 @@ export function TranslateHandbookDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Languages className="h-5 w-5 text-primary" />
-            Oversett hele håndboken
+            {t("auto.oversett_hele_haandboken")}
           </DialogTitle>
           <DialogDescription>
             {t("auto.velg_spraak_for_aa_oversette_alt_innhold")}

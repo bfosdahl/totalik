@@ -302,7 +302,7 @@ export function BulkUserImportDialog({
                 <Button asChild>
                   <label className="cursor-pointer">
                     <FileText className="w-4 h-4 mr-2" />
-                    Velg CSV-fil
+                    {t("auto.velg_csv_fil")}
                     <input
                       type="file"
                       accept=".csv"
@@ -324,7 +324,7 @@ export function BulkUserImportDialog({
                 {t("auto.filen_maa_ha_en_header_rad_med_kolonnena")}
               </p>
               <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                <li><code className="bg-muted px-1 rounded">email</code> eller <code className="bg-muted px-1 rounded">e-post</code> (påkrevd)</li>
+                <li><code className="bg-muted px-1 rounded">email</code> eller <code className="bg-muted px-1 rounded">e-post</code> {t("auto.paakrevd")}</li>
                 <li><code className="bg-muted px-1 rounded">fornavn</code> eller <code className="bg-muted px-1 rounded">first_name</code></li>
                 <li><code className="bg-muted px-1 rounded">etternavn</code> eller <code className="bg-muted px-1 rounded">last_name</code></li>
               </ul>

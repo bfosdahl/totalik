@@ -239,7 +239,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                 <p className="font-medium">{shaPlan.sha_coordinator_kp || "Ikke oppnevnt"}</p>
               </div>
               <div>
-                <Label className="text-muted-foreground">Koordinator utførelse (KU)</Label>
+                <Label className="text-muted-foreground">{t("auto.koordinator_utfoerelse_ku")}</Label>
                 <p className="font-medium">{shaPlan.sha_coordinator_ku || "Ikke oppnevnt"}</p>
               </div>
               <div>
@@ -263,7 +263,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
-              <span className="font-semibold">Risikoområder (§8 bokstav c)</span>
+              <span className="font-semibold">{t("auto.risikoomraader_8_bokstav_c")}</span>
               <Badge variant="secondary" className="ml-2">
                 {riskAreas.filter(ra => ra.checked).length} av {riskAreas.length}
               </Badge>

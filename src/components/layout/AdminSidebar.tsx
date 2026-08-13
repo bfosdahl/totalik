@@ -98,7 +98,7 @@ function SidebarContent({ collapsed, onCollapse, onNavClick }: SidebarContentPro
                 exit={{ opacity: 0 }}
                 className="text-sm font-medium"
               >
-                Tilbake til app
+                {t("auto.tilbake_til_app")}
               </motion.span>
             )}
           </AnimatePresence>

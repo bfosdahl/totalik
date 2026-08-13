@@ -76,7 +76,7 @@ export default function IkKsMaal() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Nytt mål
+                {t("auto.nytt_maal")}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -93,7 +93,7 @@ export default function IkKsMaal() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
+                  <label className="text-sm font-medium">{t("auto.beskrivelse_valgfritt")}</label>
                   <Textarea
                     value={newGoal.description}
                     onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
@@ -239,11 +239,11 @@ function GoalCard({
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={onCancelEdit}>
                 <X className="w-4 h-4 mr-1" />
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button size="sm" onClick={handleSave} disabled={isSaving}>
                 <Save className="w-4 h-4 mr-1" />
-                Lagre
+                {t("auto.lagre")}
               </Button>
             </div>
           </div>

@@ -24,7 +24,7 @@ export function WorkplaceSection({ formData, onChange }: WorkplaceSectionProps) 
           placeholder={t("auto.gateadresse_postnummer_og_sted")}
         />
         <p className="text-xs text-muted-foreground">
-          Jf. arbeidsmiljøloven § 14-6 c) - arbeidssted eller forretningsadresse
+          {t("auto.jf_arbeidsmiljoeloven_14_6_c_arbeidssted")}
         </p>
       </div>
 

@@ -43,11 +43,11 @@ export function ActiveTripCard({ trip, onComplete, onCancel }: ActiveTripCardPro
           <div className="flex gap-2 shrink-0">
             <Button variant="outline" size="sm" onClick={onCancel}>
               <Square className="w-4 h-4 mr-1" />
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button size="sm" onClick={onComplete}>
               <Navigation className="w-4 h-4 mr-1" />
-              Fullfør tur
+              {t("auto.fullfoer_tur")}
             </Button>
           </div>
         </div>

@@ -103,7 +103,7 @@ const ResponsiveActionTable: React.FC<ResponsiveActionTableProps> = ({
               className="w-full h-12 gap-2 text-base active:scale-[0.98]"
             >
               <Plus className="w-5 h-5" />
-              Legg til tiltak
+              {t("auto.legg_til_tiltak")}
             </Button>
           </div>
         ) : (

@@ -262,7 +262,7 @@ export function MyShiftsPanel() {
                             variant="outline"
                             onClick={() => respondToRequest(request.id, "reject")}
                           >
-                            Avslå
+                            {t("auto.avslaa")}
                           </Button>
                           <Button 
                             size="sm"
@@ -314,7 +314,7 @@ export function MyShiftsPanel() {
                             variant="ghost"
                             onClick={() => cancelRequest(request.id)}
                           >
-                            Avbryt
+                            {t("auto.avbryt")}
                           </Button>
                         )}
                       </div>

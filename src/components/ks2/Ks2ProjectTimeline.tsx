@@ -302,7 +302,7 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
             <DialogTrigger asChild>
               <Button onClick={() => handleOpenDialog()}>
                 <Plus className="h-4 w-4 mr-2" />
-                Ny hendelse
+                {t("auto.ny_hendelse")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -485,7 +485,7 @@ export function Ks2ProjectTimeline({ projectId }: Ks2ProjectTimelineProps) {
             </p>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til første hendelse
+              {t("auto.legg_til_foerste_hendelse")}
             </Button>
           </CardContent>
         </Card>

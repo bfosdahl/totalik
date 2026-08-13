@@ -134,7 +134,7 @@ const IkAlkoholRutiner = () => {
             />
             <Button onClick={() => setShowDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny rutine
+              {t("auto.ny_rutine")}
             </Button>
           </div>
         </div>
@@ -216,7 +216,7 @@ const IkAlkoholRutiner = () => {
                                 reviewed_by_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.email || 'Ukjent'
                               })}>
                                 <Check className="h-4 w-4 mr-1" />
-                                Marker gjennomgått
+                                {t("auto.marker_gjennomgaatt")}
                               </Button>
                               <Button size="sm" variant="outline" onClick={() => openEdit(routine)}>
                                 <Edit className="h-4 w-4" />
@@ -300,7 +300,7 @@ const IkAlkoholRutiner = () => {
                                   reviewed_by_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.email || 'Ukjent'
                                 })}>
                                   <Check className="h-4 w-4 mr-1" />
-                                  Marker gjennomgått
+                                  {t("auto.marker_gjennomgaatt")}
                                 </Button>
                                 <Button size="sm" variant="outline" onClick={() => openEdit(routine)}>
                                   <Edit className="h-4 w-4" />

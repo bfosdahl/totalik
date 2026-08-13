@@ -222,7 +222,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <ClipboardList className="w-5 h-5" />
-              Sjekkliste-maler
+              {t("auto.sjekkliste_maler")}
             </CardTitle>
             <CardDescription>{t("auto.velg_en_mal_for_aa_starte_ny_egenkontrol")}</CardDescription>
           </div>
@@ -306,7 +306,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <CheckSquare className="w-5 h-5" />
-              Utførte sjekklister
+              {t("auto.utfoerte_sjekklister")}
             </CardTitle>
           </CardHeader>
           <CardContent>

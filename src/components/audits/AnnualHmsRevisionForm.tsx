@@ -330,7 +330,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
     <div className="space-y-6">
       <Button variant="ghost" onClick={handleBackToList} className="gap-2 mb-4">
         <ArrowLeft className="w-4 h-4" />
-        Tilbake til oversikt
+        {t("auto.tilbake_til_oversikt")}
       </Button>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -363,7 +363,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="revisionYear">Revisjonsperiode (år)</Label>
+            <Label htmlFor="revisionYear">{t("auto.revisjonsperiode_aar")}</Label>
             <Input
               id="revisionYear"
               value={formData.revisionYear}

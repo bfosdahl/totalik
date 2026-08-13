@@ -578,7 +578,7 @@ export const RutinerTab = () => {
               </Dialog>
               <Button size="sm" onClick={addNewRoutine}>
                 <Plus className="h-4 w-4 mr-2" />
-                Ny rutine
+                {t("auto.ny_rutine")}
               </Button>
               {hasChanges && (
                 <Button size="sm" onClick={handleSave} disabled={saving}>
@@ -613,11 +613,11 @@ export const RutinerTab = () => {
           <div className="flex justify-center gap-2">
             <Button variant="outline" onClick={() => setLibraryOpen(true)}>
               <Library className="h-4 w-4 mr-2" />
-              Åpne bibliotek
+              {t("auto.aapne_bibliotek")}
             </Button>
             <Button onClick={addNewRoutine}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny rutine
+              {t("auto.ny_rutine")}
             </Button>
           </div>
         </Card>
@@ -699,7 +699,7 @@ export const RutinerTab = () => {
                           ) : (
                             <>
                               <Edit className="h-4 w-4 mr-1" />
-                              Rediger
+                              {t("auto.rediger")}
                             </>
                           )}
                         </Button>

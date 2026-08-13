@@ -525,7 +525,7 @@ export default function Ks2Malbibliotek() {
         </div>
         <Button onClick={() => openAddDialog('checklist')} className="shrink-0">
           <Plus className="h-4 w-4 mr-2" />
-          Legg til i dette prosjektet
+          {t("auto.legg_til_i_dette_prosjektet")}
         </Button>
       </div>
 
@@ -773,7 +773,7 @@ export default function Ks2Malbibliotek() {
                                     disabled={isSaving}
                                   >
                                     <Plus className="h-3 w-3 mr-1" />
-                                    Legg til
+                                    {t("auto.legg_til")}
                                   </Button>
                                 )}
                                 <Button
@@ -807,7 +807,7 @@ export default function Ks2Malbibliotek() {
             </p>
             <Button onClick={openCreateCustomChecklist}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny sjekkliste-mal
+              {t("auto.ny_sjekkliste_mal")}
             </Button>
           </div>
 
@@ -960,7 +960,7 @@ export default function Ks2Malbibliotek() {
                                     disabled={isSaving}
                                   >
                                     <Plus className="h-3 w-3 mr-1" />
-                                    Legg til
+                                    {t("auto.legg_til")}
                                   </Button>
                                 )}
                                 <Button
@@ -994,7 +994,7 @@ export default function Ks2Malbibliotek() {
             </p>
             <Button onClick={openCreateCustomRoutine}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny rutine
+              {t("auto.ny_rutine")}
             </Button>
           </div>
 
@@ -1194,7 +1194,7 @@ export default function Ks2Malbibliotek() {
                                             disabled={isSaving}
                                           >
                                             <Plus className="h-3 w-3 mr-1" />
-                                            Legg til
+                                            {t("auto.legg_til")}
                                           </Button>
                                         )}
                                       </div>
@@ -1312,7 +1312,7 @@ export default function Ks2Malbibliotek() {
                 {selectedChecklist?.is_locked && (
                   <Badge variant="outline" className="gap-1">
                     <Lock className="h-3 w-3" />
-                    Låst
+                    {t("auto.laast")}
                   </Badge>
                 )}
                 {selectedChecklist?.version && (
@@ -1357,7 +1357,7 @@ export default function Ks2Malbibliotek() {
                 setSelectedChecklist(null);
               }}>
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til i prosjektet
+                {t("auto.legg_til_i_prosjektet")}
               </Button>
             )}
           </DialogFooter>
@@ -1391,7 +1391,7 @@ export default function Ks2Malbibliotek() {
                 {selectedRoutine?.is_locked && (
                   <Badge variant="outline" className="gap-1">
                     <Lock className="h-3 w-3" />
-                    Låst
+                    {t("auto.laast")}
                   </Badge>
                 )}
                 {selectedRoutine?.version && (
@@ -1416,7 +1416,7 @@ export default function Ks2Malbibliotek() {
                 setSelectedRoutine(null);
               }}>
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til i prosjektet
+                {t("auto.legg_til_i_prosjektet")}
               </Button>
             )}
           </DialogFooter>
@@ -1597,7 +1597,7 @@ export default function Ks2Malbibliotek() {
               </div>
               <Button variant="outline" size="sm" onClick={addCheckpoint} className="mt-2">
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til sjekkpunkt
+                {t("auto.legg_til_sjekkpunkt")}
               </Button>
             </div>
           </div>

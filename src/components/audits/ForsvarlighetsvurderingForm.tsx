@@ -236,7 +236,7 @@ export default function ForsvarlighetsvurderingForm() {
           </div>
           <Button onClick={() => setShowNewDialog(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Ny vurdering
+            {t("auto.ny_vurdering")}
           </Button>
         </div>
       </motion.div>
@@ -276,7 +276,7 @@ export default function ForsvarlighetsvurderingForm() {
             <p className="text-muted-foreground">{t("auto.ingen_forsvarlighetsvurderinger_registre")}</p>
             <Button variant="outline" className="mt-4" onClick={() => setShowNewDialog(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Opprett første vurdering
+              {t("auto.opprett_foerste_vurdering")}
             </Button>
           </Card>
         ) : (
@@ -338,7 +338,7 @@ export default function ForsvarlighetsvurderingForm() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
-              Ny forsvarlighetsvurdering
+              {t("auto.ny_forsvarlighetsvurdering")}
             </DialogTitle>
             <DialogDescription>
               {t("auto.fyll_ut_skjemaet_for_aa_dokumentere_en_f")}
@@ -496,7 +496,7 @@ export default function ForsvarlighetsvurderingForm() {
                     <Label>{t("auto.identifiserte_risikofaktorer")}</Label>
                     <Button variant="outline" size="sm" onClick={addRiskFactor}>
                       <Plus className="w-3 h-3 mr-1" />
-                      Legg til
+                      {t("auto.legg_til")}
                     </Button>
                   </div>
                   {riskFactors.map((rf, idx) => (
@@ -557,7 +557,7 @@ export default function ForsvarlighetsvurderingForm() {
                 <div className="space-y-4">
                   <h3 className="font-semibold flex items-center gap-2">
                     <GraduationCap className="w-4 h-4" />
-                    Opplæring - spesifikke felt
+                    {t("auto.opplaering_spesifikke_felt")}
                   </h3>
                   
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -591,7 +591,7 @@ export default function ForsvarlighetsvurderingForm() {
                       <Label>{t("auto.opplaeringsemner_som_skal_dekkes")}</Label>
                       <Button variant="outline" size="sm" onClick={addTrainingTopic}>
                         <Plus className="w-3 h-3 mr-1" />
-                        Legg til
+                        {t("auto.legg_til")}
                       </Button>
                     </div>
                     {trainingTopics.map((tt, idx) => (
@@ -715,7 +715,7 @@ export default function ForsvarlighetsvurderingForm() {
                       <Label>{t("auto.noedvendige_tiltak")}</Label>
                       <Button variant="outline" size="sm" onClick={addRequiredMeasure}>
                         <Plus className="w-3 h-3 mr-1" />
-                        Legg til
+                        {t("auto.legg_til")}
                       </Button>
                     </div>
                     {requiredMeasures.map((rm, idx) => (
@@ -769,7 +769,7 @@ export default function ForsvarlighetsvurderingForm() {
               <div className="space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Oppfølging
+                  {t("auto.oppfoelging")}
                 </h3>
                 
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -831,7 +831,7 @@ export default function ForsvarlighetsvurderingForm() {
                       className="mt-1"
                       onClick={() => employerSigRef.current?.clear()}
                     >
-                      Tøm
+                      {t("auto.toem")}
                     </Button>
                   </div>
 
@@ -851,7 +851,7 @@ export default function ForsvarlighetsvurderingForm() {
                       className="mt-1"
                       onClick={() => verneombudSigRef.current?.clear()}
                     >
-                      Tøm
+                      {t("auto.toem")}
                     </Button>
                   </div>
 
@@ -871,7 +871,7 @@ export default function ForsvarlighetsvurderingForm() {
                       className="mt-1"
                       onClick={() => tillitsvalgtSigRef.current?.clear()}
                     >
-                      Tøm
+                      {t("auto.toem")}
                     </Button>
                   </div>
                 </div>
@@ -1053,7 +1053,7 @@ export default function ForsvarlighetsvurderingForm() {
               }}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Slett
+              {t("auto.slett")}
             </Button>
             <Button variant="outline" onClick={() => setShowViewDialog(false)}>
               {t("auto.lukk")}

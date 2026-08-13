@@ -236,7 +236,7 @@ function MaxExposureCalculator({ type }: { type: "hand_arm" | "whole_body" }) {
       </div>
       <div className="grid gap-4 sm:grid-cols-3 items-end">
         <div className="space-y-1">
-          <Label className="text-xs">Vibrasjonsnivå (m/s²)</Label>
+          <Label className="text-xs">{t("auto.vibrasjonsnivaa_m_s")}</Label>
           <Input
             type="number"
             step="0.1"
@@ -306,7 +306,7 @@ function ToolRow({ tool, onUpdate, onRemove, canRemove, vibType, showNoise }: {
         </div>
         {showNoise && (
           <div className="space-y-1">
-            <Label className="text-xs font-medium">Støy dB(A)</Label>
+            <Label className="text-xs font-medium">{t("auto.stoey_db_a")}</Label>
             <Input
               type="number"
               value={tool.noiseLevel || ""}
@@ -808,7 +808,7 @@ export function EquipmentAssessment() {
               <TabsList className="grid w-full grid-cols-2 max-w-md">
                 <TabsTrigger value="hand_arm" className="gap-1.5">
                   <Vibrate className="h-4 w-4" />
-                  Hånd-arm vibrasjoner
+                  {t("auto.haand_arm_vibrasjoner")}
                 </TabsTrigger>
                 <TabsTrigger value="whole_body" className="gap-1.5">
                   <Vibrate className="h-4 w-4" />
@@ -830,7 +830,7 @@ export function EquipmentAssessment() {
                   <p>{t("auto.grenseverdi")} <span className="text-red-700 font-medium">{expLimit} m/s² A(8)</span></p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-medium flex items-center gap-1"><Volume2 className="h-3 w-3" /> Støy</p>
+                  <p className="font-medium flex items-center gap-1"><Volume2 className="h-3 w-3" /> {t("auto.stoey")}</p>
                   <p>{t("auto.nedre_tiltaksverdi")} <span className="text-yellow-700 font-medium">80 dB / 130 dB(C)</span></p>
                   <p>{t("auto.oevre_tiltaksverdi")} <span className="text-orange-700 font-medium">85 dB / 135 dB(C)</span></p>
                   <p>{t("auto.grenseverdi")} <span className="text-red-700 font-medium">87 dB / 140 dB(C)</span></p>
@@ -871,7 +871,7 @@ export function EquipmentAssessment() {
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={addTool} className="gap-1">
                 <Plus className="h-4 w-4" />
-                Legg til verktøy
+                {t("auto.legg_til_verktoey")}
               </Button>
               <Button variant="secondary" size="sm" onClick={loadExampleTools} className="gap-1">
                 <Wrench className="h-4 w-4" />
@@ -882,7 +882,7 @@ export function EquipmentAssessment() {
 
           {/* Peak noise */}
           <div className="space-y-2 max-w-sm">
-            <Label>Impulsstøy / toppverdi dB(C)</Label>
+            <Label>{t("auto.impulsstoey_toppverdi_db_c")}</Label>
             <Input
               type="number"
               value={peakLevel}
@@ -1035,7 +1035,7 @@ export function EquipmentAssessment() {
           {/* Reference / guidance */}
           <div className="text-xs text-muted-foreground space-y-3 pt-2">
             <div>
-              <p className="font-medium mb-1">Vanlige støynivåer (veiledende):</p>
+              <p className="font-medium mb-1">{t("auto.vanlige_stoeynivaaer_veiledende")}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
                 <span>{t("auto.samtale_60_70_db")}</span>
                 <span>{t("auto.boremaskin_85_95_db")}</span>

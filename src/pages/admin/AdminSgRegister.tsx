@@ -421,7 +421,7 @@ function EnterpriseCard({ enterprise, fetchBrregInfo, onLinkToCompany, companies
           <div className="mt-3 pt-3 border-t">
             <p className="font-medium mb-2 flex items-center gap-2">
               <Award className="w-4 h-4 text-primary" />
-              Godkjenningsområder:
+              {t("auto.godkjenningsomraader")}
             </p>
             <div className="flex flex-wrap gap-1">
               {enterprise.valid_approval_areas.map((area, idx) => (

@@ -272,7 +272,7 @@ export function MeetingTemplateManager() {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
-              Ny mal
+              {t("auto.ny_mal")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
@@ -438,7 +438,7 @@ export function MeetingTemplateManager() {
                     className="ml-auto gap-1"
                   >
                     <Plus className="w-4 h-4" />
-                    Legg til
+                    {t("auto.legg_til")}
                   </Button>
                 </div>
               </div>

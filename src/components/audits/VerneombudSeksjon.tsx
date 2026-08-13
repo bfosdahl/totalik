@@ -90,7 +90,7 @@ export default function VerneombudSeksjon() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="dokumenter" className="gap-2">
             <FileCheck className="w-4 h-4" />
-            Dokumenter
+            {t("auto.dokumenter")}
           </TabsTrigger>
           <TabsTrigger value="forsvarlig" className="gap-2">
             <ShieldCheck className="w-4 h-4" />
@@ -231,7 +231,7 @@ export default function VerneombudSeksjon() {
                           onClick={() => setShowVerneombudAgreementDialog(true)}
                         >
                           <PenLine className="w-4 h-4 mr-2" />
-                          Opprett formell avtale
+                          {t("auto.opprett_formell_avtale")}
                         </Button>
                       </div>
                     </>
@@ -258,7 +258,7 @@ export default function VerneombudSeksjon() {
                           onClick={() => setShowVerneombudAgreementDialog(true)}
                         >
                           <PenLine className="w-4 h-4 mr-2" />
-                          Opprett formell avtale
+                          {t("auto.opprett_formell_avtale")}
                         </Button>
                       </div>
                     </>
@@ -390,7 +390,7 @@ export default function VerneombudSeksjon() {
                       </p>
                       <Button variant="outline" onClick={() => setShowVerneombudDialog(true)}>
                         <PenLine className="w-4 h-4 mr-2" />
-                        Opprett avtale om fritak
+                        {t("auto.opprett_avtale_om_fritak")}
                       </Button>
                     </div>
                   )}

@@ -328,7 +328,7 @@ const Brukerveiledning = () => {
                         </div>
                         <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
                           <p className="font-bold text-red-700 dark:text-red-300">{t("auto.roed")}</p>
-                          <p className="text-red-600 dark:text-red-400">Høy risiko (13-25)</p>
+                          <p className="text-red-600 dark:text-red-400">{t("auto.hoey_risiko_13_25")}</p>
                         </div>
                       </div>
 

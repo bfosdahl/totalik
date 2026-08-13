@@ -504,7 +504,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               className="w-full mt-3"
               onClick={() => removeObject(selected.id)}
             >
-              <Trash2 className="h-3 w-3 mr-1" /> Slett
+              <Trash2 className="h-3 w-3 mr-1" /> {t("auto.slett")}
             </Button>
           </div>
         )}
@@ -587,7 +587,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             <Ruler className="h-4 w-4 mr-1" /> {calibrating ? "Avbryt skala" : "Kalibrer skala"}
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
-            <Save className="h-4 w-4 mr-1" /> Lagre
+            <Save className="h-4 w-4 mr-1" /> {t("auto.lagre")}
           </Button>
           <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-1" /> Eksporter PDF
@@ -828,7 +828,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 setCalibPoints([]);
               }}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               id="calib-confirm"

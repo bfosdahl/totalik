@@ -61,7 +61,7 @@ const IkHmsOppsett = () => {
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={retry}>
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Prøv igjen
+                  {t("auto.proev_igjen")}
                 </Button>
                 <Button 
                   variant="secondary" 
@@ -141,7 +141,7 @@ const IkHmsOppsett = () => {
                 onClick={() => setShowRestartDialog(true)}
                 className="w-full sm:w-auto"
               >
-                Kjør oppsett på nytt
+                {t("auto.kjoer_oppsett_paa_nytt")}
               </Button>
             </div>
 
@@ -167,7 +167,7 @@ const IkHmsOppsett = () => {
               </TabsTrigger>
               <TabsTrigger value="import" className="flex items-center gap-2">
                 <Upload className="h-4 w-4" />
-                Importer håndbok
+                {t("auto.importer_haandbok")}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="ai">
@@ -192,7 +192,7 @@ const IkHmsOppsett = () => {
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-warning" />
-                Kjør oppsett på nytt?
+                {t("auto.kjoer_oppsett_paa_nytt")}
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
                 <p>

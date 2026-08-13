@@ -96,7 +96,7 @@ export function DocumentBulkActions({
             onClick={() => setIsDeleteDialogOpen(true)}
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            Slett
+            {t("auto.slett")}
           </Button>
         </div>
 
@@ -126,7 +126,7 @@ export function DocumentBulkActions({
                   <SelectValue placeholder={t("auto.velg_mappe")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Ingen mappe (rot)</SelectItem>
+                  <SelectItem value="none">{t("auto.ingen_mappe_rot")}</SelectItem>
                   {folders.map((folder) => (
                     <SelectItem key={folder.id} value={folder.id}>
                       {folder.name}
@@ -174,7 +174,7 @@ export function DocumentBulkActions({
                 setIsDeleteDialogOpen(false);
               }}
             >
-              Slett permanent
+              {t("auto.slett_permanent")}
             </Button>
           </DialogFooter>
         </DialogContent>

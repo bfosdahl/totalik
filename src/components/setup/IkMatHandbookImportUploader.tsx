@@ -139,7 +139,7 @@ export function IkMatHandbookImportUploader({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="h-5 w-5 text-primary" />
-          Importer fra eksisterende IK/MAT-håndbok
+          {t("auto.importer_fra_eksisterende_ik_mat_haandbo")}
         </CardTitle>
         <CardDescription>
           {t("auto.last_opp_en_gammel_ik_mat_perm_eller_hac")}
@@ -204,10 +204,10 @@ function UploadStep(
             <Utensils className="h-3 w-3" /> Virksomhetsinfo
           </span>
           <span className="flex items-center gap-1">
-            <Users className="h-3 w-3" /> Organisering
+            <Users className="h-3 w-3" /> {t("auto.organisering")}
           </span>
           <span className="flex items-center gap-1">
-            <Target className="h-3 w-3" /> Mål
+            <Target className="h-3 w-3" /> {t("auto.maal")}
           </span>
           <span className="flex items-center gap-1">
             <ShieldAlert className="h-3 w-3" /> HACCP & risiko

@@ -119,7 +119,7 @@ export default function HrMeetings() {
             title={t("auto.gjennomfoer_samtale")}
           >
             <PlayCircle className="w-4 h-4" />
-            Gjennomfør
+            {t("auto.gjennomfoer")}
           </Button>
         )}
         <Button size="icon" variant="ghost" onClick={() => deleteMeeting(meeting.id)} title={t("auto.slett")}>
@@ -138,7 +138,7 @@ export default function HrMeetings() {
           {t("auto.start_med_aa_planlegge_medarbeidersamtal")}
         </p>
         <ScheduleMeetingDialog onCreated={fetchMeetings} trigger={
-          <Button><Calendar className="w-4 h-4 mr-2" />Planlegg første samtale</Button>
+          <Button><Calendar className="w-4 h-4 mr-2" />{t("auto.planlegg_foerste_samtale")}</Button>
         } />
       </div>
     </Card>
@@ -187,7 +187,7 @@ export default function HrMeetings() {
             <TabsTrigger value="all">{t("auto.alle")}</TabsTrigger>
             <TabsTrigger value="templates" className="gap-1.5">
               <FileText className="w-3.5 h-3.5" />
-              Spørsmålsmaler
+              {t("auto.spoersmaalsmaler")}
             </TabsTrigger>
           </TabsList>
 

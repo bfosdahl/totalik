@@ -271,7 +271,7 @@ export function DailyTimeView({
           </p>
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
-            Legg til
+            {t("auto.legg_til")}
           </Button>
         </div>
 

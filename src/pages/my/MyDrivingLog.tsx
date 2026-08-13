@@ -227,7 +227,7 @@ export default function MyDrivingLog() {
           {activeTrip ? (
             <Button onClick={() => setCompleteDialogOpen(true)} className="gap-2">
               <Play className="w-4 h-4" />
-              Fullfør aktiv tur
+              {t("auto.fullfoer_aktiv_tur")}
             </Button>
           ) : (
             <DropdownMenu>
@@ -241,7 +241,7 @@ export default function MyDrivingLog() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => setStartDialogOpen(true)}>
                   <Play className="w-4 h-4 mr-2" />
-                  Start tur (fullfør senere)
+                  {t("auto.start_tur_fullfoer_senere")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setFullDialogOpen(true)}>
                   <ClipboardList className="w-4 h-4 mr-2" />
@@ -249,7 +249,7 @@ export default function MyDrivingLog() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTravelExpenseDialogOpen(true)}>
                   <FileText className="w-4 h-4 mr-2" />
-                  Ny reiseregning
+                  {t("auto.ny_reiseregning")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -288,7 +288,7 @@ export default function MyDrivingLog() {
             <Card>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                  <Briefcase className="w-4 h-4" /> Yrkeskjøring
+                  <Briefcase className="w-4 h-4" /> {t("auto.yrkeskjoering")}
                 </div>
                 <p className="text-2xl font-bold">{stats.businessKm.toFixed(0)} km</p>
               </CardContent>
@@ -387,7 +387,7 @@ export default function MyDrivingLog() {
               className="gap-1"
             >
               <Trash2 className="w-4 h-4" />
-              Slett valgte
+              {t("auto.slett_valgte")}
             </Button>
             <Button
               variant="ghost"
@@ -514,7 +514,7 @@ export default function MyDrivingLog() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Info className="w-4 h-4 text-blue-600" />
-              Krav til kjørebok (Skatteetaten)
+              {t("auto.krav_til_kjoerebok_skatteetaten")}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-1">
@@ -575,7 +575,7 @@ export default function MyDrivingLog() {
                 setDeleteId(null);
               }}
             >
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

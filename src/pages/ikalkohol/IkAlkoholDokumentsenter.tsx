@@ -264,7 +264,7 @@ export default function IkAlkoholDokumentsenter() {
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Tilbake
+            {t("auto.tilbake")}
           </Button>
           <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.dokumentsenter")}</h1>
           <p className="text-muted-foreground mt-1">
@@ -390,7 +390,7 @@ export default function IkAlkoholDokumentsenter() {
               <div>
                 <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
                   <GraduationCap className="h-5 w-5 text-emerald-600" />
-                  Opplæring og kunnskapsprøve
+                  {t("auto.opplaering_og_kunnskapsproeve")}
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[

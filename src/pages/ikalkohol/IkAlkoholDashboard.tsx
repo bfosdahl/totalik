@@ -151,7 +151,7 @@ export default function IkAlkoholDashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <GraduationCap className="h-4 w-4 text-purple-500" />
-                Opplæring utløper
+                {t("auto.opplaering_utloeper")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -166,7 +166,7 @@ export default function IkAlkoholDashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-orange-500" />
-                Åpne hendelser
+                {t("auto.aapne_hendelser")}
               </CardTitle>
             </CardHeader>
             <CardContent>

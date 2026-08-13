@@ -197,7 +197,7 @@ const IkMatOrganisasjon = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Users className="h-8 w-8 text-primary" />
-              Organisasjonskart
+              {t("auto.organisasjonskart")}
             </h1>
             <p className="text-muted-foreground mt-1">
               {t("auto.ik_mat_organisasjonsstruktur_med_roller_")}
@@ -232,7 +232,7 @@ const IkMatOrganisasjon = () => {
         {/* Add role button */}
         <Button onClick={() => handleAddRole()} variant="outline">
           <Plus className="h-4 w-4 mr-2" />
-          Legg til rolle
+          {t("auto.legg_til_rolle")}
         </Button>
 
         {organization.roles.length === 0 ? (
@@ -377,9 +377,9 @@ const IkMatOrganisasjon = () => {
           <div className="flex justify-center">
             <div className="text-sm text-muted-foreground text-center p-4 bg-muted/50 rounded-lg">
               <Users className="h-5 w-5 mx-auto mb-2" />
-              Rollene vises i hierarkisk rekkefølge fra øverst til nederst.
+              {t("auto.rollene_vises_i_hierarkisk_rekkefoelge_f")}
               <br />
-              Bruk pilene for å endre rekkefølgen.
+              {t("auto.bruk_pilene_for_aa_endre_rekkefoelgen")}
             </div>
           </div>
         )}

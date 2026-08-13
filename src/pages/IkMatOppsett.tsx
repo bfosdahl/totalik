@@ -117,7 +117,7 @@ const IkMatOppsett = () => {
                 onClick={() => setShowRestartDialog(true)}
                 className="w-full sm:w-auto"
               >
-                Kjør oppsett på nytt
+                {t("auto.kjoer_oppsett_paa_nytt")}
               </Button>
             </div>
           </div>
@@ -146,7 +146,7 @@ const IkMatOppsett = () => {
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-warning" />
-                Kjør oppsett på nytt?
+                {t("auto.kjoer_oppsett_paa_nytt")}
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-2">
                 <p>

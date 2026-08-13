@@ -246,7 +246,7 @@ export default function SimpleProjectDetail() {
             {formData.status === "completed" ? (
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400">
                 <CheckCircle2 className="w-3 h-3 mr-1" />
-                Fullført
+                {t("auto.fullfoert")}
               </Badge>
             ) : null}
             
@@ -255,7 +255,7 @@ export default function SimpleProjectDetail() {
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Gjenåpne
+                    {t("auto.gjenaapne")}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -278,7 +278,7 @@ export default function SimpleProjectDetail() {
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm" className="text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/20">
                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Fullfør
+                    {t("auto.fullfoer")}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -302,7 +302,7 @@ export default function SimpleProjectDetail() {
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Slett
+                  {t("auto.slett")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -475,7 +475,7 @@ export default function SimpleProjectDetail() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    Datoer & økonomi
+                    {t("auto.datoer_oekonomi")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">

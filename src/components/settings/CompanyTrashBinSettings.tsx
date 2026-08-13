@@ -165,7 +165,7 @@ export function CompanyTrashBinSettings({ onBack }: Props) {
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={onBack}>
           <ArrowLeft className="w-4 h-4 mr-1" />
-          Tilbake
+          {t("auto.tilbake")}
         </Button>
       </div>
 

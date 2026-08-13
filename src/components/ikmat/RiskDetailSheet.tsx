@@ -192,7 +192,7 @@ export const RiskDetailSheet = ({
 
             {/* Risk Level Display */}
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm text-muted-foreground">Risikonivå (S×K)</span>
+              <span className="text-sm text-muted-foreground">{t("auto.risikonivaa_s_k")}</span>
               <div className="flex items-center gap-2">
                 <span className={`font-semibold ${getRiskLevelColor(trafficLight)}`}>
                   {risk.probability}×{risk.consequence} = {risk.riskLevel}
@@ -295,7 +295,7 @@ export const RiskDetailSheet = ({
                   <div>
                     <Label className="text-sm flex items-center gap-1.5">
                       <Calendar className="h-3 w-3" />
-                      Neste kontroll
+                      {t("auto.neste_kontroll")}
                     </Label>
                     <Input
                       type="date"
@@ -380,7 +380,7 @@ export const RiskDetailSheet = ({
                   onClick={() => onAddAction(risk.id, 'preventive')}
                 >
                   <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Legg til forebyggende tiltak
+                  {t("auto.legg_til_forebyggende_tiltak")}
                 </Button>
               </CollapsibleContent>
             </Collapsible>
@@ -417,7 +417,7 @@ export const RiskDetailSheet = ({
                   onClick={() => onAddAction(risk.id, 'corrective')}
                 >
                   <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Legg til korrigerende tiltak
+                  {t("auto.legg_til_korrigerende_tiltak")}
                 </Button>
               </CollapsibleContent>
             </Collapsible>
@@ -518,7 +518,7 @@ export const RiskDetailSheet = ({
                 onClick={handleReopenRisk}
               >
                 <Lock className="h-3.5 w-3.5 mr-1.5" />
-                Gjenåpne risiko
+                {t("auto.gjenaapne_risiko")}
               </Button>
             ) : (
               <Button
@@ -554,7 +554,7 @@ export const RiskDetailSheet = ({
             }}
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-            Slett risiko
+            {t("auto.slett_risiko")}
           </Button>
         </div>
       </DialogContent>
@@ -660,7 +660,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                   <DialogHeader>
                     <DialogTitle>{t("auto.ny_sannsynlighet_etter_tiltak")}</DialogTitle>
                     <DialogDescription>
-                      Velg ny sannsynlighetsverdi (1-5) etter at tiltaket er gjennomført
+                      {t("auto.velg_ny_sannsynlighetsverdi_1_5_etter_at")}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid grid-cols-5 gap-2 py-4">
@@ -690,7 +690,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                         onUpdate(action.id, 'newProbability', undefined);
                       }}
                     >
-                      Fjern effekt på sannsynlighet
+                      {t("auto.fjern_effekt_paa_sannsynlighet")}
                     </Button>
                   )}
                 </DialogContent>
@@ -715,7 +715,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                   <DialogHeader>
                     <DialogTitle>{t("auto.ny_konsekvens_etter_tiltak")}</DialogTitle>
                     <DialogDescription>
-                      Velg ny konsekvensverdi (1-5) etter at tiltaket er gjennomført
+                      {t("auto.velg_ny_konsekvensverdi_1_5_etter_at_til")}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid grid-cols-5 gap-2 py-4">
@@ -745,7 +745,7 @@ const ActionCard = ({ action, employees, onUpdate, onDelete, showEffect }: Actio
                         onUpdate(action.id, 'newConsequence', undefined);
                       }}
                     >
-                      Fjern effekt på konsekvens
+                      {t("auto.fjern_effekt_paa_konsekvens")}
                     </Button>
                   )}
                 </DialogContent>

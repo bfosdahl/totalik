@@ -37,7 +37,7 @@ export function BenefitsSection({ formData, onChange }: BenefitsSectionProps) {
           rows={2}
         />
         <p className="text-xs text-muted-foreground">
-          Jf. arbeidsmiljøloven § 14-6 l) - ytelser til sosial trygghet
+          {t("auto.jf_arbeidsmiljoeloven_14_6_l_ytelser_til")}
         </p>
       </div>
 

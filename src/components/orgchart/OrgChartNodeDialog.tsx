@@ -172,7 +172,7 @@ const OrgChartNodeDialog: React.FC<OrgChartNodeDialogProps> = ({
                 <SelectValue placeholder="Velg overordnet (valgfritt)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Ingen (toppnivå)</SelectItem>
+                <SelectItem value="none">{t("auto.ingen_toppnivaa")}</SelectItem>
                 {validParentOptions.map((node) => (
                   <SelectItem key={node.id} value={node.id}>
                     {node.role_title}

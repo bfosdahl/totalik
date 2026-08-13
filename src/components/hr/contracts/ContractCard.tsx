@@ -154,7 +154,7 @@ export function ContractCard({
               {canManage && (
                 <DropdownMenuItem onClick={() => onEdit(contract)}>
                   <Edit className="w-4 h-4 mr-2" />
-                  Rediger
+                  {t("auto.rediger")}
                 </DropdownMenuItem>
               )}
               {canDownload && (
@@ -177,7 +177,7 @@ export function ContractCard({
                     className="text-destructive"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Slett
+                    {t("auto.slett")}
                   </DropdownMenuItem>
                 </>
               )}

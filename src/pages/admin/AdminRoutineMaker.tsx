@@ -639,7 +639,7 @@ export default function AdminRoutineMaker() {
                 <div className="flex items-center justify-between mb-2">
                   <Label>{t("auto.steg_sjekkliste")}</Label>
                   <Button variant="outline" size="sm" onClick={addStep}>
-                    <Plus className="w-3 h-3 mr-1" /> Legg til punkt
+                    <Plus className="w-3 h-3 mr-1" /> {t("auto.legg_til_punkt")}
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -686,7 +686,7 @@ export default function AdminRoutineMaker() {
               <div className="flex items-center gap-3">
                 <Switch checked={form.is_global_default}
                   onCheckedChange={v => setForm(p => ({ ...p, is_global_default: v }))} />
-                <Label>Gjør til standardmal (tilgjengelig for alle kunder)</Label>
+                <Label>{t("auto.gjoer_til_standardmal_tilgjengelig_for_a")}</Label>
               </div>
             </div>
           </ScrollArea>

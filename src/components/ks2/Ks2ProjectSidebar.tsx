@@ -278,7 +278,7 @@ export function Ks2ProjectSidebar({ projectName, projectNumber, contractorType, 
             }}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Alle prosjekter
+            {t("auto.alle_prosjekter")}
           </Button>
         )}
         {isGuestUser && currentGuestProject && (

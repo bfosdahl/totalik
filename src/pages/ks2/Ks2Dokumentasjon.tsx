@@ -336,7 +336,7 @@ export default function Ks2Dokumentasjon() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowNewFolderDialog(true)}>
             <FolderPlus className="h-4 w-4 mr-2" />
-            Ny mappe
+            {t("auto.ny_mappe")}
           </Button>
           <Button onClick={() => navigate(`/ks/project/${projectId}/rapport`)}>
             <FileText className="h-4 w-4 mr-2" />

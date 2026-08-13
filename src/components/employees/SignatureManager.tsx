@@ -192,7 +192,7 @@ export function SignatureManager({
                     </Button>
                     <Button variant="destructive" onClick={handleDelete} disabled={isSaving}>
                       <Eraser className="w-4 h-4 mr-2" />
-                      Slett
+                      {t("auto.slett")}
                     </Button>
                   </div>
                 )}
@@ -227,7 +227,7 @@ export function SignatureManager({
               <Label>{t("auto.tegn_signaturen_din")}</Label>
               <Button variant="ghost" size="sm" onClick={handleClear}>
                 <Eraser className="w-4 h-4 mr-1" />
-                Slett
+                {t("auto.slett")}
               </Button>
             </div>
             <Card className={cn(
@@ -258,7 +258,7 @@ export function SignatureManager({
             <div className="flex gap-2">
               <Button onClick={handleSave} disabled={!drawnSignature || isSaving}>
                 <Save className="w-4 h-4 mr-2" />
-                Lagre signatur
+                {t("auto.lagre_signatur")}
               </Button>
               <Button variant="outline" onClick={cancelEdit}>
                 {t("auto.avbryt")}
@@ -294,7 +294,7 @@ export function SignatureManager({
             <div className="flex gap-2">
               <Button onClick={handleSave} disabled={!uploadedSignature || isSaving}>
                 <Save className="w-4 h-4 mr-2" />
-                Lagre signatur
+                {t("auto.lagre_signatur")}
               </Button>
               <Button variant="outline" onClick={cancelEdit}>
                 {t("auto.avbryt")}

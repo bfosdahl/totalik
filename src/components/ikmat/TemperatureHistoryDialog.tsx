@@ -242,7 +242,7 @@ export function TemperatureHistoryDialog({
                         ) : (
                           <Badge variant="destructive">
                             <AlertTriangle className="h-3 w-3 mr-1" />
-                            Avvik
+                            {t("auto.avvik")}
                           </Badge>
                         )}
                       </TableCell>

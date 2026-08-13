@@ -79,7 +79,7 @@ export const EditChemicalEntryDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FlaskConical className="h-5 w-5" />
-            Rediger stoffinformasjon
+            {t("auto.rediger_stoffinformasjon")}
           </DialogTitle>
           <DialogDescription>
             {t("auto.oppdater_bedriftsspesifikk_informasjon_f")}

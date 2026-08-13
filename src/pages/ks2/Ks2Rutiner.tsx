@@ -270,7 +270,7 @@ export default function Ks2Rutiner() {
               </Button>
               <Button variant="outline" onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
                 <Library className="h-4 w-4 mr-2" />
-                Åpne malbibliotek
+                {t("auto.aapne_malbibliotek")}
               </Button>
             </div>
           </CardContent>
@@ -300,7 +300,7 @@ export default function Ks2Rutiner() {
                   onClick={() => navigate(`/ks/project/${projectId}/maler`)}
                 >
                   <Library className="h-4 w-4 mr-2" />
-                  Legg til flere
+                  {t("auto.legg_til_flere")}
                 </Button>
               </div>
             </div>
@@ -382,7 +382,7 @@ export default function Ks2Rutiner() {
                         {pt.routine_template?.file_path && (
                           <Button variant="outline" size="sm">
                             <ExternalLink className="h-4 w-4 mr-1" />
-                            Åpne fil
+                            {t("auto.aapne_fil")}
                           </Button>
                         )}
                       </div>
@@ -463,7 +463,7 @@ export default function Ks2Rutiner() {
                             onClick={() => openEditCustomRoutine(routine)}
                           >
                             <Edit className="h-4 w-4 mr-1" />
-                            Rediger
+                            {t("auto.rediger")}
                           </Button>
                           <Button
                             variant="outline"
@@ -576,7 +576,7 @@ export default function Ks2Rutiner() {
                         size="sm"
                         onClick={() => setApproverMode('select')}
                       >
-                        Velg ansatt
+                        {t("auto.velg_ansatt")}
                       </Button>
                       <Button
                         variant={approverMode === 'freetext' ? 'default' : 'outline'}
@@ -615,7 +615,7 @@ export default function Ks2Rutiner() {
                           onClick={() => handleSetApprover(freetextApprover)}
                           disabled={!freetextApprover.trim()}
                         >
-                          Lagre
+                          {t("auto.lagre")}
                         </Button>
                       </div>
                     )}
@@ -715,7 +715,7 @@ export default function Ks2Rutiner() {
                           navigate(`/ks/project/${projectId}/maler`);
                         }}
                       >
-                        Gå til Malbibliotek
+                        {t("auto.gaa_til_malbibliotek")}
                       </Button>
                     </div>
                   )}
@@ -853,7 +853,7 @@ export default function Ks2Rutiner() {
                         size="sm"
                         onClick={() => setCustomApproverMode('select')}
                       >
-                        Velg fra ansatte
+                        {t("auto.velg_fra_ansatte")}
                       </Button>
                       <Button
                         variant={customApproverMode === 'freetext' ? 'default' : 'outline'}
@@ -976,7 +976,7 @@ export default function Ks2Rutiner() {
                         navigate(`/ks/project/${projectId}/maler`);
                       }}
                     >
-                      Gå til Malbibliotek
+                      {t("auto.gaa_til_malbibliotek")}
                     </Button>
                   </div>
                 )}
@@ -995,7 +995,7 @@ export default function Ks2Rutiner() {
               }
             }}>
               <Edit className="h-4 w-4 mr-2" />
-              Rediger
+              {t("auto.rediger")}
             </Button>
           </div>
         </DialogContent>
@@ -1007,7 +1007,7 @@ export default function Ks2Rutiner() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5" />
-              Rediger rutine
+              {t("auto.rediger_rutine")}
             </DialogTitle>
             <DialogDescription>
               {t("auto.rediger_innholdet_i_rutinen_nedenfor")}

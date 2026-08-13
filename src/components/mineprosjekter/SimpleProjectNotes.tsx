@@ -134,7 +134,7 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
         </CardTitle>
         <Button className="gap-2" onClick={() => setShowNewNote(true)}>
           <Plus className="w-4 h-4" />
-          Nytt notat
+          {t("auto.nytt_notat")}
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -163,7 +163,7 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
                 }}
               >
                 <X className="w-4 h-4 mr-1" />
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button size="sm" onClick={handleSaveNew} disabled={isSaving || !newContent.trim()}>
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Save className="w-4 h-4 mr-1" />}
@@ -202,7 +202,7 @@ export function SimpleProjectNotes({ projectId }: SimpleProjectNotesProps) {
                     <div className="flex gap-2 justify-end">
                       <Button variant="outline" size="sm" onClick={() => setEditingId(null)}>
                         <X className="w-4 h-4 mr-1" />
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                       <Button size="sm" onClick={() => handleUpdate(note)} disabled={isSaving}>
                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Save className="w-4 h-4 mr-1" />}

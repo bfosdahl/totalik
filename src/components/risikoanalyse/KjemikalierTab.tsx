@@ -65,7 +65,7 @@ export function KjemikalierTab() {
       return (
         <Badge variant="outline" className={cn("gap-1", riskLevel.bg, riskLevel.color)}>
           <CheckCircle2 className="h-3 w-3" />
-          Fullført
+          {t("auto.fullfoert")}
         </Badge>
       );
     }
@@ -193,7 +193,7 @@ export function KjemikalierTab() {
             </div>
             <Button variant="outline" onClick={() => navigate("/ks-modul2")}>
               <ExternalLink className="h-4 w-4 mr-2" />
-              Gå til prosjekter
+              {t("auto.gaa_til_prosjekter")}
             </Button>
           </div>
 

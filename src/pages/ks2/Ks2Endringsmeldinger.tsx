@@ -187,7 +187,7 @@ export default function Ks2Endringsmeldinger() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Ny endringsmelding
+              {t("auto.ny_endringsmelding")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -372,7 +372,7 @@ export default function Ks2Endringsmeldinger() {
             </p>
             <Button onClick={() => setIsCreateOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny endringsmelding
+              {t("auto.ny_endringsmelding")}
             </Button>
           </CardContent>
         </Card>
@@ -415,7 +415,7 @@ export default function Ks2Endringsmeldinger() {
                       className="flex-1"
                       onClick={() => handleSendForApproval(order)}
                     >
-                      Send til godkjenning
+                      {t("auto.send_til_godkjenning")}
                     </Button>
                   )}
                   {order.status === "pending" && (
@@ -430,7 +430,7 @@ export default function Ks2Endringsmeldinger() {
                         }}
                       >
                         <Check className="h-4 w-4 mr-1" />
-                        Godkjenn
+                        {t("auto.godkjenn")}
                       </Button>
                       <Button
                         size="sm"
@@ -505,7 +505,7 @@ export default function Ks2Endringsmeldinger() {
                           variant="outline"
                           onClick={() => handleSendForApproval(order)}
                         >
-                          Send til godkjenning
+                          {t("auto.send_til_godkjenning")}
                         </Button>
                       )}
                       {order.status === "pending" && (
@@ -586,7 +586,7 @@ export default function Ks2Endringsmeldinger() {
             </Button>
             <Button onClick={handleApprove} disabled={!approvalName}>
               <Check className="h-4 w-4 mr-2" />
-              Godkjenn
+              {t("auto.godkjenn")}
             </Button>
           </DialogFooter>
         </DialogContent>

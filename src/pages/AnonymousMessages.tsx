@@ -239,7 +239,7 @@ export default function AnonymousMessages() {
                 className="border-amber-500/50 hover:bg-amber-500/20"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Slett gamle meldinger
+                {t("auto.slett_gamle_meldinger")}
               </Button>
             </AlertDescription>
           </Alert>
@@ -387,7 +387,7 @@ export default function AnonymousMessages() {
                             }}
                           >
                             <Eye className="h-4 w-4 mr-2" />
-                            Åpne
+                            {t("auto.aapne")}
                           </Button>
                         </div>
                       </CardContent>
@@ -584,7 +584,7 @@ function MessageDetailDialog({
                 }}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Slett melding
+                {t("auto.slett_melding")}
               </Button>
             </div>
           </div>

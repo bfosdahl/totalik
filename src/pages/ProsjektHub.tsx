@@ -304,7 +304,7 @@ export default function ProsjektHub() {
               refreshDraftIds();
             }}
           >
-            Slett utkast
+            {t("auto.slett_utkast")}
           </button>
           <ToastAction
             altText="Fullfør"
@@ -319,7 +319,7 @@ export default function ProsjektHub() {
               }
             }}
           >
-            Fullfør
+            {t("auto.fullfoer")}
           </ToastAction>
         </div>
       ),
@@ -391,7 +391,7 @@ export default function ProsjektHub() {
             altText="Fullfør"
             onClick={() => navigate("/prosjekt-hub")}
           >
-            Fullfør
+            {t("auto.fullfoer")}
           </ToastAction>
         ),
       });

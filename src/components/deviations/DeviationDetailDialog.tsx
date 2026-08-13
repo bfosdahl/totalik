@@ -499,7 +499,7 @@ export function DeviationDetailDialog({
             {onUpdate && !isEditing && (
               <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="gap-1.5">
                 <Pencil className="w-3.5 h-3.5" />
-                Rediger
+                {t("auto.rediger")}
               </Button>
             )}
             {isEditing && (
@@ -609,7 +609,7 @@ export function DeviationDetailDialog({
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-medium">
               <FileText className="w-4 h-4 text-muted-foreground" />
-              Beskrivelse
+              {t("auto.beskrivelse")}
             </div>
             {isEditing ? (
               <Textarea
@@ -692,7 +692,7 @@ export function DeviationDetailDialog({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <ClipboardCheck className="w-4 h-4 text-muted-foreground" />
-                Oppfølging og løsning
+                {t("auto.oppfoelging_og_loesning")}
               </div>
               {onFollowUpChange && hasFollowUpChanges && (
                 <Button 
@@ -791,13 +791,13 @@ export function DeviationDetailDialog({
               className="w-full sm:w-auto text-destructive hover:text-destructive hover:bg-destructive/10"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Slett
+              {t("auto.slett")}
             </Button>
           )}
           <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
             <Button variant="outline" size="sm" onClick={() => setEmailDialogOpen(true)} className="w-full sm:w-auto">
               <Mail className="w-4 h-4 mr-2" />
-              Send på e-post
+              {t("auto.send_paa_e_post")}
             </Button>
             <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="w-full sm:w-auto">
               <Download className="w-4 h-4 mr-2" />

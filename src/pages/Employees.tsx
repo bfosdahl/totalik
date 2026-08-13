@@ -178,7 +178,7 @@ export default function Employees() {
                   className="gap-2"
                 >
                   <UserPlus className="h-4 w-4" />
-                  Legg til
+                  {t("auto.legg_til")}
                 </Button>
                 <Button 
                   onClick={() => setInviteDialogOpen(true)}
@@ -186,7 +186,7 @@ export default function Employees() {
                   className="gap-2"
                 >
                   <Mail className="h-4 w-4" />
-                  Send invitasjon
+                  {t("auto.send_invitasjon")}
                 </Button>
               </>
             )}

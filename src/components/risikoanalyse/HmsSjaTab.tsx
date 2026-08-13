@@ -210,7 +210,7 @@ export function HmsSjaTab() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Ny SJA
+              {t("auto.ny_sja")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
@@ -339,7 +339,7 @@ export function HmsSjaTab() {
             {!searchQuery && (
               <Button onClick={() => setShowNewDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Opprett SJA
+                {t("auto.opprett_sja")}
               </Button>
             )}
           </CardContent>

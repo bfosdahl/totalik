@@ -292,7 +292,7 @@ const ElKontrollForm: React.FC = () => {
     <div className="space-y-6">
       <Button variant="ghost" onClick={handleBackToList} className="gap-2 mb-4">
         <ArrowLeft className="w-4 h-4" />
-        Tilbake til oversikt
+        {t("auto.tilbake_til_oversikt")}
       </Button>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -301,7 +301,7 @@ const ElKontrollForm: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="w-5 h-5" />
-              EL-kontroll – Sjekkliste
+              {t("auto.el_kontroll_sjekkliste")}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">

@@ -90,7 +90,7 @@ export function Ks2PopulateExampleButton({ projectId, onComplete }: Ks2PopulateE
             <ul className="list-disc list-inside mt-2 space-y-1 text-sm">
               <li>{t("auto.moetereferater_med_agenda_og_aksjoner")}</li>
               <li>{t("auto.oekonomi_med_budsjett_kostnader_og_faktu")}</li>
-              <li>Egenkontroller (fullført, pågår, planlagt)</li>
+              <li>{t("auto.egenkontroller_fullfoert_paagaar_planlag")}</li>
               <li>{t("auto.avvik_og_reklamasjoner")}</li>
               <li>{t("auto.underleverandoerer_med_godkjenningsstatu")}</li>
               <li>{t("auto.sja_analyser")}</li>

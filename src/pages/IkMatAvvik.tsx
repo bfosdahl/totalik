@@ -675,7 +675,7 @@ const IkMatAvvik = () => {
               className="flex-shrink-0"
               onClick={() => setFilterStatus(null)}
             >
-              Alle
+              {t("auto.alle")}
             </Button>
             {Object.entries(statusConfig).map(([key, config]) => (
               <Button
@@ -698,7 +698,7 @@ const IkMatAvvik = () => {
               className="flex-shrink-0"
               onClick={() => setFilterCategory(null)}
             >
-              Alle kategorier
+              {t("auto.alle_kategorier")}
             </Button>
             {ikMatCategories.map((cat) => (
               <Button

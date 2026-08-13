@@ -439,7 +439,7 @@ export function WeeklyTimeView({
                 className="flex-1"
                 onClick={() => setEditingDay(null)}
               >
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button
                 className="flex-1"

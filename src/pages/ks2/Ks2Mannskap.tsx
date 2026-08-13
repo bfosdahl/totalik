@@ -388,7 +388,7 @@ export default function Ks2Mannskap() {
         {canManage && (
           <Button onClick={openAddDialog}>
             <Plus className="h-4 w-4 mr-2" />
-            Legg til mannskap
+            {t("auto.legg_til_mannskap")}
           </Button>
         )}
       </div>

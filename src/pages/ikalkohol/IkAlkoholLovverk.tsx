@@ -169,7 +169,7 @@ export default function IkAlkoholLovverk() {
             </p>
             <Button variant="outline" size="sm" onClick={() => openAdd(category)}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til
+              {t("auto.legg_til")}
             </Button>
           </CardContent>
         </Card>
@@ -263,7 +263,7 @@ export default function IkAlkoholLovverk() {
             {compliancePercent < 100 && (
               <p className="text-xs text-muted-foreground mt-2">
                 <AlertCircle className="h-3 w-3 inline mr-1" />
-                Alle krav må dokumenteres for å bestå kontroll fra kommunen
+                {t("auto.alle_krav_maa_dokumenteres_for_aa_bestaa")}
               </p>
             )}
           </CardContent>
@@ -285,7 +285,7 @@ export default function IkAlkoholLovverk() {
                 </h2>
                 <Button variant="outline" size="sm" onClick={() => openAdd("nasjonal")}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Legg til
+                  {t("auto.legg_til")}
                 </Button>
               </div>
               {renderLovverkList(nasjonale, "nasjonal")}
@@ -300,7 +300,7 @@ export default function IkAlkoholLovverk() {
                 </h2>
                 <Button variant="outline" size="sm" onClick={() => openAdd("kommunal")}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Legg til
+                  {t("auto.legg_til")}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
@@ -319,7 +319,7 @@ export default function IkAlkoholLovverk() {
                 </h2>
                 <Button variant="outline" size="sm" onClick={() => openAdd("veileder")}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Legg til
+                  {t("auto.legg_til")}
                 </Button>
               </div>
               {renderLovverkList(veiledere, "veileder")}
@@ -375,7 +375,7 @@ export default function IkAlkoholLovverk() {
                               className="flex-shrink-0 text-xs"
                               onClick={() => navigate(item.evidence_link!)}
                             >
-                              Gå til
+                              {t("auto.gaa_til")}
                               <ArrowRight className="h-3 w-3 ml-1" />
                             </Button>
                           )}

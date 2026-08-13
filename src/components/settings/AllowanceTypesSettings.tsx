@@ -60,7 +60,7 @@ export function AllowanceTypesSettings({ onBack }: Props) {
         </div>
         {canEdit && (
           <Button onClick={() => setCreating(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Ny sats
+            <Plus className="h-4 w-4" /> {t("auto.ny_sats")}
           </Button>
         )}
       </div>
@@ -197,7 +197,7 @@ function AllowanceEditDialog({
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
-            Aktiv (vises i timeføring)
+            {t("auto.aktiv_vises_i_timefoering")}
           </label>
         </div>
         <DialogFooter>
@@ -211,7 +211,7 @@ function AllowanceEditDialog({
             }}
             className="gap-2"
           >
-            <Save className="h-4 w-4" /> Lagre
+            <Save className="h-4 w-4" /> {t("auto.lagre")}
           </Button>
         </DialogFooter>
       </DialogContent>

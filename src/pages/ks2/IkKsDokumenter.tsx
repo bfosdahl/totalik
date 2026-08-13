@@ -155,7 +155,7 @@ export default function IkKsDokumenter() {
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <FolderPlus className="w-4 h-4 mr-2" />
-                  Ny mappe
+                  {t("auto.ny_mappe")}
                 </Button>
               </DialogTrigger>
               <DialogContent>

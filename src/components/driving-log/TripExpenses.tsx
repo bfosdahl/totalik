@@ -86,7 +86,7 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
             </CardTitle>
             <Button variant="outline" size="sm" onClick={() => setAddDialogOpen(true)}>
               <Plus className="w-3 h-3 mr-1" />
-              Legg til
+              {t("auto.legg_til")}
             </Button>
           </div>
         </CardHeader>
@@ -158,7 +158,7 @@ export function TripExpenses({ tripId }: TripExpensesProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Beløp (kr) *</Label>
+              <Label>{t("auto.beloep_kr")}</Label>
               <Input type="number" step="0.01" min="0" value={amount} onChange={e => setAmount(e.target.value)} placeholder="150" required />
             </div>
 

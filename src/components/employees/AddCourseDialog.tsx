@@ -251,7 +251,7 @@ export function AddCourseDialog({ open, onOpenChange, employeeId }: AddCourseDia
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="validity_years">Gyldighet (år)</Label>
+              <Label htmlFor="validity_years">{t("auto.gyldighet_aar")}</Label>
               <Input
                 id="validity_years"
                 type="number"

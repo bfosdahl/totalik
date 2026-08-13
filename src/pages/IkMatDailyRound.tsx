@@ -502,7 +502,7 @@ export default function IkMatDailyRound() {
             onClick={() => setStepIdx(Math.max(0, stepIdx - 1))}
             disabled={stepIdx === 0 || submitting}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" /> Tilbake
+            <ChevronLeft className="h-4 w-4 mr-1" /> {t("auto.tilbake")}
           </Button>
           <Button
             variant="ghost"

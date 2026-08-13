@@ -180,7 +180,7 @@ export default function FdvDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
-                Høyrisiko
+                {t("auto.hoeyrisiko")}
               </CardTitle>
               <CardDescription>{t("auto.risikoer_som_krever_oppmerksomhet")}</CardDescription>
             </CardHeader>

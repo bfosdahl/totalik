@@ -303,7 +303,7 @@ export function ConductMeetingDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-primary" />
-            Gjennomfør samtale
+            {t("auto.gjennomfoer_samtale")}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">Samtale med {meetingName}</p>
         </DialogHeader>

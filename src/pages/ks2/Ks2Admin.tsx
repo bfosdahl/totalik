@@ -336,7 +336,7 @@ export default function Ks2Admin() {
             <div>
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                AI Sjekkliste Maker
+                {t("auto.ai_sjekkliste_maker")}
               </h2>
               <p className="text-sm text-muted-foreground">
                 {t("auto.generer_komplette_sjekklistemaler_med_ai")}
@@ -406,7 +406,7 @@ export default function Ks2Admin() {
                       onChange={(e) => setAiRutineRef(e.target.value)}
                       placeholder={t("auto.f_eks_rutine_for_egenkontroll_toemrerarb")}
                     />
-                    <p className="text-xs text-muted-foreground">Skriv inn rutinen denne sjekklisten hører til (valgfritt)</p>
+                    <p className="text-xs text-muted-foreground">{t("auto.skriv_inn_rutinen_denne_sjekklisten_hoer")}</p>
                   </div>
 
                   <div className="space-y-2">
@@ -523,7 +523,7 @@ export default function Ks2Admin() {
                       <div className="flex gap-2 pt-2">
                         <Button onClick={handleSaveAiChecklist} className="flex-1 gap-2">
                           <Save className="h-4 w-4" />
-                          Lagre i malbiblioteket
+                          {t("auto.lagre_i_malbiblioteket")}
                         </Button>
                         <Button
                           variant="outline"
@@ -532,7 +532,7 @@ export default function Ks2Admin() {
                           className="gap-2"
                         >
                           <RefreshCw className={`h-4 w-4 ${aiIsGenerating ? 'animate-spin' : ''}`} />
-                          Generer på nytt
+                          {t("auto.generer_paa_nytt")}
                         </Button>
                       </div>
                     </div>
@@ -555,7 +555,7 @@ export default function Ks2Admin() {
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Ny mal
+                    {t("auto.ny_mal")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -692,7 +692,7 @@ export default function Ks2Admin() {
                       {!template.is_system_template && (
                         <div className="flex gap-2">
                           <Button variant="outline" size="sm" className="gap-1">
-                            <Edit className="h-3 w-3" /> Rediger
+                            <Edit className="h-3 w-3" /> {t("auto.rediger")}
                           </Button>
                           <Button 
                             variant="outline" 
@@ -700,7 +700,7 @@ export default function Ks2Admin() {
                             className="gap-1 text-destructive"
                             onClick={() => handleDeleteTemplate(template.id)}
                           >
-                            <Trash2 className="h-3 w-3" /> Slett
+                            <Trash2 className="h-3 w-3" /> {t("auto.slett")}
                           </Button>
                         </div>
                       )}

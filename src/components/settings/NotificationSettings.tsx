@@ -471,7 +471,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             ) : (
               <>
                 <Send className="w-4 h-4 mr-2" />
-                Send test-e-post
+                {t("auto.send_test_e_post")}
               </>
             )}
           </Button>
@@ -484,7 +484,7 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
             ) : (
               <>
                 <Save className="w-4 h-4 mr-2" />
-                Lagre innstillinger
+                {t("auto.lagre_innstillinger")}
               </>
             )}
           </Button>

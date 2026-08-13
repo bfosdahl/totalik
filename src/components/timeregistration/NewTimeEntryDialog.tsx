@@ -537,7 +537,7 @@ export function NewTimeEntryDialog({
                 disabled={allowanceTypes.length === 0}
                 className="gap-1"
               >
-                <Plus className="h-3 w-3" /> Legg til
+                <Plus className="h-3 w-3" /> {t("auto.legg_til")}
               </Button>
             </div>
 

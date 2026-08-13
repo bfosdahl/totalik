@@ -64,7 +64,7 @@ export function OvertimeSegmentsEditor({ segments, onChange, mainStart, mainEnd 
       <div className="flex items-center justify-between">
         <Label className="text-sm">{t("auto.overtid_i_denne_perioden")}</Label>
         <Button type="button" variant="outline" size="sm" onClick={add} className="gap-1">
-          <Plus className="h-3 w-3" /> Legg til
+          <Plus className="h-3 w-3" /> {t("auto.legg_til")}
         </Button>
       </div>
 

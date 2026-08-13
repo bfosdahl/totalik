@@ -112,13 +112,13 @@ const IkAlkoholOrganisering = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="roles"><Users className="h-4 w-4 mr-2" />Roller og ansvar</TabsTrigger>
             <TabsTrigger value="shifts"><Calendar className="h-4 w-4 mr-2" />Vaktplan</TabsTrigger>
-            <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" />Opplæring</TabsTrigger>
+            <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" />{t("auto.opplaering")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="roles">
             <div className="flex justify-end mb-4">
               <Button onClick={() => setShowRoleDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />Legg til rolle
+                <Plus className="h-4 w-4 mr-2" />{t("auto.legg_til_rolle")}
               </Button>
             </div>
 
@@ -236,7 +236,7 @@ const IkAlkoholOrganisering = () => {
                     });
                   });
                 }}>
-                  <Plus className="h-4 w-4 mr-2" />Legg til alle ansatte
+                  <Plus className="h-4 w-4 mr-2" />{t("auto.legg_til_alle_ansatte")}
                 </Button>
               </div>
 

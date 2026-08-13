@@ -842,7 +842,7 @@ export default function IkKsHandbok() {
       {/* Back button */}
       <Button variant="ghost" size="sm" onClick={() => navigate("/ks")} className="gap-2">
         <ArrowLeft className="w-4 h-4" />
-        Tilbake
+        {t("auto.tilbake")}
       </Button>
 
       {/* Header */}

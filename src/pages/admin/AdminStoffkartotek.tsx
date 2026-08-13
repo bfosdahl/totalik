@@ -258,7 +258,7 @@ export default function AdminStoffkartotek() {
           </div>
           <Button onClick={handleOpenAdd}>
             <Plus className="w-4 h-4 mr-2" />
-            Legg til kjemikalie
+            {t("auto.legg_til_kjemikalie")}
           </Button>
         </div>
 

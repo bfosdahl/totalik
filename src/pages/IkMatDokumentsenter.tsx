@@ -265,7 +265,7 @@ export default function IkMatDokumentsenter() {
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Tilbake
+            {t("auto.tilbake")}
           </Button>
           <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.dokumentsenter")}</h1>
           <p className="text-muted-foreground mt-1">

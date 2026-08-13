@@ -59,7 +59,7 @@ export default function HrAbsence() {
             </Button>
             <Button className="gap-2" onClick={() => setDialogOpen(true)}>
               <Plus className="w-4 h-4" />
-              Registrer fravær
+              {t("auto.registrer_fravaer")}
             </Button>
           </div>
         </div>

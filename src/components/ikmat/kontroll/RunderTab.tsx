@@ -143,7 +143,7 @@ export const RunderTab = () => {
             </CardDescription>
           </div>
           <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-2" /> Ny runde
+            <Plus className="h-4 w-4 mr-2" /> {t("auto.ny_runde")}
           </Button>
         </CardHeader>
         <CardContent>
@@ -268,7 +268,7 @@ export const RunderTab = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Beskrivelse (valgfritt)</Label>
+                  <Label>{t("auto.beskrivelse_valgfritt")}</Label>
                   <Input
                     placeholder={t("auto.kort_beskrivelse")}
                     value={editing.description}
@@ -456,7 +456,7 @@ export const RunderTab = () => {
               onClick={handleSave}
               disabled={!editing?.name.trim() || (editing?.stations.length || 0) === 0}
             >
-              Lagre
+              {t("auto.lagre")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -489,7 +489,7 @@ export const RunderTab = () => {
                 setDeleteId(null);
               }}
             >
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -588,7 +588,7 @@ function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
   return (
     <div className="border rounded-md p-3 space-y-3 border-dashed">
       <div className="flex items-center gap-2 text-sm font-medium">
-        <Plus className="h-4 w-4" /> Legg til egendefinert punkt
+        <Plus className="h-4 w-4" /> {t("auto.legg_til_egendefinert_punkt")}
       </div>
       <p className="text-xs text-muted-foreground">
         Lag dine egne kontrollpunkter for runden – f.eks. "Sjekk håndvask",
@@ -605,7 +605,7 @@ function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs">Beskrivelse / instruksjon (valgfritt)</Label>
+        <Label className="text-xs">{t("auto.beskrivelse_instruksjon_valgfritt")}</Label>
         <Textarea
           placeholder={t("auto.hva_skal_sjekkes")}
           value={instructions}
@@ -660,7 +660,7 @@ function CustomStationAdder({ onAdd }: CustomStationAdderProps) {
         disabled={!label.trim()}
         className="w-full"
       >
-        <Plus className="h-4 w-4 mr-2" /> Legg til som stasjon
+        <Plus className="h-4 w-4 mr-2" /> {t("auto.legg_til_som_stasjon")}
       </Button>
     </div>
   );

@@ -364,7 +364,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
       <div className="space-y-4 p-4 border border-border rounded-lg bg-secondary/10">
         <h4 className="font-medium text-sm flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Legg til ny risiko
+          {t("auto.legg_til_ny_risiko")}
         </h4>
 
         <div className="space-y-3">
@@ -448,7 +448,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
 
           <Button onClick={addRisk} disabled={!canAddRisk} className="w-full">
             <Plus className="w-4 h-4 mr-2" />
-            Legg til risiko
+            {t("auto.legg_til_risiko")}
           </Button>
         </div>
       </div>
@@ -618,7 +618,7 @@ export const RiskAssessmentStep = forwardRef<RiskAssessmentStepRef, RiskAssessme
                                 await onSave({ risks });
                               }}
                             >
-                              Lagre endringer
+                              {t("auto.lagre_endringer")}
                             </Button>
                           </div>
                         ) : (

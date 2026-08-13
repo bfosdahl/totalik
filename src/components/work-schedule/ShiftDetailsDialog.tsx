@@ -112,7 +112,7 @@ export function ShiftDetailsDialog({
                     }}
                   >
                     <Pencil className="w-4 h-4 mr-1" />
-                    Endre vakt
+                    {t("auto.endre_vakt")}
                   </Button>
                 )}
                 {onDelete && (
@@ -125,7 +125,7 @@ export function ShiftDetailsDialog({
                     }}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
-                    Slett vakt
+                    {t("auto.slett_vakt")}
                   </Button>
                 )}
               </div>

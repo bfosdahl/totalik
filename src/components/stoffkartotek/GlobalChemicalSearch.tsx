@@ -92,7 +92,7 @@ export const GlobalChemicalSearch = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <FlaskConical className="h-4 w-4" />
-              Søkeresultater
+              {t("auto.soekeresultater")}
             </CardTitle>
             <CardDescription>
               {isLoading 
@@ -176,7 +176,7 @@ export const GlobalChemicalSearch = ({
                         className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
                       >
                         <Plus className="h-4 w-4 mr-1" />
-                        Legg til
+                        {t("auto.legg_til")}
                       </Button>
                     </div>
                   ))}
@@ -190,7 +190,7 @@ export const GlobalChemicalSearch = ({
                 </p>
                 <Button onClick={() => onCreateNew(searchQuery)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Opprett nytt stoff
+                  {t("auto.opprett_nytt_stoff")}
                 </Button>
               </div>
             ) : null}

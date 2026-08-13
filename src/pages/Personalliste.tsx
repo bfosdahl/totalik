@@ -118,7 +118,7 @@ export default function Personalliste() {
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-7xl">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 -ml-2">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Tilbake
+        <ArrowLeft className="mr-2 h-4 w-4" /> {t("auto.tilbake")}
       </Button>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -177,7 +177,7 @@ export default function Personalliste() {
                             <span className="font-semibold">{e.user_name || e.guest_name}</span>
                             {e.is_guest_worker && <Badge variant="secondary">{t("auto.innleid")}</Badge>}
                             {e.guest_employer && <Badge variant="outline" className="text-xs">{e.guest_employer}</Badge>}
-                            {onBreak && <Badge className="bg-amber-500"><Coffee className="mr-1 h-3 w-3" />På pause</Badge>}
+                            {onBreak && <Badge className="bg-amber-500"><Coffee className="mr-1 h-3 w-3" />{t("auto.paa_pause")}</Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
                             Inne siden {format(new Date(e.clock_in), "HH:mm", { locale: nb })} ·{" "}

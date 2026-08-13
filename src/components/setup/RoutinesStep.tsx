@@ -874,7 +874,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
           <DialogTrigger asChild>
             <Button variant="outline" className="gap-2">
               <Library className="w-4 h-4" />
-              Velg fra rutinebibliotek
+              {t("auto.velg_fra_rutinebibliotek")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[80vh]">
@@ -919,7 +919,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
                           ) : (
                             <>
                               <Plus className="w-3 h-3 mr-1" />
-                              Legg til
+                              {t("auto.legg_til")}
                             </>
                           )}
                         </Button>
@@ -934,7 +934,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
 
         <Button variant="outline" onClick={addCustomRoutine} className="gap-2">
           <Plus className="w-4 h-4" />
-          Opprett egen rutine
+          {t("auto.opprett_egen_rutine")}
         </Button>
       </div>
 
@@ -1055,7 +1055,7 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Lagre rutiner
+              {t("auto.lagre_rutiner")}
             </>
           )}
         </Button>
@@ -1168,11 +1168,11 @@ function RoutineEditForm({
       <div className="flex justify-end gap-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           <X className="w-4 h-4 mr-1" />
-          Avbryt
+          {t("auto.avbryt")}
         </Button>
         <Button type="submit">
           <Check className="w-4 h-4 mr-1" />
-          Lagre endringer
+          {t("auto.lagre_endringer")}
         </Button>
       </div>
     </form>

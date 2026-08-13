@@ -121,7 +121,7 @@ export default function MyMessages() {
           </div>
           <Button onClick={() => setComposeOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
-            Ny melding
+            {t("auto.ny_melding")}
           </Button>
         </div>
 
@@ -177,7 +177,7 @@ export default function MyMessages() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Send className="h-5 w-5" />
-                Ny melding
+                {t("auto.ny_melding")}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
@@ -281,7 +281,7 @@ export default function MyMessages() {
                       }}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Slett
+                      {t("auto.slett")}
                     </Button>
                   )}
                   <Button variant="outline" onClick={() => setSelectedMessage(null)}>{t("auto.lukk")}</Button>

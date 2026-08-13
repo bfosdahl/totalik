@@ -99,7 +99,7 @@ const IkMatFasteAvtaler = () => {
             setDialogOpen(true);
           }}>
             <Plus className="h-4 w-4 mr-2" />
-            Legg til leverandør
+            {t("auto.legg_til_leverandoer")}
           </Button>
         </div>
 

@@ -176,7 +176,7 @@ export default function AdminByggesakTemplates() {
               </Badge>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Legg til mal
+                {t("auto.legg_til_mal")}
               </Button>
             </div>
           </div>
@@ -437,7 +437,7 @@ export default function AdminByggesakTemplates() {
               onClick={() => editingTemplate && updateTemplate.mutate(editingTemplate)}
               disabled={updateTemplate.isPending}
             >
-              Lagre
+              {t("auto.lagre")}
             </Button>
           </DialogFooter>
         </DialogContent>

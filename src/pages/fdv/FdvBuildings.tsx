@@ -82,7 +82,7 @@ export default function FdvBuildings() {
           </div>
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Nytt bygg
+            {t("auto.nytt_bygg")}
           </Button>
         </div>
 
@@ -97,7 +97,7 @@ export default function FdvBuildings() {
               <p className="text-muted-foreground mb-4">{t("auto.kom_i_gang_ved_aa_legge_til_ditt_foerste")}</p>
               <Button onClick={handleCreate} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Legg til bygg
+                {t("auto.legg_til_bygg")}
               </Button>
             </CardContent>
           </Card>
@@ -128,14 +128,14 @@ export default function FdvBuildings() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(building); }}>
                           <Pencil className="h-4 w-4 mr-2" />
-                          Rediger
+                          {t("auto.rediger")}
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={(e) => { e.stopPropagation(); handleDelete(building); }}
                           className="text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Slett
+                          {t("auto.slett")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

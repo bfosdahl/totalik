@@ -257,7 +257,7 @@ export function EmailSendDialog({
                 ) : (
                   <>
                     <Mail className="mr-2 h-4 w-4" />
-                    Send
+                    {t("auto.send")}
                   </>
                 )}
               </Button>

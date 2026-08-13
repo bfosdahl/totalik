@@ -125,7 +125,7 @@ const IkMatTemperaturlogg = () => {
               </p>
               <Button onClick={() => setEquipmentDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til utstyr
+                {t("auto.legg_til_utstyr")}
               </Button>
             </CardContent>
           </Card>
@@ -215,7 +215,7 @@ const IkMatTemperaturlogg = () => {
                               ) : (
                                 <Badge variant="destructive">
                                   <AlertTriangle className="h-3 w-3 mr-1" />
-                                  Avvik
+                                  {t("auto.avvik")}
                                 </Badge>
                               )}
                             </TableCell>

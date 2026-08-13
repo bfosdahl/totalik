@@ -338,7 +338,7 @@ export function DepartmentSettings({ onBack }: DepartmentSettingsProps) {
               setShowCreateDialog(true);
             }}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny avdeling
+              {t("auto.ny_avdeling")}
             </Button>
           </div>
 

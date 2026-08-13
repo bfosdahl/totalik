@@ -52,7 +52,7 @@ export default function Ks2ShaPlan() {
       case "draft":
         return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Utkast</Badge>;
       case "pending_signatures":
-        return <Badge className="bg-amber-500"><AlertCircle className="h-3 w-3 mr-1" />Venter på signatur</Badge>;
+        return <Badge className="bg-amber-500"><AlertCircle className="h-3 w-3 mr-1" />{t("auto.venter_paa_signatur")}</Badge>;
       case "signed":
         return <Badge className="bg-blue-500"><CheckCircle2 className="h-3 w-3 mr-1" />Signert</Badge>;
       case "approved":
@@ -120,11 +120,11 @@ export default function Ks2ShaPlan() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  Organisasjonskart fra underleverandører
+                  {t("auto.organisasjonskart_fra_underleverandoerer")}
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  Risikoområder etter §8 bokstav c
+                  {t("auto.risikoomraader_etter_8_bokstav_c")}
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -165,11 +165,11 @@ export default function Ks2ShaPlan() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-blue-500" />
-                  Opprett vår tilpasning automatisk
+                  {t("auto.opprett_vaar_tilpasning_automatisk")}
                 </li>
                 <li className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-blue-500" />
-                  Koble til vårt HMS-system
+                  {t("auto.koble_til_vaart_hms_system")}
                 </li>
               </ul>
               <Button variant="outline" className="w-full mt-4 border-blue-500 text-blue-500 hover:bg-blue-500/10">
@@ -223,7 +223,7 @@ export default function Ks2ShaPlan() {
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
             <Eye className="h-4 w-4 mr-2" />
-            Forhåndsvis PDF
+            {t("auto.forhaandsvis_pdf")}
           </Button>
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />

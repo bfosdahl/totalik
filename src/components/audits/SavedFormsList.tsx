@@ -127,7 +127,7 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                                 onClick={() => onDelete(response.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Slett
+                                {t("auto.slett")}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -179,7 +179,7 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                           className="gap-1"
                         >
                           <Edit className="w-3 h-3" />
-                          Vis/Rediger
+                          {t("auto.vis_rediger")}
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -204,7 +204,7 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                                 onClick={() => onDelete(response.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Slett
+                                {t("auto.slett")}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

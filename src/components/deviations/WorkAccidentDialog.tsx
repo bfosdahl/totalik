@@ -305,7 +305,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Gå til Altinn-skjema
+                {t("auto.gaa_til_altinn_skjema")}
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>

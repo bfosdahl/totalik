@@ -240,7 +240,7 @@ export default function IkKsMaalsetting() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
               <Target className="h-8 w-8 text-primary" />
-              Målsetting & Kvalitetsmål
+              {t("auto.maalsetting_kvalitetsmaal")}
             </h1>
             <p className="text-muted-foreground mt-1">
               {t("auto.maal_for_ks_haandbok_ks_system_hms_i_pro")}
@@ -251,7 +251,7 @@ export default function IkKsMaalsetting() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Nytt mål
+                {t("auto.nytt_maal")}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -280,7 +280,7 @@ export default function IkKsMaalsetting() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
+                  <label className="text-sm font-medium">{t("auto.beskrivelse_valgfritt")}</label>
                   <Textarea
                     value={newGoal.description}
                     onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
@@ -393,7 +393,7 @@ export default function IkKsMaalsetting() {
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="w-4 h-4 mr-2" />
-                    Nytt kvalitetsmål
+                    {t("auto.nytt_kvalitetsmaal")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -410,7 +410,7 @@ export default function IkKsMaalsetting() {
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
+                      <label className="text-sm font-medium">{t("auto.beskrivelse_valgfritt")}</label>
                       <Textarea
                         value={newKvalitetGoal.description}
                         onChange={(e) => setNewKvalitetGoal({ ...newKvalitetGoal, description: e.target.value })}
@@ -558,8 +558,8 @@ function KvalitetGoalCard({
               <Textarea value={editData.description} onChange={(e) => setEditData({ ...editData, description: e.target.value })} rows={2} />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={onCancelEdit}><X className="w-4 h-4 mr-1" />Avbryt</Button>
-              <Button size="sm" onClick={handleSave} disabled={isSaving}><Save className="w-4 h-4 mr-1" />Lagre</Button>
+              <Button variant="outline" size="sm" onClick={onCancelEdit}><X className="w-4 h-4 mr-1" />{t("auto.avbryt")}</Button>
+              <Button size="sm" onClick={handleSave} disabled={isSaving}><Save className="w-4 h-4 mr-1" />{t("auto.lagre")}</Button>
             </div>
           </div>
         </CardContent>
@@ -640,11 +640,11 @@ function GoalCard({
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={onCancelEdit}>
                 <X className="w-4 h-4 mr-1" />
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button size="sm" onClick={handleSave} disabled={isSaving}>
                 <Save className="w-4 h-4 mr-1" />
-                Lagre
+                {t("auto.lagre")}
               </Button>
             </div>
           </div>

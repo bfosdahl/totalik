@@ -49,7 +49,7 @@ export function SimpleProjectFinances({ projectId }: SimpleProjectFinancesProps)
           </CardTitle>
           <Button className="gap-2">
             <Plus className="w-4 h-4" />
-            Ny registrering
+            {t("auto.ny_registrering")}
           </Button>
         </CardHeader>
         <CardContent>

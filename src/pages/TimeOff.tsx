@@ -88,7 +88,7 @@ export default function TimeOff() {
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
-              Søk om ferie
+              {t("auto.soek_om_ferie")}
             </Button>
           </DialogTrigger>
           <DialogContent>
