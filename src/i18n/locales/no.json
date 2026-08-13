@@ -47,7 +47,10 @@
     "notAssigned": "Ikke tildelt",
     "seeAll": "Se alle",
     "noCompany": "Ingen bedrift",
-    "notLinked": "Ikke tilknyttet"
+    "notLinked": "Ikke tilknyttet",
+    "translate": "Oversett",
+    "showOriginal": "Vis original",
+    "alreadyInYourLanguage": "Innholdet er allerede på ditt språk"
   },
   "auth": {
     "login": "Logg inn",

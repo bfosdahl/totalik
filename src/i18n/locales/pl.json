@@ -47,7 +47,10 @@
     "notAssigned": "Nie przypisano",
     "seeAll": "Zobacz wszystko",
     "noCompany": "Brak firmy",
-    "notLinked": "Nie powiązano"
+    "notLinked": "Nie powiązano",
+    "translate": "Przetłumacz",
+    "showOriginal": "Pokaż oryginał",
+    "alreadyInYourLanguage": "Ta treść jest już w Twoim języku"
   },
   "auth": {
     "login": "Zaloguj się",

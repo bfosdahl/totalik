@@ -47,7 +47,10 @@
     "notAssigned": "Not assigned",
     "seeAll": "See all",
     "noCompany": "No company",
-    "notLinked": "Not linked"
+    "notLinked": "Not linked",
+    "translate": "Translate",
+    "showOriginal": "Show original",
+    "alreadyInYourLanguage": "This content is already in your language"
   },
   "auth": {
     "login": "Log in",
