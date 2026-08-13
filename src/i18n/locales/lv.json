@@ -5909,6 +5909,12 @@
     "tor": "Ceturtd.",
     "fre": "Piektd.",
     "loer": "Sestd.",
-    "soen": "Svētd."
+    "soen": "Svētd.",
+    "nytt_prosjekt": "Jauns projekts",
+    "arkiv": "Arhīvs",
+    "alle_inkl_fullfoerte": "Visi (ieskaitot pabeigtos)",
+    "opprett_ditt_foerste_prosjekt": "Izveidojiet savu pirmo projektu",
+    "proev_aa_endre_soek_eller_filter": "Mēģiniet mainīt meklēšanu vai filtru",
+    "start_med_aa_opprette_et_nytt_prosjekt": "Sāciet ar jauna projekta izveidi, lai uzsāktu kvalitātes nodrošināšanu"
   }
 }

@@ -5909,6 +5909,12 @@
     "tor": "Thu",
     "fre": "Fri",
     "loer": "Sat",
-    "soen": "Sun"
+    "soen": "Sun",
+    "nytt_prosjekt": "New project",
+    "arkiv": "Archive",
+    "alle_inkl_fullfoerte": "All (incl. completed)",
+    "opprett_ditt_foerste_prosjekt": "Create your first project",
+    "proev_aa_endre_soek_eller_filter": "Try changing the search or filter",
+    "start_med_aa_opprette_et_nytt_prosjekt": "Start by creating a new project to begin quality assurance"
   }
 }

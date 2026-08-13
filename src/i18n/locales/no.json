@@ -5909,6 +5909,12 @@
     "tor": "Tor",
     "fre": "Fre",
     "loer": "Lør",
-    "soen": "Søn"
+    "soen": "Søn",
+    "nytt_prosjekt": "Nytt prosjekt",
+    "arkiv": "Arkiv",
+    "alle_inkl_fullfoerte": "Alle (inkl. fullførte)",
+    "opprett_ditt_foerste_prosjekt": "Opprett ditt første prosjekt",
+    "proev_aa_endre_soek_eller_filter": "Prøv å endre søk eller filter",
+    "start_med_aa_opprette_et_nytt_prosjekt": "Start med å opprette et nytt prosjekt for å komme i gang med kvalitetssikring"
   }
 }

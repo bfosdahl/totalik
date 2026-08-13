@@ -35,8 +35,8 @@ export default function Ks2Dashboard() {
     { key: "active", label: t("auto.aktive") },
     { key: "mine", label: t("auto.mine") },
     { key: "with_deviations", label: t("auto.med_aapne_avvik") },
-    { key: "archived", label: archivedCount > 0 ? `Arkiv (${archivedCount})` : "Arkiv" },
-    { key: "all", label: "Alle (inkl. fullførte)" },
+    { key: "archived", label: archivedCount > 0 ? `${t("auto.arkiv")} (${archivedCount})` : t("auto.arkiv") },
+    { key: "all", label: t("auto.alle_inkl_fullfoerte") },
   ];
 
   // Fetch deviation counts for all projects
@@ -165,7 +165,7 @@ export default function Ks2Dashboard() {
             )}
             <Button onClick={() => setIsNewProjectOpen(true)} className="shrink-0">
               <Plus className="h-4 w-4 mr-2" />
-              Nytt prosjekt
+              {t("auto.nytt_prosjekt")}
             </Button>
           </div>
         </div>
@@ -220,18 +220,18 @@ export default function Ks2Dashboard() {
               </div>
               <h3 className="text-xl font-semibold mb-2">
                 {searchQuery || activeFilter !== "active"
-                  ? "Ingen prosjekter funnet"
-                  : "Opprett ditt første prosjekt"}
+                  ? t("auto.ingen_prosjekter_funnet")
+                  : t("auto.opprett_ditt_foerste_prosjekt")}
               </h3>
               <p className="text-muted-foreground mb-6 max-w-sm">
                 {searchQuery || activeFilter !== "active"
-                  ? "Prøv å endre søk eller filter"
-                  : "Start med å opprette et nytt prosjekt for å komme i gang med kvalitetssikring"}
+                  ? t("auto.proev_aa_endre_soek_eller_filter")
+                  : t("auto.start_med_aa_opprette_et_nytt_prosjekt")}
               </p>
               {!searchQuery && activeFilter === "active" && (
                 <Button onClick={() => setIsNewProjectOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Nytt prosjekt
+                  {t("auto.nytt_prosjekt")}
                 </Button>
               )}
             </CardContent>

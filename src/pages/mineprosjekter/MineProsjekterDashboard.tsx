@@ -87,7 +87,7 @@ export default function MineProsjekterDashboard() {
           </div>
           <Button onClick={() => setDialogOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" />
-            Nytt prosjekt
+            {t("auto.nytt_prosjekt")}
           </Button>
         </div>
 
