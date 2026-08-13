@@ -229,15 +229,25 @@ export default function KsUtfylteSjekklister() {
         </div>
         <CollapsibleContent>
           <CardContent className="pt-0 pb-4 px-4 border-t">
+            <div className="pt-3 flex justify-end">
+              <TranslateContentButton
+                contentType="ks-checklist"
+                texts={(checklist.checklist_items || []).map((i: any) => i.text || "")}
+                onResult={(result) =>
+                  setTranslations((prev) => ({ ...prev, [checklist.id]: result }))
+                }
+              />
+            </div>
             <div className="pt-3 space-y-2">
               {(checklist.checklist_items || []).map((item: any, idx: number) => {
                 const isOk = item.value === true || item.value === "yes";
                 const isNotOk = item.value === false || item.value === "no";
+                const shownText = translations[checklist.id]?.[idx] ?? item.text;
                 return (
                   <div key={idx} className="flex items-start gap-2 py-1.5 px-2 rounded hover:bg-muted/30">
                     <span className="text-xs text-muted-foreground w-5 shrink-0 mt-0.5">{idx + 1}.</span>
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm">{item.text}</span>
+                      <span className="text-sm">{shownText}</span>
                       {item.comment && <p className="text-xs text-muted-foreground mt-0.5">💬 {item.comment}</p>}
                     </div>
                     <div className="shrink-0">
@@ -251,6 +261,7 @@ export default function KsUtfylteSjekklister() {
             </div>
           </CardContent>
         </CollapsibleContent>
+
       </Collapsible>
     </Card>
   );
