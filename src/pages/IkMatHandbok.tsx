@@ -452,7 +452,7 @@ const IkMatHandbok = () => {
     } catch (error) {
       console.error("Error generating PDF:", error);
       const errorMessage = error instanceof Error ? error.message : 'Ukjent feil';
-      toast.error(`Kunne ikke generere PDF: ${errorMessage}`);
+      toast.error(`${t("auto.kunne_ikke_generere_pdf_2")} ${errorMessage}`);
     }
   };
 
@@ -988,7 +988,7 @@ const IkMatHandbok = () => {
                       <td className="p-2">{item.equipmentType || '-'}</td>
                       <td className="p-2">{item.location || '-'}</td>
                       <td className="p-2">
-                        {item.minTemp || item.maxTemp ? `${item.minTemp || '–'}°C til ${item.maxTemp || '–'}°C` : '-'}
+                        {item.minTemp || item.maxTemp ? `${item.minTemp || '–'}${t("auto.c_til")} ${item.maxTemp || '–'}°C` : '-'}
                       </td>
                       <td className="p-2">{item.measurementFrequency || '-'}</td>
                     </tr>

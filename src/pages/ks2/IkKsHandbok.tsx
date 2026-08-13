@@ -525,7 +525,7 @@ export default function IkKsHandbok() {
             finalParagraphs.forEach((paragraph: string) => {
               if (paragraph.length === 0) return;
               
-              // Check if it's a labeled section like "Formål:" or "Sjekkliste:"
+              // Check if it's a labeled section like t("auto.formaal_3") or "Sjekkliste:"
               const isHeading = /^[A-ZÆØÅ][a-zæøåA-ZÆØÅ\s]+:/.test(paragraph) && paragraph.indexOf(':') < 40;
               // Check if it starts with a number like "1. " 
               const isNumbered = /^\d+\.\s/.test(paragraph);
@@ -611,8 +611,8 @@ export default function IkKsHandbok() {
       y += purposeLines.length * 4.5 + 3;
 
       const qualityPoints = [
-        "Riktig kvalitet på utført arbeid",
-        "Forutsigbar gjennomføring av oppdrag",
+        t("auto.riktig_kvalitet_paa_utfoert_arbeid"),
+        t("auto.forutsigbar_gjennomfoering_av_oppdrag"),
         "Sporbar dokumentasjon",
         "Kontinuerlig forbedring av virksomheten",
         "Etterlevelse av myndighetskrav",
@@ -636,7 +636,7 @@ export default function IkKsHandbok() {
       doc.setFont("helvetica", "normal");
       doc.text("Kvalitetssikringssystemet gjelder for alle virksomhetens aktiviteter innen:", 20, y);
       y += 5;
-      const scopeItems = ["Prosjektering", "Utførelse av arbeid", "Leveranser og tjenester", "Innkjøp og bruk av underleverandører", "Kontroll, dokumentasjon og overlevering"];
+      const scopeItems = ["Prosjektering", t("auto.utfoerelse_av_arbeid"), t("auto.leveranser_og_tjenester"), t("auto.innkjoep_og_bruk_av_underleverandoerer"), t("auto.kontroll_dokumentasjon_og_overlevering")];
       scopeItems.forEach(item => {
         doc.text(`☐ ${item}`, 25, y);
         y += 5;
@@ -662,9 +662,9 @@ export default function IkKsHandbok() {
       const roles = [
         ["Rolle", "Ansvar"],
         ["Daglig leder", "Overordnet ansvar for kvalitetssystemet"],
-        ["Faglig ansvarlig", "Sikrer faglig utførelse iht. regelverk"],
-        ["Prosjekt-/arbeidsleder", "Planlegging, gjennomføring og kontroll"],
-        ["Ansatte", "Utfører arbeid iht. rutiner og melder avvik"],
+        ["Faglig ansvarlig", t("auto.sikrer_faglig_utfoerelse_iht_regelverk")],
+        ["Prosjekt-/arbeidsleder", t("auto.planlegging_gjennomfoering_og_kontroll")],
+        [t("auto.ansatte"), t("auto.utfoerer_arbeid_iht_rutiner_og_melder_av")],
       ];
       doc.setFont("helvetica", "bold");
       doc.text(roles[0][0], 25, y);
@@ -691,14 +691,14 @@ export default function IkKsHandbok() {
       doc.text("Virksomheten har etablerte rutiner for:", 20, y);
       y += 5;
       const routinePoints = [
-        "Planlegging av oppdrag og arbeidsprosesser",
-        "Kompetansesikring og opplæring av ansatte",
-        "Risikovurdering før og under arbeid",
-        "Kontroll av arbeid og leveranser",
-        "Dokumentstyring og arkivering",
-        "Avviksbehandling og korrigerende tiltak",
-        "Bruk og oppfølging av underleverandører",
-        "Sluttkontroll og overlevering",
+        t("auto.planlegging_av_oppdrag_og_arbeidsprosess"),
+        t("auto.kompetansesikring_og_opplaering_av_ansat"),
+        t("auto.risikovurdering_foer_og_under_arbeid"),
+        t("auto.kontroll_av_arbeid_og_leveranser"),
+        t("auto.dokumentstyring_og_arkivering"),
+        t("auto.avviksbehandling_og_korrigerende_tiltak"),
+        t("auto.bruk_og_oppfoelging_av_underleverandoere"),
+        t("auto.sluttkontroll_og_overlevering"),
         "Periodisk gjennomgang av systemet",
       ];
       routinePoints.forEach(point => {
@@ -718,12 +718,12 @@ export default function IkKsHandbok() {
       doc.setFont("helvetica", "normal");
       doc.text("Virksomheten har system for registrering og behandling av:", 20, y);
       y += 5;
-      ["Avvik fra krav og spesifikasjoner", "Uønskede hendelser og feil", "Forbedringsforslag"].forEach(p => {
+      [t("auto.avvik_fra_krav_og_spesifikasjoner"), t("auto.uoenskede_hendelser_og_feil"), "Forbedringsforslag"].forEach(p => {
         doc.text(`• ${p}`, 25, y);
         y += 5;
       });
       y += 2;
-      const improvText = "Avvik behandles systematisk for å hindre gjentakelse og sikre kontinuerlig forbedring.";
+      const improvText = t("auto.avvik_behandles_systematisk_for_aa_hindr");
       doc.text(doc.splitTextToSize(improvText, pageWidth - 40), 20, y);
       y += 8;
 
@@ -737,7 +737,7 @@ export default function IkKsHandbok() {
       doc.setFont("helvetica", "normal");
       doc.text("Alle relevante aktiviteter dokumenteres der det er nødvendig, herunder:", 20, y);
       y += 5;
-      ["Sjekklister og kontroller", "Prosjektdokumentasjon", "Samsvarserklæringer / sluttdokumentasjon", "Opplæringsoversikt", "Avviksbehandling"].forEach(p => {
+      [t("auto.sjekklister_og_kontroller"), "Prosjektdokumentasjon", t("auto.samsvarserklaeringer_sluttdokumentasjon"), t("auto.opplaeringsoversikt"), "Avviksbehandling"].forEach(p => {
         doc.text(`• ${p}`, 25, y);
         y += 5;
       });
@@ -755,7 +755,7 @@ export default function IkKsHandbok() {
       doc.setFont("helvetica", "normal");
       doc.text("Kvalitetssystemet er etablert med grunnlag i relevante krav, blant annet:", 20, y);
       y += 5;
-      ["Plan- og bygningsloven (PBL)", "Byggesaksforskriften (SAK10) – der relevant", "Internkontrollforskriften", "Arbeidsmiljøloven", "Eventuelle bransjespesifikke forskrifter"].forEach(p => {
+      [t("auto.plan_og_bygningsloven_pbl"), "Byggesaksforskriften (SAK10) – der relevant", "Internkontrollforskriften", t("auto.arbeidsmiljoeloven"), t("auto.eventuelle_bransjespesifikke_forskrifter")].forEach(p => {
         doc.text(`• ${p}`, 25, y);
         y += 5;
       });
@@ -771,7 +771,7 @@ export default function IkKsHandbok() {
       doc.setFont("helvetica", "normal");
       doc.text("Kvalitetssystemet gjennomgås jevnlig og oppdateres ved:", 20, y);
       y += 5;
-      ["Endringer i regelverk", "Nye arbeidsområder", "Erfaring fra avvik eller prosjekter", "Organisatoriske endringer"].forEach(p => {
+      ["Endringer i regelverk", t("auto.nye_arbeidsomraader"), t("auto.erfaring_fra_avvik_eller_prosjekter"), "Organisatoriske endringer"].forEach(p => {
         doc.text(`• ${p}`, 25, y);
         y += 5;
       });
@@ -785,11 +785,11 @@ export default function IkKsHandbok() {
       y += 7;
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      const erklText1 = "Vi bekrefter at virksomheten har et fungerende og implementert kvalitetssikringssystem som brukes aktivt i den daglige driften.";
+      const erklText1 = t("auto.vi_bekrefter_at_virksomheten_har_et_fung");
       const erklLines1 = doc.splitTextToSize(erklText1, pageWidth - 40);
       doc.text(erklLines1, 20, y);
       y += erklLines1.length * 4.5 + 3;
-      const erklText2 = "Systemet er tilpasset virksomhetens størrelse, aktiviteter og risiko, og etterleves av ansatte og ledelse.";
+      const erklText2 = t("auto.systemet_er_tilpasset_virksomhetens_stoe_2");
       const erklLines2 = doc.splitTextToSize(erklText2, pageWidth - 40);
       doc.text(erklLines2, 20, y);
       y += erklLines2.length * 4.5 + 8;
@@ -903,7 +903,7 @@ export default function IkKsHandbok() {
                     <div>
                       <p className="text-sm font-medium">{section.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {section.status ? `${section.count} ${section.count === 1 ? "element" : "elementer"}` : "Ikke utfylt"}
+                        {section.status ? `${section.count} ${section.count === 1 ? "element" : "elementer"}` : t("auto.ikke_utfylt")}
                       </p>
                     </div>
                   </div>

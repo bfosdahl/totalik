@@ -144,12 +144,12 @@ export function TranslateHandbookDialog({
       if (data?.translatedContent) {
         onTranslated(data.translatedContent, targetLang);
         setCurrentLanguage(targetLang);
-        toast.success(`Håndbok oversatt til ${LANGUAGE_CONFIG[targetLang].nativeName}`);
+        toast.success(`${t("auto.haandbok_oversatt_til")} ${LANGUAGE_CONFIG[targetLang].nativeName}`);
         setIsOpen(false);
       }
     } catch (error) {
       console.error("Translation failed:", error);
-      toast.error(error instanceof Error ? error.message : "Kunne ikke oversette håndboken");
+      toast.error(error instanceof Error ? error.message : t("auto.kunne_ikke_oversette_haandboken"));
       setSelectedLanguage(null);
     } finally {
       setIsTranslating(false);
@@ -168,7 +168,7 @@ export function TranslateHandbookDialog({
           <span className="hidden sm:inline">
             {currentLanguage !== "no" 
               ? LANGUAGE_CONFIG[currentLanguage].nativeName 
-              : "Oversett håndbok"}
+              : t("auto.oversett_haandbok")}
           </span>
         </Button>
       </DialogTrigger>
