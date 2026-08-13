@@ -18,6 +18,7 @@ import { generateFilledChecklistPdf } from "@/utils/ksFilledChecklistPdf";
 import { toast } from "sonner";
 import { ContinueChecklistDialog } from "@/components/ks/ContinueChecklistDialog";
 import { t } from "@/i18n/t";
+import { TranslateContentButton } from "@/components/common/TranslateContentButton";
 
 interface FilledChecklist {
   id: string;
@@ -50,6 +51,7 @@ export default function KsUtfylteSjekklister() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadingProject, setDownloadingProject] = useState<string | null>(null);
   const [continueChecklist, setContinueChecklist] = useState<FilledChecklist | null>(null);
+  const [translations, setTranslations] = useState<Record<string, string[] | null>>({});
 
   useEffect(() => {
     if (!profile?.company_id) return;
