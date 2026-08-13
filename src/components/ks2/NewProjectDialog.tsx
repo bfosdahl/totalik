@@ -365,7 +365,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
-          <DialogTitle className="text-xl font-semibold">
+            {selectedProjectType ? t("auto.opprett_nytt_prosjekt2") : t("auto.velg_prosjekttype")}
             {selectedProjectType ? "Opprett nytt prosjekt" : "Velg prosjekttype"}
           </DialogTitle>
         </DialogHeader>
@@ -377,7 +377,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               {t("auto.velg_hvilken_type_prosjekt_du_vil_oppret")}
             </p>
             <div className="grid gap-4">
-              {PROJECT_TYPE_OPTIONS.map((option) => {
+              {getProjectTypeOptions().map((option) => {
                 const Icon = option.icon;
                 return (
                   <button
@@ -412,7 +412,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         {/* Back button */}
         <div className="px-6 pb-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedProjectType(null)} className="-ml-2 text-muted-foreground">
-            ← Endre prosjekttype ({PROJECT_TYPE_OPTIONS.find(o => o.id === selectedProjectType)?.name})
+            ← Endre prosjekttype ({getProjectTypeOptions().find(o => o.id === selectedProjectType)?.name})
           </Button>
         </div>
 
