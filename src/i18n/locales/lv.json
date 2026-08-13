@@ -5931,6 +5931,7 @@
     "feat_timer_befaringer": "Stundas un apsekojumi",
     "feat_ue_okonomi": "Apakšuzņēmēji un finanses",
     "feat_avvik": "Novirzes",
-    "feat_dokumenter": "Dokumenti"
+    "feat_dokumenter": "Dokumenti",
+    "endre_prosjekttype": "Mainīt projekta veidu"
   }
 }

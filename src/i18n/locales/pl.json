@@ -5931,6 +5931,7 @@
     "feat_timer_befaringer": "Godziny i inspekcje",
     "feat_ue_okonomi": "Podwykonawcy i finanse",
     "feat_avvik": "Niezgodności",
-    "feat_dokumenter": "Dokumenty"
+    "feat_dokumenter": "Dokumenty",
+    "endre_prosjekttype": "Zmień typ projektu"
   }
 }

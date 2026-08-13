@@ -5931,6 +5931,7 @@
     "feat_timer_befaringer": "Valandos ir apžiūros",
     "feat_ue_okonomi": "Subrangovai ir finansai",
     "feat_avvik": "Neatitiktys",
-    "feat_dokumenter": "Dokumentai"
+    "feat_dokumenter": "Dokumentai",
+    "endre_prosjekttype": "Keisti projekto tipą"
   }
 }

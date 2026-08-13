@@ -5931,6 +5931,7 @@
     "feat_timer_befaringer": "Hours & inspections",
     "feat_ue_okonomi": "Subcontractors & finance",
     "feat_avvik": "Deviations",
-    "feat_dokumenter": "Documents"
+    "feat_dokumenter": "Documents",
+    "endre_prosjekttype": "Change project type"
   }
 }

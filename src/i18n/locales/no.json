@@ -5931,6 +5931,7 @@
     "feat_timer_befaringer": "Timer & befaringer",
     "feat_ue_okonomi": "UE & økonomi",
     "feat_avvik": "Avvik",
-    "feat_dokumenter": "Dokumenter"
+    "feat_dokumenter": "Dokumenter",
+    "endre_prosjekttype": "Endre prosjekttype"
   }
 }

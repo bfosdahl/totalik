@@ -412,7 +412,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         {/* Back button */}
         <div className="px-6 pb-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedProjectType(null)} className="-ml-2 text-muted-foreground">
-            ← Endre prosjekttype ({getProjectTypeOptions().find(o => o.id === selectedProjectType)?.name})
+            ← {t("auto.endre_prosjekttype")} ({getProjectTypeOptions().find(o => o.id === selectedProjectType)?.name})
           </Button>
         </div>
 
