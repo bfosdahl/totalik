@@ -5915,6 +5915,22 @@
     "alle_inkl_fullfoerte": "All (incl. completed)",
     "opprett_ditt_foerste_prosjekt": "Create your first project",
     "proev_aa_endre_soek_eller_filter": "Try changing the search or filter",
-    "start_med_aa_opprette_et_nytt_prosjekt": "Start by creating a new project to begin quality assurance"
+    "start_med_aa_opprette_et_nytt_prosjekt": "Start by creating a new project to begin quality assurance",
+    "standard_prosjekt": "Standard project",
+    "lite_prosjekt2": "Small project",
+    "mini_prosjekt": "Mini project",
+    "opprett_nytt_prosjekt2": "Create new project",
+    "velg_prosjekttype": "Choose project type",
+    "feat_ks_hms_sha": "QA, HSE, SHA",
+    "feat_byggesak_blanketter": "Building case & forms",
+    "feat_okonomi_fremdrift": "Finance & progress",
+    "feat_underleverandorer": "Subcontractors",
+    "feat_alle_moduler": "All modules",
+    "feat_sjekklister": "Checklists",
+    "feat_bilder_dokumenter": "Photos & documents",
+    "feat_timer_befaringer": "Hours & inspections",
+    "feat_ue_okonomi": "Subcontractors & finance",
+    "feat_avvik": "Deviations",
+    "feat_dokumenter": "Documents"
   }
 }

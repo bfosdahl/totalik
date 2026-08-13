@@ -5915,6 +5915,22 @@
     "alle_inkl_fullfoerte": "Alle (inkl. fullførte)",
     "opprett_ditt_foerste_prosjekt": "Opprett ditt første prosjekt",
     "proev_aa_endre_soek_eller_filter": "Prøv å endre søk eller filter",
-    "start_med_aa_opprette_et_nytt_prosjekt": "Start med å opprette et nytt prosjekt for å komme i gang med kvalitetssikring"
+    "start_med_aa_opprette_et_nytt_prosjekt": "Start med å opprette et nytt prosjekt for å komme i gang med kvalitetssikring",
+    "standard_prosjekt": "Standard prosjekt",
+    "lite_prosjekt2": "Lite prosjekt",
+    "mini_prosjekt": "Mini prosjekt",
+    "opprett_nytt_prosjekt2": "Opprett nytt prosjekt",
+    "velg_prosjekttype": "Velg prosjekttype",
+    "feat_ks_hms_sha": "KS, HMS, SHA",
+    "feat_byggesak_blanketter": "Byggesak & blanketter",
+    "feat_okonomi_fremdrift": "Økonomi & fremdrift",
+    "feat_underleverandorer": "Underleverandører",
+    "feat_alle_moduler": "Alle moduler",
+    "feat_sjekklister": "Sjekklister",
+    "feat_bilder_dokumenter": "Bilder & dokumenter",
+    "feat_timer_befaringer": "Timer & befaringer",
+    "feat_ue_okonomi": "UE & økonomi",
+    "feat_avvik": "Avvik",
+    "feat_dokumenter": "Dokumenter"
   }
 }
