@@ -1,11 +1,10 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { currentProfile } from "../supabase";
-import { t } from "@/i18n/t";
 
 export default defineTool({
   name: "whoami",
   title: "Hvem er jeg",
-  description: t("auto.returnerer_den_innloggede_brukerens_prof"),
+  description: "Returnerer den innloggede brukerens profil og tilhørende bedrift i Total-IK.",
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {

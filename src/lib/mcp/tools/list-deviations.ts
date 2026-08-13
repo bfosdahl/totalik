@@ -1,12 +1,11 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { currentProfile } from "../supabase";
-import { t } from "@/i18n/t";
 
 export default defineTool({
   name: "list_deviations",
   title: "List avvik",
-  description: t("auto.henter_avvik_deviations_for_brukerens_be"),
+  description: "Henter avvik (deviations) for brukerens bedrift, med valgfritt filter på status og antall.",
   inputSchema: {
     status: z
       .enum(["open", "in_progress", "resolved", "closed"])

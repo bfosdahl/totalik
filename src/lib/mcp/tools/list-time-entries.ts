@@ -1,12 +1,11 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { currentProfile } from "../supabase";
-import { t } from "@/i18n/t";
 
 export default defineTool({
   name: "list_time_entries",
   title: "List timeføringer",
-  description: t("auto.henter_den_innloggede_brukerens_egne_tim"),
+  description: "Henter den innloggede brukerens egne timeføringer i en valgfri datoperiode.",
   inputSchema: {
     from_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Fra-dato YYYY-MM-DD."),
     to_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Til-dato YYYY-MM-DD."),

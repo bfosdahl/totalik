@@ -2,7 +2,6 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FIXTURE_PHOTOS } from "./__fixtures__/dailyReportPhotos";
 import { fitImageInCell } from "./ksDailyReportPdf";
-import { t } from "@/i18n/t";
 
 /**
  * Felles ytelsesharness for alle PDF-eksporter (dagsrapport, handbok, avvik ...).
@@ -159,25 +158,25 @@ export function runCalibration(): number {
 export const PDF_PERF_SCENARIOS: PerfScenario[] = [
   {
     id: "dagsrapport-30-bilder",
-    name: t("auto.dagsrapport_med_30_bilder"),
+    name: "Dagsrapport med 30 bilder",
     budget: { maxUnits: 45, maxHeapMb: 220 },
     run: () => buildPhotoGridPdf(30),
   },
   {
     id: "dagsrapport-80-bilder",
-    name: t("auto.dagsrapport_med_80_bilder_verstefall"),
+    name: "Dagsrapport med 80 bilder (verstefall)",
     budget: { maxUnits: 55, maxHeapMb: 450 },
     run: () => buildPhotoGridPdf(80),
   },
   {
     id: "handbok-40-kapitler",
-    name: t("auto.hms_handbok_med_40_kapitler"),
+    name: "HMS-handbok med 40 kapitler",
     budget: { maxUnits: 18, maxHeapMb: 200 },
     run: () => buildHandbookLikePdf(40),
   },
   {
     id: "avvik-400-rader",
-    name: t("auto.avviksrapport_med_400_rader"),
+    name: "Avviksrapport med 400 rader",
     budget: { maxUnits: 90, maxHeapMb: 250 },
     run: () => buildAvvikLikePdf(400),
   },
