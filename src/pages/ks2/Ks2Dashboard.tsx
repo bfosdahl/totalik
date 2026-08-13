@@ -35,8 +35,8 @@ export default function Ks2Dashboard() {
     { key: "active", label: t("auto.aktive") },
     { key: "mine", label: t("auto.mine") },
     { key: "with_deviations", label: t("auto.med_aapne_avvik") },
-    { key: "archived", label: archivedCount > 0 ? `Arkiv (${archivedCount})` : "Arkiv" },
-    { key: "all", label: "Alle (inkl. fullførte)" },
+    { key: "archived", label: archivedCount > 0 ? `${t("auto.arkiv")} (${archivedCount})` : t("auto.arkiv") },
+    { key: "all", label: t("auto.alle_inkl_fullfoerte") },
   ];
 
   // Fetch deviation counts for all projects
