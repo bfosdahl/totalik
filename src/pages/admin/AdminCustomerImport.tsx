@@ -276,7 +276,7 @@ export default function AdminCustomerImport() {
         {(file || textContent || extractedData) && (
           <Button variant="outline" onClick={handleReset}>
             <RotateCcw className="h-4 w-4 mr-2" />
-            Start på nytt
+            {t("auto.start_paa_nytt")}
           </Button>
         )}
       </div>
@@ -393,7 +393,7 @@ export default function AdminCustomerImport() {
               Ekstrahert data
             </CardTitle>
             <CardDescription>
-              Gjennomgå og godkjenn data før import
+              {t("auto.gjennomgaa_og_godkjenn_data_foer_import")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -502,7 +502,7 @@ export default function AdminCustomerImport() {
                       <div className="space-y-2">
                         <h3 className="font-semibold flex items-center gap-2">
                           <Target className="h-4 w-4" />
-                          HMS-mål
+                          {t("auto.hms_maal")}
                         </h3>
                         <ul className="list-disc list-inside text-sm space-y-1">
                           {extractedData.hmsmal.map((mal, idx) => (
@@ -553,7 +553,7 @@ export default function AdminCustomerImport() {
                       <div className="space-y-2">
                         <h3 className="font-semibold flex items-center gap-2">
                           <ClipboardList className="h-4 w-4" />
-                          Kurs og opplæring
+                          {t("auto.kurs_og_opplaering")}
                         </h3>
                         <div className="text-sm">
                           <Badge variant={extractedData.kursOgOpplaering.harRutiner ? "default" : "secondary"}>
@@ -595,7 +595,7 @@ export default function AdminCustomerImport() {
                       ) : (
                         <>
                           <Building2Icon className="h-4 w-4 mr-2" />
-                          Opprett bedrift direkte
+                          {t("auto.opprett_bedrift_direkte")}
                         </>
                       )}
                     </Button>
@@ -606,7 +606,7 @@ export default function AdminCustomerImport() {
                       disabled={isCreatingCompany}
                     >
                       <ArrowRight className="h-4 w-4 mr-2" />
-                      Forhåndsutfyll og rediger først
+                      {t("auto.forhaandsutfyll_og_rediger_foerst")}
                     </Button>
                   </div>
                 </div>

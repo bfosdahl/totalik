@@ -166,7 +166,7 @@ export default function IkKsSjekklister() {
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <Download className="w-4 h-4 mr-2" />
-                  Velg fra maler
+                  {t("auto.velg_fra_maler")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
@@ -231,7 +231,7 @@ export default function IkKsSjekklister() {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
-                  Ny mal
+                  {t("auto.ny_mal")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -339,11 +339,11 @@ export default function IkKsSjekklister() {
                 <div className="flex justify-center gap-2">
                   <Button variant="outline" onClick={() => setShowAdminDialog(true)}>
                     <Download className="w-4 h-4 mr-2" />
-                    Velg fra maler
+                    {t("auto.velg_fra_maler")}
                   </Button>
                   <Button onClick={() => setShowNewDialog(true)}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Opprett mal
+                    {t("auto.opprett_mal")}
                   </Button>
                 </div>
               </CardContent>
@@ -533,7 +533,7 @@ function TemplateCard({
                       />
                       <Button variant="outline" size="sm" className="h-8 shrink-0" onClick={addEditCheckpoint}>
                         <Plus className="w-3.5 h-3.5 mr-1" />
-                        Legg til
+                        {t("auto.legg_til")}
                       </Button>
                     </div>
                   </div>
@@ -542,7 +542,7 @@ function TemplateCard({
                 <div className="flex justify-end gap-2 pt-2 border-t">
                   <Button variant="outline" size="sm" onClick={onCancelEdit}>
                     <X className="w-3.5 h-3.5 mr-1" />
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button size="sm" onClick={handleSave} disabled={isSaving || !editName.trim()}>
                     {isSaving ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1" />}
@@ -575,11 +575,11 @@ function TemplateCard({
                 <div className="flex justify-end gap-2 mt-4 pt-3 border-t">
                   <Button variant="default" size="sm" onClick={(e) => { e.stopPropagation(); onFill(); }}>
                     <PlayCircle className="w-3.5 h-3.5 mr-1" />
-                    Gjennomfør
+                    {t("auto.gjennomfoer")}
                   </Button>
                   <Button variant="outline" size="sm" onClick={startEdit}>
                     <Edit2 className="w-3.5 h-3.5 mr-1" />
-                    Rediger
+                    {t("auto.rediger")}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -589,7 +589,7 @@ function TemplateCard({
                     disabled={isSaving}
                   >
                     <Trash2 className="w-3.5 h-3.5 mr-1" />
-                    Slett
+                    {t("auto.slett")}
                   </Button>
                 </div>
               </div>

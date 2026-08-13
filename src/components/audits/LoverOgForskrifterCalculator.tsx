@@ -327,7 +327,7 @@ const LoverOgForskrifterCalculator = () => {
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Plus className="w-4 h-4 mr-2" />
-                      Legg til manuelt
+                      {t("auto.legg_til_manuelt")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -493,7 +493,7 @@ const LoverOgForskrifterCalculator = () => {
                   <>
                     <Button variant="outline" onClick={sendRapportEpost}>
                       <Mail className="w-4 h-4 mr-2" />
-                      Send på e-post
+                      {t("auto.send_paa_e_post")}
                     </Button>
                     {!hasAlreadySavedLaws && (
                       <Button variant="secondary" onClick={handleSaveAllLaws} disabled={isSaving}>
@@ -637,7 +637,7 @@ const LoverOgForskrifterCalculator = () => {
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Plus className="w-4 h-4 mr-2" />
-                      Legg til manuelt
+                      {t("auto.legg_til_manuelt")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>

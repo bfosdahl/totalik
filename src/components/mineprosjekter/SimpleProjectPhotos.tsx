@@ -227,7 +227,7 @@ export function SimpleProjectPhotos({ projectId }: SimpleProjectPhotosProps) {
                     onClick={() => handleDelete(selectedPhoto)}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Slett
+                    {t("auto.slett")}
                   </Button>
                 </div>
               </div>

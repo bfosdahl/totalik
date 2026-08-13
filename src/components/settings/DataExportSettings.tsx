@@ -128,7 +128,7 @@ export function DataExportSettings({ onBack }: Props) {
     <div className="space-y-6">
       <Button variant="ghost" size="sm" onClick={onBack}>
         <ArrowLeft className="w-4 h-4 mr-1" />
-        Tilbake
+        {t("auto.tilbake")}
       </Button>
 
       <div className="flex items-center gap-3">

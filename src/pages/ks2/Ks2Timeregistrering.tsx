@@ -223,7 +223,7 @@ export default function Ks2Timeregistrering() {
               <SelectItem value="last-week">{t("auto.forrige_uke")}</SelectItem>
               <SelectItem value="this-month">{t("auto.denne_maaneden")}</SelectItem>
               <SelectItem value="last-month">{t("auto.forrige_maaned")}</SelectItem>
-              <SelectItem value="payroll-21">Lønnsperiode (21–20)</SelectItem>
+              <SelectItem value="payroll-21">{t("auto.loennsperiode_21_20")}</SelectItem>
               <SelectItem value="custom">{t("auto.egendefinert_periode")}</SelectItem>
               <SelectItem value="all">{t("auto.alle")}</SelectItem>
             </SelectContent>
@@ -318,7 +318,7 @@ export default function Ks2Timeregistrering() {
           <TabsList>
             <TabsTrigger value="all">
               <Users className="h-4 w-4 mr-1" />
-              Alle
+              {t("auto.alle")}
             </TabsTrigger>
             <TabsTrigger value="by-employee">
               <User className="h-4 w-4 mr-1" />
@@ -395,7 +395,7 @@ export default function Ks2Timeregistrering() {
                       onClick={() => setDialogOpen(true)}
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      Registrer første time
+                      {t("auto.registrer_foerste_time")}
                     </Button>
                   </div>
                 ) : (
@@ -452,7 +452,7 @@ export default function Ks2Timeregistrering() {
                   onClick={() => setDialogOpen(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Registrer første time
+                  {t("auto.registrer_foerste_time")}
                 </Button>
               </div>
             ) : (

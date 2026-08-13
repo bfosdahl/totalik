@@ -440,7 +440,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
                         onClick={() => scanLabelImage(labelImagePreview)}
                       >
                         <Sparkles className="h-3 w-3 mr-1" />
-                        Skann på nytt
+                        {t("auto.skann_paa_nytt")}
                       </Button>
                     )}
                     <Button
@@ -465,7 +465,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
             <div className="space-y-0.5">
               <Label className="text-sm font-semibold">{t("auto.egenprodusert_mat")}</Label>
               <p className="text-xs text-muted-foreground">
-                For mat laget på eget kjøkken (f.eks. bolognese, kake, ferdigretter)
+                {t("auto.for_mat_laget_paa_eget_kjoekken_f_eks_bo")}
               </p>
             </div>
             <Switch
@@ -776,7 +776,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isSubmitting || isScanning}>
               {isSubmitting ? (

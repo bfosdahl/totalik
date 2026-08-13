@@ -257,7 +257,7 @@ export function ManageEquipmentDialog({
                               onClick={() => handleStartEdit(equip)}
                             >
                               <Pencil className="h-3.5 w-3.5" />
-                              Rediger
+                              {t("auto.rediger")}
                             </Button>
                             <Button
                               variant="ghost"
@@ -393,7 +393,7 @@ export function ManageEquipmentDialog({
           ) : (
             <Button onClick={() => setShowAddForm(true)} variant="outline" className="w-full">
               <Plus className="h-4 w-4 mr-2" />
-              Legg til utstyr
+              {t("auto.legg_til_utstyr")}
             </Button>
           )}
         </div>

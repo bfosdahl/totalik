@@ -936,7 +936,7 @@ export default function AdminKsPanel() {
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Ny prosjektmal
+                    {t("auto.ny_prosjektmal")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[90vh]">
@@ -1086,7 +1086,7 @@ export default function AdminKsPanel() {
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Ny sjekkliste-mal
+                    {t("auto.ny_sjekkliste_mal")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh]">
@@ -1142,7 +1142,7 @@ export default function AdminKsPanel() {
                                 setChecklistForm({ ...checklistForm, category: "" });
                               }}
                             >
-                              Avbryt
+                              {t("auto.avbryt")}
                             </Button>
                           </div>
                         ) : (
@@ -1201,7 +1201,7 @@ export default function AdminKsPanel() {
                           />
                           <Label className="flex items-center gap-1.5 text-sm">
                             <Lock className="h-3.5 w-3.5" />
-                            Låst
+                            {t("auto.laast")}
                           </Label>
                         </div>
                       </div>
@@ -1213,7 +1213,7 @@ export default function AdminKsPanel() {
                           <Label>{t("auto.sjekkpunkter")}</Label>
                           <Button type="button" variant="outline" size="sm" onClick={addCheckpoint}>
                             <Plus className="h-4 w-4 mr-1" />
-                            Legg til
+                            {t("auto.legg_til")}
                           </Button>
                         </div>
                         {checklistForm.checkpoints.map((checkpoint, index) => (
@@ -1288,7 +1288,7 @@ export default function AdminKsPanel() {
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
-                    Ny rutine-mal
+                    {t("auto.ny_rutine_mal")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh]">
@@ -1344,7 +1344,7 @@ export default function AdminKsPanel() {
                                 setRoutineForm({ ...routineForm, category: "" });
                               }}
                             >
-                              Avbryt
+                              {t("auto.avbryt")}
                             </Button>
                           </div>
                         ) : (
@@ -1413,7 +1413,7 @@ export default function AdminKsPanel() {
                           />
                           <Label className="flex items-center gap-1.5 text-sm">
                             <Lock className="h-3.5 w-3.5" />
-                            Låst
+                            {t("auto.laast")}
                           </Label>
                         </div>
                       </div>
@@ -1522,7 +1522,7 @@ export default function AdminKsPanel() {
                                 setDocumentForm({ ...documentForm, category: "" });
                               }}
                             >
-                              Avbryt
+                              {t("auto.avbryt")}
                             </Button>
                           </div>
                         ) : (

@@ -116,7 +116,7 @@ export const GoalsStep = forwardRef<GoalsStepRef, GoalsStepProps>(
       <div className="space-y-4">
         <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
           <Lightbulb className="w-4 h-4" />
-          Eksempler på målsettinger
+          {t("auto.eksempler_paa_maalsettinger")}
         </h4>
         
         <div className="space-y-3">
@@ -162,7 +162,7 @@ export const GoalsStep = forwardRef<GoalsStepRef, GoalsStepProps>(
         <div className="flex items-center gap-2">
           <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
             <Plus className="w-4 h-4" />
-            Eller skriv din egen målsetting
+            {t("auto.eller_skriv_din_egen_maalsetting")}
           </h4>
         </div>
         

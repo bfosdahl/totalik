@@ -213,7 +213,7 @@ const DepartmentOrganization = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Building2 className="h-8 w-8 text-primary" />
-              Organisering
+              {t("auto.organisering")}
             </h1>
             <p className="text-muted-foreground mt-1">
               HMS-organisasjon for {department?.name}

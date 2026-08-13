@@ -133,7 +133,7 @@ export default function MineProsjekterDashboard() {
               </p>
               <Button onClick={() => setDialogOpen(true)} className="gap-2">
                 <Plus className="w-4 h-4" />
-                Opprett prosjekt
+                {t("auto.opprett_prosjekt")}
               </Button>
             </CardContent>
           </Card>

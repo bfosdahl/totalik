@@ -494,7 +494,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
                 onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
                 disabled={saving}
               >
-                Neste <ChevronRight className="h-4 w-4 ml-1" />
+                {t("auto.neste")} <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             )}
           </div>
@@ -541,7 +541,7 @@ function ChecklistRow({
               className="text-xs text-primary hover:underline"
               onClick={() => setShowNote(true)}
             >
-              + Legg til notat
+              {t("auto.legg_til_notat")}
             </button>
           ) : (
             <Textarea

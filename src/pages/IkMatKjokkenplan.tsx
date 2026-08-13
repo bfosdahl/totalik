@@ -193,7 +193,7 @@ const IkMatKjokkenplan = () => {
                         }}
                       >
                         {room.image ? (
-                          <><Pencil className="mr-2 h-4 w-4" />Rediger</>
+                          <><Pencil className="mr-2 h-4 w-4" />{t("auto.rediger")}</>
                         ) : (
                           <><Plus className="mr-2 h-4 w-4" />Tegn</>
                         )}
@@ -271,7 +271,7 @@ const IkMatKjokkenplan = () => {
                 )}
                 <Button onClick={() => setShowNewRoomInput(true)}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Legg til rom / område
+                  {t("auto.legg_til_rom_omraade")}
                 </Button>
               </div>
             )}
@@ -345,7 +345,7 @@ const IkMatKjokkenplan = () => {
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 onClick={() => deleteRoomId && handleDeleteRoom(deleteRoomId)}
               >
-                Slett
+                {t("auto.slett")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

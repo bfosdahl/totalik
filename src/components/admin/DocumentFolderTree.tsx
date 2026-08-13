@@ -207,11 +207,11 @@ export function DocumentFolderTree({
           <ContextMenuContent>
             <ContextMenuItem onClick={() => openEditDialog(folder)}>
               <Pencil className="h-4 w-4 mr-2" />
-              Rediger mappe
+              {t("auto.rediger_mappe")}
             </ContextMenuItem>
             <ContextMenuItem onClick={() => openCreateSubfolderDialog(folder.id)}>
               <FolderPlus className="h-4 w-4 mr-2" />
-              Ny undermappe
+              {t("auto.ny_undermappe")}
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
@@ -219,7 +219,7 @@ export function DocumentFolderTree({
               onClick={() => deleteFolder.mutate(folder.id)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Slett mappe
+              {t("auto.slett_mappe")}
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
@@ -280,7 +280,7 @@ export function DocumentFolderTree({
               size="sm"
               onClick={() => setIsCreateDialogOpen(true)}
             >
-              Opprett første mappe
+              {t("auto.opprett_foerste_mappe")}
             </Button>
           </div>
         )}
@@ -314,7 +314,7 @@ export function DocumentFolderTree({
               />
             </div>
             <div className="space-y-2">
-              <Label>Beskrivelse (valgfritt)</Label>
+              <Label>{t("auto.beskrivelse_valgfritt")}</Label>
               <Input
                 value={folderForm.description}
                 onChange={(e) => setFolderForm((f) => ({ ...f, description: e.target.value }))}
@@ -371,7 +371,7 @@ export function DocumentFolderTree({
                 setEditingFolder(null);
               }}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={editingFolder ? handleUpdateFolder : handleCreateFolder}

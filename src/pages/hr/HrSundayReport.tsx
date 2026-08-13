@@ -110,7 +110,7 @@ export default function HrSundayReport() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
               <CalendarDays className="w-7 h-7 text-primary" />
-              Søndagsrapport
+              {t("auto.soendagsrapport")}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               AML §10-8 – fri annenhver søndag (siste {weeks} uker)

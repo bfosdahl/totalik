@@ -346,7 +346,7 @@ export function EmployeeDetailDialog({
                   {canManage && !isEditing && (
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                       <Edit2 className="w-4 h-4 mr-2" />
-                      Rediger
+                      {t("auto.rediger")}
                     </Button>
                   )}
                 </CardHeader>
@@ -382,7 +382,7 @@ export function EmployeeDetailDialog({
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Users className="w-5 h-5" />
-                    Pårørende
+                    {t("auto.paaroerende")}
                   </CardTitle>
                   <CardDescription>{t("auto.kontaktperson_ved_noedstilfeller")}</CardDescription>
                 </CardHeader>
@@ -441,11 +441,11 @@ export function EmployeeDetailDialog({
                     <div className="flex gap-2 pt-2">
                       <Button onClick={handleSave} disabled={updateEmployee.isPending}>
                         <Save className="w-4 h-4 mr-2" />
-                        Lagre
+                        {t("auto.lagre")}
                       </Button>
                       <Button variant="outline" onClick={handleCancel}>
                         <X className="w-4 h-4 mr-2" />
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                     </div>
                   )}
@@ -457,7 +457,7 @@ export function EmployeeDetailDialog({
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Key className="w-5 h-5" />
-                      Endre passord
+                      {t("auto.endre_passord")}
                     </CardTitle>
                     <CardDescription>{t("auto.sett_nytt_passord_for_denne_ansatte")}</CardDescription>
                   </CardHeader>
@@ -499,7 +499,7 @@ export function EmployeeDetailDialog({
                     </div>
 
                     <div className="pt-4 border-t space-y-2">
-                      <p className="text-sm font-medium">Endre e-post (brukernavn)</p>
+                      <p className="text-sm font-medium">{t("auto.endre_e_post_brukernavn")}</p>
                       <p className="text-xs text-muted-foreground">
                         {t("auto.brukeren_logger_inn_med_den_nye_adressen")}
                       </p>
@@ -563,7 +563,7 @@ export function EmployeeDetailDialog({
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Building2 className="w-5 h-5" />
-                    Avdelingstilhørighet
+                    {t("auto.avdelingstilhoerighet")}
                   </CardTitle>
                   <CardDescription>
                     {t("auto.velg_hvilke_enheter_denne_ansatte_skal_t")}
@@ -629,7 +629,7 @@ export function EmployeeDetailDialog({
                             ) : (
                               <>
                                 <Plus className="w-4 h-4 mr-1" />
-                                Legg til
+                                {t("auto.legg_til")}
                               </>
                             )}
                           </Button>
@@ -637,7 +637,7 @@ export function EmployeeDetailDialog({
                         {!canManage && isAssignedToMain && (
                           <Badge variant="secondary">
                             <Check className="w-3 h-3 mr-1" />
-                            Tilhører
+                            {t("auto.tilhoerer")}
                           </Badge>
                         )}
                       </div>
@@ -695,7 +695,7 @@ export function EmployeeDetailDialog({
                                 ) : (
                                   <>
                                     <Plus className="w-4 h-4 mr-1" />
-                                    Legg til
+                                    {t("auto.legg_til")}
                                   </>
                                 )}
                               </Button>
@@ -703,7 +703,7 @@ export function EmployeeDetailDialog({
                             {!canManage && isAssigned && (
                               <Badge variant="secondary">
                                 <Check className="w-3 h-3 mr-1" />
-                                Tilhører
+                                {t("auto.tilhoerer")}
                               </Badge>
                             )}
                           </div>
@@ -803,7 +803,7 @@ export function EmployeeDetailDialog({
                 {canManage && (
                   <Button onClick={() => setIsAddCourseOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Legg til kurs
+                    {t("auto.legg_til_kurs")}
                   </Button>
                 )}
               </div>

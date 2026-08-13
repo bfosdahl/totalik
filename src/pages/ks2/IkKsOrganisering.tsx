@@ -469,7 +469,7 @@ export default function IkKsOrganisering() {
                   className="resize-none"
                 />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Støtter markdown-formattering (**fet**, *kursiv*, lister osv.)
+                  {t("auto.stoetter_markdown_formattering_fet_kursi")}
                 </p>
               </CardContent>
             </Card>

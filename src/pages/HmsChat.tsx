@@ -174,7 +174,7 @@ export default function HmsChat() {
               {messages.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={clearChat}>
                   <Trash2 className="h-4 w-4 mr-1" />
-                  Tøm chat
+                  {t("auto.toem_chat")}
                 </Button>
               )}
             </div>

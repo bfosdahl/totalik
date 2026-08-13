@@ -365,7 +365,7 @@ export default function Ks2Motereferater() {
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          Nytt møtereferat
+          {t("auto.nytt_moetereferat")}
         </Button>
       </div>
 
@@ -432,7 +432,7 @@ export default function Ks2Motereferater() {
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Nytt møtereferat
+              {t("auto.nytt_moetereferat")}
             </Button>
           </CardContent>
         </Card>
@@ -484,7 +484,7 @@ export default function Ks2Motereferater() {
                         onClick={() => handleCompleteMeeting(meeting)}
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Fullfør
+                        {t("auto.fullfoer")}
                       </Button>
                     )}
                     <Button
@@ -633,7 +633,7 @@ export default function Ks2Motereferater() {
                 />
                 <Button variant="outline" onClick={handleAddParticipant}>
                   <Plus className="w-4 h-4 mr-1" />
-                  Legg til
+                  {t("auto.legg_til")}
                 </Button>
               </div>
             </div>
@@ -668,7 +668,7 @@ export default function Ks2Motereferater() {
                 resetForm();
               }}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               onClick={isEditDialogOpen ? handleUpdateMeeting : handleCreateMeeting}
@@ -840,7 +840,7 @@ export default function Ks2Motereferater() {
                           />
                           <Button onClick={handleAddItem}>
                             <Plus className="w-4 h-4 mr-1" />
-                            Legg til
+                            {t("auto.legg_til")}
                           </Button>
                         </div>
                       </div>

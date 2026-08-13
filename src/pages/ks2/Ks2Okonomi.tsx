@@ -326,7 +326,7 @@ export default function Ks2Okonomi() {
         </div>
         <Button onClick={handleOpenBudget}>
           <Save className="h-4 w-4 mr-2" />
-          Rediger budsjett
+          {t("auto.rediger_budsjett")}
         </Button>
       </div>
 
@@ -461,7 +461,7 @@ export default function Ks2Okonomi() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Beløp (kr) *</Label>
+                      <Label>{t("auto.beloep_kr")}</Label>
                       <Input
                         type="number"
                         value={costForm.amount}
@@ -599,7 +599,7 @@ export default function Ks2Okonomi() {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Ny faktura
+                  {t("auto.ny_faktura")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
@@ -644,7 +644,7 @@ export default function Ks2Okonomi() {
                     />
                   </div>
                   <div>
-                    <Label>Beløp (kr) *</Label>
+                    <Label>{t("auto.beloep_kr")}</Label>
                     <Input
                       type="number"
                       value={invoiceForm.amount}
@@ -774,7 +774,7 @@ export default function Ks2Okonomi() {
                 <p className="text-muted-foreground mb-4">{t("auto.opprett_fakturaer_for_aa_foelge_opp_innb")}</p>
                 <Button onClick={() => setInvoiceDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Ny faktura
+                  {t("auto.ny_faktura")}
                 </Button>
               </CardContent>
             </Card>

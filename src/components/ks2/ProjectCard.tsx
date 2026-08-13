@@ -78,7 +78,7 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
                     onDelete(project.id);
                   }}
                 >
-                  Slett prosjekt
+                  {t("auto.slett_prosjekt")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

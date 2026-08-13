@@ -741,7 +741,7 @@ export default function AdminDocuments() {
                           onClick={() => setSelectedFolderId(null)}
                           className="cursor-pointer"
                         >
-                          Alle dokumenter
+                          {t("auto.alle_dokumenter")}
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                       {getBreadcrumbPath().map((folder, index, arr) => (

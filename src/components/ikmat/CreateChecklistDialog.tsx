@@ -97,7 +97,7 @@ export const CreateChecklistDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Beskrivelse (valgfritt)</Label>
+            <Label htmlFor="description">{t("auto.beskrivelse_valgfritt")}</Label>
             <Textarea
               id="description"
               value={description}
@@ -117,7 +117,7 @@ export const CreateChecklistDialog = ({
                 onClick={handleAddCheckpoint}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Legg til punkt
+                {t("auto.legg_til_punkt")}
               </Button>
             </div>
 

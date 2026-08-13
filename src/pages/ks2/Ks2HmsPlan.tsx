@@ -259,7 +259,7 @@ export default function Ks2HmsPlan() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Target className="h-5 w-5 text-emerald-500" />
-                HMS-mål for prosjektet
+                {t("auto.hms_maal_for_prosjektet")}
               </CardTitle>
               <CardDescription>
                 {t("auto.definer_konkrete_maal_for_helse_miljoe_o")}

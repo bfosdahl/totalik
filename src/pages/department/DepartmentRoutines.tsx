@@ -183,7 +183,7 @@ const DepartmentRoutines = () => {
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleAddRoutine}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny rutine
+              {t("auto.ny_rutine")}
             </Button>
             <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
               {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
@@ -206,7 +206,7 @@ const DepartmentRoutines = () => {
               <p>{t("auto.ingen_rutiner_er_definert_for_denne_avde")}</p>
               <Button onClick={handleAddRoutine} className="mt-4">
                 <Plus className="h-4 w-4 mr-2" />
-                Legg til første rutine
+                {t("auto.legg_til_foerste_rutine")}
               </Button>
             </CardContent>
           </Card>

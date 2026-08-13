@@ -163,7 +163,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   {isDebugMode && debugData && (
                     <details className="mt-3">
                       <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                        🔍 Debug-data (siste nettverksforespørsler)
+                        {t("auto.debug_data_siste_nettverksforespoersler")}
                       </summary>
                       <div className="mt-2 space-y-2">
                         <p className="text-xs text-muted-foreground">
@@ -201,14 +201,14 @@ export class ErrorBoundary extends Component<Props, State> {
             <CardFooter className="flex flex-col sm:flex-row gap-2">
               <Button variant="outline" className="w-full sm:w-auto" onClick={this.handleGoHome}>
                 <Home className="w-4 h-4 mr-2" />
-                Gå til forsiden
+                {t("auto.gaa_til_forsiden")}
               </Button>
               <Button variant="outline" className="w-full sm:w-auto" onClick={this.handleRetry}>
                 {t("auto.proev_igjen")}
               </Button>
               <Button className="w-full sm:w-auto" onClick={this.handleReload}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Last siden på nytt
+                {t("auto.last_siden_paa_nytt")}
               </Button>
             </CardFooter>
           </Card>

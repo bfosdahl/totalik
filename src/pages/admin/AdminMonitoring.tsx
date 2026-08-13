@@ -219,7 +219,7 @@ export default function AdminMonitoring() {
                           className="gap-1.5"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          Løs
+                          {t("auto.loes")}
                         </Button>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export default function AdminMonitoring() {
           ) : alerts.length === 0 ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
               <CheckCircle2 className="w-4 h-4 text-success" />
-              Ingen aktive alerts
+              {t("auto.ingen_aktive_alerts")}
             </div>
           ) : (
             <div className="space-y-2">
@@ -434,7 +434,7 @@ export default function AdminMonitoring() {
                             onClick={() => resolveAlert.mutate(alert.id)}
                             className="h-6 text-xs mt-1"
                           >
-                            Løs
+                            {t("auto.loes")}
                           </Button>
                         )}
                       </div>

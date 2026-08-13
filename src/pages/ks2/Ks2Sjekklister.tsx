@@ -238,7 +238,7 @@ export default function Ks2Sjekklister() {
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => handleContinueChecklist(checklist)} title={t("auto.rediger_fullfoert_sjekkliste")}>
                   <Pencil className="h-4 w-4 mr-1" />
-                  Rediger
+                  {t("auto.rediger")}
                 </Button>
                 <Button variant="outline" size="sm" disabled={isDownloading} onClick={() => handleDownloadChecklist(checklist)}>
                   {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -278,7 +278,7 @@ export default function Ks2Sjekklister() {
           </Button>
           <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
             <Library className="h-4 w-4 mr-2" />
-            Velg fra malbibliotek
+            {t("auto.velg_fra_malbibliotek")}
           </Button>
         </div>
       </div>
@@ -362,7 +362,7 @@ export default function Ks2Sjekklister() {
                 </p>
                 <Button onClick={() => navigate(`/ks/project/${projectId}/maler`)}>
                   <Library className="h-4 w-4 mr-2" />
-                  Gå til Malbibliotek
+                  {t("auto.gaa_til_malbibliotek")}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </CardContent>

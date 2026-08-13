@@ -406,7 +406,7 @@ export function ErgonomicAssessmentDialog({
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Vibrasjonsnivå (m/s²)</Label>
+                        <Label>{t("auto.vibrasjonsnivaa_m_s")}</Label>
                         <Input
                           type="number"
                           step="0.1"
@@ -430,11 +430,11 @@ export function ErgonomicAssessmentDialog({
                   <div className="p-4 border rounded-lg space-y-4">
                     <h4 className="font-medium flex items-center gap-2">
                       <Volume2 className="h-4 w-4" />
-                      Støydetaljer
+                      {t("auto.stoeydetaljer")}
                     </h4>
                     <div className="grid gap-4 md:grid-cols-3">
                       <div className="space-y-2">
-                        <Label>Støynivå (dB)</Label>
+                        <Label>{t("auto.stoeynivaa_db")}</Label>
                         <Input
                           type="number"
                           value={noiseLevel || ""}
@@ -442,7 +442,7 @@ export function ErgonomicAssessmentDialog({
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Toppnivå / impulsstøy (dB)</Label>
+                        <Label>{t("auto.toppnivaa_impulsstoey_db")}</Label>
                         <Input
                           type="number"
                           value={noisePeakLevel || ""}
@@ -643,7 +643,7 @@ export function ErgonomicAssessmentDialog({
                     <Label>{t("auto.eksisterende_tiltak")}</Label>
                     <Button variant="outline" size="sm" onClick={() => addMeasure("existing")}>
                       <Plus className="h-4 w-4 mr-1" />
-                      Legg til
+                      {t("auto.legg_til")}
                     </Button>
                   </div>
                   {existingMeasures.length === 0 ? (
@@ -682,7 +682,7 @@ export function ErgonomicAssessmentDialog({
                     <Label>{t("auto.planlagte_tiltak")}</Label>
                     <Button variant="outline" size="sm" onClick={() => addMeasure("planned")}>
                       <Plus className="h-4 w-4 mr-1" />
-                      Legg til
+                      {t("auto.legg_til")}
                     </Button>
                   </div>
                   {plannedMeasures.length === 0 ? (
@@ -719,7 +719,7 @@ export function ErgonomicAssessmentDialog({
 
                 {/* Required PPE */}
                 <div className="space-y-3">
-                  <Label>Nødvendig verneutstyr (PVU)</Label>
+                  <Label>{t("auto.noedvendig_verneutstyr_pvu")}</Label>
                   <div className="flex flex-wrap gap-2">
                     {getPpeOptions().map((ppe) => (
                       <Button

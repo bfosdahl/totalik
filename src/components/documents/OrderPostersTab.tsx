@@ -227,7 +227,7 @@ export function OrderPostersTab() {
           ) : (
             <>
               <Send className="w-4 h-4" />
-              Send bestilling
+              {t("auto.send_bestilling")}
             </>
           )}
         </Button>

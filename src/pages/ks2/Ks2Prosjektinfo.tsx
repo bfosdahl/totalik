@@ -201,7 +201,7 @@ export default function Ks2Prosjektinfo() {
             <AlertDialogTrigger asChild>
               <Button variant="outline" className="text-red-500 hover:text-red-600">
                 <Trash2 className="h-4 w-4 mr-2" />
-                Slett
+                {t("auto.slett")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -385,7 +385,7 @@ export default function Ks2Prosjektinfo() {
         {/* Samarbeidspartner / Partner logo */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Samarbeidspartner (vises på dagsrapport)</CardTitle>
+            <CardTitle className="text-lg">{t("auto.samarbeidspartner_vises_paa_dagsrapport")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>

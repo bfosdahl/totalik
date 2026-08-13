@@ -1173,7 +1173,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
               <div className="flex flex-col items-center justify-center gap-2 p-3 sm:p-4 bg-muted rounded-lg border">
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t("auto.svaret_ble_avbrutt_proev_igjen")}</p>
                 <Button variant="outline" size="sm" onClick={retryLastMessage} className="gap-2">
-                  <RefreshCcw className="h-4 w-4" /> Prøv igjen
+                  <RefreshCcw className="h-4 w-4" /> {t("auto.proev_igjen")}
                 </Button>
               </div>
             )}
@@ -1194,7 +1194,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
               </div>
               <Textarea value={pasteText} onChange={(e) => setPasteText(e.target.value)} placeholder={t("auto.lim_inn_tekst_fra_forskrifter_tilsyn_e_l")} className="min-h-[120px] text-sm" disabled={isLoading || isSaving} />
               <Button onClick={() => { if (pasteText.trim()) { setInput(`Sett opp HMS basert på følgende krav:\n\n${pasteText.trim()}`); setShowPasteMode(false); setPasteText(""); setTimeout(() => handleSend(), 100); } }} disabled={isLoading || isSaving || !pasteText.trim()} className="w-full gap-2">
-                <Send className="w-4 h-4" /> Send kravtekst
+                <Send className="w-4 h-4" /> {t("auto.send_kravtekst")}
               </Button>
             </div>
           ) : (

@@ -157,7 +157,7 @@ export default function IkKsRutiner() {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
-                  Ny rutine
+                  {t("auto.ny_rutine")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
@@ -234,7 +234,7 @@ export default function IkKsRutiner() {
                 </p>
                 <Button onClick={() => setShowNewDialog(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Opprett rutine
+                  {t("auto.opprett_rutine")}
                 </Button>
               </CardContent>
             </Card>
@@ -379,11 +379,11 @@ function RoutineCard({
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={onCancelEdit}>
                     <X className="w-4 h-4 mr-1" />
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button size="sm" onClick={handleSave} disabled={isSaving}>
                     <Save className="w-4 h-4 mr-1" />
-                    Lagre
+                    {t("auto.lagre")}
                   </Button>
                 </div>
               </div>
@@ -398,7 +398,7 @@ function RoutineCard({
                 <div className="flex justify-end gap-2 mt-4 pt-4 border-t flex-wrap">
                   <Button variant="outline" size="sm" onClick={onEdit}>
                     <Edit2 className="w-4 h-4 mr-1" />
-                    Rediger
+                    {t("auto.rediger")}
                   </Button>
                   <Button
                     variant="outline"
@@ -421,7 +421,7 @@ function RoutineCard({
                     disabled={isSaving}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
-                    Slett
+                    {t("auto.slett")}
                   </Button>
                 </div>
               </>

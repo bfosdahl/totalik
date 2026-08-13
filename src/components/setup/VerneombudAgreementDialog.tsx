@@ -381,7 +381,7 @@ export function VerneombudAgreementDialog({
                   onCheckedChange={(checked) => setTrainingCompleted(checked === true)}
                 />
                 <Label htmlFor="trainingCompleted" className="text-sm">
-                  Verneombudet har gjennomført opplæring (40 timer)
+                  {t("auto.verneombudet_har_gjennomfoert_opplaering")}
                 </Label>
               </div>
 
@@ -433,7 +433,7 @@ export function VerneombudAgreementDialog({
                   {verneombudSignature && (
                     <Button variant="ghost" size="sm" onClick={handleClearVerneombudSig}>
                       <X className="w-4 h-4 mr-1" />
-                      Slett
+                      {t("auto.slett")}
                     </Button>
                   )}
                 </div>
@@ -533,7 +533,7 @@ export function VerneombudAgreementDialog({
                   {employerSignature && (
                     <Button variant="ghost" size="sm" onClick={handleClearEmployerSig}>
                       <X className="w-4 h-4 mr-1" />
-                      Slett
+                      {t("auto.slett")}
                     </Button>
                   )}
                 </div>
@@ -590,7 +590,7 @@ export function VerneombudAgreementDialog({
                 onClick={() => setStep("verneombud")}
                 disabled={!verneombudName}
               >
-                Neste
+                {t("auto.neste")}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </>
@@ -600,7 +600,7 @@ export function VerneombudAgreementDialog({
             <>
               <Button variant="outline" onClick={() => setStep("info")}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button onClick={() => setStep("employer")}>
                 {t("auto.neste")}
@@ -613,7 +613,7 @@ export function VerneombudAgreementDialog({
             <>
               <Button variant="outline" onClick={() => setStep("verneombud")}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Tilbake
+                {t("auto.tilbake")}
               </Button>
               <Button 
                 onClick={handleSubmit} 
@@ -627,7 +627,7 @@ export function VerneombudAgreementDialog({
                 ) : (
                   <>
                     <PenLine className="w-4 h-4 mr-2" />
-                    Lagre avtale
+                    {t("auto.lagre_avtale")}
                   </>
                 )}
               </Button>

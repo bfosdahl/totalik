@@ -232,7 +232,7 @@ export const RenholdsplanTab = () => {
         <div className="flex justify-end">
           <Button onClick={handleAddTask}>
             <Plus className="h-4 w-4 mr-2" />
-            Legg til oppgave
+            {t("auto.legg_til_oppgave")}
           </Button>
         </div>
         <Alert>
@@ -273,7 +273,7 @@ export const RenholdsplanTab = () => {
             </div>
             <Button size="sm" className="w-full sm:w-auto" onClick={() => handleStartCleaning(frequency)}>
               <ClipboardCheck className="h-4 w-4 mr-1.5" />
-              Utfør
+              {t("auto.utfoer")}
             </Button>
           </div>
         </CardHeader>
@@ -368,7 +368,7 @@ export const RenholdsplanTab = () => {
             </Button>
             <Button variant="outline" onClick={handleAddTask}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til oppgave
+              {t("auto.legg_til_oppgave")}
             </Button>
           </div>
 

@@ -324,7 +324,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
                 ) : (
                   <>
                     <Plus className="w-4 h-4 mr-2" />
-                    Opprett bedrift
+                    {t("auto.opprett_bedrift")}
                   </>
                 )}
               </Button>
@@ -488,7 +488,7 @@ export function CompanyInfoSettings({ onBack, createMode = false }: CompanyInfoS
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Lagre endringer
+                  {t("auto.lagre_endringer")}
                 </>
               )}
             </Button>

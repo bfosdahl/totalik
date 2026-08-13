@@ -272,7 +272,7 @@ export function LogTemperatureDialog({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="temperature">Målt temperatur (°C)</Label>
+            <Label htmlFor="temperature">{t("auto.maalt_temperatur_c")}</Label>
             <div className="flex gap-2">
               <Button
                 type="button"

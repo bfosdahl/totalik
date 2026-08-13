@@ -462,7 +462,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
               onClick={cancelPreview}
               disabled={savingColor}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               variant="ghost"
@@ -471,7 +471,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
               className="text-amber-600 hover:text-amber-700"
             >
               <Star className="w-4 h-4 mr-1" />
-              Lagre som favoritt
+              {t("auto.lagre_som_favoritt")}
             </Button>
           </motion.div>
         )}
@@ -497,7 +497,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
             />
             <Button size="sm" onClick={handleSaveFavorite}>
               <Plus className="w-4 h-4 mr-1" />
-              Lagre
+              {t("auto.lagre")}
             </Button>
             <Button 
               size="sm" 
@@ -507,7 +507,7 @@ export function CustomizationSettings({ onBack }: CustomizationSettingsProps) {
                 setFavoriteName("");
               }}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
           </motion.div>
         )}

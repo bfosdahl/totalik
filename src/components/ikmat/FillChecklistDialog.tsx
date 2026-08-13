@@ -131,20 +131,20 @@ export function FillChecklistDialog({
               onClick={() => onOpenChange(false)}
               disabled={isSaving}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button
               variant="outline"
               onClick={() => handleSave('draft')}
               disabled={isSaving}
             >
-              Lagre utkast
+              {t("auto.lagre_utkast")}
             </Button>
             <Button
               onClick={() => handleSave('completed')}
               disabled={isSaving}
             >
-              Fullfør sjekkliste
+              {t("auto.fullfoer_sjekkliste")}
             </Button>
           </div>
         </div>

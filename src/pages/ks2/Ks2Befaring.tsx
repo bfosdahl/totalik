@@ -178,9 +178,9 @@ export default function Ks2Befaring() {
       case "planlagt":
         return <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30"><Clock className="w-3 h-3 mr-1" />Planlagt</Badge>;
       case "pågår":
-        return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30"><AlertTriangle className="w-3 h-3 mr-1" />Pågår</Badge>;
+        return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30"><AlertTriangle className="w-3 h-3 mr-1" />{t("auto.paagaar")}</Badge>;
       case "fullført":
-        return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30"><CheckCircle2 className="w-3 h-3 mr-1" />Fullført</Badge>;
+        return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30"><CheckCircle2 className="w-3 h-3 mr-1" />{t("auto.fullfoert")}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -203,7 +203,7 @@ export default function Ks2Befaring() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                Ny befaring
+                {t("auto.ny_befaring")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -256,7 +256,7 @@ export default function Ks2Befaring() {
                     <Label>{t("auto.funn_avvik")}</Label>
                     <Button type="button" variant="outline" size="sm" onClick={addFinding}>
                       <Plus className="w-3 h-3 mr-1" />
-                      Legg til
+                      {t("auto.legg_til")}
                     </Button>
                   </div>
                   
@@ -372,7 +372,7 @@ export default function Ks2Befaring() {
                 <p className="text-muted-foreground mb-4">{t("auto.opprett_din_foerste_befaring_for_aa_komm")}</p>
                 <Button onClick={() => setIsNewDialogOpen(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Ny befaring
+                  {t("auto.ny_befaring")}
                 </Button>
               </div>
             ) : (
@@ -526,7 +526,7 @@ export default function Ks2Befaring() {
                   disabled={completeMutation.isPending}
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
-                  Fullfør befaring
+                  {t("auto.fullfoer_befaring")}
                 </Button>
               )}
               <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>

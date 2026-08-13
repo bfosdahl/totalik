@@ -217,7 +217,7 @@ export const AddChemicalDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FlaskConical className="h-5 w-5" />
-            Legg til stoff i stoffkartoteket
+            {t("auto.legg_til_stoff_i_stoffkartoteket")}
           </DialogTitle>
           <DialogDescription>
             {t("auto.soek_i_det_globale_registeret_eller_oppr")}

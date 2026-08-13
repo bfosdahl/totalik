@@ -114,7 +114,7 @@ export default function HrContracts() {
           {isCompanyAdmin && (
             <Button className="gap-2" onClick={() => setShowCreateDialog(true)}>
               <Plus className="w-4 h-4" />
-              Ny avtale
+              {t("auto.ny_avtale")}
             </Button>
           )}
         </div>
@@ -188,7 +188,7 @@ export default function HrContracts() {
               {isCompanyAdmin && (
                 <Button onClick={() => setShowCreateDialog(true)}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Legg til første avtale
+                  {t("auto.legg_til_foerste_avtale")}
                 </Button>
               )}
             </div>

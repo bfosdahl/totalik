@@ -268,7 +268,7 @@ export default function Ks2VernerundeWizard({
       )}
 
       <Card className="p-4">
-        <h4 className="font-medium mb-3">Legg til nytt funn (valgfritt)</h4>
+        <h4 className="font-medium mb-3">{t("auto.legg_til_nytt_funn_valgfritt")}</h4>
         <div className="space-y-3">
           <div>
             <Label>{t("auto.beskrivelse_2")}</Label>
@@ -310,7 +310,7 @@ export default function Ks2VernerundeWizard({
           </div>
           <Button onClick={handleAddFinding} disabled={!newFinding.description}>
             <Plus className="h-4 w-4 mr-2" />
-            Legg til funn
+            {t("auto.legg_til_funn")}
           </Button>
         </div>
       </Card>

@@ -225,7 +225,7 @@ export function CompanyDepartmentsDialog({
               }}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Legg til avdeling
+              {t("auto.legg_til_avdeling")}
             </Button>
           )}
 

@@ -125,14 +125,14 @@ export function ErgonomiTab() {
         return (
           <Badge variant="outline" className="gap-1 bg-green-50 text-green-700 border-green-200">
             <CheckCircle2 className="h-3 w-3" />
-            Fullført
+            {t("auto.fullfoert")}
           </Badge>
         );
       case "in_progress":
         return (
           <Badge variant="outline" className="gap-1 bg-blue-50 text-blue-700 border-blue-200">
             <Clock className="h-3 w-3" />
-            Pågående
+            {t("auto.paagaaende")}
           </Badge>
         );
       case "needs_review":
@@ -216,7 +216,7 @@ export function ErgonomiTab() {
           </TabsTrigger>
           <TabsTrigger value="verktoy" className="gap-2">
             <Wrench className="h-4 w-4" />
-            Verktøy & Utstyr
+            {t("auto.verktoey_utstyr")}
           </TabsTrigger>
         </TabsList>
 
@@ -285,7 +285,7 @@ export function ErgonomiTab() {
                 </div>
                 <Button onClick={() => setShowNewDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Ny vurdering
+                  {t("auto.ny_vurdering")}
                 </Button>
               </div>
             </CardHeader>
@@ -333,7 +333,7 @@ export function ErgonomiTab() {
                   </p>
                   <Button onClick={() => setShowNewDialog(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Ny vurdering
+                    {t("auto.ny_vurdering")}
                   </Button>
                 </div>
               ) : filteredAssessments.length === 0 ? (
@@ -431,7 +431,7 @@ export function ErgonomiTab() {
                   className="text-primary underline font-medium"
                   onClick={() => setMainTab("verktoy")}
                 >
-                  Verktøy & Utstyr
+                  {t("auto.verktoey_utstyr")}
                 </button>
                 {" "}som inkluderer kalkulatorer med automatiske varsler ved overskridelse av grenseverdier.
               </p>

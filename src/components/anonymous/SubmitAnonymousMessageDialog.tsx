@@ -113,7 +113,7 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
             ) : (
               <>
                 <Send className="mr-2 h-4 w-4" />
-                Send anonymt
+                {t("auto.send_anonymt")}
               </>
             )}
           </Button>
@@ -130,7 +130,7 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
             <DrawerHeader className="text-left px-0">
               <DrawerTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" />
-                Send anonym melding
+                {t("auto.send_anonym_melding")}
               </DrawerTitle>
               <DrawerDescription>
                 {t("auto.din_identitet_er_fullstendig_skjult_meld")}
@@ -149,7 +149,7 @@ export function SubmitAnonymousMessageDialog({ open, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            Send anonym melding
+            {t("auto.send_anonym_melding")}
           </DialogTitle>
           <DialogDescription>
             {t("auto.din_identitet_er_fullstendig_skjult_meld")}

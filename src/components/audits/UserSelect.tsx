@@ -72,7 +72,7 @@ const UserSelect: React.FC<UserSelectProps> = ({
           }}
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          ← Tilbake til ansatte
+          {t("auto.tilbake_til_ansatte")}
         </button>
       </div>
     );

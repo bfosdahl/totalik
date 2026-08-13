@@ -217,7 +217,7 @@ export function HandbookImportUploader({ companyId, onImportComplete, className 
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="h-5 w-5 text-primary" />
-          Importer fra gammel håndbok
+          {t("auto.importer_fra_gammel_haandbok")}
         </CardTitle>
         <CardDescription>
           {t("auto.last_opp_din_eksisterende_hms_haandbok_s")}
@@ -276,8 +276,8 @@ function UploadStep({ onFileSelect, error }: { onFileSelect: (e: React.ChangeEve
       <div className="bg-muted/30 rounded-lg p-4 space-y-2">
         <p className="text-sm font-medium">{t("auto.hva_blir_importert")}</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><Target className="h-3 w-3" /> HMS-mål</span>
-          <span className="flex items-center gap-1"><Users className="h-3 w-3" /> Organisering</span>
+          <span className="flex items-center gap-1"><Target className="h-3 w-3" /> {t("auto.hms_maal")}</span>
+          <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {t("auto.organisering")}</span>
           <span className="flex items-center gap-1"><ShieldAlert className="h-3 w-3" /> Risikovurdering</span>
           <span className="flex items-center gap-1"><ClipboardList className="h-3 w-3" /> Handlingsplan</span>
           <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> Rutiner</span>

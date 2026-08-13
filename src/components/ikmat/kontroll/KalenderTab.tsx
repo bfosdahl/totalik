@@ -164,7 +164,7 @@ export const KalenderTab = () => {
         </div>
         <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Ny oppgave
+          {t("auto.ny_oppgave")}
         </Button>
       </div>
 
@@ -316,7 +316,7 @@ export const KalenderTab = () => {
                               }}
                             >
                               <ExternalLink className="h-4 w-4 mr-2" />
-                              Utfør oppgave
+                              {t("auto.utfoer_oppgave")}
                             </Button>
                           )}
                           {/* Complete button for scheduled tasks */}
@@ -329,7 +329,7 @@ export const KalenderTab = () => {
                               disabled={completeTask.isPending}
                             >
                               <CheckCircle2 className="h-4 w-4 mr-2" />
-                              Fullført
+                              {t("auto.fullfoert")}
                             </Button>
                           )}
                         </div>
@@ -451,7 +451,7 @@ export const KalenderTab = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-orange-500" />
-              Dagens gjenstående oppgaver
+              {t("auto.dagens_gjenstaaende_oppgaver")}
             </DialogTitle>
             <DialogDescription>
               {todaysPendingTasks.length === 0 
@@ -501,7 +501,7 @@ export const KalenderTab = () => {
                         }}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        Utfør oppgave
+                        {t("auto.utfoer_oppgave")}
                       </Button>
                     ) : event.type === 'task' && event.taskId ? (
                       <Button
@@ -515,7 +515,7 @@ export const KalenderTab = () => {
                         disabled={completeTask.isPending}
                       >
                         <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Marker som fullført
+                        {t("auto.marker_som_fullfoert")}
                       </Button>
                     ) : null}
                   </div>
@@ -532,7 +532,7 @@ export const KalenderTab = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              Avvik - Oppgaver ikke utført
+              {t("auto.avvik_oppgaver_ikke_utfoert")}
             </DialogTitle>
             <DialogDescription>
               {overdueTasks.length === 0 
@@ -578,7 +578,7 @@ export const KalenderTab = () => {
                         }}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        Utfør oppgave
+                        {t("auto.utfoer_oppgave")}
                       </Button>
                     )}
                   </div>

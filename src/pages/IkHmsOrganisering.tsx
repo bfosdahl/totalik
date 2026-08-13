@@ -428,7 +428,7 @@ const IkHmsOrganisering = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Building2 className="h-8 w-8 text-primary" />
-              Organisering
+              {t("auto.organisering")}
             </h1>
             <p className="text-muted-foreground mt-1">
               {t("auto.hms_organisasjon_med_hierarkisk_struktur")}
@@ -437,7 +437,7 @@ const IkHmsOrganisering = () => {
           {canEdit && (
             <Button onClick={() => handleAddNode()}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til rolle
+              {t("auto.legg_til_rolle")}
             </Button>
           )}
         </div>
@@ -497,7 +497,7 @@ const IkHmsOrganisering = () => {
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Organisasjonskart
+                  {t("auto.organisasjonskart")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -686,7 +686,7 @@ const IkHmsOrganisering = () => {
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
-                Slett node
+                {t("auto.slett_node")}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 Er du sikker på at du vil slette "{deletingNode?.role_title}"?
@@ -703,7 +703,7 @@ const IkHmsOrganisering = () => {
                 onClick={confirmDeleteNode}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                Slett
+                {t("auto.slett")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

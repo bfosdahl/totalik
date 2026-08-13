@@ -127,7 +127,7 @@ export function AnnualAuditDueDialog() {
         <div className="flex justify-end">
           <Button variant="ghost" size="sm" onClick={handleRemindLater}>
             <Clock className="h-4 w-4 mr-2" />
-            Påminn meg om 7 dager
+            {t("auto.paaminn_meg_om_7_dager")}
           </Button>
         </div>
       </DialogContent>

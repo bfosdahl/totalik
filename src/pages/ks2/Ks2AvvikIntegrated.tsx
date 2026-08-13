@@ -398,7 +398,7 @@ export default function Ks2AvvikIntegrated() {
           )}
           <Button onClick={openNewDialog} className="gap-2">
             <Plus className="h-4 w-4" />
-            Nytt avvik
+            {t("auto.nytt_avvik")}
           </Button>
         </div>
       </div>
@@ -945,7 +945,7 @@ function AvvikContent({
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Slett
+                      {t("auto.slett")}
                     </Button>
                   </div>
                 </CardContent>

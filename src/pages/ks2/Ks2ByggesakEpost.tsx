@@ -316,7 +316,7 @@ export default function Ks2ByggesakEpost() {
               ) : (
                 <>
                   <Send className="h-4 w-4" />
-                  Send e-post
+                  {t("auto.send_e_post")}
                 </>
               )}
             </Button>

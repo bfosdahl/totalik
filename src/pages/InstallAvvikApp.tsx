@@ -82,7 +82,7 @@ export default function InstallAvvikApp() {
             <Link to="/deviations">
               <Button variant="outline" className="w-full gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                Tilbake til avvikshåndtering
+                {t("auto.tilbake_til_avvikshaandtering")}
               </Button>
             </Link>
           </CardContent>
@@ -102,7 +102,7 @@ export default function InstallAvvikApp() {
         {/* Back button */}
         <Link to="/deviations" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
-          Tilbake til avvikshåndtering
+          {t("auto.tilbake_til_avvikshaandtering")}
         </Link>
 
         {/* Header */}
@@ -212,7 +212,7 @@ export default function InstallAvvikApp() {
               </p>
               <Button onClick={handleInstallClick} className="w-full gap-2 bg-destructive hover:bg-destructive/90" size="lg">
                 <Download className="w-5 h-5" />
-                Installer Avvik-appen
+                {t("auto.installer_avvik_appen")}
               </Button>
               <div className="pt-2 space-y-2 sm:space-y-3 border-t">
                 <p className="text-xs sm:text-sm font-medium">{t("auto.etter_installasjon")}</p>

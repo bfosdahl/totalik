@@ -135,7 +135,7 @@ export const TemperaturloggTab = () => {
             </p>
             <Button onClick={() => setEquipmentDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til utstyr
+              {t("auto.legg_til_utstyr")}
             </Button>
           </CardContent>
         </Card>
@@ -213,14 +213,14 @@ export const TemperaturloggTab = () => {
                           </Badge>
                         ) : (
                           <Badge variant="destructive" className="mt-2 text-xs">
-                            <AlertTriangle className="h-3 w-3 mr-1" />Avvik
+                            <AlertTriangle className="h-3 w-3 mr-1" />{t("auto.avvik")}
                           </Badge>
                         )}
                         {log.corrective_action && (
                           <p className="mt-2 text-xs text-orange-600">Tiltak: {log.corrective_action}</p>
                         )}
                         <Button variant="ghost" size="sm" className="mt-2 h-7 text-xs" onClick={() => handleEditLog(log)}>
-                          <Pencil className="h-3 w-3 mr-1" />Rediger
+                          <Pencil className="h-3 w-3 mr-1" />{t("auto.rediger")}
                         </Button>
                       </div>
                     ))}
@@ -262,7 +262,7 @@ export const TemperaturloggTab = () => {
                               ) : (
                                 <Badge variant="destructive">
                                   <AlertTriangle className="h-3 w-3 mr-1" />
-                                  Avvik
+                                  {t("auto.avvik")}
                                 </Badge>
                               )}
                             </TableCell>
@@ -281,7 +281,7 @@ export const TemperaturloggTab = () => {
                             <TableCell>
                               <Button variant="ghost" size="sm" className="h-8" onClick={() => handleEditLog(log)}>
                                 <Pencil className="h-3.5 w-3.5 mr-1" />
-                                Rediger
+                                {t("auto.rediger")}
                               </Button>
                             </TableCell>
                           </TableRow>

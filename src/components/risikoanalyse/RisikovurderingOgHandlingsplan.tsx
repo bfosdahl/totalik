@@ -959,7 +959,7 @@ export function RisikovurderingOgHandlingsplan() {
           <Card className="border-l-4 border-l-red-500">
             <CardContent className="p-3">
               <div className="text-2xl font-bold text-red-600">{stats.red}</div>
-              <div className="text-xs text-muted-foreground">Røde (11-25)</div>
+              <div className="text-xs text-muted-foreground">{t("auto.roede_11_25")}</div>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-yellow-500">
@@ -971,7 +971,7 @@ export function RisikovurderingOgHandlingsplan() {
           <Card className="border-l-4 border-l-green-500">
             <CardContent className="p-3">
               <div className="text-2xl font-bold text-green-600">{stats.green}</div>
-              <div className="text-xs text-muted-foreground">Grønne (1-5)</div>
+              <div className="text-xs text-muted-foreground">{t("auto.groenne_1_5")}</div>
             </CardContent>
           </Card>
           <Card className="border-l-4 border-l-orange-500">
@@ -995,7 +995,7 @@ export function RisikovurderingOgHandlingsplan() {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Ny risikovurdering
+                  {t("auto.ny_risikovurdering")}
                 </Button>
               </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -1013,7 +1013,7 @@ export function RisikovurderingOgHandlingsplan() {
                     {t("auto.farekilde")}
                     <Tooltip>
                       <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
-                      <TooltipContent>Hva er kilden til faren? (f.eks. arbeid i høyden)</TooltipContent>
+                      <TooltipContent>{t("auto.hva_er_kilden_til_faren_f_eks_arbeid_i_h")}</TooltipContent>
                     </Tooltip>
                   </label>
                   <Select value={newRisk.hazard_source} onValueChange={(v) => setNewRisk(p => ({ ...p, hazard_source: v }))}>
@@ -1174,7 +1174,7 @@ export function RisikovurderingOgHandlingsplan() {
 
                     <Button type="button" variant="outline" className="w-full" onClick={addEventToForm}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Legg til flere hendelser
+                      {t("auto.legg_til_flere_hendelser")}
                     </Button>
                   </div>
                 </div>
@@ -1190,7 +1190,7 @@ export function RisikovurderingOgHandlingsplan() {
           
           <Button variant="outline" onClick={addExampleRisks}>
             <Plus className="h-4 w-4 mr-2" />
-            Legg til eksempler
+            {t("auto.legg_til_eksempler")}
           </Button>
           </div>
 
@@ -1206,7 +1206,7 @@ export function RisikovurderingOgHandlingsplan() {
             <CardContent className="p-3 flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-red-600" />
               <span className="text-sm text-red-700">
-                <strong>{stats.red} hendelser</strong> krever tiltak (rød risiko kan ikke godkjennes uten tiltak)
+                <strong>{stats.red} hendelser</strong> {t("auto.krever_tiltak_roed_risiko_kan_ikke_godkj")}
               </span>
             </CardContent>
           </Card>
@@ -1230,7 +1230,7 @@ export function RisikovurderingOgHandlingsplan() {
                   <p>{t("auto.ingen_risikoer_registrert")}</p>
                   <Button variant="outline" className="mt-3" onClick={() => setShowAddDialog(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Legg til første risiko
+                    {t("auto.legg_til_foerste_risiko")}
                   </Button>
                 </div>
               ) : (
@@ -1316,7 +1316,7 @@ export function RisikovurderingOgHandlingsplan() {
                                           }}
                                         >
                                           <Plus className="h-3 w-3 mr-1" />
-                                          Legg til tiltak
+                                          {t("auto.legg_til_tiltak")}
                                         </Button>
                                       ) : (
                                         <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
@@ -1351,11 +1351,11 @@ export function RisikovurderingOgHandlingsplan() {
                               <div className="flex gap-2 pt-2 border-t">
                                 <Button size="sm" variant="outline" onClick={() => startEditRisk(risk)}>
                                   <Edit className="h-3 w-3 mr-1" />
-                                  Rediger
+                                  {t("auto.rediger")}
                                 </Button>
                                 <Button size="sm" variant="destructive" onClick={() => deleteRisk(risk.id)}>
                                   <Trash2 className="h-3 w-3 mr-1" />
-                                  Slett farekilde
+                                  {t("auto.slett_farekilde")}
                                 </Button>
                               </div>
                             </div>
@@ -1469,7 +1469,7 @@ export function RisikovurderingOgHandlingsplan() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Ny konsekvens (K)</label>
+                  <label className="text-sm font-medium">{t("auto.ny_konsekvens_k")}</label>
                   <div className="flex gap-1 mt-1">
                     {CONSEQUENCE_LEVELS.map(level => (
                       <Tooltip key={level.value}>
@@ -1494,7 +1494,7 @@ export function RisikovurderingOgHandlingsplan() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Ny sannsynlighet (S)</label>
+                  <label className="text-sm font-medium">{t("auto.ny_sannsynlighet_s")}</label>
                   <div className="flex gap-1 mt-1">
                     {PROBABILITY_LEVELS.map(level => (
                       <Tooltip key={level.value}>

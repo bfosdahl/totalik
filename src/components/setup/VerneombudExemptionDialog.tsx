@@ -585,7 +585,7 @@ export function VerneombudExemptionDialog({
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
                   <UserPlus className="h-4 w-4" />
-                  Legg til ansatt-signatur
+                  {t("auto.legg_til_ansatt_signatur")}
                 </Label>
 
                 <div className="space-y-2">
@@ -662,7 +662,7 @@ export function VerneombudExemptionDialog({
                   variant="secondary"
                 >
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Legg til signatur
+                  {t("auto.legg_til_signatur")}
                 </Button>
               </div>
 

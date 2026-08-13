@@ -507,7 +507,7 @@ const IkMatHandbok = () => {
                 className="ml-2 p-0 h-auto"
                 onClick={() => navigate('/ik-mat/oppsett')}
               >
-                Gå til oppsett
+                {t("auto.gaa_til_oppsett")}
               </Button>
             </AlertDescription>
           </Alert>
@@ -624,7 +624,7 @@ const IkMatHandbok = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Målsettinger
+              {t("auto.maalsettinger")}
             </CardTitle>
             <CardDescription>{t("auto.virksomhetens_maal_for_matsikkerhet")}</CardDescription>
           </CardHeader>
@@ -1046,7 +1046,7 @@ const IkMatHandbok = () => {
                           ) : (
                             <Badge variant="destructive" className="gap-1">
                               <XCircle className="h-3 w-3" />
-                              Avvik
+                              {t("auto.avvik")}
                             </Badge>
                           )}
                         </td>

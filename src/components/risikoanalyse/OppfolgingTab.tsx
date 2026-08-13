@@ -402,7 +402,7 @@ export function OppfolgingTab() {
                         <div className="flex justify-between">
                           <Button variant="destructive" size="sm" onClick={() => deleteAction(action.id)}>
                             <Trash2 className="h-4 w-4 mr-1" />
-                            Slett
+                            {t("auto.slett")}
                           </Button>
                           <Button size="sm" onClick={() => setEditingId(null)}>
                             <Check className="h-4 w-4 mr-1" />

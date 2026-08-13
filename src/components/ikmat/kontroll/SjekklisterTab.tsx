@@ -130,7 +130,7 @@ export const SjekklisterTab = () => {
         <div className="flex justify-end">
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Opprett sjekkliste
+            {t("auto.opprett_sjekkliste")}
           </Button>
         </div>
         <Alert>

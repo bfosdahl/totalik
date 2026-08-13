@@ -67,7 +67,7 @@ export default function HrVehicles() {
             </p>
           </div>
           <Button onClick={openNew} className="gap-2">
-            <Plus className="h-4 w-4" /> Ny bil
+            <Plus className="h-4 w-4" /> {t("auto.ny_bil")}
           </Button>
         </div>
 

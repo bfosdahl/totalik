@@ -102,7 +102,7 @@ export default function FdvRisks() {
           </div>
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            Ny risikovurdering
+            {t("auto.ny_risikovurdering")}
           </Button>
         </div>
 
@@ -171,7 +171,7 @@ export default function FdvRisks() {
               <p className="text-muted-foreground mb-4">{t("auto.start_med_aa_kartlegge_risiko_for_dine_b")}</p>
               <Button onClick={handleCreate} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Ny risikovurdering
+                {t("auto.ny_risikovurdering")}
               </Button>
             </CardContent>
           </Card>
@@ -228,11 +228,11 @@ export default function FdvRisks() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleEdit(risk)}>
                           <Pencil className="h-4 w-4 mr-2" />
-                          Rediger
+                          {t("auto.rediger")}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(risk)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Slett
+                          {t("auto.slett")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

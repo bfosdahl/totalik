@@ -424,7 +424,7 @@ const FysiskeArbeidsforholdForm = () => {
     <div className="space-y-6">
       <Button variant="ghost" onClick={handleBackToList} className="gap-2 mb-4">
         <ArrowLeft className="w-4 h-4" />
-        Tilbake til oversikt
+        {t("auto.tilbake_til_oversikt")}
       </Button>
 
       <form onSubmit={handleSubmit} className="space-y-6">

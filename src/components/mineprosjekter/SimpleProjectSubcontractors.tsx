@@ -13,11 +13,11 @@ export function SimpleProjectSubcontractors({ projectId }: SimpleProjectSubcontr
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg flex items-center gap-2">
           <Users className="w-5 h-5" />
-          Underleverandører
+          {t("auto.underleverandoerer")}
         </CardTitle>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
-          Legg til
+          {t("auto.legg_til")}
         </Button>
       </CardHeader>
       <CardContent>

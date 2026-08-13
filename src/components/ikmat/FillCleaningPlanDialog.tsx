@@ -218,7 +218,7 @@ export const FillCleaningPlanDialog = ({
                 onClick={() => handleSave('draft')}
                 disabled={isSaving}
               >
-                Lagre utkast
+                {t("auto.lagre_utkast")}
               </Button>
               <Button onClick={() => handleSave('completed')} disabled={isSaving}>
                 {isSaving ? 'Lagrer...' : 'Fullfør og signer'}

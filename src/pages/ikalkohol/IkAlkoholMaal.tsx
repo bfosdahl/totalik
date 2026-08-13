@@ -84,11 +84,11 @@ const IkAlkoholMaal = () => {
           <div className="flex gap-2">
             {goals.length === 0 && (
               <Button variant="outline" onClick={() => initializeDefaultGoals.mutate()} disabled={initializeDefaultGoals.isPending}>
-                <Sparkles className="h-4 w-4 mr-2" />Legg til standardmål
+                <Sparkles className="h-4 w-4 mr-2" />{t("auto.legg_til_standardmaal")}
               </Button>
             )}
             <Button onClick={() => setShowDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />Nytt mål
+              <Plus className="h-4 w-4 mr-2" />{t("auto.nytt_maal")}
             </Button>
           </div>
         </div>

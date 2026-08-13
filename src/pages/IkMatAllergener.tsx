@@ -338,7 +338,7 @@ const IkMatAllergener = () => {
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="mr-2 h-4 w-4" />
-                      Legg til rett
+                      {t("auto.legg_til_rett")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-lg">
@@ -362,7 +362,7 @@ const IkMatAllergener = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Velg allergener (14 merkepliktige)</Label>
+                        <Label>{t("auto.velg_allergener_14_merkepliktige")}</Label>
                         <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1">
                           {EU_ALLERGENS.map((allergen) => (
                             <div
@@ -424,7 +424,7 @@ const IkMatAllergener = () => {
                   </Button>
                   <Button onClick={() => setAddDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Legg til rett
+                    {t("auto.legg_til_rett")}
                   </Button>
                 </div>
               </div>

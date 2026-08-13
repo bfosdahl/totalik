@@ -823,7 +823,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
             <Input value={selectedElement.label || ""} onChange={(e) => updateSelectedLabel(e.target.value)} placeholder={t("auto.navn")} className="h-8 text-sm" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground flex items-center gap-1"><Ruler className="h-3 w-3" />Mål (meter)</Label>
+            <Label className="text-xs text-muted-foreground flex items-center gap-1"><Ruler className="h-3 w-3" />{t("auto.maal_meter")}</Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">{t("auto.bredde")}</Label>
@@ -928,7 +928,7 @@ export function KitchenZoneEditor({ open, onOpenChange, initialData, onSave }: K
           <div className="flex-1 flex flex-col overflow-hidden min-h-0">
             {!isMobile && (
               <div className="flex items-center gap-2 p-2 border-b bg-muted/20 shrink-0 flex-wrap">
-                <Button variant="ghost" size="sm" onClick={deleteSelected} disabled={!selectedId}><Trash2 className="h-4 w-4 mr-1" />Slett</Button>
+                <Button variant="ghost" size="sm" onClick={deleteSelected} disabled={!selectedId}><Trash2 className="h-4 w-4 mr-1" />{t("auto.slett")}</Button>
                 <Button variant="ghost" size="sm" onClick={duplicateSelected} disabled={!selectedId}><Copy className="h-4 w-4 mr-1" />Dupliser</Button>
                 <Button variant="ghost" size="sm" onClick={rotateSelected} disabled={!selectedId}><RotateCcw className="h-4 w-4 mr-1" />Roter</Button>
                 <Separator orientation="vertical" className="h-6" />

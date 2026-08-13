@@ -183,7 +183,7 @@ export function Ks2ShaPlanUpload({ projectId, onCancel }: Props) {
       <div className="flex justify-between">
         <Button variant="outline" onClick={onCancel}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Avbryt
+          {t("auto.avbryt")}
         </Button>
         
         <Button 

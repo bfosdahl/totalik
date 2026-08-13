@@ -157,7 +157,7 @@ export function KsSelfDeclarationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
-            Egenerklæring om kvalitetssikringssystem
+            {t("auto.egenerklaering_om_kvalitetssikringssyste")}
           </DialogTitle>
           <DialogDescription>
             {step === "info" && "Bekreftelse på at bedriften har et velfungerende KS-system"}

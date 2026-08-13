@@ -323,7 +323,7 @@ export default function Ks2ByggesakBlanketter() {
       <Button variant="outline" size="sm" asChild className="w-fit">
         <a href="https://dibk.no/verktoy-og-veivisere/blanketter/" target="_blank" rel="noopener noreferrer">
           <ExternalLink className="h-4 w-4 mr-2" />
-          Åpne DIBK blankettbibliotek
+          {t("auto.aapne_dibk_blankettbibliotek")}
         </a>
       </Button>
 

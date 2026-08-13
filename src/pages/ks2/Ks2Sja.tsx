@@ -550,7 +550,7 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                       </div>
                     </div>
                     <Button onClick={addRisk} disabled={!newRisk.description}>
-                      <Plus className="h-4 w-4 mr-2" /> Legg til risiko
+                      <Plus className="h-4 w-4 mr-2" /> {t("auto.legg_til_risiko")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -789,7 +789,7 @@ function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
         <Label className="text-base">Flere signaturer ({existing.length})</Label>
         {!showForm && (
           <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Legg til signatur
+            <Plus className="h-4 w-4 mr-1" /> {t("auto.legg_til_signatur")}
           </Button>
         )}
       </div>
@@ -846,7 +846,7 @@ function AdditionalSignaturesSection({ sja }: { sja: KsModule2Sja }) {
               {t("auto.avbryt")}
             </Button>
             <Button size="sm" onClick={handleAdd} disabled={updateSja.isPending}>
-              <CheckCircle2 className="h-4 w-4 mr-1" /> Lagre signatur
+              <CheckCircle2 className="h-4 w-4 mr-1" /> {t("auto.lagre_signatur")}
             </Button>
           </div>
         </div>
@@ -958,7 +958,7 @@ export default function Ks2Sja() {
           </div>
         </div>
         <Button className="bg-success hover:bg-success/90 text-success-foreground" onClick={() => setShowNewDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" /> Ny SJA
+          <Plus className="h-4 w-4 mr-2" /> {t("auto.ny_sja")}
         </Button>
       </div>
 
@@ -1040,7 +1040,7 @@ export default function Ks2Sja() {
               {searchQuery ? "Ingen treff på søket ditt" : "Opprett din første SJA for dette prosjektet"}
             </p>
             <Button className="bg-success hover:bg-success/90 text-success-foreground" onClick={() => setShowNewDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" /> Ny SJA
+              <Plus className="h-4 w-4 mr-2" /> {t("auto.ny_sja")}
             </Button>
           </CardContent>
         </Card>
@@ -1052,7 +1052,7 @@ export default function Ks2Sja() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-warning" />
-              Ny Sikker Jobb Analyse
+              {t("auto.ny_sikker_jobb_analyse")}
             </DialogTitle>
             <DialogDescription>{t("auto.opprett_en_ny_sja_for_aa_vurdere_risiko_")}</DialogDescription>
           </DialogHeader>
@@ -1122,7 +1122,7 @@ export default function Ks2Sja() {
               {createSja.isPending ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Oppretter...</>
               ) : (
-                <><Plus className="h-4 w-4 mr-2" /> Opprett SJA</>
+                <><Plus className="h-4 w-4 mr-2" /> {t("auto.opprett_sja")}</>
               )}
             </Button>
           </DialogFooter>

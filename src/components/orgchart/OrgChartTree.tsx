@@ -222,7 +222,7 @@ const NodeCard: React.FC<NodeCardProps> = ({
       {isRoot && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
           <Crown className="h-3.5 w-3.5" />
-          Toppnode
+          {t("auto.toppnode")}
         </div>
       )}
       
@@ -249,7 +249,7 @@ const NodeCard: React.FC<NodeCardProps> = ({
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => onEdit(node)} className="gap-2">
                   <Edit className="h-4 w-4" />
-                  Rediger rolle
+                  {t("auto.rediger_rolle")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAddPerson(node.id)} className="gap-2">
                   <UserPlus className="h-4 w-4" />
@@ -258,7 +258,7 @@ const NodeCard: React.FC<NodeCardProps> = ({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onAddChild(node.id)} className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Legg til underordnet
+                  {t("auto.legg_til_underordnet")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onMove(node)} className="gap-2">
                   <Move className="h-4 w-4" />
@@ -276,7 +276,7 @@ const NodeCard: React.FC<NodeCardProps> = ({
                   className="text-destructive focus:text-destructive gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Slett rolle
+                  {t("auto.slett_rolle")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -323,7 +323,7 @@ const NodeCard: React.FC<NodeCardProps> = ({
             className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
-            Legg til underordnet
+            {t("auto.legg_til_underordnet")}
           </button>
         )}
       </div>
@@ -400,7 +400,7 @@ const MobileNode: React.FC<MobileNodeProps> = ({
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => onEdit(node)} className="gap-2">
                   <Edit className="h-4 w-4" />
-                  Rediger rolle
+                  {t("auto.rediger_rolle")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAddPerson(node.id)} className="gap-2">
                   <UserPlus className="h-4 w-4" />
@@ -409,7 +409,7 @@ const MobileNode: React.FC<MobileNodeProps> = ({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onAddChild(node.id)} className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Legg til underordnet
+                  {t("auto.legg_til_underordnet")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onMove(node)} className="gap-2">
                   <Move className="h-4 w-4" />
@@ -427,7 +427,7 @@ const MobileNode: React.FC<MobileNodeProps> = ({
                   className="text-destructive focus:text-destructive gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Slett rolle
+                  {t("auto.slett_rolle")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

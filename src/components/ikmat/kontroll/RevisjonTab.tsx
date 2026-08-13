@@ -45,9 +45,9 @@ interface IkMatAudit {
 const statusBadge = (status: string) => {
   switch (status) {
     case "completed":
-      return <Badge className="bg-success/15 text-success hover:bg-success/15"><CheckCircle2 className="h-3 w-3 mr-1" />Fullført</Badge>;
+      return <Badge className="bg-success/15 text-success hover:bg-success/15"><CheckCircle2 className="h-3 w-3 mr-1" />{t("auto.fullfoert")}</Badge>;
     case "in-progress":
-      return <Badge className="bg-warning/15 text-warning hover:bg-warning/15"><Clock className="h-3 w-3 mr-1" />Pågår</Badge>;
+      return <Badge className="bg-warning/15 text-warning hover:bg-warning/15"><Clock className="h-3 w-3 mr-1" />{t("auto.paagaar")}</Badge>;
     case "overdue":
       return <Badge variant="destructive">{t("auto.forfalt")}</Badge>;
     default:
@@ -121,7 +121,7 @@ export const RevisjonTab = () => {
             </div>
             <Button onClick={() => { setEditId(null); setDialogOpen(true); }}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny revisjon
+              {t("auto.ny_revisjon")}
             </Button>
           </div>
         </CardHeader>

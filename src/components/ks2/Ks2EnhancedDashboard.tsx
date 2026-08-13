@@ -163,7 +163,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                 onClick={() => navigate(`${basePath}/egenkontroller?new=true`)}
               >
                 <Plus className="h-5 w-5" />
-                Ny egenkontroll
+                {t("auto.ny_egenkontroll")}
               </Button>
               <Button
                 variant="outline"
@@ -181,7 +181,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                 onClick={() => navigate(`${basePath}/hms/sja`)}
               >
                 <ClipboardCheck className="h-5 w-5" />
-                Ny SJA
+                {t("auto.ny_sja")}
               </Button>
               {projectId && <Ks2PopulateExampleButton projectId={projectId} />}
             </div>
@@ -344,7 +344,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
-            Fullført denne uken
+            {t("auto.fullfoert_denne_uken")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -406,7 +406,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
-              Siste fullførte
+              {t("auto.siste_fullfoerte")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -451,7 +451,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-5 w-5 text-blue-500" />
-              Underleverandører
+              {t("auto.underleverandoerer")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -475,7 +475,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               className="mt-4"
               onClick={() => navigate(`/ks/project/${projectId}/underleverandorer`)}
             >
-              Se alle underleverandører
+              {t("auto.se_alle_underleverandoerer")}
             </Button>
           </CardContent>
         </Card>

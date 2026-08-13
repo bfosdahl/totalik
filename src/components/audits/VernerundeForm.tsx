@@ -438,7 +438,7 @@ const VernerundeForm = () => {
                 <div className="space-y-4">
                   <h3 className="font-semibold flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-warning" />
-                    Avvik, forbedringsforslag og tiltak
+                    {t("auto.avvik_forbedringsforslag_og_tiltak")}
                   </h3>
                   <div>
                     <Label>{t("auto.observerte_avvik_farer_uoenskede_forhold")}</Label>

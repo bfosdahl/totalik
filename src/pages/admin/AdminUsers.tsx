@@ -601,7 +601,7 @@ export default function AdminUsers() {
                 disabled={safePage >= totalPages}
                 onClick={() => setCurrentPage(safePage + 1)}
               >
-                Neste
+                {t("auto.neste")}
               </Button>
             </div>
           </div>
@@ -618,7 +618,7 @@ export default function AdminUsers() {
           </p>
           <Button onClick={() => window.location.reload()}>
             <RefreshCw className="w-4 h-4 mr-2" />
-            Last på nytt
+            {t("auto.last_paa_nytt")}
           </Button>
         </div>
       </AdminLayout>
@@ -772,7 +772,7 @@ export default function AdminUsers() {
                               }}
                             >
                               <Building2 className="w-4 h-4 mr-2" />
-                              Endre bedrift
+                              {t("auto.endre_bedrift")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => {
@@ -782,7 +782,7 @@ export default function AdminUsers() {
                               }}
                             >
                               <Mail className="w-4 h-4 mr-2" />
-                              Endre e-post
+                              {t("auto.endre_e_post")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => {
@@ -792,7 +792,7 @@ export default function AdminUsers() {
                               }}
                             >
                               <Key className="w-4 h-4 mr-2" />
-                              Endre passord
+                              {t("auto.endre_passord")}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
@@ -814,7 +814,7 @@ export default function AdminUsers() {
                               }}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              Slett bruker
+                              {t("auto.slett_bruker")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -1056,7 +1056,7 @@ export default function AdminUsers() {
                     setIsCompanyDialogOpen(false);
                   }}
                 >
-                  Lagre
+                  {t("auto.lagre")}
                 </Button>
               </div>
             )}
@@ -1144,7 +1144,7 @@ export default function AdminUsers() {
                   />
                   <Label htmlFor="addModules" className="text-sm font-medium cursor-pointer flex items-center gap-2">
                     <Boxes className="w-4 h-4" />
-                    Legg til moduler for bedriften
+                    {t("auto.legg_til_moduler_for_bedriften")}
                   </Label>
                 </div>
                 
@@ -1198,7 +1198,7 @@ export default function AdminUsers() {
         }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Endre e-post (brukernavn)</DialogTitle>
+              <DialogTitle>{t("auto.endre_e_post_brukernavn")}</DialogTitle>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-4 mt-4">
@@ -1326,7 +1326,7 @@ export default function AdminUsers() {
                     htmlFor="sendEmail"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Send passord på e-post til brukeren
+                    {t("auto.send_passord_paa_e_post_til_brukeren")}
                   </label>
                 </div>
 
@@ -1379,7 +1379,7 @@ export default function AdminUsers() {
                     onClick={() => setIsDeleteDialogOpen(false)}
                     className="w-full sm:w-auto"
                   >
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button
                     variant="destructive"

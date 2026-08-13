@@ -391,7 +391,7 @@ export default function Payroll() {
               {t("auto.ansattnr_timesatser")}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-              <SettingsIcon className="h-4 w-4 mr-1" /> Lønnsperiode
+              <SettingsIcon className="h-4 w-4 mr-1" /> {t("auto.loennsperiode")}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -401,7 +401,7 @@ export default function Payroll() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleExportGeneric}>
-                  Generisk lønnsgrunnlag (.xlsx)
+                  {t("auto.generisk_loennsgrunnlag_xlsx")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleExportTripletex}>
                   Tripletex-importmal (.xlsx)
@@ -511,7 +511,7 @@ export default function Payroll() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card><CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Timer (godkjent)</p>
+            <p className="text-xs text-muted-foreground">{t("auto.timer_godkjent")}</p>
             <p className="text-2xl font-bold">{totals.hours.toFixed(2)}</p>
           </CardContent></Card>
           <Card><CardContent className="py-4">
@@ -721,7 +721,7 @@ export default function Payroll() {
             <DialogTitle>{t("auto.loennsperiode")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Label>Start-dag i måneden (1–28)</Label>
+            <Label>{t("auto.start_dag_i_maaneden_1_28")}</Label>
             <Input
               type="number"
               min={1}

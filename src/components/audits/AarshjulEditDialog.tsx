@@ -430,7 +430,7 @@ export default function AarshjulEditDialog({
                 onClick={() => setShowStandardPicker(true)}
               >
                 <MoveRight className="h-4 w-4 mr-1" />
-                Legg til standard aktivitet
+                {t("auto.legg_til_standard_aktivitet")}
               </Button>
             </div>
           )}
@@ -483,7 +483,7 @@ export default function AarshjulEditDialog({
               onClick={() => setShowForm(true)}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Legg til egen aktivitet
+              {t("auto.legg_til_egen_aktivitet")}
             </Button>
           )}
         </div>

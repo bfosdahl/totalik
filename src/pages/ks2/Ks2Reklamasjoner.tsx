@@ -258,7 +258,7 @@ export default function Ks2Reklamasjoner() {
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
-              Ny reklamasjon
+              {t("auto.ny_reklamasjon")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">

@@ -197,7 +197,7 @@ export default function Ks2UnderleverandorDetail({ subcontractorId }: Props) {
       {/* Tabs */}
       <Tabs defaultValue="evaluation" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="evaluation"><ClipboardCheck className="h-4 w-4 mr-2" />Seriøsitetskontroll</TabsTrigger>
+          <TabsTrigger value="evaluation"><ClipboardCheck className="h-4 w-4 mr-2" />{t("auto.serioesitetskontroll")}</TabsTrigger>
           <TabsTrigger value="documents"><FileText className="h-4 w-4 mr-2" />Dokumenter ({documents.length})</TabsTrigger>
         </TabsList>
 

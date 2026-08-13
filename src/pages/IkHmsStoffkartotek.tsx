@@ -433,7 +433,7 @@ export default function IkHmsStoffkartotek() {
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
-                Legg til stoff
+                {t("auto.legg_til_stoff")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -596,7 +596,7 @@ export default function IkHmsStoffkartotek() {
             className="gap-2 whitespace-nowrap"
           >
             <Globe className="w-4 h-4" />
-            Søk i felles register
+            {t("auto.soek_i_felles_register")}
           </Button>
         </div>
 
@@ -792,7 +792,7 @@ export default function IkHmsStoffkartotek() {
                       }}
                     >
                       <Edit className="w-4 h-4 mr-2" />
-                      Rediger
+                      {t("auto.rediger")}
                     </Button>
                   </div>
                   <div className="flex gap-2">
@@ -924,7 +924,7 @@ function GlobalChemicalSearchDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Søk i felles stoffregister
+            {t("auto.soek_i_felles_stoffregister")}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
             {t("auto.her_kan_du_finne_stoffer_som_andre_bedri")}
@@ -947,7 +947,7 @@ function GlobalChemicalSearchDialog({
                     size="sm"
                     onClick={() => setSelectedChemical(null)}
                   >
-                    Velg annet
+                    {t("auto.velg_annet")}
                   </Button>
                 </div>
                 {selectedChemical.danger_classes?.length > 0 && (

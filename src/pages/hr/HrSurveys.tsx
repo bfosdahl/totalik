@@ -27,7 +27,7 @@ export default function HrSurveys() {
           </div>
           <Button className="gap-2" onClick={() => setShowNewDialog(true)}>
             <Plus className="w-4 h-4" />
-            Ny undersøkelse
+            {t("auto.ny_undersoekelse")}
           </Button>
         </div>
 
@@ -69,7 +69,7 @@ export default function HrSurveys() {
                 </p>
                 <Button onClick={() => setShowNewDialog(true)}>
                   <Users className="w-4 h-4 mr-2" />
-                  Opprett undersøkelse
+                  {t("auto.opprett_undersoekelse")}
                 </Button>
               </div>
             </Card>

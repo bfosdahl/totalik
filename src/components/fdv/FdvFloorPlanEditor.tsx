@@ -1109,7 +1109,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Høyde (m)</Label>
+                      <Label className="text-xs text-muted-foreground">{t("auto.hoeyde_m")}</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -1236,7 +1236,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground flex items-center gap-1">
               <Ruler className="h-3 w-3" />
-              Mål (meter)
+              {t("auto.maal_meter")}
             </Label>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
@@ -1330,7 +1330,7 @@ export function FdvFloorPlanEditor({ open, onOpenChange, buildingName, initialDa
               <div className="flex items-center gap-2 p-2 border-b bg-muted/20 shrink-0 flex-wrap">
                 <Button variant="ghost" size="sm" onClick={deleteSelected} disabled={!selectedId}>
                   <Trash2 className="h-4 w-4 mr-1" />
-                  Slett
+                  {t("auto.slett")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={duplicateSelected} disabled={!selectedId}>
                   <Copy className="h-4 w-4 mr-1" />

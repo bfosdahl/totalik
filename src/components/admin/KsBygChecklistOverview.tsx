@@ -196,7 +196,7 @@ export function KsBygChecklistOverview() {
                 }
               }}
             >
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

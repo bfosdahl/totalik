@@ -110,7 +110,7 @@ export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastO
 
           {activeVehicles.length > 0 && (
             <div className="space-y-2">
-              <Label className="flex items-center gap-1.5"><Car className="h-3.5 w-3.5" /> Velg bil fra bilpark</Label>
+              <Label className="flex items-center gap-1.5"><Car className="h-3.5 w-3.5" /> {t("auto.velg_bil_fra_bilpark")}</Label>
               <Select value={selectedVehicleId} onValueChange={handleVehicleChange}>
                 <SelectTrigger><SelectValue placeholder={t("auto.velg_bil")} /></SelectTrigger>
                 <SelectContent>
@@ -136,7 +136,7 @@ export function StartTripDialog({ open, onOpenChange, onSubmit, isPending, lastO
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="st-purpose">Formål (valgfritt nå, kan fylles ut ved avslutning)</Label>
+            <Label htmlFor="st-purpose">{t("auto.formaal_valgfritt_naa_kan_fylles_ut_ved_")}</Label>
             <Input id="st-purpose" value={purpose} onChange={e => setPurpose(e.target.value)} placeholder={t("auto.f_eks_kundemoete")} />
           </div>
 

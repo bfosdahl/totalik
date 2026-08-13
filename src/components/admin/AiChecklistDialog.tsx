@@ -189,7 +189,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-blue-500" />
-            AI Sjekkliste-generator
+            {t("auto.ai_sjekkliste_generator")}
           </DialogTitle>
         </DialogHeader>
 
@@ -227,7 +227,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                             setKategori("");
                           }}
                         >
-                          Avbryt
+                          {t("auto.avbryt")}
                         </Button>
                       </div>
                     ) : (
@@ -392,7 +392,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                 <div className="flex gap-2 pt-2">
                   <Button onClick={handleSave} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="h-4 w-4 mr-2" />
-                    Lagre i malbiblioteket
+                    {t("auto.lagre_i_malbiblioteket")}
                   </Button>
                   <Button variant="outline" onClick={() => setResult(null)}>
                     <RefreshCw className="h-4 w-4 mr-2" />

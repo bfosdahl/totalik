@@ -424,7 +424,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             </TabsTrigger>
             <TabsTrigger value="ai" className="flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
-              Prosjekt-hjelperen
+              {t("auto.prosjekt_hjelperen")}
             </TabsTrigger>
           </TabsList>
 
@@ -527,7 +527,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                       onClick={() => setShowSaveTemplateDialog(true)}
                     >
                       <Save className="w-3 h-3 mr-1" />
-                      Lagre som mal
+                      {t("auto.lagre_som_mal")}
                     </Button>
                   )}
                 </div>
@@ -549,7 +549,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                         onClick={handleSaveAsTemplate}
                         disabled={!newTemplateName.trim()}
                       >
-                        Lagre
+                        {t("auto.lagre")}
                       </Button>
                       <Button
                         type="button"
@@ -557,7 +557,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                         variant="ghost"
                         onClick={() => setShowSaveTemplateDialog(false)}
                       >
-                        Avbryt
+                        {t("auto.avbryt")}
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -579,7 +579,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                     }}
                   >
                     <Trash2 className="w-3 h-3 mr-1" />
-                    Slett denne malen
+                    {t("auto.slett_denne_malen")}
                   </Button>
                 )}
               </div>

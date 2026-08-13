@@ -497,7 +497,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                   className="gap-2"
                 >
                   <RefreshCcw className="h-4 w-4" />
-                  Prøv igjen
+                  {t("auto.proev_igjen")}
                 </Button>
               </div>
             )}

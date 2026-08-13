@@ -319,9 +319,9 @@ Ved arbeidstid på 8 timer eller mer skal pausene til sammen være minst en halv
 
         <div className="rounded-lg bg-muted/50 border p-3 text-xs space-y-1">
           <div className="flex items-center gap-1 font-medium">
-            <Info className="h-3.5 w-3.5" /> Ikke inkludert (må hentes andre steder)
+            <Info className="h-3.5 w-3.5" /> {t("auto.ikke_inkludert_maa_hentes_andre_steder")}
           </div>
-          <p>• Lønnsslipper → lønnssystem (Tripletex/Visma/Duett)</p>
+          <p>{t("auto.loennsslipper_loennssystem_tripletex_vis")}</p>
           <p>{t("auto.kontoutskrift_som_viser_loennsutbetaling")}</p>
           <p>{t("auto.signerte_pdf_ansettelsesavtaler_hr_anset")}</p>
         </div>

@@ -142,7 +142,7 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
               HMS-kort
             </CardTitle>
             <CardDescription>
-              Lovpålagt ID-kort for mange bransjer (gyldig i 2 år)
+              {t("auto.lovpaalagt_id_kort_for_mange_bransjer_gy")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -160,7 +160,7 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
             {canManage && !isEditing && (
               <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                 <Edit2 className="w-4 h-4 mr-2" />
-                Rediger
+                {t("auto.rediger")}
               </Button>
             )}
           </div>
@@ -232,11 +232,11 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
               <div className="flex gap-2 pt-2">
                 <Button onClick={handleSave} disabled={updateEmployee.isPending}>
                   <Save className="w-4 h-4 mr-2" />
-                  Lagre
+                  {t("auto.lagre")}
                 </Button>
                 <Button variant="outline" onClick={handleCancel}>
                   <X className="w-4 h-4 mr-2" />
-                  Avbryt
+                  {t("auto.avbryt")}
                 </Button>
               </div>
             </div>
@@ -317,10 +317,10 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
             <div className="bg-muted/50 border border-border rounded-lg p-4">
               <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-primary" />
-                For å bestille HMS-kort trenger vi:
+                {t("auto.for_aa_bestille_hms_kort_trenger_vi")}
               </h4>
               <ul className="text-sm text-muted-foreground space-y-1 ml-6 list-disc">
-                <li>Gyldig ID (pass, førerkort eller bankkort med bilde)</li>
+                <li>{t("auto.gyldig_id_pass_foererkort_eller_bankkort")}</li>
                 <li>Bilde (selfie) av personen som skal ha kortet</li>
               </ul>
             </div>

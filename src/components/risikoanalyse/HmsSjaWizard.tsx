@@ -234,7 +234,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
               }}
             >
               <BookmarkPlus className="h-4 w-4 mr-2" />
-              Lagre som mal
+              {t("auto.lagre_som_mal")}
             </Button>
             <Button onClick={handleManualSave} disabled={isSaving}>
               {isSaving ? (
@@ -256,13 +256,13 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
           {/* Table header */}
           <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_1fr_40px] gap-3 mb-3 px-1">
             <span className="text-base font-semibold text-foreground">
-              Aktivitet (hva skal gjøres)
+              {t("auto.aktivitet_hva_skal_gjoeres")}
             </span>
             <span className="text-base font-semibold text-foreground">
-              Identifisert risiko (hva kan gå galt)
+              {t("auto.identifisert_risiko_hva_kan_gaa_galt")}
             </span>
             <span className="text-base font-semibold text-foreground">
-              Tiltak (hva gjør vi for å unngå det)
+              {t("auto.tiltak_hva_gjoer_vi_for_aa_unngaa_det")}
             </span>
             <span />
           </div>
@@ -334,7 +334,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
               onClick={addRow}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Legg til rad
+              {t("auto.legg_til_rad")}
             </Button>
           )}
         </CardContent>
@@ -344,7 +344,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
       <Card>
         <CardContent className="p-4 sm:p-6">
           <label className="text-sm font-medium block mb-2">
-            Deltakere (hvem skal utføre arbeidet)
+            {t("auto.deltakere_hvem_skal_utfoere_arbeidet")}
           </label>
           <Input
             placeholder={t("auto.f_eks_ola_nordmann_kari_hansen")}
@@ -391,7 +391,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
                 onClick={() => setShowSignature(true)}
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
-                Fullfør og signer SJA
+                {t("auto.fullfoer_og_signer_sja")}
               </Button>
             ) : (
               <div className="space-y-4">
@@ -416,7 +416,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
                     className="mt-1"
                     onClick={() => sigCanvasRef.current?.clear()}
                   >
-                    Tøm signatur
+                    {t("auto.toem_signatur")}
                   </Button>
                 </div>
 
@@ -426,7 +426,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
                     className="flex-1"
                     onClick={() => setShowSignature(false)}
                   >
-                    Avbryt
+                    {t("auto.avbryt")}
                   </Button>
                   <Button
                     className="flex-1 bg-green-600 hover:bg-green-700"
@@ -436,12 +436,12 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
                     {completeSja.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Fullfører...
+                        {t("auto.fullfoerer")}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Signer og fullfør
+                        {t("auto.signer_og_fullfoer")}
                       </>
                     )}
                   </Button>
@@ -468,7 +468,7 @@ export function HmsSjaWizard({ sja, onClose }: HmsSjaWizardProps) {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Beskrivelse (valgfritt)</label>
+              <label className="text-sm font-medium">{t("auto.beskrivelse_valgfritt")}</label>
               <Textarea
                 placeholder={t("auto.naar_brukes_denne_malen")}
                 value={templateDesc}

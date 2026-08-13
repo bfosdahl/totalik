@@ -124,7 +124,7 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
             />
           </div>
           <div>
-            <Label>Beskrivelse (valgfritt)</Label>
+            <Label>{t("auto.beskrivelse_valgfritt")}</Label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -139,7 +139,7 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
         <div className="space-y-3 bg-muted/40 rounded-lg p-4">
           <h3 className="font-semibold flex items-center gap-2">
             <ListPlus className="w-4 h-4" />
-            Legg til sjekkpunkt
+            {t("auto.legg_til_sjekkpunkt")}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
@@ -177,7 +177,7 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
           <div className="flex justify-end">
             <Button onClick={addCheckpoint} size="sm">
               <Plus className="w-4 h-4 mr-2" />
-              Legg til punkt
+              {t("auto.legg_til_punkt")}
             </Button>
           </div>
         </div>

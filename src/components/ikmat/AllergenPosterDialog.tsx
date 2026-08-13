@@ -184,7 +184,7 @@ export const AllergenPosterDialog = ({ allergens, menuItems, companyName }: Alle
                 <div className="space-y-4" style={{ marginBottom: '32px' }}>
                   <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2" style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' }}>
                     <UtensilsCrossed className="h-6 w-6" style={{ width: 24, height: 24 }} />
-                    Allergener i våre retter:
+                    {t("auto.allergener_i_vaare_retter")}
                   </h2>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

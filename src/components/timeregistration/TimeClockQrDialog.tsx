@@ -92,7 +92,7 @@ export function TimeClockQrDialog({ open, onOpenChange }: TimeClockQrDialogProps
             </div>
             <Button onClick={handleCreate} disabled={isCreating}>
               <Plus className="h-4 w-4 mr-1" />
-              Opprett
+              {t("auto.opprett")}
             </Button>
           </div>
 

@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { t } from "@/i18n/t";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
@@ -63,7 +64,7 @@ const VernerundeTemplateSelector = ({
   return (
     <div className="space-y-4">
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold">Velg type vernerunde</h3>
+        <h3 className="text-lg font-semibold">{t("auto.velg_type_vernerunde")}</h3>
         <p className="text-sm text-muted-foreground">
           Velg en ferdig sjekkliste, eller opprett en tom vernerunde med egne punkter
         </p>
@@ -82,7 +83,7 @@ const VernerundeTemplateSelector = ({
                 </div>
                 <div className="flex-1">
                   <h4 className="font-medium group-hover:text-primary transition-colors">
-                    Opprett tom vernerunde
+                    {t("auto.opprett_tom_vernerunde")}
                   </h4>
                   <p className="text-sm text-muted-foreground">
                     Lag din egen sjekkliste – legg til kategorier og punkter selv

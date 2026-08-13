@@ -143,7 +143,7 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
           </p>
           <Button onClick={onCreateTask}>
             <Plus className="h-4 w-4 mr-2" />
-            Opprett første oppgave
+            {t("auto.opprett_foerste_oppgave")}
           </Button>
         </CardContent>
       </Card>
@@ -283,7 +283,7 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
       {/* Add task button */}
       <Button onClick={onCreateTask} variant="outline" className="w-full">
         <Plus className="h-4 w-4 mr-2" />
-        Legg til ny oppgave
+        {t("auto.legg_til_ny_oppgave")}
       </Button>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

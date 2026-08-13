@@ -74,7 +74,7 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5" />
-            Importer kjørebok fra Excel
+            {t("auto.importer_kjoerebok_fra_excel")}
           </DialogTitle>
           <DialogDescription>
             {t("auto.last_opp_en_excel_fil_med_kjoerebokdata_")}
@@ -91,7 +91,7 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
             </p>
             <Button variant="outline" onClick={() => fileRef.current?.click()} className="gap-2">
               <Upload className="w-4 h-4" />
-              Velg fil
+              {t("auto.velg_fil")}
             </Button>
             <input
               ref={fileRef}

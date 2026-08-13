@@ -108,7 +108,7 @@ export default function KsKalkyler() {
           </div>
           <Dialog open={isNewOpen} onOpenChange={setIsNewOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" />Ny kalkyle</Button>
+              <Button><Plus className="w-4 h-4 mr-2" />{t("auto.ny_kalkyle")}</Button>
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] flex flex-col">
               <DialogHeader>
@@ -200,7 +200,7 @@ export default function KsKalkyler() {
                 <Calculator className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-medium mb-2">{t("auto.ingen_kalkyler_ennaa")}</h3>
                 <p className="text-muted-foreground mb-4">{t("auto.opprett_din_foerste_kalkyle_for_aa_komme")}</p>
-                <Button onClick={() => setIsNewOpen(true)}><Plus className="w-4 h-4 mr-2" />Ny kalkyle</Button>
+                <Button onClick={() => setIsNewOpen(true)}><Plus className="w-4 h-4 mr-2" />{t("auto.ny_kalkyle")}</Button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -431,7 +431,7 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" onClick={() => setIsEditOpen(true)}>
-              <Pencil className="w-4 h-4 mr-1" />Rediger
+              <Pencil className="w-4 h-4 mr-1" />{t("auto.rediger")}
             </Button>
             {calc.status === "draft" && (
               <Button size="sm" variant="outline" onClick={() => { onUpdate.mutate({ id: calc.id, status: "sent" }); toast.success(t("auto.kalkyle_merket_som_sendt")); }}>
@@ -590,7 +590,7 @@ function CalculationDetail({ calc, onBack, onUpdate, allProjects }: DetailProps)
         {/* Quick add item dialog */}
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full"><Plus className="w-4 h-4 mr-2" />Legg til post</Button>
+            <Button variant="outline" className="w-full"><Plus className="w-4 h-4 mr-2" />{t("auto.legg_til_post")}</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

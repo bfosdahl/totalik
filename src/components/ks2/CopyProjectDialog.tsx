@@ -306,7 +306,7 @@ export function CopyProjectDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button
             onClick={handleCopy}

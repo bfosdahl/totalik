@@ -228,7 +228,7 @@ export function RoutineLibraryDialog({
                             ) : (
                               <>
                                 <Download className="w-4 h-4 mr-1" />
-                                Legg til rutine
+                                {t("auto.legg_til_rutine")}
                               </>
                             )}
                           </Button>

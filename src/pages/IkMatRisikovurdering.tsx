@@ -77,7 +77,7 @@ const IkMatRisikovurdering = () => {
           <Button asChild size="sm" variant="outline">
             <Link to="/ik-mat/risiko-og-tiltak">
               <Edit className="h-4 w-4 mr-2" />
-              Rediger
+              {t("auto.rediger")}
             </Link>
           </Button>
         </div>

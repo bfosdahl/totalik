@@ -96,7 +96,7 @@ export default function WorkSchedule() {
               </Button>
               <Button onClick={() => setIsCreateDialogOpen(true)} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
-                Ny vakt
+                {t("auto.ny_vakt")}
               </Button>
             </div>
           )}
@@ -116,7 +116,7 @@ export default function WorkSchedule() {
             size="sm"
             onClick={() => setViewMode("month")}
           >
-            Måned
+            {t("auto.maaned")}
           </Button>
         </div>
 

@@ -696,7 +696,7 @@ export default function IkAlkoholHandbok() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Target className="w-5 h-5 text-amber-600" />
-                  1. Mål
+                  {t("auto.1_maal")}
                 </CardTitle>
                 <Badge variant={goals.length > 0 ? "default" : "secondary"}>
                   {goals.length} mål
@@ -728,7 +728,7 @@ export default function IkAlkoholHandbok() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="w-5 h-5 text-amber-600" />
-                  2. Organisering
+                  {t("auto.2_organisering")}
                 </CardTitle>
                 <Badge variant={organization.length > 0 ? "default" : "secondary"}>
                   {organization.length} roller

@@ -70,7 +70,7 @@ const IkMatMaal = () => {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Target className="h-8 w-8 text-primary" />
-              Målsetting
+              {t("auto.maalsetting")}
             </h1>
             <p className="text-muted-foreground mt-1">
               {t("auto.bedriftens_maalsetting_for_matsikkerhet")}
@@ -79,7 +79,7 @@ const IkMatMaal = () => {
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleAddGoal}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til mål
+              {t("auto.legg_til_maal")}
             </Button>
             <Button 
               onClick={handleSave} 

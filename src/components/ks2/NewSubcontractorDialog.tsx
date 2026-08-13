@@ -171,7 +171,7 @@ export function NewSubcontractorDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Ny underleverandør
+            {t("auto.ny_underleverandoer")}
           </DialogTitle>
         </DialogHeader>
 
@@ -360,7 +360,7 @@ export function NewSubcontractorDialog({
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    Utløpsdato (valgfri)
+                    {t("auto.utloepsdato_valgfri")}
                   </Label>
                   <Input
                     type="date"
@@ -388,7 +388,7 @@ export function NewSubcontractorDialog({
               variant="outline" 
               onClick={handleClose}
             >
-              Avbryt
+              {t("auto.avbryt")}
             </Button>
             <Button type="submit" disabled={isCreating || isInviting}>
               {isCreating || isInviting ? "Lagrer..." : grantAccess ? "Registrer og inviter" : "Registrer"}

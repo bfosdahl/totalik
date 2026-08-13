@@ -185,7 +185,7 @@ export default function InstallApp() {
                   >
                     <p className="text-sm font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
                       <ExternalLink className="w-4 h-4 shrink-0" />
-                      Åpne denne siden i Safari først
+                      {t("auto.aapne_denne_siden_i_safari_foerst")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {t("auto.paa_iphone_ipad_maa_du_bruke_safari_for_")}

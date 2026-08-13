@@ -447,7 +447,7 @@ export function NewDeviationDialog({
         disabled={isSubmitting}
         className="flex-1 md:flex-none h-11"
       >
-        Avbryt
+        {t("auto.avbryt")}
       </Button>
       <Button 
         type="submit"

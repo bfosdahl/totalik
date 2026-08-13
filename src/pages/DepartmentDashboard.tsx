@@ -134,7 +134,7 @@ const DepartmentDashboard = () => {
             className="gap-2 -ml-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Tilbake til hovedbedrift
+            {t("auto.tilbake_til_hovedbedrift")}
           </Button>
 
           {/* Department info card */}

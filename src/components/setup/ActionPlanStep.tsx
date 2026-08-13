@@ -316,7 +316,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                     </Badge>
                     <Button size="sm" variant="outline" onClick={() => addActionFromRisk(risk)}>
                       <Plus className="w-3 h-3 mr-1" />
-                      Opprett tiltak
+                      {t("auto.opprett_tiltak")}
                     </Button>
                   </div>
                 </div>
@@ -370,7 +370,7 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
             <h3 className="font-medium">Tiltak ({actions.length})</h3>
             <Button variant="outline" onClick={addAction}>
               <Plus className="w-4 h-4 mr-2" />
-              Legg til tiltak
+              {t("auto.legg_til_tiltak")}
             </Button>
           </div>
 
@@ -415,10 +415,10 @@ export const ActionPlanStep = forwardRef<ActionPlanStepRef, ActionPlanStepProps>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">{t("auto.ingen_sortering")}</SelectItem>
-                        <SelectItem value="deadline_asc">Frist (tidligst først)</SelectItem>
-                        <SelectItem value="deadline_desc">Frist (senest først)</SelectItem>
-                        <SelectItem value="priority_desc">Prioritet (høyest først)</SelectItem>
-                        <SelectItem value="priority_asc">Prioritet (lavest først)</SelectItem>
+                        <SelectItem value="deadline_asc">{t("auto.frist_tidligst_foerst")}</SelectItem>
+                        <SelectItem value="deadline_desc">{t("auto.frist_senest_foerst")}</SelectItem>
+                        <SelectItem value="priority_desc">{t("auto.prioritet_hoeyest_foerst")}</SelectItem>
+                        <SelectItem value="priority_asc">{t("auto.prioritet_lavest_foerst")}</SelectItem>
                         <SelectItem value="status">{t("auto.status_2")}</SelectItem>
                       </SelectContent>
                     </Select>

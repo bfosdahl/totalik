@@ -272,7 +272,7 @@ export function CompanyModulesDialog({
                 size="sm"
                 className="text-sm"
               >
-                Avbryt
+                {t("auto.avbryt")}
               </Button>
               <Button onClick={handleSave} disabled={isSaving} size="sm" className="text-sm">
                 {isSaving ? "Lagrer..." : "Lagre endringer"}

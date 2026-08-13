@@ -66,7 +66,7 @@ export default function Ks2RiggPlan() {
     return (
       <div className="space-y-4">
         <Button variant="ghost" size="sm" onClick={() => { setActivePlan(null); setInitialSelectedId(null); }}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Tilbake til riggplaner
+          <ArrowLeft className="h-4 w-4 mr-1" /> {t("auto.tilbake_til_riggplaner")}
         </Button>
         <RiggPlanEditor
           plan={activePlan}
@@ -101,7 +101,7 @@ export default function Ks2RiggPlan() {
           </p>
         </div>
         <Button onClick={() => setNewOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Ny riggplan
+          <Plus className="h-4 w-4 mr-1" /> {t("auto.ny_riggplan")}
         </Button>
       </div>
 
@@ -129,7 +129,7 @@ export default function Ks2RiggPlan() {
           >
             {shaPlan ? (
               <>
-                <FileCheck className="h-4 w-4 mr-1" /> Åpne SHA-plan
+                <FileCheck className="h-4 w-4 mr-1" /> {t("auto.aapne_sha_plan")}
               </>
             ) : (
               <>
@@ -149,7 +149,7 @@ export default function Ks2RiggPlan() {
               {t("auto.lag_en_visuell_oversikt_over_byggeplasse")}
             </p>
             <Button onClick={() => setNewOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Opprett første riggplan
+              <Plus className="h-4 w-4 mr-1" /> {t("auto.opprett_foerste_riggplan")}
             </Button>
           </CardContent>
         </Card>
@@ -243,7 +243,7 @@ export default function Ks2RiggPlan() {
                 setDeleteId(null);
               }}
             >
-              Slett
+              {t("auto.slett")}
             </Button>
           </DialogFooter>
         </DialogContent>

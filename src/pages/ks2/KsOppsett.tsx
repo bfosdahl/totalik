@@ -226,7 +226,7 @@ const KsOppsett = () => {
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={retry}>
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Prøv igjen
+                  {t("auto.proev_igjen")}
                 </Button>
                 <Button variant="secondary" size="sm" onClick={handleLogout} disabled={isLoggingOut}>
                   {isLoggingOut ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LogOut className="h-4 w-4 mr-2" />}
@@ -308,7 +308,7 @@ const KsOppsett = () => {
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-warning" />
-                Kjør oppsett på nytt?
+                {t("auto.kjoer_oppsett_paa_nytt")}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {t("auto.dette_vil_starte_et_nytt_ks_oppsett_eksi")}
