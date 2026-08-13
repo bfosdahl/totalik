@@ -1,4 +1,5 @@
-export interface NormalizedHmsRoutine {
+
+import { t } from "@/i18n/t";export interface NormalizedHmsRoutine {
   id: string;
   routine_number: string;
   routine_name: string;
@@ -98,7 +99,7 @@ export const buildCanonicalOrganizationContent = (organization: {
   const roles: Array<{ title: string; personName: string; description: string; depth: number; childCount: number }> = [];
 
   if (organization?.dagligLeder) {
-    roles.push({ title: "Daglig leder", personName: organization.dagligLeder, description: "Overordnet ansvar for internkontroll og HMS-arbeid.", depth: 0, childCount: 0 });
+    roles.push({ title: "Daglig leder", personName: organization.dagligLeder, description: t("auto.overordnet_ansvar_for_internkontroll_og_"), depth: 0, childCount: 0 });
   }
   if (organization?.verneombud) {
     roles.push({ title: "Verneombud", personName: organization.verneombud, description: "Arbeidstakernes representant i HMS-arbeidet.", depth: roles.length ? 1 : 0, childCount: 0 });

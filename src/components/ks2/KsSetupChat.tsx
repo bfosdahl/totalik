@@ -201,7 +201,7 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
       console.error("KS setup chat error:", error);
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: "Beklager, det oppsto en feil. Prøv igjen."
+        content: t("auto.beklager_det_oppsto_en_feil_proev_igjen")
       }]);
       toast.error(t("auto.feil_ved_kommunikasjon_med_ai"));
     } finally {

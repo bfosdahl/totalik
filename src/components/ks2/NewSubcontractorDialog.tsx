@@ -46,7 +46,7 @@ const ROLES_IN_PROJECT = [
   "Ansvarlig kontrollerende",
   "Takstmann",
   "Arkitekt",
-  "RIB (Rådgivende ingeniør bygg)",
+  t("auto.rib_raadgivende_ingenioer_bygg"),
   "RIE (Rådgivende ingeniør elektro)",
   "RIV (Rådgivende ingeniør VVS)",
   "Prosjekterende",

@@ -308,7 +308,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
           setPendingBrregInfo(brregInfo);
           setMessages(prev => [...prev, { role: "assistant", content: `Jeg fant følgende info:\n\n📋 **Firmanavn:** ${brregInfo.name}\n📍 **Adresse:** ${brregInfo.address}\n🏭 **Bransje:** ${brregInfo.industry}\n👥 **Ansatte:** ${brregInfo.employees}\n\nStemmer dette? (Ja/Nei)` }]);
         } else {
-          setMessages(prev => [...prev, { role: "assistant", content: "Kunne ikke hente info. Skriv inn organisasjonsnummeret ditt (9 siffer):" }]);
+          setMessages(prev => [...prev, { role: "assistant", content: t("auto.kunne_ikke_hente_info_skriv_inn_organisa") }]);
         }
         setIsLoading(false);
       };
@@ -575,7 +575,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       // Fallback: prompt for org number
       setMessages(prev => [...prev, { 
         role: "assistant", 
-        content: "Vennligst skriv inn organisasjonsnummeret ditt (9 siffer) for å komme i gang:" 
+        content: t("auto.vennligst_skriv_inn_organisasjonsnummere") 
       }]);
       setIsLoading(false);
       return;

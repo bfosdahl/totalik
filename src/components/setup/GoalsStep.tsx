@@ -16,22 +16,22 @@ const goalExamples = [
   {
     id: "example1",
     title: t("auto.forebygging_og_trivsel"),
-    description: "Vi vil forebygge ulykker, miljø- og helseskader for å skape trivsel på arbeidsplassen. Driften skal gi minst mulig påvirkning på det ytre miljø. Våre produkter og tjenester skal være sikre for våre kunder. Dette skal skje ved at helse, miljø og sikkerhet planlegges og prioriteres på lik linje med produksjon, service og økonomi.",
+    description: t("auto.vi_vil_forebygge_ulykker_miljoe_og_helse"),
   },
   {
     id: "example2",
     title: t("auto.trivsel_og_kontinuerlig_forbedring"),
-    description: "I vår virksomhet skal det skapes et trivelig og sikkert arbeidsmiljø for alle ansatte. Vi skal også ta vare på virksomhetens bygninger og materiell, forhindre belastning på det ytre miljø, og våre produkter skal ikke skade brukerne. Disse målene skal nås gjennom stadige forbedringer. Både ledelse og ansatte skal delta aktivt i forbedringsarbeidet.",
+    description: t("auto.i_vaar_virksomhet_skal_det_skapes_et_tri"),
   },
   {
     id: "example3",
     title: t("auto.mennesket_som_ressurs"),
-    description: "Mennesket er den viktigste ressurs i arbeidslivet, og god helse er viktig. Virksomheten vil derfor gjennom et HMS-system forebygge ulykker og helseskader, og skape trivsel på arbeidsplassen. Dette skal skje ved at sikkerhet og arbeidsmiljø planlegges og prioriteres på lik linje med produksjon, teknikk og økonomi.",
+    description: t("auto.mennesket_er_den_viktigste_ressurs_i_arb"),
   },
   {
     id: "example4",
     title: t("auto.helsefremmende_arbeidsplass"),
-    description: "Vårt mål er en helsefremmende arbeidsplass med faglig og personlig utvikling for de ansatte. Konkrete mål for helse, miljø og sikkerhetsarbeidet: Den overordnede målsettingen må nedfelles i konkrete mål som skal være mulige å oppnå. For at du skal se om virksomheten har nådd de oppsatte mål, er det viktig at målene er konkrete og målbare.",
+    description: t("auto.vaart_maal_er_en_helsefremmende_arbeidsp"),
   },
   {
     id: "example5",

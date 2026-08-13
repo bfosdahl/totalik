@@ -39,8 +39,8 @@ interface HmsResponsible {
 const DEFAULT_GOALS: HmsGoal[] = [
   { id: "1", text: "Null skader på personer", isPredefined: true },
   { id: "2", text: "Null skader på materiell", isPredefined: true },
-  { id: "3", text: "Alle ansatte skal ha nødvendig opplæring og sertifisering", isPredefined: true },
-  { id: "4", text: "Alle skal bruke påbudt verneutstyr", isPredefined: true },
+  { id: "3", text: t("auto.alle_ansatte_skal_ha_noedvendig_opplaeri"), isPredefined: true },
+  { id: "4", text: t("auto.alle_skal_bruke_paabudt_verneutstyr"), isPredefined: true },
 ];
 
 const DEFAULT_RESPONSIBILITIES: HmsResponsible[] = [

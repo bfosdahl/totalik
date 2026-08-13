@@ -101,7 +101,7 @@ const FORM_FIELDS: Record<string, {
       { value: "2", label: t("auto.tiltaksklasse_2") },
       { value: "3", label: t("auto.tiltaksklasse_3") },
     ]},
-    { key: "beskrivelse", label: t("auto.beskrivelse_av_ansvarsomraade"), type: "textarea", span: 2, placeholder: "F.eks. Tømrerarbeid, grunnarbeid, sanitær..." },
+    { key: "beskrivelse", label: t("auto.beskrivelse_av_ansvarsomraade"), type: "textarea", span: 2, placeholder: t("auto.f_eks_toemrerarbeid_grunnarbeid_sanitaer") },
     { key: "section_eiendom", label: t("auto.eiendom_og_tiltak"), type: "text", section: "heading" },
     { key: "eiendom_adresse", label: t("auto.eiendommens_adresse"), type: "text", span: 2 },
     { key: "gnr", label: t("auto.gnr"), type: "text" },
@@ -127,15 +127,15 @@ const FORM_FIELDS: Record<string, {
     { key: "snr", label: t("auto.seksjonsnr"), type: "text" },
     { key: "kommune", label: t("auto.kommune"), type: "text" },
     { key: "section_tiltak", label: t("auto.beskrivelse_av_tiltaket"), type: "text", section: "heading" },
-    { key: "beskrivelse", label: t("auto.kort_beskrivelse_av_tiltaket"), type: "textarea", span: 2, placeholder: "Beskriv hva som skal bygges/endres..." },
+    { key: "beskrivelse", label: t("auto.kort_beskrivelse_av_tiltaket"), type: "textarea", span: 2, placeholder: t("auto.beskriv_hva_som_skal_bygges_endres") },
     { key: "dispensasjon", label: t("auto.soekes_det_om_dispensasjon"), type: "select", options: [
       { value: "nei", label: t("auto.nei") },
       { value: "ja", label: t("auto.ja") },
     ]},
     { key: "dispensasjon_beskrivelse", label: t("auto.beskrivelse_av_dispensasjon"), type: "textarea", span: 2 },
     { key: "section_frist", label: t("auto.frist_for_merknader"), type: "text", section: "heading" },
-    { key: "frist_merknad", label: "Frist for merknader (minst 14 dager)", type: "date" },
-    { key: "merknad_sendes_til", label: t("auto.merknader_sendes_til"), type: "text", span: 2, placeholder: "Navn og adresse til ansvarlig søker" },
+    { key: "frist_merknad", label: t("auto.frist_for_merknader_minst_14_dager"), type: "date" },
+    { key: "merknad_sendes_til", label: t("auto.merknader_sendes_til"), type: "text", span: 2, placeholder: t("auto.navn_og_adresse_til_ansvarlig_soeker") },
   ],
 
   // 5174 - Søknad om tillatelse til tiltak

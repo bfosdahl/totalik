@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 export interface OrgChartNodePerson {
   id: string;
@@ -37,35 +38,35 @@ export interface TreeNode extends OrgChartNode {
 export const PREDEFINED_ORG_ROLES = [
   {
     title: "Daglig leder",
-    description: "Daglig leder har det overordnede ansvaret for at gjeldende lover, forskrifter og interne retningslinjer etterleves."
+    description: t("auto.daglig_leder_har_det_overordnede_ansvare_2")
   },
   {
     title: "HMS-ansvarlig",
-    description: "HMS-ansvarlig koordinerer det daglige HMS-arbeidet og har ansvar for å følge opp at rutiner og tiltak gjennomføres."
+    description: t("auto.hms_ansvarlig_koordinerer_det_daglige_hm_2")
   },
   {
     title: "Arbeidsleder",
-    description: "Arbeidsleder har ansvar for å iverksette og følge opp nødvendige tiltak innen sine ansvarsområder."
+    description: t("auto.arbeidsleder_har_ansvar_for_aa_iverksett")
   },
   {
     title: "Verneombud",
-    description: "Verneombudet fungerer som arbeidstakernes valgte representant i spørsmål knyttet til arbeidsmiljø og sikkerhet."
+    description: t("auto.verneombudet_fungerer_som_arbeidstakerne")
   },
   {
     title: "Salgssjef",
-    description: "Salgssjef har ansvar for salgsavdelingen og rapporterer til daglig leder."
+    description: t("auto.salgssjef_har_ansvar_for_salgsavdelingen")
   },
   {
     title: "Prosjektleder",
-    description: "Prosjektleder har ansvar for gjennomføring av prosjekter og HMS på sine prosjekter."
+    description: t("auto.prosjektleder_har_ansvar_for_gjennomfoer")
   },
   {
     title: "Avdelingsleder",
-    description: "Avdelingsleder har ansvar for sin avdeling og personalansvaret for ansatte i avdelingen."
+    description: t("auto.avdelingsleder_har_ansvar_for_sin_avdeli")
   },
   {
     title: "Øvrige ansatte",
-    description: "Alle ansatte har en plikt til å følge virksomhetens HMS-rutiner og bidra aktivt til et trygt arbeidsmiljø."
+    description: t("auto.alle_ansatte_har_en_plikt_til_aa_foelge_")
   },
 ];
 

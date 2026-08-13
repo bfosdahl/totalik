@@ -86,7 +86,7 @@ const settingsSections: SettingsSectionConfig[] = [
     id: "data",
     icon: Database,
     title: t("auto.data_og_eksport"),
-    description: "Last ned full kopi av bedriftens data (GDPR)",
+    description: t("auto.last_ned_full_kopi_av_bedriftens_data_gd"),
   },
   {
     id: "trash",

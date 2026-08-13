@@ -9,6 +9,7 @@
  */
 
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 const escapeHtml = (s: string): string =>
   s
@@ -125,8 +126,7 @@ export const printQr = ({ svg, title, subtitle }: QrPrintOptions): void => {
 
   if (!printWindow) {
     toast.error("Popup blokkert", {
-      description:
-        "Tillat popup-vinduer for denne siden i nettleseren for å skrive ut QR-koden.",
+      description: t("auto.tillat_popup_vinduer_for_denne_siden_i_n"),
     });
     return;
   }

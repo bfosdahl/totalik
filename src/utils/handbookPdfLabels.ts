@@ -1,4 +1,5 @@
 import type { SupportedLanguage } from "@/contexts/LanguageContext";
+import { t } from "@/i18n/t";
 
 export interface HandbookPdfLabels {
   coverTitle1: string;
@@ -54,7 +55,7 @@ const no: HandbookPdfLabels = {
   riskTitle: "Risikovurdering",
   riskMethod: "Risiko = Sannsynlighet × Konsekvens (Arbeidstilsynets metodikk)",
   riskHeaders: ["Beskrivelse", "S", "K", "R", "Nivå"],
-  noRisks: "Ingen risikovurderinger utført.",
+  noRisks: t("auto.ingen_risikovurderinger_utfoert"),
   actionTitle: "Handlingsplan",
   actionHeaders: ["Tiltak", "Ansvarlig", "Frist", "Status"],
   noActions: "Ingen tiltak registrert.",

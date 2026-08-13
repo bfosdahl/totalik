@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
+import { t } from "@/i18n/t";
 
 export interface IkHmsCompanyDocument {
   id: string;
@@ -36,7 +37,7 @@ export const IK_HMS_CATEGORIES = [
   {
     id: "2", 
     name: "Verneombud",
-    subfolders: ["Avtale om verneombud", "Avtale om fritak for verneombud", "Vernerunde sjekkliste (papir)", "Årsrapport verneombud"],
+    subfolders: ["Avtale om verneombud", t("auto.avtale_om_fritak_for_verneombud"), "Vernerunde sjekkliste (papir)", "Årsrapport verneombud"],
     icon: "UserCheck",
     color: "bg-emerald-500"
   },

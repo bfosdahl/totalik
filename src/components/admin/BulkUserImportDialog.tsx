@@ -211,7 +211,7 @@ export function BulkUserImportDialog({
       } else {
         toast({ 
           title: t("auto.feil_i_csv_fil"), 
-          description: users[0]?.error || "Kunne ikke parse CSV-filen", 
+          description: users[0]?.error || t("auto.kunne_ikke_parse_csv_filen"), 
           variant: "destructive" 
         });
       }

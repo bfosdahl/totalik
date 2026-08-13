@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface KsModule2Project {
   id: string;
@@ -84,7 +85,7 @@ export function useKsModule2Projects() {
         console.error("Error fetching guest projects:", error);
         toast({
           title: "Feil",
-          description: "Kunne ikke hente prosjekter",
+          description: t("auto.kunne_ikke_hente_prosjekter"),
           variant: "destructive",
         });
       } finally {
@@ -115,7 +116,7 @@ export function useKsModule2Projects() {
       console.error("Error fetching KS Module 2 projects:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke hente prosjekter",
+        description: t("auto.kunne_ikke_hente_prosjekter"),
         variant: "destructive",
       });
     } finally {
@@ -131,7 +132,7 @@ export function useKsModule2Projects() {
     if (!profile?.company_id || !profile?.id) {
       toast({
         title: "Feil",
-        description: "Du må være logget inn for å opprette prosjekt",
+        description: t("auto.du_maa_vaere_logget_inn_for_aa_opprette__2"),
         variant: "destructive",
       });
       return null;
@@ -180,7 +181,7 @@ export function useKsModule2Projects() {
       console.error("Error creating project:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke opprette prosjekt",
+        description: t("auto.kunne_ikke_opprette_prosjekt"),
         variant: "destructive",
       });
       return null;

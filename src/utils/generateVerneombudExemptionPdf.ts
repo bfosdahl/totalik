@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { t } from "@/i18n/t";
 
 interface ExemptionPdfData {
   companyName: string;
@@ -77,7 +78,7 @@ export function generateVerneombudExemptionPdf(data: ExemptionPdfData) {
   const sections = [
     {
       title: "1. Avtalens formål",
-      text: "Formålet med denne avtalen er å formalisere enighet mellom arbeidsgiver og ansatte om at det ikke er nødvendig å velge verneombud i virksomheten, grunnet virksomhetens størrelse og enighet mellom partene."
+      text: t("auto.formaalet_med_denne_avtalen_er_aa_formal")
     },
     {
       title: "2. Grunnlag for fritak",
@@ -85,11 +86,11 @@ export function generateVerneombudExemptionPdf(data: ExemptionPdfData) {
     },
     {
       title: "3. Ansvar og oppfølging",
-      text: "Selv om verneombud ikke velges, forplikter arbeidsgiver seg til å sørge for et fullt forsvarlig arbeidsmiljø og følge opp HMS-arbeidet i tråd med lovens krav. Arbeidstakerne forplikter seg til å delta aktivt i HMS-arbeidet."
+      text: t("auto.selv_om_verneombud_ikke_velges_forplikte")
     },
     {
-      title: "4. Avtalens varighet og revisjon",
-      text: "Denne avtalen gjelder inntil videre, men skal revurderes dersom antall ansatte økes til 5 eller flere, eller ved vesentlige endringer i arbeidsforholdene."
+      title: t("auto.4_avtalens_varighet_og_revisjon"),
+      text: t("auto.denne_avtalen_gjelder_inntil_videre_men_")
     }
   ];
 

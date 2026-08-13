@@ -1,4 +1,5 @@
-/**
+
+import { t } from "@/i18n/t";/**
  * Default HMS setup data that is automatically applied when a new company is created.
  * This ensures the handbook always has content, even before AI setup is run.
  * AI setup can later enhance or replace this content.
@@ -45,11 +46,11 @@ export interface DefaultAction {
 
 // Standard HMS goals that apply to all companies
 export const defaultGoals: DefaultGoal[] = [
-  { goal_text: "Sikre et trygt og helsefremmende arbeidsmiljø for alle ansatte", is_predefined: true },
-  { goal_text: "Forebygge arbeidsrelaterte skader og sykdommer", is_predefined: true },
-  { goal_text: "Overholde alle relevante lover og forskrifter innen HMS", is_predefined: true },
+  { goal_text: t("auto.sikre_et_trygt_og_helsefremmende_arbeids"), is_predefined: true },
+  { goal_text: t("auto.forebygge_arbeidsrelaterte_skader_og_syk"), is_predefined: true },
+  { goal_text: t("auto.overholde_alle_relevante_lover_og_forskr"), is_predefined: true },
   { goal_text: "Kontinuerlig forbedre HMS-arbeidet gjennom systematisk internkontroll", is_predefined: true },
-  { goal_text: "Fremme god kommunikasjon og medvirkning i HMS-arbeidet", is_predefined: true },
+  { goal_text: t("auto.fremme_god_kommunikasjon_og_medvirkning_"), is_predefined: true },
 ];
 
 // Standard organization template
@@ -83,7 +84,7 @@ export const defaultOrganization = {
 export const defaultRisks: DefaultRisk[] = [
   {
     id: "risk-1",
-    description: "Ergonomiske belastninger ved kontorarbeid",
+    description: t("auto.ergonomiske_belastninger_ved_kontorarbei"),
     consequence: 2,
     probability: 3,
     existing_measures: "Justerbare kontorstoler og skrivebord",
@@ -91,7 +92,7 @@ export const defaultRisks: DefaultRisk[] = [
   },
   {
     id: "risk-2",
-    description: "Psykososiale belastninger og stress",
+    description: t("auto.psykososiale_belastninger_og_stress"),
     consequence: 3,
     probability: 2,
     existing_measures: "Regelmessige medarbeidersamtaler",
@@ -107,7 +108,7 @@ export const defaultRisks: DefaultRisk[] = [
   },
   {
     id: "risk-4",
-    description: "Fall og snubling i lokaler",
+    description: t("auto.fall_og_snubling_i_lokaler"),
     consequence: 2,
     probability: 2,
     existing_measures: "God belysning og ryddige gangveier",
@@ -122,7 +123,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R001",
     routine_name: "Avviksbehandling",
     category: "HMS-system",
-    purpose: "Sikre systematisk håndtering av avvik, uønskede hendelser og forbedringsforslag.",
+    purpose: t("auto.sikre_systematisk_haandtering_av_avvik_u"),
     responsibility: "Alle ansatte melder avvik. HMS-ansvarlig koordinerer oppfølging.",
     procedure: "1. Registrer avvik i HMS-systemet\n2. Vurder alvorlighetsgrad\n3. Iverksett strakstiltak ved behov\n4. Analyser årsak\n5. Definer korrigerende tiltak\n6. Følg opp at tiltak blir gjennomført\n7. Avslutt avvik når tiltak er verifisert",
     examples: "Nestenulykker, skader, sykdom relatert til arbeid, brudd på rutiner",
@@ -134,7 +135,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R002",
     routine_name: "Risikovurdering",
     category: "HMS-system",
-    purpose: "Identifisere farer og vurdere risiko for å kunne iverksette forebyggende tiltak.",
+    purpose: t("auto.identifisere_farer_og_vurdere_risiko_for"),
     responsibility: "HMS-ansvarlig leder risikovurderinger med deltakelse fra relevante ansatte.",
     procedure: "1. Kartlegg arbeidsoppgaver og aktiviteter\n2. Identifiser farer og mulige uønskede hendelser\n3. Vurder konsekvens og sannsynlighet\n4. Beregn risikoverdi\n5. Prioriter tiltak for høy risiko\n6. Dokumenter i risikovurderingsskjema\n7. Gjennomgå årlig eller ved endringer",
     examples: "Ved nye arbeidsoppgaver, nytt utstyr, omorganisering, etter hendelser",
@@ -146,7 +147,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R003",
     routine_name: "Opplæring og kompetanse",
     category: "Ansatte",
-    purpose: "Sikre at alle ansatte har nødvendig kompetanse for å utføre arbeidet sikkert.",
+    purpose: t("auto.sikre_at_alle_ansatte_har_noedvendig_kom"),
     responsibility: "Leder har ansvar for at ansatte får nødvendig opplæring. Ansatte har ansvar for å delta.",
     procedure: "1. Kartlegg kompetansebehov for hver stilling\n2. Utarbeid opplæringsplan for nyansatte\n3. Gjennomfør grunnleggende HMS-opplæring\n4. Dokumenter gjennomført opplæring\n5. Følg opp behov for oppfriskning\n6. Oppdater ved endringer i oppgaver",
     examples: "HMS-opplæring for nyansatte, brannvernkurs, førstehjelp, fagspesifikk opplæring",
@@ -158,7 +159,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R004",
     routine_name: "Vernerunder",
     category: "HMS-system",
-    purpose: "Kartlegge arbeidsmiljøet systematisk for å avdekke farer og forbedringsområder.",
+    purpose: t("auto.kartlegge_arbeidsmiljoeet_systematisk_fo"),
     responsibility: "HMS-ansvarlig planlegger og gjennomfører. Verneombud deltar.",
     procedure: "1. Planlegg vernerunde (tidspunkt, områder)\n2. Varsle ansatte i forkant\n3. Gjennomfør befaring med sjekkliste\n4. Dokumenter observasjoner\n5. Registrer avvik som oppdages\n6. Følg opp tiltak fra forrige runde\n7. Arkiver rapport",
     examples: "Kontorarbeidsplasser, verksted, lager, felles arealer",
@@ -170,7 +171,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R005",
     routine_name: "Førstehjelp og beredskap",
     category: "Sikkerhet",
-    purpose: "Sikre rask og riktig respons ved ulykker, skader eller akutte situasjoner.",
+    purpose: t("auto.sikre_rask_og_riktig_respons_ved_ulykker"),
     responsibility: "Alle ansatte skal kjenne til beredskapsrutiner. Utpekte førstehjelpere har spesielt ansvar.",
     procedure: "1. Førstehjelpsutstyr plassert tilgjengelig og merket\n2. Oversikt over førstehjelpere hengt opp\n3. Nødnumre synlig oppslått\n4. Årlig kontroll av utstyr\n5. Opplæring i førstehjelp for utpekte\n6. Øvelser gjennomføres årlig",
     examples: "Hjertestarter, førstehjelpskoffert, øyeskylling, brannslukkere",
@@ -182,7 +183,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R006",
     routine_name: "Brannvern",
     category: "Sikkerhet",
-    purpose: "Forebygge brann og sikre trygg evakuering ved brann.",
+    purpose: t("auto.forebygge_brann_og_sikre_trygg_evakuerin"),
     responsibility: "Daglig leder har overordnet ansvar. Brannvernleder koordinerer det daglige arbeidet.",
     procedure: "1. Rømningsveier merket og frie\n2. Slukkeutstyr kontrollert årlig\n3. Brannøvelse minst årlig\n4. Nyansatte får brannvernopplæring\n5. Elektrisk anlegg kontrollert\n6. Varme arbeider kun med tillatelse\n7. Møteplass ved evakuering definert",
     examples: "Evakueringsøvelse, kontroll av slukkeutstyr, opplæring i bruk av slukker",
@@ -194,7 +195,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R007",
     routine_name: "Årlig HMS-gjennomgang",
     category: "HMS-system",
-    purpose: "Evaluere og forbedre HMS-arbeidet systematisk.",
+    purpose: t("auto.evaluere_og_forbedre_hms_arbeidet_system"),
     responsibility: "Daglig leder initierer. HMS-ansvarlig koordinerer gjennomføring.",
     procedure: "1. Gjennomgå HMS-mål og resultater\n2. Vurder status på handlingsplan\n3. Analyser avvik og hendelser\n4. Oppdater risikovurderinger\n5. Vurder rutiner og prosedyrer\n6. Sett mål for neste periode\n7. Dokumenter i årsrapport",
     examples: "Årlig ledelsens gjennomgang, HMS-dag med alle ansatte",
@@ -206,7 +207,7 @@ export const defaultRoutines: DefaultRoutine[] = [
     routine_number: "R008",
     routine_name: "Sykefravær og oppfølging",
     category: "Ansatte",
-    purpose: "Sikre god oppfølging av sykmeldte og forebygge langtidsfravær.",
+    purpose: t("auto.sikre_god_oppfoelging_av_sykmeldte_og_fo"),
     responsibility: "Leder følger opp den sykemeldte. HR/HMS støtter prosessen.",
     procedure: "1. Kontakt sykmeldt innen 2 uker\n2. Gjennomfør dialogmøte innen 7 uker\n3. Vurder tilrettelegging\n4. Dokumenter oppfølgingsplan\n5. Samarbeid med NAV ved behov\n6. Evaluer arbeidsmiljøfaktorer",
     examples: "Oppfølgingssamtaler, tilrettelegging av arbeidsoppgaver, gradert sykemelding",

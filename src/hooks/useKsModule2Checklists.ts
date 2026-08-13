@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface ChecklistItem {
   id: string;
@@ -48,7 +49,7 @@ export const CHECKLIST_TEMPLATES: ChecklistTemplate[] = [
     name: "Betongstøp gulv",
     category: "Betong",
     items: [
-      { id: "1", text: "Forskaling kontrollert og godkjent", type: "yes_no", required: true },
+      { id: "1", text: t("auto.forskaling_kontrollert_og_godkjent"), type: "yes_no", required: true },
       { id: "2", text: "Armering montert iht. tegning", type: "yes_no", required: true },
       { id: "3", text: "Betongkvalitet dokumentert", type: "yes_no", required: true },
       { id: "4", text: "Temperatur ved støp (°C)", type: "number", required: true },
@@ -61,13 +62,13 @@ export const CHECKLIST_TEMPLATES: ChecklistTemplate[] = [
     name: "Våtrom NS-3600",
     category: "Våtrom",
     items: [
-      { id: "1", text: "Underlag kontrollert – jevnt og tørt", type: "yes_no", required: true },
+      { id: "1", text: t("auto.underlag_kontrollert_jevnt_og_toert"), type: "yes_no", required: true },
       { id: "2", text: "Fall mot sluk kontrollert (mm/m)", type: "number", required: true },
-      { id: "3", text: "Membran påført iht. produsentens anvisning", type: "yes_no", required: true },
+      { id: "3", text: t("auto.membran_paafoert_iht_produsentens_anvisn"), type: "yes_no", required: true },
       { id: "4", text: "Tetthetsprøve utført", type: "yes_no", required: true },
-      { id: "5", text: "Slukmansjett montert og tettet", type: "yes_no", required: true },
-      { id: "6", text: "Bilde av membran før flislegging", type: "photo", required: true },
-      { id: "7", text: "Fliser lagt med korrekt fuge", type: "yes_no", required: true },
+      { id: "5", text: t("auto.slukmansjett_montert_og_tettet"), type: "yes_no", required: true },
+      { id: "6", text: t("auto.bilde_av_membran_foer_flislegging"), type: "photo", required: true },
+      { id: "7", text: t("auto.fliser_lagt_med_korrekt_fuge"), type: "yes_no", required: true },
       { id: "8", text: "Signatur utførende", type: "signature", required: true },
     ],
   },
@@ -82,7 +83,7 @@ export const CHECKLIST_TEMPLATES: ChecklistTemplate[] = [
       { id: "5", text: "Dører og vinduer justert", type: "yes_no", required: true },
       { id: "6", text: "Overflater uten skader", type: "yes_no", required: true },
       { id: "7", text: "FDV-dokumentasjon overlevert", type: "yes_no", required: true },
-      { id: "8", text: "Bilde av ferdig leilighet", type: "photo", required: true },
+      { id: "8", text: t("auto.bilde_av_ferdig_leilighet"), type: "photo", required: true },
       { id: "9", text: "Signatur kontrollør", type: "signature", required: true },
     ],
   },
@@ -106,7 +107,7 @@ export const CHECKLIST_TEMPLATES: ChecklistTemplate[] = [
       { id: "1", text: "Produktdatablader samlet", type: "yes_no", required: true },
       { id: "2", text: "Brukerveiledninger vedlagt", type: "yes_no", required: true },
       { id: "3", text: "Garantidokumenter samlet", type: "yes_no", required: true },
-      { id: "4", text: "Samsvarserklæringer komplett", type: "yes_no", required: true },
+      { id: "4", text: t("auto.samsvarserklaeringer_komplett"), type: "yes_no", required: true },
       { id: "5", text: "Tegninger as-built oppdatert", type: "yes_no", required: true },
       { id: "6", text: "Signatur ansvarlig", type: "signature", required: true },
     ],
@@ -124,7 +125,7 @@ export const CHECKLIST_TEMPLATES: ChecklistTemplate[] = [
     ],
   },
   {
-    name: "Rørlegger – vannledninger",
+    name: t("auto.roerlegger_vannledninger"),
     category: "Rør",
     items: [
       { id: "1", text: "Rør montert iht. tegning", type: "yes_no", required: true },
@@ -164,7 +165,7 @@ export const CHECKLIST_TEMPLATES: ChecklistTemplate[] = [
     name: "Branntetning",
     category: "Brann",
     items: [
-      { id: "1", text: "Gjennomføringer identifisert", type: "yes_no", required: true },
+      { id: "1", text: t("auto.gjennomfoeringer_identifisert"), type: "yes_no", required: true },
       { id: "2", text: "Riktig produkt benyttet", type: "yes_no", required: true },
       { id: "3", text: "Montert iht. monteringsanvisning", type: "yes_no", required: true },
       { id: "4", text: "Merking/skilting utført", type: "yes_no", required: true },
@@ -269,7 +270,7 @@ export function useKsModule2Checklists(projectId: string) {
       return data as unknown as KsModule2Checklist;
     } catch (error) {
       console.error("Error creating checklist:", error);
-      toast({ title: "Feil", description: "Kunne ikke opprette egenkontroll", variant: "destructive" });
+      toast({ title: "Feil", description: t("auto.kunne_ikke_opprette_egenkontroll"), variant: "destructive" });
       return null;
     } finally {
       setIsSaving(false);

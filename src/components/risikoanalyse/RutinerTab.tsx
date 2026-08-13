@@ -48,7 +48,7 @@ const PREDEFINED_ROUTINES: Omit<RoutineItem, 'id'>[] = [
     routine_number: "1160",
     routine_name: "Arbeidsulykker og Skader",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre rask og korrekt håndtering av arbeidsulykker og skader for å minimere skadeomfang og ivareta helse og sikkerhet for alle ansatte.",
+    purpose: t("auto.sikre_rask_og_korrekt_haandtering_av_arb"),
     responsibility: "Daglig leder har overordnet ansvar for at alle skader rapporteres og håndteres i tråd med rutinen.\n\nVerneombud og eventuelt leder på arbeidsstedet har ansvar for oppfølging på stedet.",
     procedure: `Rapportering av arbeidsulykker og skader
 • Alle ansatte skal umiddelbart rapportere arbeidsulykker og skader til nærmeste leder.
@@ -81,7 +81,7 @@ Oppfølging av skader og sykefravær
     routine_number: "1121",
     routine_name: "Avvikshåndtering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at avvik i arbeidsprosesser identifiseres, rapporteres og behandles effektivt for å forbedre arbeidsmiljøet og redusere risiko for fremtidige hendelser.",
+    purpose: t("auto.sikre_at_avvik_i_arbeidsprosesser_identi"),
     responsibility: "Alle ansatte er ansvarlige for å rapportere avvik.\n\nLeder eller daglig leder har ansvar for oppfølging og iverksetting av tiltak.",
     procedure: `Identifisering av avvik
 • Avvik er enhver uønsket hendelse, feil eller forhold som bryter med HMS-krav og prosedyrer.
@@ -115,7 +115,7 @@ Oppfølging og læring
     routine_number: "1150",
     routine_name: "Brannvern og Evakuering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte kjenner brannvernsrutiner og evakueringsprosedyrer for å kunne handle raskt og trygt ved brann eller andre nødsituasjoner.",
+    purpose: t("auto.sikre_at_alle_ansatte_kjenner_brannverns"),
     responsibility: "Daglig leder har hovedansvar for brannvern og evakuering.\n\nBrannvernleder (hvis utpekt) har ansvar for brannøvelser og oppfølging av brannsikkerhetsutstyr.",
     procedure: `Opplæring i brannvern
 • Alle ansatte skal ha grunnleggende opplæring i brannvern.
@@ -148,7 +148,7 @@ Oppfølging og vedlikehold av brannsikkerhet
     routine_number: "1180",
     routine_name: "Bruk av Verneutstyr",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte bruker nødvendig verneutstyr for å beskytte seg mot skader og farer i arbeidsmiljøet.",
+    purpose: t("auto.sikre_at_alle_ansatte_bruker_noedvendig_"),
     responsibility: "Daglig leder skal sikre at relevant verneutstyr er tilgjengelig og at ansatte får opplæring i bruk.\n\nVerneombud skal påse at verneutstyr brukes korrekt i det daglige.",
     procedure: `Identifisering av behov for verneutstyr
 • Gjennomfør risikovurderinger for å identifisere krav til verneutstyr (hjelm, briller, hansker, hørselsvern m.m.).
@@ -181,7 +181,7 @@ Rapportering av avvik
     routine_number: "1210",
     routine_name: "Hygiene og Renhold",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Opprettholde god hygiene og renhold for å sikre et trygt, sunt og hygienisk arbeidsmiljø og redusere risiko for smittespredning.",
+    purpose: t("auto.opprettholde_god_hygiene_og_renhold_for_"),
     responsibility: "Daglig leder har ansvar for at rutiner følges og at nødvendige ressurser er tilgjengelige.\n\nRenholdspersonell eller utpekte ansatte utfører renholdsoppgaver.",
     procedure: `Planlegging av renhold
 • Utarbeid renholdsplan for alle områder, inkludert frekvens og metode.
@@ -214,7 +214,7 @@ Rapportering av mangler
     routine_number: "1240",
     routine_name: "Førstehjelp",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte har grunnleggende kunnskap i førstehjelp og kan handle raskt og riktig ved ulykker eller skader.",
+    purpose: t("auto.sikre_at_alle_ansatte_har_grunnleggende_"),
     responsibility: "Daglig leder skal sikre at førstehjelpsrutiner er på plass og at ansatte får opplæring.\n\nVerneombud skal påse at førstehjelpsutstyr er tilgjengelig og i god stand.",
     procedure: `Opplæring i førstehjelp
 • Alle ansatte skal få grunnleggende førstehjelpsopplæring, inkludert HLR.
@@ -246,7 +246,7 @@ Dokumentasjon og oppfølging
     routine_number: "1270",
     routine_name: "EL-kontroll",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at elektriske anlegg og elektrisk utstyr kontrolleres regelmessig for å forebygge brann, personskader og driftsavbrudd, samt sikre etterlevelse av gjeldende lover og forskrifter.",
+    purpose: t("auto.sikre_at_elektriske_anlegg_og_elektrisk_"),
     responsibility: `Daglig leder / virksomhetsleder
 Overordnet ansvar for at EL-kontroll gjennomføres.
 
@@ -317,7 +317,7 @@ Dokumentasjon oppbevares i minimum 5 år.`,
 ];
 
 const CATEGORIES = [
-  "Helse, Miljø og Sikkerhet",
+  t("auto.helse_miljoe_og_sikkerhet"),
   "Kvalitetssikring",
   "Personaladministrasjon",
   "Generelt",

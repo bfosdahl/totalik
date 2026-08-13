@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 export interface AlkoholLovverk {
   id: string;
@@ -40,7 +41,7 @@ export const DEFAULT_NATIONAL_LAWS: Omit<AlkoholLovverk, "id" | "company_id" | "
   {
     category: "nasjonal",
     title: "Alkoholloven",
-    description: "Lov om omsetning av alkoholholdig drikk m.v. (LOV-1989-06-02-27)",
+    description: t("auto.lov_om_omsetning_av_alkoholholdig_drikk__2"),
     url: "https://lovdata.no/dokument/NL/lov/1989-06-02-27",
     source: "Lovdata",
     municipality: null,
@@ -51,7 +52,7 @@ export const DEFAULT_NATIONAL_LAWS: Omit<AlkoholLovverk, "id" | "company_id" | "
   {
     category: "nasjonal",
     title: "Alkoholforskriften",
-    description: "Forskrift om omsetning av alkoholholdig drikk mv. (FOR-2005-06-08-538)",
+    description: t("auto.forskrift_om_omsetning_av_alkoholholdig__2"),
     url: "https://lovdata.no/dokument/SF/forskrift/2005-06-08-538",
     source: "Lovdata",
     municipality: null,
@@ -73,7 +74,7 @@ export const DEFAULT_NATIONAL_LAWS: Omit<AlkoholLovverk, "id" | "company_id" | "
   {
     category: "nasjonal",
     title: "Internkontrollforskriften",
-    description: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid (FOR-1996-12-06-1127)",
+    description: t("auto.forskrift_om_systematisk_helse_miljoe_og_2"),
     url: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127",
     source: "Lovdata",
     municipality: null,
@@ -84,7 +85,7 @@ export const DEFAULT_NATIONAL_LAWS: Omit<AlkoholLovverk, "id" | "company_id" | "
   {
     category: "nasjonal",
     title: "Prikksystemet (Alkoholloven §1-8)",
-    description: "Kommunalt prikksystem for brudd på alkoholloven. 12 prikker i løpet av to år medfører inndragning av bevillingen.",
+    description: t("auto.kommunalt_prikksystem_for_brudd_paa_alko"),
     url: "https://lovdata.no/dokument/NL/lov/1989-06-02-27/KAPITTEL_1#§1-8",
     source: "Lovdata",
     municipality: null,
@@ -94,8 +95,8 @@ export const DEFAULT_NATIONAL_LAWS: Omit<AlkoholLovverk, "id" | "company_id" | "
   },
   {
     category: "veileder",
-    title: "Helsedirektoratets veileder til alkoholloven",
-    description: "Offisiell veileder med kommentarer til alkoholloven og tilhørende forskrifter",
+    title: t("auto.helsedirektoratets_veileder_til_alkoholl"),
+    description: t("auto.offisiell_veileder_med_kommentarer_til_a"),
     url: "https://www.helsedirektoratet.no/veiledere/alkoholloven",
     source: "Helsedirektoratet",
     municipality: null,
@@ -105,8 +106,8 @@ export const DEFAULT_NATIONAL_LAWS: Omit<AlkoholLovverk, "id" | "company_id" | "
   },
   {
     category: "veileder",
-    title: "Guide til god internkontroll etter alkoholloven",
-    description: "Helsedirektoratets praktiske guide med råd for alle stedstyper",
+    title: t("auto.guide_til_god_internkontroll_etter_alkoh"),
+    description: t("auto.helsedirektoratets_praktiske_guide_med_r"),
     url: "https://www.helsedirektoratet.no/tema/alkohol/guide-til-god-internkontroll-etter-alkoholloven",
     source: "Helsedirektoratet",
     municipality: null,
@@ -116,8 +117,8 @@ export const DEFAULT_NATIONAL_LAWS: Omit<AlkoholLovverk, "id" | "company_id" | "
   },
   {
     category: "veileder",
-    title: "Ansvarlig vertskap – e-læringskurs",
-    description: "Gratis e-læringskurs for ansatte i serveringsbransjen fra Helsedirektoratet",
+    title: t("auto.ansvarlig_vertskap_e_laeringskurs"),
+    description: t("auto.gratis_e_laeringskurs_for_ansatte_i_serv"),
     url: "https://kurs.helsedirektoratet.no/",
     source: "Helsedirektoratet",
     municipality: null,

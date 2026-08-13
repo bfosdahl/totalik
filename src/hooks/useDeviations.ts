@@ -14,6 +14,7 @@ import {
   safeBoolean 
 } from "@/utils/deviationSanitizer";
 import type { DeviationStatus } from "@/utils/deviationSanitizer";
+import { t } from "@/i18n/t";
 
 // Valid database category values
 export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel" | "temperature" | "cleaning" | "pest_control" | "allergen" | "traceability" | "hygiene" | "storage" | "pests" | "expiry" | "contamination" | "receiving" | "other_food";
@@ -144,7 +145,7 @@ export function useDeviations() {
       console.error("Error fetching deviations:", error);
       toast({
         title: "Feil ved henting",
-        description: "Kunne ikke hente avvik. Prøv igjen.",
+        description: t("auto.kunne_ikke_hente_avvik_proev_igjen"),
         variant: "destructive",
       });
     } finally {
@@ -171,7 +172,7 @@ export function useDeviations() {
       console.error("Error fetching deviation detail:", error);
       toast({
         title: "Feil ved henting",
-        description: "Kunne ikke hente detaljer for avviket.",
+        description: t("auto.kunne_ikke_hente_detaljer_for_avviket"),
         variant: "destructive",
       });
       return null;
@@ -268,7 +269,7 @@ export function useDeviations() {
       console.error("Error creating deviation:", error);
       toast({
         title: "Feil ved lagring",
-        description: "Kunne ikke registrere avvik. Prøv igjen.",
+        description: t("auto.kunne_ikke_registrere_avvik_proev_igjen"),
         variant: "destructive",
       });
       return null;
@@ -344,7 +345,7 @@ export function useDeviations() {
       console.error("Error updating deviation:", error);
       toast({
         title: "Feil ved oppdatering",
-        description: "Kunne ikke oppdatere avvik. Prøv igjen.",
+        description: t("auto.kunne_ikke_oppdatere_avvik_proev_igjen"),
         variant: "destructive",
       });
       return false;

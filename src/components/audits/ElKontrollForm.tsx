@@ -40,36 +40,36 @@ const createQuestions = (items: string[]): ChecklistQuestion[] =>
   items.map((question, index) => ({ id: `q${index}`, question }));
 
 const sikringsskabItems = [
-  "Kursfortegnelse er til stede og korrekt merket / oppdatert",
-  "Sikringer / vern er riktig dimensjonert",
-  "Sikringsskap er ryddig og tilgjengelig",
-  "Sikringsskapets dør kan lukkes og låses",
+  t("auto.kursfortegnelse_er_til_stede_og_korrekt_"),
+  t("auto.sikringer_vern_er_riktig_dimensjonert"),
+  t("auto.sikringsskap_er_ryddig_og_tilgjengelig"),
+  t("auto.sikringsskapets_doer_kan_lukkes_og_laase"),
   "Ingen tegn til varmegang",
-  "Jordfeilbrytere testet og fungerer",
+  t("auto.jordfeilbrytere_testet_og_fungerer"),
   "Overspenningsvern kontrollert",
 ];
 
 const fastInstallasjonItems = [
-  "Kabler og ledninger uten synlige skader",
-  "Deksler og koblingsbokser intakte",
-  "Ingen kabler løst, over varme eller fukt uten vern",
-  "Fast installert utstyr er i normal stand",
-  "Sikkerhetsbrytere/nødstopp tilgjengelige og testet",
+  t("auto.kabler_og_ledninger_uten_synlige_skader"),
+  t("auto.deksler_og_koblingsbokser_intakte"),
+  t("auto.ingen_kabler_loest_over_varme_eller_fukt"),
+  t("auto.fast_installert_utstyr_er_i_normal_stand"),
+  t("auto.sikkerhetsbrytere_noedstopp_tilgjengelig"),
 ];
 
 const elektriskUtstyrItems = [
-  "Høy belastning er ikke koblet via skjøteledninger",
-  "Skjøteledninger og kabler uten varme eller skader",
-  "Korrekt jord eller jordvern i fuktige områder",
+  t("auto.hoey_belastning_er_ikke_koblet_via_skjoe"),
+  t("auto.skjoeteledninger_og_kabler_uten_varme_el"),
+  t("auto.korrekt_jord_eller_jordvern_i_fuktige_om"),
   "Alt utstyr fungerer normalt etter test",
-  "Dokumentasjon finnes for fast installasjon",
+  t("auto.dokumentasjon_finnes_for_fast_installasj"),
 ];
 
 const dokumentasjonItems = [
-  "Alt arbeid utført av registrert elektroinstallatør",
-  "Samsvarserklæring og dokumentasjon finnes",
-  "Rutiner for internkontroll foreligger",
-  "Ansvarlig for elsikkerhet er definert",
+  t("auto.alt_arbeid_utfoert_av_registrert_elektro"),
+  t("auto.samsvarserklaering_og_dokumentasjon_finn"),
+  t("auto.rutiner_for_internkontroll_foreligger"),
+  t("auto.ansvarlig_for_elsikkerhet_er_definert"),
 ];
 
 const ElKontrollForm: React.FC = () => {

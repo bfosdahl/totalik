@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
+import { t } from "@/i18n/t";
 
 export type ErgonomicAssessmentType = "muskel_skjelett" | "vibrasjon" | "stoy";
 export type ErgonomicAssessmentStatus = "draft" | "in_progress" | "completed" | "needs_review";
@@ -274,9 +275,9 @@ export const MUSKEL_SKJELETT_RISK_FACTORS = [
   "Skyving og trekking",
   "Ensidige gjentakende bevegelser",
   "Arbeid over skulderhøyde",
-  "Arbeid i fremoverbøyd stilling",
+  t("auto.arbeid_i_fremoverboeyd_stilling"),
   "Arbeid på huk eller knær",
-  "Stående arbeid over lengre tid",
+  t("auto.staaende_arbeid_over_lengre_tid"),
   "Sittende arbeid uten variasjon",
   "Vridning av kroppen",
   "Statisk belastning",
@@ -284,10 +285,10 @@ export const MUSKEL_SKJELETT_RISK_FACTORS = [
 ];
 
 export const VIBRASJON_RISK_FACTORS = [
-  "Hånd-arm vibrasjoner fra verktøy",
-  "Helkroppsvibrasjoner fra kjøretøy",
+  t("auto.haand_arm_vibrasjoner_fra_verktoey"),
+  t("auto.helkroppsvibrasjoner_fra_kjoeretoey"),
   "Langvarig eksponering",
-  "Kulde som forsterker effekten",
+  t("auto.kulde_som_forsterker_effekten"),
   "Manglende vibrasjonsdempende utstyr",
 ];
 
@@ -329,6 +330,6 @@ export const PPE_OPTIONS = {
   stoy: [
     "Ørepropper",
     "Øreklokker",
-    "Støydempende kommunikasjonsutstyr",
+    t("auto.stoeydempende_kommunikasjonsutstyr"),
   ],
 };

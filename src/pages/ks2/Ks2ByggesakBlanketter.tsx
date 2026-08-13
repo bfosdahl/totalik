@@ -47,21 +47,21 @@ const DIBK_FORMS = [
   // Nabovarsel - standard skjemaer med lokale PDF-er
   { number: "5154", name: "Nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5154-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5155", name: "Opplysninger gitt i nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5155-opplysninger-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5156", name: "Kvittering for nabovarsel", category: "nabovarsel", localUrl: "/blanketter/5156-kvittering-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5188", name: "Melding unntatt søknadsplikt", category: "nabovarsel", localUrl: "/blanketter/5188-melding-unntatt-soknadsplikt.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5156", name: t("auto.kvittering_for_nabovarsel"), category: "nabovarsel", localUrl: "/blanketter/5156-kvittering-nabovarsel.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5188", name: t("auto.melding_unntatt_soeknadsplikt"), category: "nabovarsel", localUrl: "/blanketter/5188-melding-unntatt-soknadsplikt.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Nabovarsel for privatpersoner (mindre prosjekter: garasje, tilbygg, bod, bruksendring)
-  { number: "NV-PRIVAT", name: "Nabovarsel for privatpersoner", category: "nabovarsel", localUrl: "/blanketter/nabovarsel-privatpersoner.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "NV-PRIVAT", name: t("auto.nabovarsel_for_privatpersoner"), category: "nabovarsel", localUrl: "/blanketter/nabovarsel-privatpersoner.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "KV-PERS", name: "Kvittering nabovarsel - Levert personlig", category: "nabovarsel", localUrl: "/blanketter/kvittering-nabovarsel-personlig.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "KV-EPOST", name: "Kvittering nabovarsel - E-post/SMS", category: "nabovarsel", localUrl: "/blanketter/kvittering-nabovarsel-epost-sms.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "KV-REK", name: "Kvittering nabovarsel - Rekommandert", category: "nabovarsel", localUrl: "/blanketter/kvittering-nabovarsel-rekommandert.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Søknader
-  { number: "5151", name: "Søknad om igangsettingstillatelse", category: "soknad", localUrl: "/blanketter/5151-igangsettingstillatelse.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5153", name: "Søknad om tiltak uten ansvarsrett", category: "soknad", localUrl: "/blanketter/5153-tiltak-uten-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "SØK-PRIVAT", name: "Byggesøknad for privatpersoner (mindre prosjekter)", category: "soknad", localUrl: "/blanketter/byggesoknad-mindre-prosjekter.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5151", name: t("auto.soeknad_om_igangsettingstillatelse"), category: "soknad", localUrl: "/blanketter/5151-igangsettingstillatelse.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5153", name: t("auto.soeknad_om_tiltak_uten_ansvarsrett"), category: "soknad", localUrl: "/blanketter/5153-tiltak-uten-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "SØK-PRIVAT", name: t("auto.byggesoeknad_for_privatpersoner_mindre_p"), category: "soknad", localUrl: "/blanketter/byggesoknad-mindre-prosjekter.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "SØK-BRUK", name: "Søknad om bruksendring", category: "soknad", localUrl: "/blanketter/soknad-bruksendring.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5174", name: "Søknad om tillatelse til tiltak", category: "soknad", localUrl: "/blanketter/5174-tillatelse-til-tiltak.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5174", name: t("auto.soeknad_om_tillatelse_til_tiltak"), category: "soknad", localUrl: "/blanketter/5174-tillatelse-til-tiltak.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5175", name: "Opplysninger om ytre rammer", category: "soknad", localUrl: "/blanketter/5175-ytre-rammer.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5176", name: "Boligspesifikasjon i matrikkel", category: "soknad", localUrl: "/blanketter/5176-boligspesifikasjon.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5177", name: "Samtykke fra Arbeidstilsynet", category: "soknad", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
@@ -76,18 +76,18 @@ const DIBK_FORMS = [
   { number: "5181", name: "Erklæring om ansvarsrett", category: "ansvarsrett", localUrl: "/blanketter/5181-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5183", name: "Opphør av ansvarsrett", category: "ansvarsrett", localUrl: "/blanketter/5183-opphor-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5184", name: "Personlig ansvarsrett (selvbygger)", category: "ansvarsrett", localUrl: "/blanketter/5184-personlig-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5186", name: "Melding om endring av ansvarsrett", category: "ansvarsrett", localUrl: "/blanketter/5186-endring-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5187", name: "Egenerklæring tiltakshaver", category: "ansvarsrett", localUrl: "/blanketter/5187-egenerklaring-selvbygger.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5186", name: t("auto.melding_om_endring_av_ansvarsrett"), category: "ansvarsrett", localUrl: "/blanketter/5186-endring-ansvarsrett.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5187", name: t("auto.egenerklaering_tiltakshaver"), category: "ansvarsrett", localUrl: "/blanketter/5187-egenerklaring-selvbygger.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Kontroll
-  { number: "5191", name: "Plan for uavhengig kontroll", category: "kontroll", localUrl: "/blanketter/5191-plan-uavhengig-kontroll.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5192", name: "Åpent avvik ved uavhengig kontroll", category: "kontroll", localUrl: "/blanketter/5192-apent-avvik-kontroll.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5191", name: t("auto.plan_for_uavhengig_kontroll"), category: "kontroll", localUrl: "/blanketter/5191-plan-uavhengig-kontroll.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5192", name: t("auto.aapent_avvik_ved_uavhengig_kontroll"), category: "kontroll", localUrl: "/blanketter/5192-apent-avvik-kontroll.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   { number: "5149", name: "Kontrollerklæring", category: "kontroll", localUrl: "/blanketter/5149-kontrollerklaring.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
   
   // Ferdigattest
   { number: "5167", name: "Søknad om ferdigattest", category: "ferdigattest", localUrl: "/blanketter/5167-ferdigattest.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5168", name: "Søknad om endring av tillatelse", category: "ferdigattest", localUrl: "/blanketter/5168-endring-tillatelse.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
-  { number: "5169", name: "Søknad om midlertidig brukstillatelse", category: "ferdigattest", localUrl: "/blanketter/5169-midlertidig-brukstillatelse.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5168", name: t("auto.soeknad_om_endring_av_tillatelse"), category: "ferdigattest", localUrl: "/blanketter/5168-endring-tillatelse.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
+  { number: "5169", name: t("auto.soeknad_om_midlertidig_brukstillatelse"), category: "ferdigattest", localUrl: "/blanketter/5169-midlertidig-brukstillatelse.pdf", dibkUrl: "https://dibk.no/verktoy-og-veivisere/blanketter/" },
 ];
 
 const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {

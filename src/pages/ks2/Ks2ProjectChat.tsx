@@ -294,7 +294,7 @@ export default function Ks2ProjectChat() {
       }
     } catch (error) {
       console.error("Project chat error:", error);
-      setMessages(prev => [...prev, { role: "assistant", content: "Beklager, det oppsto en feil. Prøv igjen." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: t("auto.beklager_det_oppsto_en_feil_proev_igjen") }]);
       toast.error(t("auto.feil_ved_kommunikasjon_med_ai"));
     } finally {
       setIsLoading(false);
