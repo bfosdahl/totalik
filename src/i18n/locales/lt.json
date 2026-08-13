@@ -47,7 +47,10 @@
     "notAssigned": "Nepriskirta",
     "seeAll": "Žiūrėti viską",
     "noCompany": "Nėra įmonės",
-    "notLinked": "Nesusieta"
+    "notLinked": "Nesusieta",
+    "translate": "Versti",
+    "showOriginal": "Rodyti originalą",
+    "alreadyInYourLanguage": "Šis turinys jau yra jūsų kalba"
   },
   "auth": {
     "login": "Prisijungti",

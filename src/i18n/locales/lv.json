@@ -47,7 +47,10 @@
     "notAssigned": "Nav piešķirts",
     "seeAll": "Skatīt visu",
     "noCompany": "Nav uzņēmuma",
-    "notLinked": "Nav saistīts"
+    "notLinked": "Nav saistīts",
+    "translate": "Tulkot",
+    "showOriginal": "Rādīt oriģinālu",
+    "alreadyInYourLanguage": "Šis saturs jau ir jūsu valodā"
   },
   "auth": {
     "login": "Pieslēgties",
