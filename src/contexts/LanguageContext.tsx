@@ -70,10 +70,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
           .update({ preferred_language: lang })
           .eq("user_id", user.id);
       }
+
+      // Some texts (example/suggestion data) are built once at module load,
+      // so a full reload guarantees the whole app renders in the new language.
+      if (typeof window !== "undefined") {
+        window.location.reload();
+        return;
+      }
     } finally {
       setIsChanging(false);
     }
   };
+
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, isChanging }}>
