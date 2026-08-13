@@ -5915,6 +5915,23 @@
     "alle_inkl_fullfoerte": "Visi (ieskaitot pabeigtos)",
     "opprett_ditt_foerste_prosjekt": "Izveidojiet savu pirmo projektu",
     "proev_aa_endre_soek_eller_filter": "Mēģiniet mainīt meklēšanu vai filtru",
-    "start_med_aa_opprette_et_nytt_prosjekt": "Sāciet ar jauna projekta izveidi, lai uzsāktu kvalitātes nodrošināšanu"
+    "start_med_aa_opprette_et_nytt_prosjekt": "Sāciet ar jauna projekta izveidi, lai uzsāktu kvalitātes nodrošināšanu",
+    "standard_prosjekt": "Standarta projekts",
+    "lite_prosjekt2": "Mazs projekts",
+    "mini_prosjekt": "Mini projekts",
+    "opprett_nytt_prosjekt2": "Izveidot jaunu projektu",
+    "velg_prosjekttype": "Izvēlieties projekta veidu",
+    "feat_ks_hms_sha": "KS, DDVA, SHA",
+    "feat_byggesak_blanketter": "Būvniecības lietas un veidlapas",
+    "feat_okonomi_fremdrift": "Finanses un progress",
+    "feat_underleverandorer": "Apakšuzņēmēji",
+    "feat_alle_moduler": "Visi moduļi",
+    "feat_sjekklister": "Kontrolsaraksti",
+    "feat_bilder_dokumenter": "Attēli un dokumenti",
+    "feat_timer_befaringer": "Stundas un apsekojumi",
+    "feat_ue_okonomi": "Apakšuzņēmēji un finanses",
+    "feat_avvik": "Novirzes",
+    "feat_dokumenter": "Dokumenti",
+    "endre_prosjekttype": "Mainīt projekta veidu"
   }
 }

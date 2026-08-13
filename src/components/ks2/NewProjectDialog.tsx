@@ -18,29 +18,30 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
 
-const PROJECT_TYPE_OPTIONS: { id: ProjectType; name: string; description: string; icon: typeof Building2; features: string[] }[] = [
+const getProjectTypeOptions = (): { id: ProjectType; name: string; description: string; icon: typeof Building2; features: string[] }[] => [
   {
     id: "standard",
-    name: "Standard prosjekt",
+    name: t("auto.standard_prosjekt"),
     description: t("auto.komplett_prosjektstyring_med_alle_module"),
     icon: Building2,
-    features: ["KS, HMS, SHA", "Byggesak & blanketter", "Økonomi & fremdrift", "Underleverandører", "Alle moduler"]
+    features: [t("auto.feat_ks_hms_sha"), t("auto.feat_byggesak_blanketter"), t("auto.feat_okonomi_fremdrift"), t("auto.feat_underleverandorer"), t("auto.feat_alle_moduler")]
   },
   {
     id: "small",
-    name: "Lite prosjekt",
+    name: t("auto.lite_prosjekt2"),
     description: t("auto.for_mindre_prosjekter_med_enklere_behov"),
     icon: Briefcase,
-    features: ["Sjekklister", "Bilder & dokumenter", "Timer & befaringer", "UE & økonomi"]
+    features: [t("auto.feat_sjekklister"), t("auto.feat_bilder_dokumenter"), t("auto.feat_timer_befaringer"), t("auto.feat_ue_okonomi")]
   },
   {
     id: "mini",
-    name: "Mini prosjekt",
+    name: t("auto.mini_prosjekt"),
     description: t("auto.for_enkle_jobber_og_smaa_oppdrag"),
     icon: Hammer,
-    features: ["Sjekklister", "Avvik", "Dokumenter"]
+    features: [t("auto.feat_sjekklister"), t("auto.feat_avvik"), t("auto.feat_dokumenter")]
   }
 ];
+
 
 // Prosjektmaler med forhåndsdefinert informasjon
 const PROJECT_TEMPLATES = [
@@ -365,7 +366,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
       >
         <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2">
           <DialogTitle className="text-xl font-semibold">
-            {selectedProjectType ? "Opprett nytt prosjekt" : "Velg prosjekttype"}
+            {selectedProjectType ? t("auto.opprett_nytt_prosjekt2") : t("auto.velg_prosjekttype")}
           </DialogTitle>
         </DialogHeader>
 
@@ -376,7 +377,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
               {t("auto.velg_hvilken_type_prosjekt_du_vil_oppret")}
             </p>
             <div className="grid gap-4">
-              {PROJECT_TYPE_OPTIONS.map((option) => {
+              {getProjectTypeOptions().map((option) => {
                 const Icon = option.icon;
                 return (
                   <button
@@ -411,7 +412,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         {/* Back button */}
         <div className="px-6 pb-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedProjectType(null)} className="-ml-2 text-muted-foreground">
-            ← Endre prosjekttype ({PROJECT_TYPE_OPTIONS.find(o => o.id === selectedProjectType)?.name})
+            ← {t("auto.endre_prosjekttype")} ({getProjectTypeOptions().find(o => o.id === selectedProjectType)?.name})
           </Button>
         </div>
 

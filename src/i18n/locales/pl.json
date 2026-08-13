@@ -5915,6 +5915,23 @@
     "alle_inkl_fullfoerte": "Wszystkie (w tym zakończone)",
     "opprett_ditt_foerste_prosjekt": "Utwórz swój pierwszy projekt",
     "proev_aa_endre_soek_eller_filter": "Spróbuj zmienić wyszukiwanie lub filtr",
-    "start_med_aa_opprette_et_nytt_prosjekt": "Zacznij od utworzenia nowego projektu, aby rozpocząć zapewnianie jakości"
+    "start_med_aa_opprette_et_nytt_prosjekt": "Zacznij od utworzenia nowego projektu, aby rozpocząć zapewnianie jakości",
+    "standard_prosjekt": "Projekt standardowy",
+    "lite_prosjekt2": "Mały projekt",
+    "mini_prosjekt": "Projekt mini",
+    "opprett_nytt_prosjekt2": "Utwórz nowy projekt",
+    "velg_prosjekttype": "Wybierz typ projektu",
+    "feat_ks_hms_sha": "QA, BHP, SHA",
+    "feat_byggesak_blanketter": "Sprawy budowlane i formularze",
+    "feat_okonomi_fremdrift": "Finanse i postęp",
+    "feat_underleverandorer": "Podwykonawcy",
+    "feat_alle_moduler": "Wszystkie moduły",
+    "feat_sjekklister": "Listy kontrolne",
+    "feat_bilder_dokumenter": "Zdjęcia i dokumenty",
+    "feat_timer_befaringer": "Godziny i inspekcje",
+    "feat_ue_okonomi": "Podwykonawcy i finanse",
+    "feat_avvik": "Niezgodności",
+    "feat_dokumenter": "Dokumenty",
+    "endre_prosjekttype": "Zmień typ projektu"
   }
 }

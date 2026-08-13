@@ -5915,6 +5915,23 @@
     "alle_inkl_fullfoerte": "Visi (įsk. užbaigtus)",
     "opprett_ditt_foerste_prosjekt": "Sukurkite savo pirmąjį projektą",
     "proev_aa_endre_soek_eller_filter": "Pabandykite pakeisti paiešką arba filtrą",
-    "start_med_aa_opprette_et_nytt_prosjekt": "Pradėkite sukurdami naują projektą, kad pradėtumėte kokybės užtikrinimą"
+    "start_med_aa_opprette_et_nytt_prosjekt": "Pradėkite sukurdami naują projektą, kad pradėtumėte kokybės užtikrinimą",
+    "standard_prosjekt": "Standartinis projektas",
+    "lite_prosjekt2": "Mažas projektas",
+    "mini_prosjekt": "Mini projektas",
+    "opprett_nytt_prosjekt2": "Sukurti naują projektą",
+    "velg_prosjekttype": "Pasirinkite projekto tipą",
+    "feat_ks_hms_sha": "KS, DSS, SHA",
+    "feat_byggesak_blanketter": "Statybos bylos ir formos",
+    "feat_okonomi_fremdrift": "Finansai ir eiga",
+    "feat_underleverandorer": "Subrangovai",
+    "feat_alle_moduler": "Visi moduliai",
+    "feat_sjekklister": "Kontroliniai sąrašai",
+    "feat_bilder_dokumenter": "Nuotraukos ir dokumentai",
+    "feat_timer_befaringer": "Valandos ir apžiūros",
+    "feat_ue_okonomi": "Subrangovai ir finansai",
+    "feat_avvik": "Neatitiktys",
+    "feat_dokumenter": "Dokumentai",
+    "endre_prosjekttype": "Keisti projekto tipą"
   }
 }
