@@ -723,7 +723,7 @@ const Handbook = () => {
           </p>
         ),
         summary: hasVerneombudExemption
-          ? `${t("auto.signert_av_2")} ${verneombudExemption?.employee_signatures?.length || 0} ansatte`
+          ? `${t("auto.signert_av_2")} ${verneombudExemption?.employee_signatures?.length || 0} ${t("auto.ansatte_2")}`
           : t("auto.ikke_signert"),
         linkTo: "/setup",
       }
@@ -985,7 +985,7 @@ const Handbook = () => {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
             {openDeviationsCount > 0 
-              ? `${openDeviationsCount} ${t("auto.aapne_avvik_2")} ${deviations.length - openDeviationsCount} lukkede.`
+              ? `${openDeviationsCount} ${t("auto.aapne_avvik_2")} ${deviations.length - openDeviationsCount} ${t("auto.lukkede")}`
               : deviations.length > 0 
                 ? `${t("auto.alle")} ${deviations.length} ${t("auto.avvik_er_lukket")}`
                 : t("auto.ingen_avvik_er_registrert")
@@ -1012,7 +1012,7 @@ const Handbook = () => {
                           deviation.status === "in-progress" ? "border-info text-info" :
                           "border-muted-foreground text-muted-foreground"
                         )}>
-                          {deviation.status === "closed" ? "Lukket" : deviation.status === "resolved" ? t("auto.loest") : deviation.status === "in-progress" ? t("auto.paagaar") : t("auto.aapen")}
+                          {deviation.status === "closed" ? t("auto.lukket") : deviation.status === "resolved" ? t("auto.loest") : deviation.status === "in-progress" ? t("auto.paagaar") : t("auto.aapen")}
                         </Badge>
                       </div>
                     </div>
@@ -1959,7 +1959,7 @@ const Handbook = () => {
       if (lawsTableData.length > 0) {
         autoTable(doc, {
           startY: yPos,
-          head: [["Lov/forskrift", "Kategori", t("auto.beskrivelse")]],
+          head: [[t("auto.lov_forskrift"), t("auto.kategori"), t("auto.beskrivelse")]],
           body: lawsTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -1992,13 +1992,13 @@ const Handbook = () => {
           d.deviation_number || "-",
           (d.title || "").substring(0, 40) + ((d.title?.length || 0) > 40 ? "..." : ""),
           d.category || "-",
-          d.status === "closed" ? "Lukket" : d.status === "resolved" ? t("auto.loest") : d.status === "in-progress" ? t("auto.paagaar") : t("auto.aapen"),
+          d.status === "closed" ? t("auto.lukket") : d.status === "resolved" ? t("auto.loest") : d.status === "in-progress" ? t("auto.paagaar") : t("auto.aapen"),
           d.created_at ? format(new Date(d.created_at), "dd.MM.yy") : "-",
         ]);
         
         autoTable(doc, {
           startY: yPos,
-          head: [["Nr", "Tittel", "Kategori", "Status", t("auto.dato")]],
+          head: [[t("auto.nr"), t("auto.tittel"), t("auto.kategori"), t("auto.status_2"), t("auto.dato")]],
           body: deviationTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -2023,13 +2023,13 @@ const Handbook = () => {
           a.audit_number || "-",
           (a.title || "").substring(0, 40),
           a.type || "-",
-          a.status === "completed" ? t("auto.gjennomfoert") : a.status === "in-progress" ? t("auto.paagaar") : "Planlagt",
+          a.status === "completed" ? t("auto.gjennomfoert") : a.status === "in-progress" ? t("auto.paagaar") : t("auto.planlagt"),
           a.scheduled_date ? format(new Date(a.scheduled_date), "dd.MM.yy") : "-",
         ]);
         
         autoTable(doc, {
           startY: yPos,
-          head: [["Nr", "Tittel", "Type", "Status", t("auto.dato")]],
+          head: [[t("auto.nr"), t("auto.tittel"), t("auto.type"), t("auto.status_2"), t("auto.dato")]],
           body: auditTableData,
           theme: "striped",
           headStyles: { fillColor: [59, 130, 246], fontSize: 9, fontStyle: "bold" },
@@ -2708,7 +2708,7 @@ const Handbook = () => {
                                   size="sm"
                                   onClick={(e) => handleEditSection(section, e)}
                                 >
-                                  {section.linkTo ? t("auto.gaa_til") : "Rediger i oppsettsveiviseren"}
+                                  {section.linkTo ? t("auto.gaa_til") : t("auto.rediger_i_oppsettsveiviseren")}
                                 </Button>
                               </div>
                             </div>
