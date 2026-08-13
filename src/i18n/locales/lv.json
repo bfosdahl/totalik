@@ -5899,6 +5899,16 @@
     "2_maaneder": "2 mēneši",
     "3_maaneder": "3 mēneši",
     "6_maaneder": "6 mēneši",
-    "maks_6_maaneder_ved_midlertidig_maks_hal": "Maks. 6 mēneši. Pagaidu darba gadījumā: ne vairāk kā puse no nodarbinātības ilguma."
+    "maks_6_maaneder_ved_midlertidig_maks_hal": "Maks. 6 mēneši. Pagaidu darba gadījumā: ne vairāk kā puse no nodarbinātības ilguma.",
+    "fase": "Fāze",
+    "pause": "Pauze",
+    "startet": "Sākts",
+    "man": "Pirm.",
+    "tir": "Otr.",
+    "ons": "Trešd.",
+    "tor": "Ceturtd.",
+    "fre": "Piektd.",
+    "loer": "Sestd.",
+    "soen": "Svētd."
   }
 }

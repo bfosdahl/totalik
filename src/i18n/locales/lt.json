@@ -5899,6 +5899,16 @@
     "dra_for_aa_flytte_ctrl_scroll_for_zoom_2": "Vilkti norint perkelti · Ctrl/⌘+slankiklis masteliui · 2 pirštai suspaudimui",
     "bakgrunn_transparens": "Fono skaidrumas",
     "kalibrer_skala": "Kalibruoti skalę",
-    "avstand_i_meter": "Atstumas metrais"
+    "avstand_i_meter": "Atstumas metrais",
+    "fase": "Fazė",
+    "pause": "Pertrauka",
+    "startet": "Pradėta",
+    "man": "Pr",
+    "tir": "An",
+    "ons": "Tr",
+    "tor": "Kt",
+    "fre": "Pn",
+    "loer": "Še",
+    "soen": "Se"
   }
 }

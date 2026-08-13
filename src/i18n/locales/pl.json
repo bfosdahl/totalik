@@ -5899,6 +5899,16 @@
     "dra_for_aa_flytte_ctrl_scroll_for_zoom_2": "Przeciągnij, aby przesunąć · Ctrl/⌘+scroll, aby przybliżyć · Zsuń 2 palce na ekranie",
     "bakgrunn_transparens": "Przezroczystość tła",
     "kalibrer_skala": "Kalibruj skalę",
-    "avstand_i_meter": "Odległość w metrach"
+    "avstand_i_meter": "Odległość w metrach",
+    "fase": "Faza",
+    "pause": "Przerwa",
+    "startet": "Rozpoczęto",
+    "man": "Pon",
+    "tir": "Wt",
+    "ons": "Śr",
+    "tor": "Czw",
+    "fre": "Pt",
+    "loer": "Sob",
+    "soen": "Nd"
   }
 }

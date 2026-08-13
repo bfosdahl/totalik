@@ -5899,6 +5899,16 @@
     "dra_for_aa_flytte_ctrl_scroll_for_zoom_2": "Drag to move · Ctrl/⌘+scroll to zoom · 2 fingers to pinch-zoom",
     "bakgrunn_transparens": "Background transparency",
     "kalibrer_skala": "Calibrate scale",
-    "avstand_i_meter": "Distance in meters"
+    "avstand_i_meter": "Distance in meters",
+    "fase": "Phase",
+    "pause": "Break",
+    "startet": "Started",
+    "man": "Mon",
+    "tir": "Tue",
+    "ons": "Wed",
+    "tor": "Thu",
+    "fre": "Fri",
+    "loer": "Sat",
+    "soen": "Sun"
   }
 }
