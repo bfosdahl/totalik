@@ -5899,6 +5899,16 @@
     "4_hoey": "4 - Høy",
     "vil_sannsynligvis_skje": "Vil sannsynligvis skje",
     "5_svaert_hoey": "5 - Svært høy",
-    "forventes_aa_skje": "Forventes å skje"
+    "forventes_aa_skje": "Forventes å skje",
+    "fase": "Fase",
+    "pause": "Pause",
+    "startet": "Startet",
+    "man": "Man",
+    "tir": "Tir",
+    "ons": "Ons",
+    "tor": "Tor",
+    "fre": "Fre",
+    "loer": "Lør",
+    "soen": "Søn"
   }
 }

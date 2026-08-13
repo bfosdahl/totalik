@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { MapPin, Clock } from "lucide-react";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
 import { LOCATIONS, ROLES } from "./ShiftCalendar";
+import { t } from "@/i18n/t";
 
 interface MonthCalendarProps {
   selectedMonth: Date;
@@ -39,7 +40,7 @@ export function MonthCalendar({ selectedMonth, schedules, onScheduleClick, onDay
     return map;
   }, [schedules]);
 
-  const weekDayHeaders = ["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"];
+  const weekDayHeaders = [t("auto.man"), t("auto.tir"), t("auto.ons"), t("auto.tor"), t("auto.fre"), t("auto.loer"), t("auto.soen")];
 
   return (
     <div className="bg-card rounded-lg border overflow-hidden">
