@@ -47,6 +47,7 @@ import {
   ErgonomicAssessmentType,
 } from "@/hooks/useErgonomicRiskAssessment";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface ErgonomicAssessmentDialogProps {
   assessmentId: string | null;
@@ -55,19 +56,19 @@ interface ErgonomicAssessmentDialogProps {
 }
 
 const SEVERITY_OPTIONS = [
-  { value: 1, label: "1 - Ubetydelig", description: "Ingen skade eller mild ubehag" },
-  { value: 2, label: "2 - Lav", description: "Mindre skade, forbigående plager" },
-  { value: 3, label: "3 - Moderat", description: "Skade som krever behandling" },
-  { value: 4, label: "4 - Alvorlig", description: "Alvorlig skade, langvarig sykefravær" },
-  { value: 5, label: "5 - Svært alvorlig", description: "Varig skade eller uførhet" },
+  { value: 1, label: t("auto.1_ubetydelig"), description: t("auto.ingen_skade_eller_mild_ubehag") },
+  { value: 2, label: t("auto.2_lav"), description: t("auto.mindre_skade_forbigaaende_plager") },
+  { value: 3, label: t("auto.3_moderat"), description: t("auto.skade_som_krever_behandling") },
+  { value: 4, label: t("auto.4_alvorlig"), description: t("auto.alvorlig_skade_langvarig_sykefravaer") },
+  { value: 5, label: t("auto.5_svaert_alvorlig"), description: t("auto.varig_skade_eller_ufoerhet") },
 ];
 
 const PROBABILITY_OPTIONS = [
-  { value: 1, label: "1 - Svært lav", description: "Lite sannsynlig" },
-  { value: 2, label: "2 - Lav", description: "Kan skje, men sjelden" },
-  { value: 3, label: "3 - Moderat", description: "Kan skje av og til" },
-  { value: 4, label: "4 - Høy", description: "Vil sannsynligvis skje" },
-  { value: 5, label: "5 - Svært høy", description: "Forventes å skje" },
+  { value: 1, label: t("auto.1_svaert_lav"), description: t("auto.lite_sannsynlig") },
+  { value: 2, label: t("auto.2_lav"), description: t("auto.kan_skje_men_sjelden") },
+  { value: 3, label: t("auto.3_moderat"), description: t("auto.kan_skje_av_og_til") },
+  { value: 4, label: t("auto.4_hoey"), description: t("auto.vil_sannsynligvis_skje") },
+  { value: 5, label: t("auto.5_svaert_hoey"), description: t("auto.forventes_aa_skje") },
 ];
 
 export function ErgonomicAssessmentDialog({
@@ -298,41 +299,41 @@ export function ErgonomicAssessmentDialog({
           <div className="p-6 pt-4 space-y-6">
             <Tabs defaultValue="info" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="info">Informasjon</TabsTrigger>
-                <TabsTrigger value="risk">Risikofaktorer</TabsTrigger>
-                <TabsTrigger value="measures">Tiltak</TabsTrigger>
-                <TabsTrigger value="conclusion">Konklusjon</TabsTrigger>
+                <TabsTrigger value="info">{t("auto.informasjon")}</TabsTrigger>
+                <TabsTrigger value="risk">{t("auto.risikofaktorer")}</TabsTrigger>
+                <TabsTrigger value="measures">{t("auto.tiltak")}</TabsTrigger>
+                <TabsTrigger value="conclusion">{t("auto.konklusjon")}</TabsTrigger>
               </TabsList>
 
               {/* Tab: Information */}
               <TabsContent value="info" className="space-y-4 mt-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Tittel</Label>
+                    <Label>{t("auto.tittel")}</Label>
                     <Input
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Tittel på vurderingen"
+                      placeholder={t("auto.tittel_paa_vurderingen")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Arbeidsområde</Label>
+                    <Label>{t("auto.arbeidsomraade")}</Label>
                     <Input
                       value={workArea}
                       onChange={(e) => setWorkArea(e.target.value)}
-                      placeholder="F.eks. Lager, Verksted"
+                      placeholder={t("auto.f_eks_lager_verksted")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Yrkesgruppe / Stilling</Label>
+                    <Label>{t("auto.yrkesgruppe_stilling")}</Label>
                     <Input
                       value={jobRole}
                       onChange={(e) => setJobRole(e.target.value)}
-                      placeholder="F.eks. Lagermedarbeider"
+                      placeholder={t("auto.f_eks_lagermedarbeider")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Antall eksponerte arbeidstakere</Label>
+                    <Label>{t("auto.antall_eksponerte_arbeidstakere")}</Label>
                     <Input
                       type="number"
                       value={exposedWorkersCount || ""}
@@ -341,10 +342,10 @@ export function ErgonomicAssessmentDialog({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Eksponeringsfrekvens</Label>
+                    <Label>{t("auto.eksponeringsfrekvens")}</Label>
                     <Select value={exposureFrequency} onValueChange={setExposureFrequency}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg frekvens" />
+                        <SelectValue placeholder={t("auto.velg_frekvens")} />
                       </SelectTrigger>
                       <SelectContent>
                         {EXPOSURE_FREQUENCY_OPTIONS.map((opt) => (
@@ -357,10 +358,10 @@ export function ErgonomicAssessmentDialog({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Eksponeringsvarighet</Label>
+                    <Label>{t("auto.eksponeringsvarighet")}</Label>
                     <Select value={exposureDuration} onValueChange={setExposureDuration}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Velg varighet" />
+                        <SelectValue placeholder={t("auto.velg_varighet")} />
                       </SelectTrigger>
                       <SelectContent>
                         {EXPOSURE_DURATION_OPTIONS.map((opt) => (
@@ -375,11 +376,11 @@ export function ErgonomicAssessmentDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Beskrivelse av arbeidsoppgaver</Label>
+                  <Label>{t("auto.beskrivelse_av_arbeidsoppgaver")}</Label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Beskriv arbeidsoppgavene som vurderes..."
+                    placeholder={t("auto.beskriv_arbeidsoppgavene_som_vurderes")}
                     rows={4}
                   />
                 </div>
@@ -393,14 +394,14 @@ export function ErgonomicAssessmentDialog({
                     </h4>
                     <div className="grid gap-4 md:grid-cols-3">
                       <div className="space-y-2">
-                        <Label>Type vibrasjon</Label>
+                        <Label>{t("auto.type_vibrasjon")}</Label>
                         <Select value={vibrationType} onValueChange={setVibrationType}>
                           <SelectTrigger>
-                            <SelectValue placeholder="Velg type" />
+                            <SelectValue placeholder={t("auto.velg_type")} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="hand_arm">Hånd-arm</SelectItem>
-                            <SelectItem value="whole_body">Helkropp</SelectItem>
+                            <SelectItem value="hand_arm">{t("auto.haand_arm")}</SelectItem>
+                            <SelectItem value="whole_body">{t("auto.helkropp")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -465,7 +466,7 @@ export function ErgonomicAssessmentDialog({
               <TabsContent value="risk" className="space-y-4 mt-4">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <Label>Identifiserte risikofaktorer</Label>
+                    <Label>{t("auto.identifiserte_risikofaktorer")}</Label>
                   </div>
 
                   {/* Quick add buttons */}
@@ -504,13 +505,13 @@ export function ErgonomicAssessmentDialog({
                           </div>
                           <div className="grid gap-3 md:grid-cols-3">
                             <div className="space-y-1">
-                              <Label className="text-xs">Hyppighet</Label>
+                              <Label className="text-xs">{t("auto.hyppighet")}</Label>
                               <Select
                                 value={rf.frequency}
                                 onValueChange={(v) => updateRiskFactor(rf.factor, "frequency", v)}
                               >
                                 <SelectTrigger className="h-8">
-                                  <SelectValue placeholder="Velg" />
+                                  <SelectValue placeholder={t("auto.velg_2")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {EXPOSURE_FREQUENCY_OPTIONS.map((opt) => (
@@ -523,13 +524,13 @@ export function ErgonomicAssessmentDialog({
                               </Select>
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs">Varighet</Label>
+                              <Label className="text-xs">{t("auto.varighet")}</Label>
                               <Select
                                 value={rf.duration}
                                 onValueChange={(v) => updateRiskFactor(rf.factor, "duration", v)}
                               >
                                 <SelectTrigger className="h-8">
-                                  <SelectValue placeholder="Velg" />
+                                  <SelectValue placeholder={t("auto.velg_2")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {EXPOSURE_DURATION_OPTIONS.map((opt) => (
@@ -542,18 +543,18 @@ export function ErgonomicAssessmentDialog({
                               </Select>
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs">Intensitet</Label>
+                              <Label className="text-xs">{t("auto.intensitet")}</Label>
                               <Select
                                 value={rf.intensity}
                                 onValueChange={(v) => updateRiskFactor(rf.factor, "intensity", v)}
                               >
                                 <SelectTrigger className="h-8">
-                                  <SelectValue placeholder="Velg" />
+                                  <SelectValue placeholder={t("auto.velg_2")} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="lav">Lav</SelectItem>
-                                  <SelectItem value="middels">Middels</SelectItem>
-                                  <SelectItem value="hoy">Høy</SelectItem>
+                                  <SelectItem value="lav">{t("auto.lav")}</SelectItem>
+                                  <SelectItem value="middels">{t("auto.middels")}</SelectItem>
+                                  <SelectItem value="hoy">{t("auto.hoey")}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -566,7 +567,7 @@ export function ErgonomicAssessmentDialog({
 
                   {/* Risk calculation */}
                   <div className="p-4 border rounded-lg space-y-4 bg-muted/50">
-                    <h4 className="font-medium">Risikovurdering</h4>
+                    <h4 className="font-medium">{t("auto.risikovurdering")}</h4>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label>Konsekvensgrad (alvorlighet)</Label>
@@ -575,7 +576,7 @@ export function ErgonomicAssessmentDialog({
                           onValueChange={(v) => setConsequenceSeverity(parseInt(v))}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Velg alvorlighetsgrad" />
+                            <SelectValue placeholder={t("auto.velg_alvorlighetsgrad")} />
                           </SelectTrigger>
                           <SelectContent>
                             {SEVERITY_OPTIONS.map((opt) => (
@@ -593,13 +594,13 @@ export function ErgonomicAssessmentDialog({
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Sannsynlighet</Label>
+                        <Label>{t("auto.sannsynlighet_4")}</Label>
                         <Select
                           value={probability?.toString()}
                           onValueChange={(v) => setProbability(parseInt(v))}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Velg sannsynlighet" />
+                            <SelectValue placeholder={t("auto.velg_sannsynlighet")} />
                           </SelectTrigger>
                           <SelectContent>
                             {PROBABILITY_OPTIONS.map((opt) => (
@@ -639,14 +640,14 @@ export function ErgonomicAssessmentDialog({
                 {/* Existing measures */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label>Eksisterende tiltak</Label>
+                    <Label>{t("auto.eksisterende_tiltak")}</Label>
                     <Button variant="outline" size="sm" onClick={() => addMeasure("existing")}>
                       <Plus className="h-4 w-4 mr-1" />
                       Legg til
                     </Button>
                   </div>
                   {existingMeasures.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Ingen eksisterende tiltak registrert</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.ingen_eksisterende_tiltak_registrert")}</p>
                   ) : (
                     <div className="space-y-2">
                       {existingMeasures.map((measure, idx) => (
@@ -654,7 +655,7 @@ export function ErgonomicAssessmentDialog({
                           <Input
                             value={measure.measure}
                             onChange={(e) => updateMeasure("existing", idx, "measure", e.target.value)}
-                            placeholder="Beskriv tiltak..."
+                            placeholder={t("auto.beskriv_tiltak")}
                             className="flex-1"
                           />
                           <Checkbox
@@ -678,14 +679,14 @@ export function ErgonomicAssessmentDialog({
                 {/* Planned measures */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label>Planlagte tiltak</Label>
+                    <Label>{t("auto.planlagte_tiltak")}</Label>
                     <Button variant="outline" size="sm" onClick={() => addMeasure("planned")}>
                       <Plus className="h-4 w-4 mr-1" />
                       Legg til
                     </Button>
                   </div>
                   {plannedMeasures.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Ingen planlagte tiltak registrert</p>
+                    <p className="text-sm text-muted-foreground">{t("auto.ingen_planlagte_tiltak_registrert")}</p>
                   ) : (
                     <div className="space-y-2">
                       {plannedMeasures.map((measure, idx) => (
@@ -693,13 +694,13 @@ export function ErgonomicAssessmentDialog({
                           <Input
                             value={measure.measure}
                             onChange={(e) => updateMeasure("planned", idx, "measure", e.target.value)}
-                            placeholder="Beskriv tiltak..."
+                            placeholder={t("auto.beskriv_tiltak")}
                             className="flex-1"
                           />
                           <Input
                             value={measure.responsible || ""}
                             onChange={(e) => updateMeasure("planned", idx, "responsible", e.target.value)}
-                            placeholder="Ansvarlig"
+                            placeholder={t("auto.ansvarlig_2")}
                             className="w-32"
                           />
                           <Button
@@ -743,13 +744,13 @@ export function ErgonomicAssessmentDialog({
                       checked={healthMonitoringRequired}
                       onCheckedChange={(checked) => setHealthMonitoringRequired(!!checked)}
                     />
-                    <Label htmlFor="healthMonitoring">Helseundersøkelse påkrevd</Label>
+                    <Label htmlFor="healthMonitoring">{t("auto.helseundersoekelse_paakrevd")}</Label>
                   </div>
                   {healthMonitoringRequired && (
                     <Textarea
                       value={healthMonitoringDetails}
                       onChange={(e) => setHealthMonitoringDetails(e.target.value)}
-                      placeholder="Beskriv type helseundersøkelse og hyppighet..."
+                      placeholder={t("auto.beskriv_type_helseundersoekelse_og_hyppi")}
                       rows={2}
                     />
                   )}
@@ -759,20 +760,20 @@ export function ErgonomicAssessmentDialog({
               {/* Tab: Conclusion */}
               <TabsContent value="conclusion" className="space-y-4 mt-4">
                 <div className="space-y-2">
-                  <Label>Konklusjon</Label>
+                  <Label>{t("auto.konklusjon")}</Label>
                   <Textarea
                     value={conclusion}
                     onChange={(e) => setConclusion(e.target.value)}
-                    placeholder="Oppsummer vurderingen og risikobildet..."
+                    placeholder={t("auto.oppsummer_vurderingen_og_risikobildet")}
                     rows={4}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Anbefalinger</Label>
+                  <Label>{t("auto.anbefalinger")}</Label>
                   <Textarea
                     value={recommendations}
                     onChange={(e) => setRecommendations(e.target.value)}
-                    placeholder="Beskriv anbefalte tiltak og oppfølging..."
+                    placeholder={t("auto.beskriv_anbefalte_tiltak_og_oppfoelging")}
                     rows={4}
                   />
                 </div>
@@ -791,7 +792,7 @@ export function ErgonomicAssessmentDialog({
             {isUpdating ? "Lagrer..." : "Fullfør vurdering"}
           </Button>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Lukk
+            {t("auto.lukk")}
           </Button>
         </div>
       </DialogContent>

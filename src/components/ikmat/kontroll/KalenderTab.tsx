@@ -34,6 +34,7 @@ import { CreateScheduledTaskDialog } from "./CreateScheduledTaskDialog";
 import { TaskListView } from "./TaskListView";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, isSameDay, isToday, isBefore, startOfDay, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 export const KalenderTab = () => {
   const { company } = useAuth();
@@ -158,7 +159,7 @@ export const KalenderTab = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-muted-foreground">
-            Oversikt over alle gjøremål, renhold, temperaturer og varemottak
+            {t("auto.oversikt_over_alle_gjoeremaal_renhold_te")}
           </p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)}>
@@ -184,7 +185,7 @@ export const KalenderTab = () => {
               <p className="text-xl sm:text-2xl font-bold">
                 {todaysPendingTasks.length} 
                 <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-1 sm:ml-2">
-                  gjenstår
+                  {t("auto.gjenstaar")}
                 </span>
               </p>
             </CardContent>
@@ -276,7 +277,7 @@ export const KalenderTab = () => {
                 <ScrollArea className="h-[250px] sm:h-[400px]">
                   {selectedDateEvents.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-6">
-                      Ingen hendelser denne dagen
+                      {t("auto.ingen_hendelser_denne_dagen")}
                     </p>
                   ) : (
                     <div className="space-y-2 sm:space-y-3">
@@ -415,15 +416,15 @@ export const KalenderTab = () => {
                 <div className="flex flex-wrap gap-3 sm:gap-4 mt-3 sm:mt-4 text-xs sm:text-sm text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500" />
-                    <span>Fullført</span>
+                    <span>{t("auto.fullfoert")}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500" />
-                    <span>Avvik</span>
+                    <span>{t("auto.avvik")}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-orange-500" />
-                    <span>Venter</span>
+                    <span>{t("auto.venter")}</span>
                   </div>
                 </div>
               </CardContent>
@@ -462,7 +463,7 @@ export const KalenderTab = () => {
             {todaysPendingTasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <CheckCircle2 className="h-12 w-12 text-green-500 mb-3" />
-                <p className="text-muted-foreground">Ingen oppgaver gjenstår for i dag</p>
+                <p className="text-muted-foreground">{t("auto.ingen_oppgaver_gjenstaar_for_i_dag")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -543,7 +544,7 @@ export const KalenderTab = () => {
             {overdueTasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <CheckCircle2 className="h-12 w-12 text-green-500 mb-3" />
-                <p className="text-muted-foreground">Ingen avvik</p>
+                <p className="text-muted-foreground">{t("auto.ingen_avvik")}</p>
               </div>
             ) : (
               <div className="space-y-3">

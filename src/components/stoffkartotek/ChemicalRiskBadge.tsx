@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, AlertTriangle, CheckCircle2, Clock, FileWarning } from "lucide-react";
 import { useChemicalRiskAssessment, calculateChemicalRiskLevel } from "@/hooks/useChemicalRiskAssessment";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface ChemicalRiskBadgeProps {
   chemicalEntryId: string;
@@ -61,12 +62,12 @@ export const ChemicalRiskBadge = ({
 
   const getStatusText = () => {
     if (assessment.status === "completed") {
-      return "Fullført";
+      return t("auto.fullfoert");
     }
     if (assessment.status === "in_progress") {
-      return `Fase ${assessment.current_phase}`;
+      return `${t("auto.fase")} ${assessment.current_phase}`;
     }
-    return "Utkast";
+    return t("auto.utkast");
   };
 
   const getBadgeClasses = () => {

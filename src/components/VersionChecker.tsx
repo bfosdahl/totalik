@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { t } from "@/i18n/t";
 
 /**
  * Detects new deployments by polling index.html and comparing the hashed
@@ -90,8 +91,8 @@ export function VersionChecker() {
             <RefreshCw className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">Ny versjon tilgjengelig</p>
-            <p className="text-xs opacity-90">Trykk for å oppdatere appen</p>
+            <p className="font-semibold text-sm">{t("auto.ny_versjon_tilgjengelig")}</p>
+            <p className="text-xs opacity-90">{t("auto.trykk_for_aa_oppdatere_appen")}</p>
           </div>
           <Button
             size="sm"
@@ -103,7 +104,7 @@ export function VersionChecker() {
           </Button>
           <button
             onClick={() => setDismissed(true)}
-            aria-label="Lukk"
+            aria-label={t("auto.lukk")}
             className="p-1 rounded hover:bg-primary-foreground/15 shrink-0"
           >
             <X className="w-4 h-4" />

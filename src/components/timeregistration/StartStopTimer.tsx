@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { t } from "@/i18n/t";
 
 interface StartStopTimerProps {
   onComplete: (hours: number) => void;
@@ -133,11 +134,11 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
                 "animate-pulse",
                 !isPaused && "bg-green-500"
               )}>
-                {isPaused ? "Pause" : "Pågår"}
+                {isPaused ? t("auto.pause") : t("auto.paagaar")}
               </Badge>
               {startTime && (
                 <span className="text-xs text-muted-foreground">
-                  Startet {startTime.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}
+                  {t("auto.startet")} {startTime.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}
                 </span>
               )}
             </div>

@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { ExtendedContractFormData } from "../ExtendedContractFormData";
 import { AlertTriangle } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface StaffingAgencySectionProps {
   formData: ExtendedContractFormData;
@@ -12,13 +13,13 @@ interface StaffingAgencySectionProps {
 export function StaffingAgencySection({ formData, onChange }: StaffingAgencySectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Bemanningsforetak / Innleie</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.bemanningsforetak_innleie")}</h3>
       
       <div className="flex items-center justify-between py-2">
         <div className="space-y-0.5">
-          <Label htmlFor="is_staffing_agency">Bemanningsforetak</Label>
+          <Label htmlFor="is_staffing_agency">{t("auto.bemanningsforetak")}</Label>
           <p className="text-xs text-muted-foreground">
-            Er arbeidsgiver et bemanningsforetak som leier ut arbeidstaker?
+            {t("auto.er_arbeidsgiver_et_bemanningsforetak_som")}
           </p>
         </div>
         <Switch
@@ -33,8 +34,7 @@ export function StaffingAgencySection({ formData, onChange }: StaffingAgencySect
           <div className="flex items-start gap-2 p-3 bg-warning/10 rounded-md text-sm">
             <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
             <p className="text-warning-foreground">
-              Ved innleie skal innleiers identitet oppgis både ved starten av arbeidsforholdet 
-              og ved skifte av innleievirksomhet underveis.
+              {t("auto.ved_innleie_skal_innleiers_identitet_opp")}
             </p>
           </div>
 
@@ -44,17 +44,17 @@ export function StaffingAgencySection({ formData, onChange }: StaffingAgencySect
               id="client_company_name"
               value={formData.client_company_name || ''}
               onChange={(e) => onChange({ client_company_name: e.target.value })}
-              placeholder="Navn på virksomheten som leier inn"
+              placeholder={t("auto.navn_paa_virksomheten_som_leier_inn")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="client_company_org_number">Innleiers organisasjonsnummer</Label>
+            <Label htmlFor="client_company_org_number">{t("auto.innleiers_organisasjonsnummer")}</Label>
             <Input
               id="client_company_org_number"
               value={formData.client_company_org_number || ''}
               onChange={(e) => onChange({ client_company_org_number: e.target.value })}
-              placeholder="9 siffer"
+              placeholder={t("auto.9_siffer")}
               maxLength={9}
             />
           </div>

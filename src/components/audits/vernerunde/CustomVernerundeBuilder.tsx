@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, ArrowLeft, ListPlus, FilePlus2 } from "lucide-react";
 import { toast } from "sonner";
 import type { HmsVernerundeTemplate, VernerundeCheckpoint } from "@/hooks/useHmsVernerundeTemplates";
+import { t } from "@/i18n/t";
 
 interface CustomVernerundeBuilderProps {
   onBack: () => void;
@@ -32,11 +33,11 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
 
   const addCheckpoint = () => {
     if (!newCheckpoint.trim()) {
-      toast.error("Skriv inn et sjekkpunkt");
+      toast.error(t("auto.skriv_inn_et_sjekkpunkt"));
       return;
     }
     if (!category.trim()) {
-      toast.error("Angi en kategori");
+      toast.error(t("auto.angi_en_kategori"));
       return;
     }
     setCheckpoints((prev) => [
@@ -58,11 +59,11 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
 
   const handleStart = () => {
     if (!name.trim()) {
-      toast.error("Gi vernerunden et navn");
+      toast.error(t("auto.gi_vernerunden_et_navn"));
       return;
     }
     if (checkpoints.length === 0) {
-      toast.error("Legg til minst ett sjekkpunkt");
+      toast.error(t("auto.legg_til_minst_ett_sjekkpunkt"));
       return;
     }
 
@@ -104,9 +105,9 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
             <FilePlus2 className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <CardTitle>Opprett tom vernerunde</CardTitle>
+            <CardTitle>{t("auto.opprett_tom_vernerunde")}</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Bygg din egen sjekkliste med kategorier og punkter
+              {t("auto.bygg_din_egen_sjekkliste_med_kategorier_")}
             </p>
           </div>
         </div>
@@ -115,11 +116,11 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
         {/* Navn og beskrivelse */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label>Navn på vernerunden</Label>
+            <Label>{t("auto.navn_paa_vernerunden")}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="F.eks. Vernerunde lager Q2"
+              placeholder={t("auto.f_eks_vernerunde_lager_q2")}
             />
           </div>
           <div>
@@ -127,7 +128,7 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Kort beskrivelse av runden"
+              placeholder={t("auto.kort_beskrivelse_av_runden")}
             />
           </div>
         </div>
@@ -142,19 +143,19 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <Label>Kategori</Label>
+              <Label>{t("auto.kategori")}</Label>
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="F.eks. Brann, Orden, Verneutstyr"
+                placeholder={t("auto.f_eks_brann_orden_verneutstyr")}
               />
             </div>
             <div>
-              <Label>Sjekkpunkt</Label>
+              <Label>{t("auto.sjekkpunkt")}</Label>
               <Input
                 value={newCheckpoint}
                 onChange={(e) => setNewCheckpoint(e.target.value)}
-                placeholder="F.eks. Rømningsveier er frie"
+                placeholder={t("auto.f_eks_roemningsveier_er_frie")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -169,7 +170,7 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
             <Textarea
               value={newHelp}
               onChange={(e) => setNewHelp(e.target.value)}
-              placeholder="Tilleggsinformasjon eller veiledning til punktet"
+              placeholder={t("auto.tilleggsinformasjon_eller_veiledning_til")}
               rows={2}
             />
           </div>
@@ -189,7 +190,7 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
 
           {checkpoints.length === 0 ? (
             <div className="text-sm text-muted-foreground text-center py-8 border border-dashed rounded-lg">
-              Ingen sjekkpunkter lagt til ennå
+              {t("auto.ingen_sjekkpunkter_lagt_til_ennaa")}
             </div>
           ) : (
             <div className="space-y-4">
@@ -234,10 +235,10 @@ const CustomVernerundeBuilder = ({ onBack, onCreate }: CustomVernerundeBuilderPr
 
         <div className="flex flex-wrap gap-3 justify-end">
           <Button variant="outline" onClick={onBack}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button onClick={handleStart} disabled={checkpoints.length === 0}>
-            Start vernerunde
+            {t("auto.start_vernerunde")}
           </Button>
         </div>
       </CardContent>

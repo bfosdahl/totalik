@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData, salaryTypes, paymentMethods } from "../ExtendedContractFormData";
+import { t } from "@/i18n/t";
 
 interface SalarySectionProps {
   formData: ExtendedContractFormData;
@@ -18,11 +19,11 @@ export function SalarySection({ formData, onChange }: SalarySectionProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Lønn og godtgjørelse</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.loenn_og_godtgjoerelse")}</h3>
       
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="salary_type">Lønnstype *</Label>
+          <Label htmlFor="salary_type">{t("auto.loennstype")}</Label>
           <Select
             value={formData.salary_type}
             onValueChange={(value) => onChange({ salary_type: value })}
@@ -48,14 +49,14 @@ export function SalarySection({ formData, onChange }: SalarySectionProps) {
             min={0}
             value={formData.salary_amount || ''}
             onChange={(e) => onChange({ salary_amount: parseFloat(e.target.value) || undefined })}
-            placeholder="Beløp"
+            placeholder={t("auto.beloep")}
           />
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="payment_method">Utbetalingsmåte *</Label>
+          <Label htmlFor="payment_method">{t("auto.utbetalingsmaate")}</Label>
           <Select
             value={formData.payment_method}
             onValueChange={(value) => onChange({ payment_method: value })}
@@ -74,7 +75,7 @@ export function SalarySection({ formData, onChange }: SalarySectionProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="payment_day">Lønningsdag *</Label>
+          <Label htmlFor="payment_day">{t("auto.loenningsdag")}</Label>
           <Input
             id="payment_day"
             type="number"
@@ -87,27 +88,27 @@ export function SalarySection({ formData, onChange }: SalarySectionProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="overtime_compensation">Overtidsgodtgjørelse</Label>
+        <Label htmlFor="overtime_compensation">{t("auto.overtidsgodtgjoerelse")}</Label>
         <Textarea
           id="overtime_compensation"
           value={formData.overtime_compensation || ''}
           onChange={(e) => onChange({ overtime_compensation: e.target.value })}
-          placeholder="Beskriv satser for overtid, nattillegg, helgetillegg, mv."
+          placeholder={t("auto.beskriv_satser_for_overtid_nattillegg_he")}
           rows={2}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="other_allowances">Andre tillegg og godtgjørelser</Label>
+        <Label htmlFor="other_allowances">{t("auto.andre_tillegg_og_godtgjoerelser")}</Label>
         <Textarea
           id="other_allowances"
           value={formData.other_allowances || ''}
           onChange={(e) => onChange({ other_allowances: e.target.value })}
-          placeholder="F.eks. bilgodtgjørelse, telefongodtgjørelse, kostgodtgjørelse, bonus, etc."
+          placeholder={t("auto.f_eks_bilgodtgjoerelse_telefongodtgjoere")}
           rows={2}
         />
         <p className="text-xs text-muted-foreground">
-          Tillegg og godtgjørelser som ikke inngår i grunnlønnen skal oppgis separat
+          {t("auto.tillegg_og_godtgjoerelser_som_ikke_innga")}
         </p>
       </div>
     </div>

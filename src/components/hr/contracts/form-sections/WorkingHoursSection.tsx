@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData, workTimeArrangements } from "../ExtendedContractFormData";
+import { t } from "@/i18n/t";
 
 interface WorkingHoursSectionProps {
   formData: ExtendedContractFormData;
@@ -15,10 +16,10 @@ export function WorkingHoursSection({ formData, onChange }: WorkingHoursSectionP
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Arbeidstid</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.arbeidstid")}</h3>
       
       <div className="space-y-2">
-        <Label htmlFor="work_time_arrangement">Arbeidstidsordning *</Label>
+        <Label htmlFor="work_time_arrangement">{t("auto.arbeidstidsordning_2")}</Label>
         <Select
           value={formData.work_time_arrangement}
           onValueChange={(value) => onChange({ 
@@ -41,7 +42,7 @@ export function WorkingHoursSection({ formData, onChange }: WorkingHoursSectionP
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="working_hours_per_week">Timer per uke *</Label>
+          <Label htmlFor="working_hours_per_week">{t("auto.timer_per_uke_2")}</Label>
           <Input
             id="working_hours_per_week"
             type="number"
@@ -54,7 +55,7 @@ export function WorkingHoursSection({ formData, onChange }: WorkingHoursSectionP
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="working_hours_per_day">Timer per dag</Label>
+          <Label htmlFor="working_hours_per_day">{t("auto.timer_per_dag_2")}</Label>
           <Input
             id="working_hours_per_day"
             type="number"
@@ -81,9 +82,9 @@ export function WorkingHoursSection({ formData, onChange }: WorkingHoursSectionP
 
       <div className="flex items-center justify-between py-2">
         <div className="space-y-0.5">
-          <Label htmlFor="variable_working_hours">Varierende arbeidstid</Label>
+          <Label htmlFor="variable_working_hours">{t("auto.varierende_arbeidstid")}</Label>
           <p className="text-xs text-muted-foreground">
-            Arbeidstiden varierer dag til dag eller uke til uke
+            {t("auto.arbeidstiden_varierer_dag_til_dag_eller_")}
           </p>
         </div>
         <Switch
@@ -96,23 +97,23 @@ export function WorkingHoursSection({ formData, onChange }: WorkingHoursSectionP
       {formData.variable_working_hours && (
         <div className="space-y-4 pl-4 border-l-2 border-muted">
           <div className="space-y-2">
-            <Label htmlFor="variable_hours_description">Beskriv varierende arbeidstid</Label>
+            <Label htmlFor="variable_hours_description">{t("auto.beskriv_varierende_arbeidstid")}</Label>
             <Textarea
               id="variable_hours_description"
               value={formData.variable_hours_description || ''}
               onChange={(e) => onChange({ variable_hours_description: e.target.value })}
-              placeholder="F.eks. gjennomsnittlig arbeidstid, arbeidsplan, referanse til turnusplan..."
+              placeholder={t("auto.f_eks_gjennomsnittlig_arbeidstid_arbeids")}
               rows={2}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="shift_change_rules">Regler for endring av vakter/arbeidsplan</Label>
+            <Label htmlFor="shift_change_rules">{t("auto.regler_for_endring_av_vakter_arbeidsplan")}</Label>
             <Textarea
               id="shift_change_rules"
               value={formData.shift_change_rules || ''}
               onChange={(e) => onChange({ shift_change_rules: e.target.value })}
-              placeholder="Beskriv hvordan og når vakter kan endres..."
+              placeholder={t("auto.beskriv_hvordan_og_naar_vakter_kan_endre")}
               rows={2}
             />
           </div>
@@ -121,16 +122,16 @@ export function WorkingHoursSection({ formData, onChange }: WorkingHoursSectionP
 
       {isSpecialArrangement && (
         <div className="space-y-2 pl-4 border-l-2 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20 p-3 rounded-r-md">
-          <Label htmlFor="special_work_time_details">Begrunnelse for unntak fra arbeidstidsbestemmelser</Label>
+          <Label htmlFor="special_work_time_details">{t("auto.begrunnelse_for_unntak_fra_arbeidstidsbe")}</Label>
           <Textarea
             id="special_work_time_details"
             value={formData.special_work_time_details || ''}
             onChange={(e) => onChange({ special_work_time_details: e.target.value })}
-            placeholder="Beskriv hvorfor stillingen er unntatt fra arbeidstidsbestemmelsene..."
+            placeholder={t("auto.beskriv_hvorfor_stillingen_er_unntatt_fr")}
             rows={2}
           />
           <p className="text-xs text-muted-foreground">
-            Jf. arbeidsmiljøloven § 10-12 om unntak for ledende og særlig uavhengige stillinger
+            {t("auto.jf_arbeidsmiljoeloven_10_12_om_unntak_fo")}
           </p>
         </div>
       )}

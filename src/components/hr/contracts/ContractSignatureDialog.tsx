@@ -9,6 +9,7 @@ import { EmploymentContract } from "@/hooks/useEmploymentContracts";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Loader2, Check, Pen, RotateCcw } from "lucide-react";
+import { t } from "@/i18n/t";
 
 interface ContractSignatureDialogProps {
   open: boolean;
@@ -94,7 +95,7 @@ export function ContractSignatureDialog({
             {signatureType === 'employer' ? 'Signer som arbeidsgiver' : 'Signer ansettelsesavtale'}
           </DialogTitle>
           <DialogDescription>
-            Les gjennom avtaledetaljene og signer nederst
+            {t("auto.les_gjennom_avtaledetaljene_og_signer_ne")}
           </DialogDescription>
         </DialogHeader>
 
@@ -115,18 +116,18 @@ export function ContractSignatureDialog({
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">Stillingsprosent:</span>
+                <span className="text-muted-foreground">{t("auto.stillingsprosent")}</span>
                 <span className="ml-2 font-medium">{contract.employment_percentage}%</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Startdato:</span>
+                <span className="text-muted-foreground">{t("auto.startdato_2")}</span>
                 <span className="ml-2 font-medium">
                   {format(new Date(contract.start_date), 'd. MMMM yyyy', { locale: nb })}
                 </span>
               </div>
               {contract.end_date && (
                 <div>
-                  <span className="text-muted-foreground">Sluttdato:</span>
+                  <span className="text-muted-foreground">{t("auto.sluttdato_2")}</span>
                   <span className="ml-2 font-medium">
                     {format(new Date(contract.end_date), 'd. MMMM yyyy', { locale: nb })}
                   </span>
@@ -134,7 +135,7 @@ export function ContractSignatureDialog({
               )}
               {contract.probation_period_months && (
                 <div>
-                  <span className="text-muted-foreground">Prøvetid:</span>
+                  <span className="text-muted-foreground">{t("auto.proevetid")}</span>
                   <span className="ml-2 font-medium">{contract.probation_period_months} måneder</span>
                 </div>
               )}
@@ -144,7 +145,7 @@ export function ContractSignatureDialog({
               <>
                 <Separator />
                 <div>
-                  <span className="text-sm text-muted-foreground">Notater:</span>
+                  <span className="text-sm text-muted-foreground">{t("auto.notater_2")}</span>
                   <p className="text-sm mt-1">{contract.notes}</p>
                 </div>
               </>
@@ -161,7 +162,7 @@ export function ContractSignatureDialog({
               ) : (
                 <Pen className="w-4 h-4 text-muted-foreground" />
               )}
-              <span className="text-sm font-medium">Arbeidsgiver</span>
+              <span className="text-sm font-medium">{t("auto.arbeidsgiver")}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {contract.signed_by_employer ? 'Signert' : 'Venter på signatur'}
@@ -174,7 +175,7 @@ export function ContractSignatureDialog({
               ) : (
                 <Pen className="w-4 h-4 text-muted-foreground" />
               )}
-              <span className="text-sm font-medium">Arbeidstaker</span>
+              <span className="text-sm font-medium">{t("auto.arbeidstaker")}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {contract.signed_by_employee ? 'Signert' : 'Venter på signatur'}
@@ -185,7 +186,7 @@ export function ContractSignatureDialog({
         {/* Signature Pad */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">Din signatur</span>
+            <span className="text-sm font-medium">{t("auto.din_signatur")}</span>
             <Button
               type="button"
               variant="ghost"
@@ -211,13 +212,13 @@ export function ContractSignatureDialog({
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Tegn signaturen din i feltet over
+            {t("auto.tegn_signaturen_din_i_feltet_over")}
           </p>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Avbryt
+            {t("auto.avbryt")}
           </Button>
           <Button 
             onClick={handleSign} 

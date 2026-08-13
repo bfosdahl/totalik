@@ -18,6 +18,7 @@ import { generateCleaningPlanPdf } from "@/utils/ikMatCleaningPlanPdf";
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { t } from "@/i18n/t";
 
 interface CleaningTask {
   area: string;
@@ -237,7 +238,7 @@ export const RenholdsplanTab = () => {
         <Alert>
           <Sparkles className="h-4 w-4" />
           <AlertDescription>
-            Ingen renholdsplan funnet. Kjør IK/MAT oppsettet først eller legg til egne oppgaver.
+            {t("auto.ingen_renholdsplan_funnet_kjoer_ik_mat_o")}
           </AlertDescription>
         </Alert>
         <EditCleaningTaskDialog
@@ -310,9 +311,9 @@ export const RenholdsplanTab = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Område</TableHead>
-                  <TableHead>Metode</TableHead>
-                  <TableHead>Ansvarlig</TableHead>
+                  <TableHead>{t("auto.omraade_2")}</TableHead>
+                  <TableHead>{t("auto.metode_3")}</TableHead>
+                  <TableHead>{t("auto.ansvarlig_2")}</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -353,7 +354,7 @@ export const RenholdsplanTab = () => {
     <div className="space-y-6">
       <Tabs defaultValue="template">
         <TabsList>
-          <TabsTrigger value="template">Renholdsplan</TabsTrigger>
+          <TabsTrigger value="template">{t("auto.renholdsplan")}</TabsTrigger>
           <TabsTrigger value="history">
             Historikk ({responses?.length || 0})
           </TabsTrigger>
@@ -384,7 +385,7 @@ export const RenholdsplanTab = () => {
             <Alert>
               <Sparkles className="h-4 w-4" />
               <AlertDescription>
-                Ingen utført renhold ennå.
+                {t("auto.ingen_utfoert_renhold_ennaa")}
               </AlertDescription>
             </Alert>
           ) : (

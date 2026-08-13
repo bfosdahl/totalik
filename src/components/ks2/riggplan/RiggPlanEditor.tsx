@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { compressImageFile } from "@/utils/imageCompression";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { t } from "@/i18n/t";
 
 
 interface Props {
@@ -90,7 +91,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
 
   const handleUploadBackground = async (file: File) => {
     if (!profile?.company_id || !projectId) {
-      toast.error("Mangler bedrift- eller prosjekt-ID. Last siden på nytt.");
+      toast.error(t("auto.mangler_bedrift_eller_prosjekt_id_last_s"));
       return;
     }
     // Sjekk filtype tidlig (HEIC/HEIF kan ikke vises i nettleser)
@@ -357,8 +358,8 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
     <div className="flex flex-col lg:flex-row gap-4 h-full">
       {/* Sidebar with symbols */}
       <Card className="lg:w-64 shrink-0 p-3">
-        <h3 className="font-semibold text-sm mb-2">Symbolbibliotek</h3>
-        <p className="text-xs text-muted-foreground mb-3">Klikk for å legge til</p>
+        <h3 className="font-semibold text-sm mb-2">{t("auto.symbolbibliotek")}</h3>
+        <p className="text-xs text-muted-foreground mb-3">{t("auto.klikk_for_aa_legge_til")}</p>
         <ScrollArea className="h-[280px] lg:h-[500px] pr-2">
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
             {RIGG_SYMBOLS.map((s) => (
@@ -382,14 +383,14 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
 
         {selected && (
           <div className="mt-4 pt-4 border-t space-y-2">
-            <h4 className="font-semibold text-xs">Valgt objekt</h4>
-            <Label className="text-xs">Etikett</Label>
+            <h4 className="font-semibold text-xs">{t("auto.valgt_objekt")}</h4>
+            <Label className="text-xs">{t("auto.etikett")}</Label>
             <Input
               value={selected.label}
               onChange={(e) => updateObject(selected.id, { label: e.target.value })}
               className="h-8 text-sm"
             />
-            <Label className="text-xs">Farge</Label>
+            <Label className="text-xs">{t("auto.farge")}</Label>
             <Input
               type="color"
               value={selected.color}
@@ -447,10 +448,10 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             <div className="mt-3 pt-3 border-t space-y-2">
               <div className="flex items-center gap-1.5">
                 <Shield className="h-3.5 w-3.5 text-emerald-600" />
-                <Label className="text-xs font-semibold">SHA §8 risikoområder</Label>
+                <Label className="text-xs font-semibold">{t("auto.sha_8_risikoomraader")}</Label>
               </div>
               <p className="text-[10px] text-muted-foreground leading-snug">
-                Auto-synkes til SHA-planen ved lagring. Avkryssede områder markeres som aktuelle med merknad om plasseringen.
+                {t("auto.auto_synkes_til_sha_planen_ved_lagring_a")}
               </p>
               <ScrollArea className="h-[160px] pr-2 -mx-1 px-1 border rounded bg-muted/30">
                 <div className="space-y-1 py-1.5">
@@ -473,7 +474,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                         {checked && projectId && (
                           <button
                             type="button"
-                            title="Åpne risikoområdet i SHA-planen"
+                            title={t("auto.aapne_risikoomraadet_i_sha_planen")}
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/ks/project/${projectId}/hms/sha-plan?paragraph=${ra.paragraph}`);
@@ -488,11 +489,11 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                   })}
                 </div>
               </ScrollArea>
-              <Label className="text-xs">Merknad til SHA</Label>
+              <Label className="text-xs">{t("auto.merknad_til_sha")}</Label>
               <Textarea
                 value={selected.riskNote || ""}
                 onChange={(e) => updateObject(selected.id, { riskNote: e.target.value })}
-                placeholder="F.eks. plassering, avstand, sikringstiltak…"
+                placeholder={t("auto.f_eks_plassering_avstand_sikringstiltak")}
                 className="text-xs min-h-[56px]"
               />
             </div>
@@ -513,7 +514,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
       <div className="flex-1 min-w-0 space-y-3">
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex-1 min-w-[200px]">
-            <Label className="text-xs">Navn</Label>
+            <Label className="text-xs">{t("auto.navn_2")}</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9" />
           </div>
           <div className="flex gap-1 items-center">
@@ -526,7 +527,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 const r = vp.getBoundingClientRect();
                 zoomAtPoint(zoomRef.current - 0.1, r.width / 2, r.height / 2);
               }}
-              title="Zoom ut"
+              title={t("auto.zoom_ut")}
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -540,14 +541,14 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                 const r = vp.getBoundingClientRect();
                 zoomAtPoint(zoomRef.current + 0.1, r.width / 2, r.height / 2);
               }}
-              title="Zoom inn"
+              title={t("auto.zoom_inn")}
             >
               <Plus className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" onClick={fitToView} title="Tilpass i vindu">
+            <Button variant="outline" size="icon" onClick={fitToView} title={t("auto.tilpass_i_vindu")}>
               <Maximize2 className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={resetView} title="Nullstill zoom og posisjon">
+            <Button variant="ghost" size="icon" onClick={resetView} title={t("auto.nullstill_zoom_og_posisjon")}>
               <Move className="h-4 w-4" />
             </Button>
           </div>
@@ -566,12 +567,12 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             variant="outline"
             disabled={uploadingBg}
             onClick={() => document.getElementById("rigg-bg-upload")?.click()}
-            title="Last opp situasjonskart / bilde som bakgrunn"
+            title={t("auto.last_opp_situasjonskart_bilde_som_bakgru")}
           >
             <ImageIcon className="h-4 w-4 mr-1" /> {canvas.backgroundImagePath ? "Bytt bilde" : "Last opp kart"}
           </Button>
           {canvas.backgroundImagePath && (
-            <Button variant="outline" size="icon" onClick={removeBackground} title="Fjern bakgrunn">
+            <Button variant="outline" size="icon" onClick={removeBackground} title={t("auto.fjern_bakgrunn")}>
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -581,7 +582,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               setCalibrating((v) => !v);
               setCalibPoints([]);
             }}
-            title="Kalibrer skala ved å klikke to punkter på kjent avstand"
+            title={t("auto.kalibrer_skala_ved_aa_klikke_to_punkter_")}
           >
             <Ruler className="h-4 w-4 mr-1" /> {calibrating ? "Avbryt skala" : "Kalibrer skala"}
           </Button>
@@ -617,7 +618,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             onPointerCancel={handleViewportPointerUp}
           >
             <div className="absolute top-2 left-2 z-10 text-[10px] bg-white/85 border rounded px-1.5 py-0.5 text-muted-foreground pointer-events-none shadow-sm">
-              Dra for å flytte · Ctrl/⌘+scroll for zoom · 2 fingre for knip-zoom
+              {t("auto.dra_for_aa_flytte_ctrl_scroll_for_zoom_2")}
             </div>
             <div
               className="absolute bg-white shadow-inner border"
@@ -734,7 +735,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
               return (
                 <div
                   className="absolute bottom-3 right-3 flex flex-col items-end gap-0.5 pointer-events-none select-none"
-                  aria-label="Målestokk"
+                  aria-label={t("auto.maalestokk")}
                 >
                   <div className="text-[10px] font-semibold bg-white/90 px-1.5 py-0.5 rounded shadow-sm border">
                     {meters} m
@@ -753,7 +754,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
 
         {canvas.backgroundImagePath && (
           <div className="flex items-center gap-2">
-            <Label className="text-xs">Bakgrunn transparens</Label>
+            <Label className="text-xs">{t("auto.bakgrunn_transparens")}</Label>
             <input
               type="range"
               min={0.1}
@@ -789,7 +790,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle>Kalibrer skala</DialogTitle>
+            <DialogTitle>{t("auto.kalibrer_skala")}</DialogTitle>
             <DialogDescription>
               Oppgi den virkelige avstanden mellom de to punktene du klikket på.
               {calibDialog && (
@@ -800,7 +801,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            <Label htmlFor="calib-meters" className="text-xs">Avstand i meter</Label>
+            <Label htmlFor="calib-meters" className="text-xs">{t("auto.avstand_i_meter")}</Label>
             <Input
               id="calib-meters"
               type="number"
@@ -839,7 +840,7 @@ export function RiggPlanEditor({ plan, projectName, projectNumber, onSave, isSav
                   setCanvas({ ...canvas, scaleMetersPerPixel: mpp });
                   toast.success(`Skala satt: 1 px = ${mpp.toFixed(3)} m`);
                 } else {
-                  toast.error("Oppgi et gyldig tall større enn 0");
+                  toast.error(t("auto.oppgi_et_gyldig_tall_stoerre_enn_0"));
                   return;
                 }
                 setCalibDialog(null);

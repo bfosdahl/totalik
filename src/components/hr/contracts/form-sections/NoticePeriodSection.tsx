@@ -2,6 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData } from "../ExtendedContractFormData";
+import { t } from "@/i18n/t";
 
 interface NoticePeriodSectionProps {
   formData: ExtendedContractFormData;
@@ -18,11 +19,11 @@ const noticePeriodOptions = [
 export function NoticePeriodSection({ formData, onChange }: NoticePeriodSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Oppsigelse</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.oppsigelse")}</h3>
       
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="notice_period_employee_months">Arbeidstakers oppsigelsestid</Label>
+          <Label htmlFor="notice_period_employee_months">{t("auto.arbeidstakers_oppsigelsestid")}</Label>
           <Select
             value={formData.notice_period_employee_months.toString()}
             onValueChange={(value) => onChange({ notice_period_employee_months: parseInt(value) })}
@@ -41,7 +42,7 @@ export function NoticePeriodSection({ formData, onChange }: NoticePeriodSectionP
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="notice_period_employer_months">Arbeidsgivers oppsigelsestid</Label>
+          <Label htmlFor="notice_period_employer_months">{t("auto.arbeidsgivers_oppsigelsestid_2")}</Label>
           <Select
             value={formData.notice_period_employer_months.toString()}
             onValueChange={(value) => onChange({ notice_period_employer_months: parseInt(value) })}
@@ -61,12 +62,12 @@ export function NoticePeriodSection({ formData, onChange }: NoticePeriodSectionP
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="termination_procedures">Oppsigelsesprosedyrer</Label>
+        <Label htmlFor="termination_procedures">{t("auto.oppsigelsesprosedyrer")}</Label>
         <Textarea
           id="termination_procedures"
           value={formData.termination_procedures || ''}
           onChange={(e) => onChange({ termination_procedures: e.target.value })}
-          placeholder="Beskriv fremgangsmåte for oppsigelse, eller vis til arbeidsmiljøloven § 15-4"
+          placeholder={t("auto.beskriv_fremgangsmaate_for_oppsigelse_el")}
           rows={2}
         />
         <p className="text-xs text-muted-foreground">

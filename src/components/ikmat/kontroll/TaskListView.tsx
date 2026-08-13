@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
+import { t } from "@/i18n/t";
 
 interface TaskListViewProps {
   tasks: ScheduledTask[];
@@ -136,9 +137,9 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
       <Card>
         <CardContent className="py-12 text-center">
           <ClipboardCheck className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">Ingen planlagte oppgaver</h3>
+          <h3 className="text-lg font-medium mb-2">{t("auto.ingen_planlagte_oppgaver")}</h3>
           <p className="text-muted-foreground mb-4">
-            Opprett oppgaver for daglig, ukentlig eller månedlig renhold og andre gjøremål
+            {t("auto.opprett_oppgaver_for_daglig_ukentlig_ell")}
           </p>
           <Button onClick={onCreateTask}>
             <Plus className="h-4 w-4 mr-2" />
@@ -160,7 +161,7 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
               Temperaturlogging
             </CardTitle>
             <CardDescription>
-              Automatisk generert fra registrert utstyr
+              {t("auto.automatisk_generert_fra_registrert_utsty")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -253,25 +254,25 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
               Egendefinerte oppgaver
             </CardTitle>
             <CardDescription>
-              Manuelt opprettede planlagte oppgaver
+              {t("auto.manuelt_opprettede_planlagte_oppgaver")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {dailyTasks.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Daglig</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("auto.daglig")}</p>
                 {dailyTasks.map(renderScheduledTaskCard)}
               </div>
             )}
             {weeklyTasks.length > 0 && (
               <div className="space-y-2 mt-4">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ukentlig</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("auto.ukentlig")}</p>
                 {weeklyTasks.map(renderScheduledTaskCard)}
               </div>
             )}
             {monthlyTasks.length > 0 && (
               <div className="space-y-2 mt-4">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Månedlig</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("auto.maanedlig")}</p>
                 {monthlyTasks.map(renderScheduledTaskCard)}
               </div>
             )}
@@ -288,16 +289,16 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett oppgave?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_oppgave")}</AlertDialogTitle>
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{taskToDelete?.title}"? 
               Dette kan ikke angres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete}>
-              Slett
+              {t("auto.slett")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

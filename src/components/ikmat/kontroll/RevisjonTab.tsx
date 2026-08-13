@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
 import { IkMatRevisjonDialog } from "./IkMatRevisjonDialog";
+import { t } from "@/i18n/t";
 
 interface IkMatAudit {
   id: string;
@@ -48,7 +49,7 @@ const statusBadge = (status: string) => {
     case "in-progress":
       return <Badge className="bg-warning/15 text-warning hover:bg-warning/15"><Clock className="h-3 w-3 mr-1" />Pågår</Badge>;
     case "overdue":
-      return <Badge variant="destructive">Forfalt</Badge>;
+      return <Badge variant="destructive">{t("auto.forfalt")}</Badge>;
     default:
       return <Badge variant="outline"><Calendar className="h-3 w-3 mr-1" />Planlagt</Badge>;
   }
@@ -75,7 +76,7 @@ export const RevisjonTab = () => {
       .order("scheduled_date", { ascending: false });
     if (error) {
       console.error(error);
-      toast.error("Kunne ikke hente revisjoner");
+      toast.error(t("auto.kunne_ikke_hente_revisjoner"));
     } else {
       setAudits((data || []) as IkMatAudit[]);
     }
@@ -93,9 +94,9 @@ export const RevisjonTab = () => {
       .update({ is_deleted: true, deleted_at: new Date().toISOString() })
       .eq("id", deleteId);
     if (error) {
-      toast.error("Kunne ikke slette");
+      toast.error(t("auto.kunne_ikke_slette"));
     } else {
-      toast.success("Revisjon slettet");
+      toast.success(t("auto.revisjon_slettet"));
       setAudits((prev) => prev.filter((a) => a.id !== deleteId));
     }
     setDeleteId(null);
@@ -127,7 +128,7 @@ export const RevisjonTab = () => {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">Siste fullførte</p>
+              <p className="text-xs text-muted-foreground">{t("auto.siste_fullfoerte")}</p>
               <p className="text-lg font-semibold mt-1">
                 {lastCompleted
                   ? format(new Date(lastCompleted.scheduled_date), "d. MMM yyyy", { locale: nb })
@@ -135,11 +136,11 @@ export const RevisjonTab = () => {
               </p>
             </div>
             <div className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">Pågående</p>
+              <p className="text-xs text-muted-foreground">{t("auto.paagaaende")}</p>
               <p className="text-lg font-semibold mt-1">{inProgress}</p>
             </div>
             <div className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">Totalt registrert</p>
+              <p className="text-xs text-muted-foreground">{t("auto.totalt_registrert")}</p>
               <p className="text-lg font-semibold mt-1">{audits.length}</p>
             </div>
           </div>
@@ -158,20 +159,20 @@ export const RevisjonTab = () => {
       {audits.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Revisjonshistorikk</CardTitle>
+            <CardTitle className="text-base">{t("auto.revisjonshistorikk")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0 sm:p-6">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nr</TableHead>
-                    <TableHead>Tittel</TableHead>
-                    <TableHead>Dato</TableHead>
-                    <TableHead>Ansvarlig</TableHead>
-                    <TableHead>Fremdrift</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Handlinger</TableHead>
+                    <TableHead>{t("auto.nr")}</TableHead>
+                    <TableHead>{t("auto.tittel")}</TableHead>
+                    <TableHead>{t("auto.dato")}</TableHead>
+                    <TableHead>{t("auto.ansvarlig_2")}</TableHead>
+                    <TableHead>{t("auto.fremdrift")}</TableHead>
+                    <TableHead>{t("auto.status_2")}</TableHead>
+                    <TableHead className="text-right">{t("auto.handlinger")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -220,14 +221,14 @@ export const RevisjonTab = () => {
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Slett revisjon?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auto.slett_revisjon")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Revisjonen flyttes til papirkurven og kan gjenopprettes derfra.
+              {t("auto.revisjonen_flyttes_til_papirkurven_og_ka")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Avbryt</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Slett</AlertDialogAction>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t("auto.slett")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

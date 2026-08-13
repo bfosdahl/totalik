@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedContractFormData, temporaryReasons, contractTypes } from "../ExtendedContractFormData";
+import { t } from "@/i18n/t";
 
 interface DatesSectionProps {
   formData: ExtendedContractFormData;
@@ -23,11 +24,11 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-base border-b pb-2">Oppstart og varighet</h3>
+      <h3 className="font-semibold text-base border-b pb-2">{t("auto.oppstart_og_varighet")}</h3>
       
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="start_date">Startdato *</Label>
+          <Label htmlFor="start_date">{t("auto.startdato_3")}</Label>
           <Input
             id="start_date"
             type="date"
@@ -54,7 +55,7 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
       {isTemporary && (
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <Label htmlFor="temporary_reason">Grunnlag for midlertidig ansettelse *</Label>
+            <Label htmlFor="temporary_reason">{t("auto.grunnlag_for_midlertidig_ansettelse")}</Label>
             <Button
               type="button"
               variant="ghost"
@@ -74,7 +75,7 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
               id="temporary_reason"
               value={formData.temporary_reason || ''}
               onChange={(e) => onChange({ temporary_reason: e.target.value })}
-              placeholder="F.eks. Sesongarbeid i sommersesongen juni-august, eller annet særskilt grunnlag"
+              placeholder={t("auto.f_eks_sesongarbeid_i_sommersesongen_juni")}
               rows={3}
             />
           ) : (
@@ -83,7 +84,7 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
               onValueChange={(value) => onChange({ temporary_reason: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Velg grunnlag" />
+                <SelectValue placeholder={t("auto.velg_grunnlag")} />
               </SelectTrigger>
               <SelectContent>
                 {temporaryReasons.map((reason) => (
@@ -101,7 +102,7 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="probation_period">Prøvetid</Label>
+        <Label htmlFor="probation_period">{t("auto.proevetid_2")}</Label>
         <Select
           value={formData.probation_period_months?.toString() || '0'}
           onValueChange={(value) => onChange({ probation_period_months: parseInt(value) || null })}
@@ -110,15 +111,15 @@ export function DatesSection({ formData, onChange }: DatesSectionProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="0">Ingen prøvetid</SelectItem>
-            <SelectItem value="1">1 måned</SelectItem>
-            <SelectItem value="2">2 måneder</SelectItem>
-            <SelectItem value="3">3 måneder</SelectItem>
-            <SelectItem value="6">6 måneder</SelectItem>
+            <SelectItem value="0">{t("auto.ingen_proevetid")}</SelectItem>
+            <SelectItem value="1">{t("auto.1_maaned")}</SelectItem>
+            <SelectItem value="2">{t("auto.2_maaneder")}</SelectItem>
+            <SelectItem value="3">{t("auto.3_maaneder")}</SelectItem>
+            <SelectItem value="6">{t("auto.6_maaneder")}</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          Maks 6 måneder. Ved midlertidig: maks halvparten av ansettelsestiden.
+          {t("auto.maks_6_maaneder_ved_midlertidig_maks_hal")}
         </p>
       </div>
     </div>

@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ChevronLeft, ChevronRight, ClipboardCheck, FileSearch, Users, FileText, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 /**
  * Dialog som dekker hele rutinen for "Gjennomgang av internkontrollen (intern revisjon)"
@@ -42,30 +43,30 @@ interface ChecklistItem {
 }
 
 const FORBEREDELSER: ChecklistItem[] = [
-  { key: "avvik_gransket", label: "Avviksregistreringer er gransket — alle lukket og ingen som gjentar seg" },
-  { key: "forslag_gjennomgaatt", label: "Innkomne forslag fra medarbeidere om endringer i rutiner er gjennomgått" },
-  { key: "regelverk_sjekket", label: "Sjekket om det har kommet regelverksendringer som krever oppdatering av rutiner" },
-  { key: "tidsplan_satt", label: "Tidsplan for revisjonen er satt opp og tid avsatt" },
-  { key: "omfang_valgt", label: "Plukket ut hvilke deler av internkontrollen som skal granskes" },
-  { key: "varslet", label: "De som blir berørt er varslet om revisjonen" },
-  { key: "spoersmaal_klar", label: "Spørsmål til de ansatte som skal bruke aktuelle rutiner er forberedt" },
+  { key: "avvik_gransket", label: t("auto.avviksregistreringer_er_gransket_alle_lu") },
+  { key: "forslag_gjennomgaatt", label: t("auto.innkomne_forslag_fra_medarbeidere_om_end") },
+  { key: "regelverk_sjekket", label: t("auto.sjekket_om_det_har_kommet_regelverksendr") },
+  { key: "tidsplan_satt", label: t("auto.tidsplan_for_revisjonen_er_satt_opp_og_t") },
+  { key: "omfang_valgt", label: t("auto.plukket_ut_hvilke_deler_av_internkontrol") },
+  { key: "varslet", label: t("auto.de_som_blir_beroert_er_varslet_om_revisj") },
+  { key: "spoersmaal_klar", label: t("auto.spoersmaal_til_de_ansatte_som_skal_bruke") },
 ];
 
 const GJENNOMFOERING: ChecklistItem[] = [
-  { key: "rutiner_datert", label: "Alle rutiner er riktig datert og signert — ingen utgåtte rutiner i omløp" },
-  { key: "befaring", label: "Befaring på kjøkkenet er gjennomført og spørsmål stilt til de ansatte" },
-  { key: "feil_som_avvik", label: "Eventuelle feil som ble oppdaget er behandlet som avvik" },
-  { key: "rapportert_ledelsen", label: "Funn er rapportert til ledelsen" },
-  { key: "oppfoelging_avtalt", label: "Det er avtalt hvordan eventuelle avvik skal følges opp" },
-  { key: "forbedringer_foreslaatt", label: "Forbedringsforslag er notert" },
+  { key: "rutiner_datert", label: t("auto.alle_rutiner_er_riktig_datert_og_signert") },
+  { key: "befaring", label: t("auto.befaring_paa_kjoekkenet_er_gjennomfoert_") },
+  { key: "feil_som_avvik", label: t("auto.eventuelle_feil_som_ble_oppdaget_er_beha") },
+  { key: "rapportert_ledelsen", label: t("auto.funn_er_rapportert_til_ledelsen") },
+  { key: "oppfoelging_avtalt", label: t("auto.det_er_avtalt_hvordan_eventuelle_avvik_s") },
+  { key: "forbedringer_foreslaatt", label: t("auto.forbedringsforslag_er_notert") },
 ];
 
 const STEPS = [
-  { id: 0, title: "Generelt", icon: FileText },
-  { id: 1, title: "Forberedelser", icon: FileSearch },
-  { id: 2, title: "Gjennomføring", icon: ClipboardCheck },
-  { id: 3, title: "Funn & oppfølging", icon: AlertTriangle },
-  { id: 4, title: "Oppsummering", icon: Users },
+  { id: 0, title: t("auto.generelt"), icon: FileText },
+  { id: 1, title: t("auto.forberedelser"), icon: FileSearch },
+  { id: 2, title: t("auto.gjennomfoering"), icon: ClipboardCheck },
+  { id: 3, title: t("auto.funn_oppfoelging"), icon: AlertTriangle },
+  { id: 4, title: t("auto.oppsummering"), icon: Users },
 ];
 
 interface RevisjonState {
@@ -152,11 +153,11 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
 
   const handleSave = async (markCompleted: boolean) => {
     if (!profile?.company_id) {
-      toast.error("Mangler bedrift");
+      toast.error(t("auto.mangler_bedrift"));
       return;
     }
     if (!state.title || !state.scheduled_date) {
-      toast.error("Tittel og dato er påkrevd");
+      toast.error(t("auto.tittel_og_dato_er_paakrevd"));
       return;
     }
     setSaving(true);
@@ -236,7 +237,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
             </Alert>
 
             <div className="space-y-2">
-              <Label htmlFor="title">Tittel *</Label>
+              <Label htmlFor="title">{t("auto.tittel_2")}</Label>
               <Input
                 id="title"
                 value={state.title}
@@ -246,7 +247,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date">Dato *</Label>
+                <Label htmlFor="date">{t("auto.dato_2")}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -255,13 +256,13 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="responsible">Ansvarlig</Label>
+                <Label htmlFor="responsible">{t("auto.ansvarlig_2")}</Label>
                 <Select
                   value={state.responsible_id}
                   onValueChange={(v) => setState({ ...state, responsible_id: v })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg ansvarlig" />
+                    <SelectValue placeholder={t("auto.velg_ansvarlig")} />
                   </SelectTrigger>
                   <SelectContent>
                     {users.map((u) => (
@@ -275,17 +276,17 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="participants">Deltakere</Label>
+              <Label htmlFor="participants">{t("auto.deltakere")}</Label>
               <Input
                 id="participants"
                 value={state.participants}
                 onChange={(e) => setState({ ...state, participants: e.target.value })}
-                placeholder="F.eks. Daglig leder, kjøkkensjef, hygienekontakt"
+                placeholder={t("auto.f_eks_daglig_leder_kjoekkensjef_hygienek")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="scope">Omfang av revisjonen</Label>
+              <Label htmlFor="scope">{t("auto.omfang_av_revisjonen")}</Label>
               <Textarea
                 id="scope"
                 value={state.scope}
@@ -300,7 +301,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
         return (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Gå gjennom forberedelsene før selve revisjonen utføres. Huk av når hvert punkt er gjort.
+              {t("auto.gaa_gjennom_forberedelsene_foer_selve_re")}
             </p>
             {FORBEREDELSER.map((item) => (
               <ChecklistRow
@@ -321,7 +322,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
         return (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Gjennomfør møte/befaring som planlagt, og kvitter ut hvert punkt.
+              {t("auto.gjennomfoer_moete_befaring_som_planlagt_")}
             </p>
             {GJENNOMFOERING.map((item) => (
               <ChecklistRow
@@ -342,24 +343,24 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="findings">Funn / observasjoner</Label>
+              <Label htmlFor="findings">{t("auto.funn_observasjoner")}</Label>
               <Textarea
                 id="findings"
                 value={state.findings}
                 onChange={(e) => setState({ ...state, findings: e.target.value })}
                 rows={5}
-                placeholder="Beskriv det som ble avdekket. Husk: feil skal også registreres som avvik i avvikssystemet."
+                placeholder={t("auto.beskriv_det_som_ble_avdekket_husk_feil_s")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="improvements">Forbedringsforslag</Label>
+              <Label htmlFor="improvements">{t("auto.forbedringsforslag")}</Label>
               <Textarea
                 id="improvements"
                 value={state.improvements}
                 onChange={(e) => setState({ ...state, improvements: e.target.value })}
                 rows={4}
-                placeholder="Foreslåtte forbedringer i rutiner, opplæring eller utstyr."
+                placeholder={t("auto.foreslaatte_forbedringer_i_rutiner_oppla")}
               />
             </div>
 
@@ -371,10 +372,10 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
               />
               <div className="space-y-1">
                 <Label htmlFor="reported" className="cursor-pointer">
-                  Funn er rapportert til ledelsen
+                  {t("auto.funn_er_rapportert_til_ledelsen")}
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Bekreft at ledelsen er informert og at oppfølgingen er avtalt.
+                  {t("auto.bekreft_at_ledelsen_er_informert_og_at_o")}
                 </p>
               </div>
             </div>
@@ -386,25 +387,25 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
           <div className="space-y-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Status</CardTitle>
+                <CardTitle className="text-base">{t("auto.status_2")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tittel</span>
+                  <span className="text-muted-foreground">{t("auto.tittel")}</span>
                   <span className="font-medium">{state.title}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Dato</span>
+                  <span className="text-muted-foreground">{t("auto.dato")}</span>
                   <span className="font-medium">{state.scheduled_date}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Sjekkpunkter fullført</span>
+                  <span className="text-muted-foreground">{t("auto.sjekkpunkter_fullfoert")}</span>
                   <Badge variant={allDone ? "default" : "secondary"}>
                     {completedChecks} / {totalChecks}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Rapportert til ledelsen</span>
+                  <span className="text-muted-foreground">{t("auto.rapportert_til_ledelsen")}</span>
                   <Badge variant={state.reported_to_management ? "default" : "outline"}>
                     {state.reported_to_management ? "Ja" : "Nei"}
                   </Badge>
@@ -413,13 +414,13 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
             </Card>
 
             <div className="space-y-2">
-              <Label htmlFor="conclusion">Konklusjon</Label>
+              <Label htmlFor="conclusion">{t("auto.konklusjon")}</Label>
               <Textarea
                 id="conclusion"
                 value={state.conclusion}
                 onChange={(e) => setState({ ...state, conclusion: e.target.value })}
                 rows={4}
-                placeholder="Samlet vurdering: fungerer internkontrollen som den skal? Hva er hovedkonklusjonen?"
+                placeholder={t("auto.samlet_vurdering_fungerer_internkontroll")}
               />
             </div>
 
@@ -427,7 +428,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Ikke alle sjekkpunkter er huket av. Du kan fortsatt lagre som pågående revisjon og fullføre senere.
+                  {t("auto.ikke_alle_sjekkpunkter_er_huket_av_du_ka")}
                 </AlertDescription>
               </Alert>
             )}
@@ -443,9 +444,9 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>Intern revisjon — IK MAT</DialogTitle>
+          <DialogTitle>{t("auto.intern_revisjon_ik_mat")}</DialogTitle>
           <DialogDescription>
-            Gjennomgang av internkontrollen i fire steg, basert på rutinen for intern revisjon.
+            {t("auto.gjennomgang_av_internkontrollen_i_fire_s")}
           </DialogDescription>
         </DialogHeader>
 
@@ -546,7 +547,7 @@ function ChecklistRow({
             <Textarea
               value={note}
               onChange={(e) => onNoteChange(e.target.value)}
-              placeholder="Notat / observasjon"
+              placeholder={t("auto.notat_observasjon")}
               rows={2}
               className="mt-1 text-sm"
               onClick={(e) => e.stopPropagation()}
