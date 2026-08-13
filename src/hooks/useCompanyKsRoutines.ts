@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface CompanyKsRoutine {
   id: string;
@@ -102,7 +103,7 @@ export function useCompanyKsRoutines(includeHidden: boolean = false) {
       return data;
     } catch (error) {
       console.error("Error creating routine:", error);
-      toast({ title: "Kunne ikke opprette rutine", variant: "destructive" });
+      toast({ title: t("auto.kunne_ikke_opprette_rutine"), variant: "destructive" });
       return null;
     } finally {
       setIsSaving(false);
@@ -166,7 +167,7 @@ export function useCompanyKsRoutines(includeHidden: boolean = false) {
       return filePath;
     } catch (error) {
       console.error("Error uploading document:", error);
-      toast({ title: "Kunne ikke laste opp dokument", variant: "destructive" });
+      toast({ title: t("auto.kunne_ikke_laste_opp_dokument"), variant: "destructive" });
       return null;
     } finally {
       setIsSaving(false);

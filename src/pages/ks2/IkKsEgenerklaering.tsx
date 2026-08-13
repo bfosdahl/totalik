@@ -64,7 +64,7 @@ export default function IkKsEgenerklaering() {
 
     // Declaration body
     const bodyTexts = [
-      "Vi erklærer med dette at virksomheten har etablert og tatt i bruk et kvalitetssikringssystem (Total IK – med modul IK/Bygg) som benyttes i den daglige driften.",
+      t("auto.vi_erklaerer_med_dette_at_virksomheten_h"),
       "",
       "Systemet er tilpasset virksomhetens størrelse og aktiviteter, og skal sikre at arbeid planlegges, utføres og dokumenteres i samsvar med gjeldende lover, forskrifter og krav til kvalitet.",
       "",
@@ -84,10 +84,10 @@ export default function IkKsEgenerklaering() {
 
     // Bullet points
     const bullets = [
-      "Klare ansvarsforhold og rutiner for gjennomføring av arbeid",
-      "Kontroll og dokumentasjon av utført arbeid",
-      "Håndtering av avvik og forbedringstiltak",
-      "Jevnlig gjennomgang og oppdatering av systemet",
+      t("auto.klare_ansvarsforhold_og_rutiner_for_gjen"),
+      t("auto.kontroll_og_dokumentasjon_av_utfoert_arb"),
+      t("auto.haandtering_av_avvik_og_forbedringstilta"),
+      t("auto.jevnlig_gjennomgang_og_oppdatering_av_sy"),
     ];
     bullets.forEach(b => {
       doc.text(`• ${b}`, 25, y);

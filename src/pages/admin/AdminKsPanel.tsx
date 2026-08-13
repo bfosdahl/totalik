@@ -74,7 +74,7 @@ const CONTRACTOR_TYPES = [
 const EXAMPLE_CONTENT_LEVELS = [
   { value: "minimal", label: t("auto.minimal_kun_sjekklister_og_rutiner") },
   { value: "medium", label: t("auto.medium_inkluderer_byggherre_underleveran") },
-  { value: "full", label: "Full - Alt innhold (møtereferater, økonomi, avvik, etc.)" },
+  { value: "full", label: t("auto.full_alt_innhold_moetereferater_oekonomi") },
 ];
 
 // Category configurations for visual display

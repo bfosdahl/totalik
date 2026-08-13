@@ -18,7 +18,7 @@ import { t } from "@/i18n/t";
 const PREDEFINED_ROLES = [
   {
     title: t("auto.daglig_leder"),
-    description: "Har det overordnede ansvaret for drift, økonomi og personale. Ansvar for HMS, IK-MAT og etterlevelse av regelverk. Kontakt med myndigheter (kommune, Mattilsynet, Arbeidstilsynet). Skal sikre at gjeldende lover og forskrifter etterleves."
+    description: t("auto.har_det_overordnede_ansvaret_for_drift_o")
   },
   {
     title: t("auto.restaurantsjef"),

@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 import { populateExampleProject } from "./ksModule2PopulateExampleProject";
+import { t } from "@/i18n/t";
 
 export interface SeedProject {
   project_name: string;
@@ -21,7 +22,7 @@ const SEED_PROJECTS: SeedProject[] = [
     address: "Eksempelveien 1, 0001 Oslo",
     client_name: "Ola Nordmann",
     contractor_type: "total",
-    description: "Dette er et eksempelprosjekt som viser hvordan du kan dokumentere et nybyggprosjekt. Prosjektet inkluderer oppføring av enebolig med garasje. Du kan redigere eller slette dette prosjektet.",
+    description: t("auto.dette_er_et_eksempelprosjekt_som_viser_h"),
     status: "active",
     contract_sum: 4500000,
   },
@@ -31,7 +32,7 @@ const SEED_PROJECTS: SeedProject[] = [
     address: "Demonstrasjonsgate 15, 0002 Bergen",
     client_name: "Kari Hansen",
     contractor_type: "hoved",
-    description: "Et eksempelprosjekt for totalrenovering av eldre bolig. Inkluderer nytt bad, kjøkken, elektrisk anlegg og etterisolering. Bruk dette som mal for dine egne renoveringsprosjekter.",
+    description: t("auto.et_eksempelprosjekt_for_totalrenovering_"),
     status: "planned",
     contract_sum: 1800000,
   },
@@ -41,7 +42,7 @@ const SEED_PROJECTS: SeedProject[] = [
     address: "Testveien 42, 0003 Trondheim",
     client_name: "Per Olsen",
     contractor_type: "under",
-    description: "Et mindre prosjekt som viser hvordan du dokumenterer mindre oppdrag. Inkluderer maling, gulvlegging og montering av nytt kjøkken. Perfekt eksempel for småjobber.",
+    description: t("auto.et_mindre_prosjekt_som_viser_hvordan_du_"),
     status: "completed",
     contract_sum: 250000,
   },
@@ -51,7 +52,7 @@ const SEED_PROJECTS: SeedProject[] = [
     address: "Prøvegata 8, 0004 Stavanger",
     client_name: "Anne Nilsen",
     contractor_type: "hoved",
-    description: "Eksempelprosjekt for tilbygg på eksisterende bolig. Viser dokumentasjon for byggesøknad, fundamentering, bæresystem og ferdigstillelse.",
+    description: t("auto.eksempelprosjekt_for_tilbygg_paa_eksiste"),
     status: "handover",
     contract_sum: 950000,
   },
@@ -61,7 +62,7 @@ const SEED_PROJECTS: SeedProject[] = [
     address: "Solbergveien 25, 1440 Drøbak",
     client_name: "Erik og Maria Solberg",
     contractor_type: "total",
-    description: "Et fullstendig utfylt demonstrasjonsprosjekt med møtereferater, økonomi, sjekklister, avvik, underleverandører, SJA, vernerunder, endringsmeldinger, reklamasjoner, stoffkartotek og milepæler. Perfekt for å se hvordan et komplett prosjekt dokumenteres.",
+    description: t("auto.et_fullstendig_utfylt_demonstrasjonspros"),
     status: "active",
     contract_sum: 5800000,
     populateWithData: true,

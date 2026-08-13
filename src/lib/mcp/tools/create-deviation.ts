@@ -1,11 +1,12 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { currentProfile } from "../supabase";
+import { t } from "@/i18n/t";
 
 export default defineTool({
   name: "create_deviation",
   title: "Opprett avvik",
-  description: "Registrerer et nytt avvik i Total-IK for brukerens bedrift. Avviksnummer genereres automatisk.",
+  description: t("auto.registrerer_et_nytt_avvik_i_total_ik_for"),
   inputSchema: {
     title: z.string().trim().min(3).describe("Kort tittel på avviket."),
     description: z.string().trim().optional().describe("Utfyllende beskrivelse."),

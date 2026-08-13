@@ -24,7 +24,7 @@ const passwordSchema = z.object({
     .regex(/[0-9]/, "Passord må inneholde minst ett tall"),
   confirmPassword: z.string().min(1, "Bekreft passord er påkrevd"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passordene stemmer ikke overens",
+  message: t("auto.passordene_stemmer_ikke_overens"),
   path: ["confirmPassword"],
 });
 
@@ -152,7 +152,7 @@ export function SecuritySettings({ onBack }: SecuritySettingsProps) {
       });
 
       if (signInError) {
-        setPasswordErrors(["Nåværende passord er feil"]);
+        setPasswordErrors([t("auto.naavaerende_passord_er_feil")]);
         return;
       }
 

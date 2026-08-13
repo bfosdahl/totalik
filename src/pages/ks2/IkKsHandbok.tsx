@@ -661,7 +661,7 @@ export default function IkKsHandbok() {
       // Simple table
       const roles = [
         ["Rolle", "Ansvar"],
-        ["Daglig leder", "Overordnet ansvar for kvalitetssystemet"],
+        ["Daglig leder", t("auto.overordnet_ansvar_for_kvalitetssystemet")],
         ["Faglig ansvarlig", t("auto.sikrer_faglig_utfoerelse_iht_regelverk")],
         ["Prosjekt-/arbeidsleder", t("auto.planlegging_gjennomfoering_og_kontroll")],
         [t("auto.ansatte"), t("auto.utfoerer_arbeid_iht_rutiner_og_melder_av")],

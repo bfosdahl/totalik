@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface TraceabilityRecord {
   id: string;
@@ -131,7 +132,7 @@ export const useIkMatTraceability = (companyId: string | undefined) => {
     onError: (error) => {
       toast({
         title: "Feil",
-        description: "Kunne ikke slette varemottak",
+        description: t("auto.kunne_ikke_slette_varemottak"),
         variant: "destructive",
       });
       console.error("Error deleting traceability record:", error);

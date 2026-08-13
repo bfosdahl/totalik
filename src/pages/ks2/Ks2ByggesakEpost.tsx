@@ -74,7 +74,7 @@ export default function Ks2ByggesakEpost() {
       id: "2",
       subject: "Samsvarserklæring UTF - Tømrerarbeid",
       recipients: ["kommune@example.no"],
-      attachments: ["5181 Samsvarserklæring UTF"],
+      attachments: [t("auto.5181_samsvarserklaering_utf")],
       sentAt: new Date(Date.now() - 86400000 * 5).toISOString(),
       type: "BygSøk",
     },

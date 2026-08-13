@@ -1,11 +1,12 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 import { currentProfile } from "../supabase";
+import { t } from "@/i18n/t";
 
 export default defineTool({
   name: "list_projects",
   title: "List byggeprosjekter",
-  description: "Henter KS-byggeprosjekter for brukerens bedrift, med valgfritt statusfilter.",
+  description: t("auto.henter_ks_byggeprosjekter_for_brukerens_"),
   inputSchema: {
     status: z
       .enum(["planned", "active", "handover", "warranty", "completed"])

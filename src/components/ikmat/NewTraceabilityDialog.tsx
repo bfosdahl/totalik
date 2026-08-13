@@ -42,19 +42,19 @@ function getTemperatureStatus(temp: number | null, productTypes: ProductType[]):
   // If both types, use the stricter requirements (frozen)
   if (hasFrysevare) {
     if (temp <= -18) {
-      return { status: "green", message: "Riktig temperatur for frysevare", action: "AKSEPTER" };
+      return { status: "green", message: t("auto.riktig_temperatur_for_frysevare"), action: "AKSEPTER" };
     } else if (temp > -18 && temp <= -15) {
-      return { status: "yellow", message: "Tillates ved transport kortere enn 2 t.", action: "Sett varer på fryserom til de er -18°C" };
+      return { status: "yellow", message: t("auto.tillates_ved_transport_kortere_enn_2_t"), action: t("auto.sett_varer_paa_fryserom_til_de_er_18_c") };
     } else if (temp > -15) {
-      return { status: "red", message: "Frysevarer for varme - tas ikke imot", action: "RETUR" };
+      return { status: "red", message: t("auto.frysevarer_for_varme_tas_ikke_imot"), action: "RETUR" };
     }
   } else if (hasKjolevare) {
     if (temp >= -1 && temp <= 4) {
-      return { status: "green", message: "Riktig temperatur for kjølevare", action: "AKSEPTER" };
+      return { status: "green", message: t("auto.riktig_temperatur_for_kjoelevare"), action: "AKSEPTER" };
     } else if (temp > 4 && temp <= 7) {
-      return { status: "yellow", message: "Tillates ved transport kortere enn 2 t.", action: "Sett varene på kjølerom" };
+      return { status: "yellow", message: t("auto.tillates_ved_transport_kortere_enn_2_t"), action: "Sett varene på kjølerom" };
     } else if (temp > 7) {
-      return { status: "red", message: "Kjølevarer for varme - tas ikke imot", action: "RETUR" };
+      return { status: "red", message: t("auto.kjoelevarer_for_varme_tas_ikke_imot"), action: "RETUR" };
     }
   }
   

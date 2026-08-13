@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface MeetingParticipant {
   name: string;
@@ -102,7 +103,7 @@ export function useKsModule2Meetings(projectId: string | null) {
       console.error("Error fetching meetings:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke hente møtereferater",
+        description: t("auto.kunne_ikke_hente_moetereferater"),
         variant: "destructive",
       });
     } finally {
@@ -118,7 +119,7 @@ export function useKsModule2Meetings(projectId: string | null) {
     if (!profile?.company_id || !projectId) {
       toast({
         title: "Feil",
-        description: "Mangler prosjekt eller bedriftsinformasjon",
+        description: t("auto.mangler_prosjekt_eller_bedriftsinformasj"),
         variant: "destructive",
       });
       return null;
@@ -160,7 +161,7 @@ export function useKsModule2Meetings(projectId: string | null) {
       console.error("Error creating meeting:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke opprette møtereferat",
+        description: t("auto.kunne_ikke_opprette_moetereferat"),
         variant: "destructive",
       });
       return null;
@@ -223,7 +224,7 @@ export function useKsModule2Meetings(projectId: string | null) {
       console.error("Error deleting meeting:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke slette møtereferat",
+        description: t("auto.kunne_ikke_slette_moetereferat"),
         variant: "destructive",
       });
       return false;

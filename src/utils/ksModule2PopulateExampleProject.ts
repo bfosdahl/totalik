@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n/t";
 
 // Generate example data for a complete demo project
 export async function populateExampleProject(
@@ -148,7 +149,7 @@ export async function populateExampleProject(
         is_paper_version: false,
         paper_uploaded: false,
         checklist_items: [
-          { id: "1", text: "Forskaling kontrollert og godkjent", type: "yes_no", required: true, value: true },
+          { id: "1", text: t("auto.forskaling_kontrollert_og_godkjent"), type: "yes_no", required: true, value: true },
           { id: "2", text: "Armering montert iht. tegning", type: "yes_no", required: true, value: true },
           { id: "3", text: "Betongkvalitet dokumentert", type: "yes_no", required: true, value: true },
           { id: "4", text: "Temperatur ved støp (°C)", type: "number", required: true, value: 12 },
@@ -160,7 +161,7 @@ export async function populateExampleProject(
       {
         project_id: projectId,
         company_id: companyId,
-        title: "Våtrom NS-3600 - Bad 1. etg",
+        title: t("auto.vaatrom_ns_3600_bad_1_etg"),
         template_name: "Våtrom NS-3600",
         responsible_user_name: "Kari Olsen",
         deadline_date: daysFromNow(5),
@@ -169,11 +170,11 @@ export async function populateExampleProject(
         is_paper_version: false,
         paper_uploaded: false,
         checklist_items: [
-          { id: "1", text: "Underlag kontrollert – jevnt og tørt", type: "yes_no", required: true, value: true },
+          { id: "1", text: t("auto.underlag_kontrollert_jevnt_og_toert"), type: "yes_no", required: true, value: true },
           { id: "2", text: "Fall mot sluk kontrollert (mm/m)", type: "number", required: true, value: 15 },
-          { id: "3", text: "Membran påført iht. produsentens anvisning", type: "yes_no", required: true, value: true },
+          { id: "3", text: t("auto.membran_paafoert_iht_produsentens_anvisn"), type: "yes_no", required: true, value: true },
           { id: "4", text: "Tetthetsprøve utført", type: "yes_no", required: true, value: null },
-          { id: "5", text: "Slukmansjett montert og tettet", type: "yes_no", required: true, value: null },
+          { id: "5", text: t("auto.slukmansjett_montert_og_tettet"), type: "yes_no", required: true, value: null },
         ],
         signatures: [],
         created_by: userId,
@@ -228,7 +229,7 @@ export async function populateExampleProject(
         company_id: companyId,
         avvik_number: "AVV-002",
         title: "Manglende branntetning",
-        description: "Gjennomføring for ventilasjon i brannskille mangler tetning",
+        description: t("auto.gjennomfoering_for_ventilasjon_i_brannsk"),
         category: "hms",
         severity: "medium",
         status: "in_progress",
@@ -244,7 +245,7 @@ export async function populateExampleProject(
         company_id: companyId,
         avvik_number: "AVV-003",
         title: "Riper i vindu",
-        description: "Nytt vindu i soverom har riper på glasset",
+        description: t("auto.nytt_vindu_i_soverom_har_riper_paa_glass"),
         category: "kvalitet",
         severity: "low",
         status: "open",
@@ -309,8 +310,8 @@ export async function populateExampleProject(
           { description: "Fallende gjenstander", consequence: "Personskade", probability: "low" },
         ],
         risk_reducing_measures: [
-          { risk: "Fall fra høyde", measure: "Fallsikringsutstyr, stilas med rekkverk", responsible: "Ole Hansen" },
-          { risk: "Fallende gjenstander", measure: "Avsperring av område under tak", responsible: "Kari Olsen" },
+          { risk: "Fall fra høyde", measure: t("auto.fallsikringsutstyr_stilas_med_rekkverk"), responsible: "Ole Hansen" },
+          { risk: "Fallende gjenstander", measure: t("auto.avsperring_av_omraade_under_tak"), responsible: "Kari Olsen" },
         ],
         overall_risk_level: "medium",
         status: "completed",
@@ -333,7 +334,7 @@ export async function populateExampleProject(
         ],
         risk_reducing_measures: [
           { risk: "Brannfare", measure: "Brannteppe, pulverapparat tilgjengelig, brannvakt", responsible: "Per Nilsen" },
-          { risk: "Øyeskade", measure: "Sveisemaske og avskjerming", responsible: "Per Nilsen" },
+          { risk: "Øyeskade", measure: t("auto.sveisemaske_og_avskjerming"), responsible: "Per Nilsen" },
         ],
         overall_risk_level: "medium",
         status: "draft",
@@ -371,7 +372,7 @@ export async function populateExampleProject(
         participants: ["Ole Hansen", "Verneombud Kari"],
         status: "completed",
         findings: [
-          { id: "f2", description: "Mangler skilting ved graveområde", location: "Tomt nord", severity: "medium", status: "open", responsible: "Ole Hansen", deadline: daysFromNow(2) },
+          { id: "f2", description: t("auto.mangler_skilting_ved_graveomraade"), location: "Tomt nord", severity: "medium", status: "open", responsible: "Ole Hansen", deadline: daysFromNow(2) },
         ],
         notes: "Påminnelse om bruk av hjelm i alle områder",
         completed_by_name: "Ole Hansen",
@@ -419,8 +420,8 @@ export async function populateExampleProject(
         project_id: projectId,
         company_id: companyId,
         change_order_number: "EM-002",
-        title: "Oppgradering gulvvarme til bad",
-        description: "Kunde ønsker gulvvarme i begge bad i stedet for bare ett",
+        title: t("auto.oppgradering_gulvvarme_til_bad"),
+        description: t("auto.kunde_oensker_gulvvarme_i_begge_bad_i_st"),
         reason: "Kundeønske",
         requested_by: "Ola Nordmann (Kunde)",
         requested_date: daysAgo(5),
@@ -476,7 +477,7 @@ export async function populateExampleProject(
         manufacturer: "Mapei",
         danger_classes: ["Irriterende"],
         location: "Flislager",
-        notes: "Flislim for bad og kjøkken",
+        notes: t("auto.flislim_for_bad_og_kjoekken"),
         last_updated: daysAgo(7),
       },
       {
@@ -496,7 +497,7 @@ export async function populateExampleProject(
     const milestones = [
       { project_id: projectId, company_id: companyId, title: "Grunnarbeid ferdig", target_date: daysAgo(30), completed_date: daysAgo(28), status: "completed", description: "Fundament og grunnmur ferdigstilt" },
       { project_id: projectId, company_id: companyId, title: "Råbygg ferdig", target_date: daysAgo(7), completed_date: daysAgo(5), status: "completed", description: "Bæresystem, tak og yttervegger" },
-      { project_id: projectId, company_id: companyId, title: "Tett bygg", target_date: daysFromNow(7), status: "in_progress", description: "Vinduer, dører, taktekking" },
+      { project_id: projectId, company_id: companyId, title: "Tett bygg", target_date: daysFromNow(7), status: "in_progress", description: t("auto.vinduer_doerer_taktekking") },
       { project_id: projectId, company_id: companyId, title: "Innvendig ferdig", target_date: daysFromNow(35), status: "planned", description: "Alle innvendige arbeider" },
       { project_id: projectId, company_id: companyId, title: "Ferdigstillelse", target_date: daysFromNow(56), status: "planned", description: "Sluttkontroll og overlevering" },
     ];

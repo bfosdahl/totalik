@@ -65,10 +65,11 @@ async function currentProfile(ctx) {
 }
 
 // src/lib/mcp/tools/whoami.ts
+import { t } from "npm:@/i18n/t";
 var whoami_default = defineTool({
   name: "whoami",
   title: "Hvem er jeg",
-  description: "Returnerer den innloggede brukerens profil og tilh\xF8rende bedrift i Total-IK.",
+  description: t("auto.returnerer_den_innloggede_brukerens_prof"),
   inputSchema: {},
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
@@ -88,10 +89,11 @@ var whoami_default = defineTool({
 // src/lib/mcp/tools/list-deviations.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z } from "npm:zod@^3.25.76";
+import { t as t2 } from "npm:@/i18n/t";
 var list_deviations_default = defineTool2({
   name: "list_deviations",
   title: "List avvik",
-  description: "Henter avvik (deviations) for brukerens bedrift, med valgfritt filter p\xE5 status og antall.",
+  description: t2("auto.henter_avvik_deviations_for_brukerens_be"),
   inputSchema: {
     status: z.enum(["open", "in_progress", "resolved", "closed"]).optional().describe("Filtrer p\xE5 status."),
     limit: z.number().int().min(1).max(100).default(20).describe("Maks antall avvik.")
@@ -116,10 +118,11 @@ var list_deviations_default = defineTool2({
 // src/lib/mcp/tools/create-deviation.ts
 import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z as z2 } from "npm:zod@^3.25.76";
+import { t as t3 } from "npm:@/i18n/t";
 var create_deviation_default = defineTool3({
   name: "create_deviation",
   title: "Opprett avvik",
-  description: "Registrerer et nytt avvik i Total-IK for brukerens bedrift. Avviksnummer genereres automatisk.",
+  description: t3("auto.registrerer_et_nytt_avvik_i_total_ik_for"),
   inputSchema: {
     title: z2.string().trim().min(3).describe("Kort tittel p\xE5 avviket."),
     description: z2.string().trim().optional().describe("Utfyllende beskrivelse."),
@@ -161,10 +164,11 @@ var create_deviation_default = defineTool3({
 // src/lib/mcp/tools/list-projects.ts
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z as z3 } from "npm:zod@^3.25.76";
+import { t as t4 } from "npm:@/i18n/t";
 var list_projects_default = defineTool4({
   name: "list_projects",
   title: "List byggeprosjekter",
-  description: "Henter KS-byggeprosjekter for brukerens bedrift, med valgfritt statusfilter.",
+  description: t4("auto.henter_ks_byggeprosjekter_for_brukerens_"),
   inputSchema: {
     status: z3.enum(["planned", "active", "handover", "warranty", "completed"]).optional().describe("Filtrer p\xE5 prosjektstatus."),
     limit: z3.number().int().min(1).max(100).default(20).describe("Maks antall prosjekter.")
@@ -189,10 +193,11 @@ var list_projects_default = defineTool4({
 // src/lib/mcp/tools/list-time-entries.ts
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z as z4 } from "npm:zod@^3.25.76";
+import { t as t5 } from "npm:@/i18n/t";
 var list_time_entries_default = defineTool5({
   name: "list_time_entries",
   title: "List timef\xF8ringer",
-  description: "Henter den innloggede brukerens egne timef\xF8ringer i en valgfri datoperiode.",
+  description: t5("auto.henter_den_innloggede_brukerens_egne_tim"),
   inputSchema: {
     from_date: z4.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Fra-dato YYYY-MM-DD."),
     to_date: z4.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("Til-dato YYYY-MM-DD."),

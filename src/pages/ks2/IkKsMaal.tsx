@@ -26,10 +26,10 @@ import {
 } from "@/components/ui/dialog";
 
 const DEFAULT_GOALS = [
-  "Levere alle prosjekter innenfor avtalt tid og budsjett",
-  "Oppnå null kritiske avvik ved sluttbefaring",
-  "Sikre at alle ansatte har nødvendig kompetanse og sertifiseringer",
-  "Gjennomføre systematisk egenkontroll på alle prosjekter",
+  t("auto.levere_alle_prosjekter_innenfor_avtalt_t"),
+  t("auto.oppnaa_null_kritiske_avvik_ved_sluttbefa"),
+  t("auto.sikre_at_alle_ansatte_har_noedvendig_kom_2"),
+  t("auto.gjennomfoere_systematisk_egenkontroll_pa"),
   "Oppnå høy kundetilfredshet (>90%)",
 ];
 

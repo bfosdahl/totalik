@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { t } from "@/i18n/t";
 
 // Helper to load image as base64 data URL
 const loadImageAsBase64 = async (url: string): Promise<string | null> => {
@@ -499,7 +500,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
     tocItems.push({ title: "Prosjektinformasjon" });
   }
   if (sections.includeChecklists) {
-    tocItems.push({ title: "Sjekklister og egenkontroller", count: data.checklists.length });
+    tocItems.push({ title: t("auto.sjekklister_og_egenkontroller"), count: data.checklists.length });
   }
   if (sections.includeAvvik) {
     tocItems.push({ title: "Avvik", count: data.avvik.length });
@@ -520,7 +521,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
     tocItems.push({ title: "Stoffkartotek", count: data.stoffkartotek.length });
   }
   if (sections.includeMilestones) {
-    tocItems.push({ title: "Fremdriftsplan / Milepæler", count: data.milestones.length });
+    tocItems.push({ title: t("auto.fremdriftsplan_milepaeler"), count: data.milestones.length });
   }
   if (sections.includeMeetings) {
     tocItems.push({ title: "Møtereferater", count: data.meetings.length });
@@ -1337,13 +1338,13 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
       ["", ""],
       ["Budsjett - Materialer", formatCurrency(data.finances.budget_materials)],
       ["Budsjett - Arbeidskraft", formatCurrency(data.finances.budget_labor)],
-      ["Budsjett - Underleverandører", formatCurrency(data.finances.budget_subcontractors)],
+      [t("auto.budsjett_underleverandoerer"), formatCurrency(data.finances.budget_subcontractors)],
       ["Budsjett - Annet", formatCurrency(data.finances.budget_other)],
       ["Totalt budsjett", formatCurrency(totalBudget)],
       ["", ""],
       ["Faktisk - Materialer", formatCurrency(data.finances.actual_materials)],
       ["Faktisk - Arbeidskraft", formatCurrency(data.finances.actual_labor)],
-      ["Faktisk - Underleverandører", formatCurrency(data.finances.actual_subcontractors)],
+      [t("auto.faktisk_underleverandoerer"), formatCurrency(data.finances.actual_subcontractors)],
       ["Faktisk - Annet", formatCurrency(data.finances.actual_other)],
       ["Totalt faktisk", formatCurrency(totalActual)],
       ["", ""],

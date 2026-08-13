@@ -42,17 +42,17 @@ interface KsSystemGoal {
 const DEFAULT_KS_GOALS = [
   {
     type: "ks_handbook",
-    text: "Sikre at alle prosjekter gjennomføres i henhold til gjeldende krav og standarder",
+    text: t("auto.sikre_at_alle_prosjekter_gjennomfoeres_i"),
     description: t("auto.ks_haandboken_skal_vaere_et_verktoey_for")
   },
   {
     type: "ks_handbook",
-    text: "Etablere rutiner for systematisk kvalitetssikring",
+    text: t("auto.etablere_rutiner_for_systematisk_kvalite"),
     description: t("auto.bedriften_skal_ha_dokumenterte_rutiner_s")
   },
   {
     type: "ks_system",
-    text: "Kontinuerlig forbedring av kvalitetssystemet",
+    text: t("auto.kontinuerlig_forbedring_av_kvalitetssyst"),
     description: t("auto.ks_systemet_skal_evalueres_og_forbedres_")
   },
 ];
@@ -60,17 +60,17 @@ const DEFAULT_KS_GOALS = [
 const DEFAULT_HMS_PROJECT_GOALS = [
   {
     type: "hms_project",
-    text: "Null skader på personer og materiell",
+    text: t("auto.null_skader_paa_personer_og_materiell"),
     description: t("auto.alle_prosjekter_skal_gjennomfoeres_uten_")
   },
   {
     type: "hms_project",
-    text: "Sikre trygge arbeidsforhold for alle på byggeplass",
+    text: t("auto.sikre_trygge_arbeidsforhold_for_alle_paa"),
     description: t("auto.hms_plan_og_sha_plan_skal_vaere_etablert")
   },
   {
     type: "hms_project",
-    text: "Gjennomføre systematiske vernerunder",
+    text: t("auto.gjennomfoere_systematiske_vernerunder"),
     description: t("auto.vernerunder_skal_gjennomfoeres_regelmess")
   },
 ];
@@ -448,10 +448,10 @@ export default function IkKsMaalsetting() {
                 <CardContent>
                   <div className="space-y-2">
                     {[
-                      "Levere alle prosjekter innenfor avtalt tid og budsjett",
-                      "Oppnå null kritiske avvik ved sluttbefaring",
-                      "Sikre at alle ansatte har nødvendig kompetanse og sertifiseringer",
-                      "Gjennomføre systematisk egenkontroll på alle prosjekter",
+                      t("auto.levere_alle_prosjekter_innenfor_avtalt_t"),
+                      t("auto.oppnaa_null_kritiske_avvik_ved_sluttbefa"),
+                      t("auto.sikre_at_alle_ansatte_har_noedvendig_kom_2"),
+                      t("auto.gjennomfoere_systematisk_egenkontroll_pa"),
                       "Oppnå høy kundetilfredshet (>90%)",
                     ].map((goal, idx) => (
                       <Button

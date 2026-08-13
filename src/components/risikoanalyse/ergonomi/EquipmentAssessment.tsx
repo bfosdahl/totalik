@@ -152,16 +152,16 @@ function ZoneStatus({ level, type }: { level: "green" | "yellow" | "red" | "none
         : "Over nedre tiltaksverdi. Hørselvern skal være tilgjengelig.",
       actions: type === "vibrasjon"
         ? [
-            "Reduser tiden eller ta hvilepauser",
-            "Varier med andre arbeidsoppgaver",
-            "Vurder om arbeidet gjøres på en hensiktsmessig måte",
-            "Om det er gitt tilstrekkelig opplæring i bruk av verktøyet",
-            "Tilbud om helseundersøkelse hos lege",
+            t("auto.reduser_tiden_eller_ta_hvilepauser"),
+            t("auto.varier_med_andre_arbeidsoppgaver"),
+            t("auto.vurder_om_arbeidet_gjoeres_paa_en_hensik"),
+            t("auto.om_det_er_gitt_tilstrekkelig_opplaering_"),
+            t("auto.tilbud_om_helseundersoekelse_hos_lege"),
           ]
         : [
-            "Hørselvern skal være tilgjengelig",
-            "Arbeidstakere skal informeres om risiko",
-            "Helseundersøkelse skal tilbys",
+            t("auto.hoerselvern_skal_vaere_tilgjengelig"),
+            t("auto.arbeidstakere_skal_informeres_om_risiko"),
+            t("auto.helseundersoekelse_skal_tilbys"),
           ],
     },
     red: {
@@ -175,15 +175,15 @@ function ZoneStatus({ level, type }: { level: "green" | "yellow" | "red" | "none
       actions: type === "vibrasjon"
         ? [
             "Stans arbeidet umiddelbart",
-            "Iverksett tiltak for å redusere eksponeringen",
-            "Vurder alternative verktøy med lavere vibrasjon",
-            "Helseundersøkelse er PÅBUDT",
+            t("auto.iverksett_tiltak_for_aa_redusere_ekspone"),
+            t("auto.vurder_alternative_verktoey_med_lavere_v"),
+            t("auto.helseundersoekelse_er_paabudt"),
           ]
         : [
             "Hørselvern er PÅBUDT",
-            "Umiddelbare tiltak for å redusere støy",
-            "Arbeidsområdet skal merkes og avgrenses",
-            "Helseundersøkelse er PÅBUDT",
+            t("auto.umiddelbare_tiltak_for_aa_redusere_stoey"),
+            t("auto.arbeidsomraadet_skal_merkes_og_avgrenses"),
+            t("auto.helseundersoekelse_er_paabudt"),
           ],
     },
   };
@@ -489,8 +489,8 @@ function exportToPDF(
     y += 5;
     doc.setFont("helvetica", "normal");
     const actions = vibZone === "red"
-      ? ["Stans arbeidet umiddelbart", "Iverksett tiltak for a redusere eksponeringen", "Helseundersokelse er PABUDT"]
-      : ["Reduser tiden eller ta hvilepauser", "Varier med andre arbeidsoppgaver", "Tilbud om helseundersokelse"];
+      ? ["Stans arbeidet umiddelbart", t("auto.iverksett_tiltak_for_a_redusere_eksponer"), t("auto.helseundersokelse_er_pabudt")]
+      : [t("auto.reduser_tiden_eller_ta_hvilepauser"), t("auto.varier_med_andre_arbeidsoppgaver"), "Tilbud om helseundersokelse"];
     actions.forEach(a => {
       doc.text(`- ${a}`, 16, y);
       y += 4;

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface SimpleProject {
   id: string;
@@ -77,7 +78,7 @@ export function useSimpleProjects() {
       console.error("Error fetching simple projects:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke hente prosjekter",
+        description: t("auto.kunne_ikke_hente_prosjekter"),
         variant: "destructive",
       });
     } finally {
@@ -93,7 +94,7 @@ export function useSimpleProjects() {
     if (!profile?.company_id || !profile?.id) {
       toast({
         title: "Feil",
-        description: "Du må være logget inn for å opprette prosjekt",
+        description: t("auto.du_maa_vaere_logget_inn_for_aa_opprette__2"),
         variant: "destructive",
       });
       return null;
@@ -140,7 +141,7 @@ export function useSimpleProjects() {
       console.error("Error creating simple project:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke opprette prosjekt",
+        description: t("auto.kunne_ikke_opprette_prosjekt"),
         variant: "destructive",
       });
       return null;
@@ -216,7 +217,7 @@ export function useSimpleProjects() {
       console.error("Error deleting project:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke slette prosjekt",
+        description: t("auto.kunne_ikke_slette_prosjekt"),
         variant: "destructive",
       });
       return false;

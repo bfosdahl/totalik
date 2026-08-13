@@ -27,7 +27,7 @@ const regulations = [
     category: "Brann og sikkerhet",
     items: [
       {
-        name: "Brann- og eksplosjonsvernloven",
+        name: t("auto.brann_og_eksplosjonsvernloven"),
         description: t("auto.lov_om_vern_mot_brann_eksplosjon_og_ulyk"),
         link: "https://lovdata.no/dokument/NL/lov/2002-06-14-20",
         relevance: "Overordnet lov for brannvern i bygninger",
@@ -78,7 +78,7 @@ const regulations = [
     category: "Inneklima og ventilasjon",
     items: [
       {
-        name: "Forskrift om miljørettet helsevern",
+        name: t("auto.forskrift_om_miljoerettet_helsevern"),
         description: t("auto.krav_til_inneklima_i_offentlige_bygg_og_"),
         link: "https://lovdata.no/dokument/SF/forskrift/2003-04-25-486",
         relevance: "Krav til luftkvalitet, temperatur og ventilasjon",

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface ShaPlan {
   id: string;
@@ -89,23 +90,23 @@ export interface AdditionalMeasure {
 
 // Byggherreforskriften §8 risk areas (17 points)
 export const DEFAULT_RISK_AREAS: Omit<RiskArea, "id" | "checked" | "measures">[] = [
-  { paragraph: "a", description: "Arbeid som innebærer særlig fare for å bli begravet, synke ned eller falle" },
-  { paragraph: "b", description: "Arbeid som utsetter arbeidstakerne for kjemiske eller biologiske stoffer som utgjør særlig helsefare" },
-  { paragraph: "c", description: "Arbeid med ioniserende stråling som krever at det utpekes kontrollerte eller overvåkede soner" },
-  { paragraph: "d", description: "Arbeid i nærheten av høyspentledninger" },
-  { paragraph: "e", description: "Arbeid som innebærer fare for drukning" },
-  { paragraph: "f", description: "Arbeid i brønner og tunneler samt underjordisk arbeid" },
-  { paragraph: "g", description: "Arbeid under vann med dykkerutstyr" },
+  { paragraph: "a", description: t("auto.arbeid_som_innebaerer_saerlig_fare_for_a") },
+  { paragraph: "b", description: t("auto.arbeid_som_utsetter_arbeidstakerne_for_k") },
+  { paragraph: "c", description: t("auto.arbeid_med_ioniserende_straaling_som_kre") },
+  { paragraph: "d", description: t("auto.arbeid_i_naerheten_av_hoeyspentledninger") },
+  { paragraph: "e", description: t("auto.arbeid_som_innebaerer_fare_for_drukning") },
+  { paragraph: "f", description: t("auto.arbeid_i_broenner_og_tunneler_samt_under") },
+  { paragraph: "g", description: t("auto.arbeid_under_vann_med_dykkerutstyr") },
   { paragraph: "h", description: "Arbeid i trykkammer" },
-  { paragraph: "i", description: "Arbeid som innebærer bruk av sprengstoff" },
-  { paragraph: "j", description: "Arbeid med montering eller demontering av tunge prefabrikkerte elementer" },
-  { paragraph: "k", description: "Arbeid som innebærer riving av bærende konstruksjoner" },
-  { paragraph: "l", description: "Arbeid med støping og oppspenning av spennarmering" },
-  { paragraph: "m", description: "Arbeid på steder med risiko for fall" },
-  { paragraph: "n", description: "Arbeid som utsetter arbeidstakere for eksponering fra elektrisk spenning" },
-  { paragraph: "o", description: "Arbeid med graving dypere enn 1,25 meter og som kan medføre fare for ras" },
-  { paragraph: "p", description: "Arbeid som innebærer fare for helseskadelig eksponering for støv, støy og vibrasjon" },
-  { paragraph: "q", description: "Arbeid ved eller på vei, jernbane, rullebane eller annen trafikkert grunn" },
+  { paragraph: "i", description: t("auto.arbeid_som_innebaerer_bruk_av_sprengstof") },
+  { paragraph: "j", description: t("auto.arbeid_med_montering_eller_demontering_a") },
+  { paragraph: "k", description: t("auto.arbeid_som_innebaerer_riving_av_baerende") },
+  { paragraph: "l", description: t("auto.arbeid_med_stoeping_og_oppspenning_av_sp") },
+  { paragraph: "m", description: t("auto.arbeid_paa_steder_med_risiko_for_fall") },
+  { paragraph: "n", description: t("auto.arbeid_som_utsetter_arbeidstakere_for_ek") },
+  { paragraph: "o", description: t("auto.arbeid_med_graving_dypere_enn_1_25_meter") },
+  { paragraph: "p", description: t("auto.arbeid_som_innebaerer_fare_for_helseskad") },
+  { paragraph: "q", description: t("auto.arbeid_ved_eller_paa_vei_jernbane_rulleb") },
 ];
 
 export function useKsModule2ShaPlan(projectId: string) {
@@ -163,7 +164,7 @@ export function useKsModule2ShaPlan(projectId: string) {
       console.error("Error fetching SHA plan:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke hente SHA-plan",
+        description: t("auto.kunne_ikke_hente_sha_plan"),
         variant: "destructive",
       });
     } finally {
@@ -233,7 +234,7 @@ export function useKsModule2ShaPlan(projectId: string) {
       console.error("Error creating internal SHA plan:", error);
       toast({
         title: "Feil",
-        description: "Kunne ikke opprette SHA-plan",
+        description: t("auto.kunne_ikke_opprette_sha_plan"),
         variant: "destructive",
       });
       return null;

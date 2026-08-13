@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ModuleOrderConfig } from "@/components/modules/UniversalOrderDialog";
+import { t } from "@/i18n/t";
 
 // Predefined module configurations
 export const MODULE_CONFIGS: Record<string, ModuleOrderConfig> = {
@@ -13,43 +14,43 @@ export const MODULE_CONFIGS: Record<string, ModuleOrderConfig> = {
     cancellationNoticeMonths: 6,
     features: [
       "Komplett HMS-system tilpasset din bedrift",
-      "AI-assistert oppsett og rådgivning",
-      "Risikovurdering og handlingsplaner",
-      "Avvikshåndtering og oppfølging",
-      "Automatiske påminnelser og varsler",
+      t("auto.ai_assistert_oppsett_og_raadgivning"),
+      t("auto.risikovurdering_og_handlingsplaner"),
+      t("auto.avvikshaandtering_og_oppfoelging"),
+      t("auto.automatiske_paaminnelser_og_varsler"),
       "Ubegrenset antall brukere",
     ],
   },
   IK_MAT: {
     moduleType: "IK_MAT",
     moduleName: "IK/MAT Internkontroll",
-    description: "Internkontroll for mattrygghet og HACCP",
+    description: t("auto.internkontroll_for_mattrygghet_og_haccp"),
     price: 3990,
     priceType: "yearly",
     bindingPeriodMonths: 12,
     cancellationNoticeMonths: 6,
     features: [
       "HACCP-system tilpasset din virksomhet",
-      "Temperaturlogging og sjekklister",
-      "Leverandøroversikt og sporbarhet",
-      "Allergen- og ingredienshåndtering",
-      "Automatiske varsler ved avvik",
+      t("auto.temperaturlogging_og_sjekklister"),
+      t("auto.leverandoeroversikt_og_sporbarhet"),
+      t("auto.allergen_og_ingredienshaandtering"),
+      t("auto.automatiske_varsler_ved_avvik"),
       "Ubegrenset antall brukere",
     ],
   },
   IK_BYGG: {
     moduleType: "IK_BYGG",
     moduleName: "KS Bygg",
-    description: "Kvalitetssikring for byggebransjen",
+    description: t("auto.kvalitetssikring_for_byggebransjen"),
     price: 4990,
     priceType: "yearly",
     bindingPeriodMonths: 12,
     cancellationNoticeMonths: 6,
     features: [
-      "Prosjektstyring og dokumentasjon",
-      "Sjekklister og egenkontroller",
+      t("auto.prosjektstyring_og_dokumentasjon"),
+      t("auto.sjekklister_og_egenkontroller"),
       "Avvikshåndtering og HMS",
-      "Underleverandørhåndtering",
+      t("auto.underleverandoerhaandtering"),
       "SHA-plan og SJA",
       "Ubegrenset antall prosjekter",
     ],
@@ -57,7 +58,7 @@ export const MODULE_CONFIGS: Record<string, ModuleOrderConfig> = {
   GDPR: {
     moduleType: "GDPR",
     moduleName: "GDPR",
-    description: "Personvern og GDPR-dokumentasjon",
+    description: t("auto.personvern_og_gdpr_dokumentasjon"),
     price: 299,
     priceType: "monthly",
     features: [
@@ -70,7 +71,7 @@ export const MODULE_CONFIGS: Record<string, ModuleOrderConfig> = {
   APENHETSLOVEN: {
     moduleType: "APENHETSLOVEN",
     moduleName: "Åpenhetsloven",
-    description: "Dokumentasjon for åpenhetsloven",
+    description: t("auto.dokumentasjon_for_aapenhetsloven"),
     price: 299,
     priceType: "monthly",
     features: [
@@ -83,7 +84,7 @@ export const MODULE_CONFIGS: Record<string, ModuleOrderConfig> = {
   IK_ALKOHOL: {
     moduleType: "IK_ALKOHOL",
     moduleName: "IK/Alkohol",
-    description: "Internkontroll for alkoholomsetning",
+    description: t("auto.internkontroll_for_alkoholomsetning"),
     price: 299,
     priceType: "monthly",
     features: [
@@ -116,7 +117,7 @@ export const MODULE_CONFIGS: Record<string, ModuleOrderConfig> = {
       "Flere avdelinger/lokasjoner",
       "Avdelingsvis tilgangsstyring",
       "Separate dashboards",
-      "Samlet oversikt for ledelsen",
+      t("auto.samlet_oversikt_for_ledelsen"),
     ],
   },
 };

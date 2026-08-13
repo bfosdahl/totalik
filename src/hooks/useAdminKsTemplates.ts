@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t } from "@/i18n/t";
 
 export interface AdminChecklistTemplate {
   id: string;
@@ -57,12 +58,12 @@ export interface AdminDocument {
 }
 
 export const CHECKLIST_CATEGORIES = [
-  "Tømrerarbeid - Yttervegger",
-  "Tømrerarbeid - Innvendige vegger",
+  t("auto.toemrerarbeid_yttervegger"),
+  t("auto.toemrerarbeid_innvendige_vegger"),
   "Tømrerarbeid - Takstoler",
   "Tømrerarbeid - Gulv",
   "Tømrerarbeid - Himling",
-  "Våtrom - Membran (NS 3600)",
+  t("auto.vaatrom_membran_ns_3600"),
   "Våtrom - Flislegging",
   "Våtrom - Rør og sluk",
   "Betongstøp - Gulv på grunn",

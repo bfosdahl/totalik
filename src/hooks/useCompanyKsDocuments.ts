@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { t } from "@/i18n/t";
 
 export interface CompanyKsDocument {
   id: string;
@@ -142,7 +143,7 @@ export function useCompanyKsDocuments() {
       return data;
     } catch (error) {
       console.error("Error uploading document:", error);
-      toast({ title: "Kunne ikke laste opp dokument", variant: "destructive" });
+      toast({ title: t("auto.kunne_ikke_laste_opp_dokument"), variant: "destructive" });
       return null;
     } finally {
       setIsSaving(false);
@@ -193,7 +194,7 @@ export function useCompanyKsDocuments() {
       toast({ title: "Dokument slettet" });
     } catch (error) {
       console.error("Error deleting document:", error);
-      toast({ title: "Kunne ikke slette dokument", variant: "destructive" });
+      toast({ title: t("auto.kunne_ikke_slette_dokument"), variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
