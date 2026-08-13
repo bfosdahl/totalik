@@ -1,4 +1,5 @@
-export interface DefaultChapter {
+
+import { t } from "@/i18n/t";export interface DefaultChapter {
   title: string;
   slug: string;
   icon: string;
@@ -156,7 +157,7 @@ export const defaultPersonalhandbokChapters: DefaultChapter[] = [
 <p>Informasjon om avtalefestet pensjon (AFP) gis til den enkelte basert på gjeldende ordning.</p>`
   },
   {
-    title: "HMS – Helse, miljø og sikkerhet",
+    title: t("auto.hms_helse_miljoe_og_sikkerhet"),
     slug: "hms",
     icon: "ShieldCheck",
     sort_order: 8,
@@ -281,7 +282,7 @@ export const defaultPersonalhandbokChapters: DefaultChapter[] = [
 <p>Utlegg i forbindelse med arbeidet refunderes mot kvittering. Utleggsrapport skal sendes inn innen 30 dager.</p>`
   },
   {
-    title: "Avslutning av arbeidsforhold",
+    title: t("auto.avslutning_av_arbeidsforhold"),
     slug: "avslutning",
     icon: "LogOut",
     sort_order: 15,
@@ -304,7 +305,7 @@ export const defaultPersonalhandbokChapters: DefaultChapter[] = [
 <p>Ved fratredelse skal alt bedriftens utstyr, nøkler, adgangskort og dokumenter returneres.</p>`
   },
   {
-    title: "Likestilling og diskriminering",
+    title: t("auto.likestilling_og_diskriminering"),
     slug: "likestilling",
     icon: "Users",
     sort_order: 16,

@@ -53,7 +53,7 @@ const PREDEFINED_ROUTINES: Omit<RoutineItem, 'id'>[] = [
     routine_number: "1160",
     routine_name: "Arbeidsulykker og Skader",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre rask og korrekt håndtering av arbeidsulykker og skader for å minimere skadeomfang og ivareta helse og sikkerhet for alle ansatte.",
+    purpose: t("auto.sikre_rask_og_korrekt_haandtering_av_arb"),
     responsibility: "Daglig leder har overordnet ansvar for at alle skader rapporteres og håndteres i tråd med rutinen.\n\nVerneombud og eventuelt leder på arbeidsstedet har ansvar for oppfølging på stedet.",
     procedure: `Rapportering av arbeidsulykker og skader
 • Alle ansatte skal umiddelbart rapportere arbeidsulykker og skader til nærmeste leder.
@@ -86,7 +86,7 @@ Oppfølging av skader og sykefravær
     routine_number: "1121",
     routine_name: "Avvikshåndtering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at avvik i arbeidsprosesser identifiseres, rapporteres og behandles effektivt for å forbedre arbeidsmiljøet og redusere risiko for fremtidige hendelser.",
+    purpose: t("auto.sikre_at_avvik_i_arbeidsprosesser_identi"),
     responsibility: "Alle ansatte er ansvarlige for å rapportere avvik.\n\nLeder eller daglig leder har ansvar for oppfølging og iverksetting av tiltak.",
     procedure: `Identifisering av avvik
 • Avvik er enhver uønsket hendelse, feil eller forhold som bryter med HMS-krav og prosedyrer.
@@ -120,7 +120,7 @@ Oppfølging og læring
     routine_number: "1150",
     routine_name: "Brannvern og Evakuering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte kjenner brannvernsrutiner og evakueringsprosedyrer for å kunne handle raskt og trygt ved brann eller andre nødsituasjoner.",
+    purpose: t("auto.sikre_at_alle_ansatte_kjenner_brannverns"),
     responsibility: "Daglig leder har hovedansvar for brannvern og evakuering.\n\nBrannvernleder (hvis utpekt) har ansvar for brannøvelser og oppfølging av brannsikkerhetsutstyr.",
     procedure: `Opplæring i brannvern
 • Alle ansatte skal ha grunnleggende opplæring i brannvern.
@@ -153,7 +153,7 @@ Oppfølging og vedlikehold av brannsikkerhet
     routine_number: "1180",
     routine_name: "Bruk av Verneutstyr",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte bruker nødvendig verneutstyr for å beskytte seg mot skader og farer i arbeidsmiljøet.",
+    purpose: t("auto.sikre_at_alle_ansatte_bruker_noedvendig_"),
     responsibility: "Daglig leder skal sikre at relevant verneutstyr er tilgjengelig og at ansatte får opplæring i bruk.\n\nVerneombud skal påse at verneutstyr brukes korrekt i det daglige.",
     procedure: `Identifisering av behov for verneutstyr
 • Gjennomfør risikovurderinger for å identifisere krav til verneutstyr (hjelm, briller, hansker, hørselsvern m.m.).
@@ -186,7 +186,7 @@ Rapportering av avvik
     routine_number: "1220",
     routine_name: "Elektrisk Sikkerhet",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre trygg bruk og vedlikehold av elektrisk utstyr for å redusere risiko for elektriske skader, brann og ulykker.",
+    purpose: t("auto.sikre_trygg_bruk_og_vedlikehold_av_elekt"),
     responsibility: "Daglig leder skal sørge for nødvendig opplæring i elektrisk sikkerhet.\n\nVerneombud og ansvarlig leder skal påse at utstyr kontrolleres og brukes korrekt.",
     procedure: `Kontroll av elektrisk utstyr
 • Utfør regelmessig kontroll av alt elektrisk utstyr.
@@ -219,7 +219,7 @@ Periodisk kontroll
     routine_number: "1170",
     routine_name: "Ergonomiske Forhold",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Forebygge muskel- og skjelettplager ved å sikre at arbeidsplassen og arbeidsutstyr er ergonomisk tilpasset.",
+    purpose: t("auto.forebygge_muskel_og_skjelettplager_ved_a"),
     responsibility: "Daglig leder skal sikre at ergonomiske forhold vurderes og tilpasses.\n\nVerneombud bistår i vurdering og oppfølging av ergonomiske tiltak.",
     procedure: `Kartlegging
 • Utfør regelmessige ergonomiske vurderinger av arbeidsstasjoner og oppgaver.
@@ -252,7 +252,7 @@ Rapportering av ergonomiske avvik
     routine_number: "1240",
     routine_name: "Førstehjelp",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte har grunnleggende kunnskap i førstehjelp og kan handle raskt og riktig ved ulykker eller skader.",
+    purpose: t("auto.sikre_at_alle_ansatte_har_grunnleggende_"),
     responsibility: "Daglig leder skal sikre at førstehjelpsrutiner er på plass og at ansatte får opplæring.\n\nVerneombud skal påse at førstehjelpsutstyr er tilgjengelig og i god stand.",
     procedure: `Opplæring i førstehjelp
 • Alle ansatte skal få grunnleggende førstehjelpsopplæring, inkludert HLR.
@@ -284,7 +284,7 @@ Dokumentasjon og oppfølging
     routine_number: "1210",
     routine_name: "Hygiene og Renhold",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Opprettholde god hygiene og renhold for å sikre et trygt, sunt og hygienisk arbeidsmiljø og redusere risiko for smittespredning.",
+    purpose: t("auto.opprettholde_god_hygiene_og_renhold_for_"),
     responsibility: "Daglig leder har ansvar for at rutiner følges og at nødvendige ressurser er tilgjengelige.\n\nRenholdspersonell eller utpekte ansatte utfører renholdsoppgaver.",
     procedure: `Planlegging av renhold
 • Utarbeid renholdsplan for alle områder, inkludert frekvens og metode.
@@ -317,7 +317,7 @@ Rapportering av mangler
     routine_number: "1190",
     routine_name: "Kjemikaliehåndtering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre trygg håndtering, lagring og bruk av kjemikalier for å beskytte helse, miljø og sikkerhet.",
+    purpose: t("auto.sikre_trygg_haandtering_lagring_og_bruk_"),
     responsibility: "Daglig leder skal sikre at kjemikaliehåndtering skjer iht. lover og forskrifter.\n\nVerneombud bistår i oppfølging og informasjon til ansatte.",
     procedure: `Kartlegging og risikovurdering
 • Identifiser alle kjemikalier som brukes.
@@ -353,7 +353,7 @@ Rapportering av avvik
     routine_number: "1270",
     routine_name: "Kontroll og Revisjon av HMS-system",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at HMS-systemet er oppdatert, effektivt og i samsvar med gjeldende lover og forskrifter, og å identifisere forbedringsmuligheter.",
+    purpose: t("auto.sikre_at_hms_systemet_er_oppdatert_effek"),
     responsibility: "Daglig leder skal initiere regelmessig kontroll og revisjon.\n\nVerneombud og HR kan bistå i gjennomføring og evaluering.",
     procedure: `Planlegging av revisjon
 • Sett opp årlig revisjonsplan for HMS-systemet.
@@ -385,7 +385,7 @@ Dokumentasjon
     routine_number: "1250",
     routine_name: "Miljøhensyn og Avfallshåndtering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at virksomheten ivaretar miljøhensyn og håndterer avfall på en ansvarlig og bærekraftig måte.",
+    purpose: t("auto.sikre_at_virksomheten_ivaretar_miljoehen"),
     responsibility: "Daglig leder skal sikre at miljøhensyn tas i alle arbeidsprosesser, og at avfall håndteres korrekt.\n\nVerneombud bistår med informasjon og oppfølging.",
     procedure: `Miljøvennlige arbeidsprosesser
 • Identifiser tiltak som redusert energiforbruk, mindre bruk av farlige kjemikalier og miljøvennlige materialer.
@@ -417,7 +417,7 @@ Dokumentasjon og oppfølging
     routine_number: "1230",
     routine_name: "Nødsituasjoner og Beredskap",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre rask og effektiv respons i nødsituasjoner for å beskytte ansatte, besøkende og eiendom, og minimere skade og tap.",
+    purpose: t("auto.sikre_rask_og_effektiv_respons_i_noedsit"),
     responsibility: "Daglig leder har overordnet ansvar for beredskap og håndtering av nødsituasjoner.\n\nLedere og verneombud skal sikre at ansatte kjenner nødprosedyrer og at beredskapsutstyr er tilgjengelig.",
     procedure: `Identifisering av potensielle nødsituasjoner
 • Utfør risikoanalyse for brann, gasslekkasje, kjemikalieutslipp, ulykker, naturhendelser m.m.
@@ -454,7 +454,7 @@ Evaluering
     routine_number: "1200",
     routine_name: "Psykososialt Arbeidsmiljø",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre et godt psykososialt arbeidsmiljø som fremmer trivsel, samhold og samarbeid, og reduserer risiko for stress og psykiske belastninger.",
+    purpose: t("auto.sikre_et_godt_psykososialt_arbeidsmiljoe"),
     responsibility: "Daglig leder skal fremme et godt psykososialt arbeidsmiljø og iverksette tiltak ved behov.\n\nVerneombud skal være tilgjengelig for ansatte og bistå i tilrettelegging.",
     procedure: `Kartlegging
 • Gjennomfør regelmessige kartlegginger og risikovurderinger (arbeidsbelastning, rolleavklaring, støtte, kommunikasjon).
@@ -486,7 +486,7 @@ Rapportering av psykososiale avvik
     routine_number: "1110",
     routine_name: "Risikovurdering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle arbeidsoppgaver vurderes med hensyn til risiko, og at tiltak iverksettes for å minimere skader på personer, miljø og materiell.",
+    purpose: t("auto.sikre_at_alle_arbeidsoppgaver_vurderes_m"),
     responsibility: "Alle ansatte skal bidra i risikovurdering.\n\nLinjeleder har ansvar for gjennomføring og oppfølging.",
     procedure: `Identifisering av risikoområder
 • Kartlegg alle arbeidsoppgaver.
@@ -515,7 +515,7 @@ Oppfølging og revisjon
     routine_number: "1280",
     routine_name: "Risikovurdering og Handlingsplan",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre systematisk identifisering, vurdering og håndtering av risikoer, samt utarbeidelse av handlingsplaner for å redusere eller eliminere risiko.",
+    purpose: t("auto.sikre_systematisk_identifisering_vurderi"),
     responsibility: "Daglig leder har ansvar for gjennomføring og oppfølging av handlingsplaner.\n\nVerneombud og ansatte bidrar til identifisering av farekilder og deltar i risikovurderingen.",
     procedure: `Identifisering av farekilder
 • Identifiser farekilder (brann, kjemikalier, maskiner, arbeidsstillinger, belastninger m.m.).
@@ -542,7 +542,7 @@ Oppfølging og dokumentasjon
     routine_number: "1260",
     routine_name: "Sykefraværsoppfølging",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre systematisk oppfølging av ansatte ved sykefravær, støtte tilrettelegging og forebygge langtidssykefravær.",
+    purpose: t("auto.sikre_systematisk_oppfoelging_av_ansatte"),
     responsibility: "Daglig leder har ansvar for oppfølging av sykefravær, i samarbeid med HR og verneombud ved behov.",
     procedure: `Registrering av sykefravær
 • Sykefravær meldes til nærmeste leder så snart som mulig.
@@ -575,7 +575,7 @@ Dokumentasjon og rapportering
     routine_number: "1130",
     routine_name: "Sikkerhetsopplæring og Kompetanse",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte har nødvendig opplæring og kompetanse for å utføre arbeid på en trygg og sikker måte.",
+    purpose: t("auto.sikre_at_alle_ansatte_har_noedvendig_opp"),
     responsibility: "Daglig leder skal sikre at ansatte får nødvendig opplæring, og at kompetanse holdes oppdatert.",
     procedure: `Identifisering av opplæringsbehov
 • Gjennomgå arbeidsoppgaver og identifiser behov for sikkerhetsopplæring.
@@ -609,7 +609,7 @@ Dokumentasjon av kompetanse
     routine_number: "1140",
     routine_name: "Vedlikehold og Kontroll av Utstyr",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alt utstyr er i forskriftsmessig stand gjennom regelmessig vedlikehold og kontroll.",
+    purpose: t("auto.sikre_at_alt_utstyr_er_i_forskriftsmessi"),
     responsibility: "Daglig leder skal sikre at utstyr kontrolleres og vedlikeholdes.\n\nOmrådeleder er ansvarlig for gjennomføring av kontrollrutiner.",
     procedure: `Identifisering av utstyr
 • Lag oversikt over alt utstyr med vedlikeholdsbehov (maskiner, verktøy, kjøretøy, sikkerhetsutstyr).
@@ -640,7 +640,7 @@ Håndtering av feil og mangler
     routine_number: "123588",
     routine_name: "Valg av Verneombud",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at valg av verneombud gjennomføres iht. arbeidsmiljøloven § 6-2, og at verneombudet får nødvendig opplæring og ressurser.",
+    purpose: t("auto.sikre_at_valg_av_verneombud_gjennomfoere"),
     responsibility: "Daglig leder: organiserer valgprosessen og tilrettelegger for verneombudets arbeid.\n\nAnsatte: velger verneombud ved avstemning.",
     procedure: `Krav til verneombud
 • Må ha tilstrekkelig kunnskap om arbeidsplassen og HMS-arbeid.
@@ -670,7 +670,7 @@ Kontroll og revisjon
     routine_number: "123589",
     routine_name: "Vernerunde",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at vernerunder gjennomføres systematisk for å identifisere og håndtere farer.",
+    purpose: t("auto.sikre_at_vernerunder_gjennomfoeres_syste"),
     responsibility: "Verneombud: leder vernerunden i samarbeid med daglig leder.\n\nDaglig leder: sørger for ressurser og oppfølging av tiltak.",
     procedure: `Forberedelser
 • Bruk fast sjekkliste som dekker blant annet: Arbeidsmiljø, Bruk av verneutstyr, Brannsikkerhet.
@@ -697,7 +697,7 @@ Kontroll og revisjon
     routine_number: "1250",
     routine_name: "Anonymt Varslingssystem",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre at alle ansatte har mulighet til å varsle om kritikkverdige forhold på arbeidsplassen anonymt, og at slike varsler blir håndtert på en forsvarlig og konfidensiell måte.",
+    purpose: t("auto.sikre_at_alle_ansatte_har_mulighet_til_a"),
     responsibility: "Daglig leder har overordnet ansvar for at varslingssystemet er tilgjengelig og fungerer.\n\nVerneombud og leder har ansvar for å motta, behandle og følge opp anonyme meldinger.\n\nAlle ansatte har rett til å varsle anonymt uten frykt for gjengjeldelse.",
     procedure: `Tilgang til varslingssystemet
 • Alle ansatte har tilgang til anonymt varslingssystem via HMS-systemet.
@@ -736,7 +736,7 @@ Konfidensialitet og beskyttelse
     routine_number: "1290",
     routine_name: "Stoffkartotek og Kjemikaliehåndtering",
     category: "Helse, Miljø og Sikkerhet",
-    purpose: "Sikre trygg håndtering, lagring og bruk av kjemikalier på arbeidsplassen, og at alle ansatte har tilgang til oppdatert informasjon om farlige stoffer gjennom stoffkartoteket.",
+    purpose: t("auto.sikre_trygg_haandtering_lagring_og_bruk__2"),
     responsibility: "Daglig leder har overordnet ansvar for at stoffkartoteket er oppdatert og tilgjengelig.\n\nHMS-ansvarlig skal vedlikeholde stoffkartoteket og sørge for at nye kjemikalier registreres.\n\nAlle ansatte som håndterer kjemikalier skal kjenne til stoffkartoteket og bruke det aktivt.",
     procedure: `Vedlikehold av stoffkartotek
 • Alle kjemikalier som brukes i virksomheten skal registreres i stoffkartoteket.

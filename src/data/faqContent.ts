@@ -1,4 +1,5 @@
-// Sentral FAQ-kunnskapsbase for HMS Proffen, MAT Proffen og Bygg Proffen.
+
+import { t } from "@/i18n/t";// Sentral FAQ-kunnskapsbase for HMS Proffen, MAT Proffen og Bygg Proffen.
 // Brukes både av /hjelp-siden og av AI-assistentene i edge-funksjonene.
 
 export interface FaqItem {
@@ -22,7 +23,7 @@ export const FAQ_MODULES: FaqModule[] = [
   {
     key: "hms",
     title: "IK HMS",
-    subtitle: "Helse, miljø og sikkerhet",
+    subtitle: t("auto.helse_miljoe_og_sikkerhet_2"),
     sections: [
       {
         title: "Kom i gang",
@@ -59,7 +60,7 @@ export const FAQ_MODULES: FaqModule[] = [
         ],
       },
       {
-        title: "Verneombud og vernerunder",
+        title: t("auto.verneombud_og_vernerunder"),
         items: [
           {
             q: "Må vi ha verneombud?",
@@ -85,7 +86,7 @@ export const FAQ_MODULES: FaqModule[] = [
         ],
       },
       {
-        title: "Personalhåndbok og dokumentasjon",
+        title: t("auto.personalhaandbok_og_dokumentasjon"),
         items: [
           {
             q: "Hvor finner ansatte personalhåndboken?",
@@ -115,7 +116,7 @@ export const FAQ_MODULES: FaqModule[] = [
   {
     key: "mat",
     title: "IK MAT",
-    subtitle: "Mat- og serveringskontroll",
+    subtitle: t("auto.mat_og_serveringskontroll"),
     sections: [
       {
         title: "Kom i gang",
@@ -196,7 +197,7 @@ export const FAQ_MODULES: FaqModule[] = [
   {
     key: "ks",
     title: "KS BYGG",
-    subtitle: "Kvalitetssikring for bygg og anlegg",
+    subtitle: t("auto.kvalitetssikring_for_bygg_og_anlegg"),
     sections: [
       {
         title: "Kom i gang",
@@ -268,7 +269,7 @@ export const FAQ_MODULES: FaqModule[] = [
         ],
       },
       {
-        title: "Daglige rapporter og økonomi",
+        title: t("auto.daglige_rapporter_og_oekonomi"),
         items: [
           {
             q: "Hva registreres i daglig rapport?",

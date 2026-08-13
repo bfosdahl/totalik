@@ -216,7 +216,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
       console.error("Chat error:", error);
       setMessages(prev => [...prev, { 
         role: "assistant", 
-        content: "Beklager, det oppsto en feil. Prøv igjen." 
+        content: t("auto.beklager_det_oppsto_en_feil_proev_igjen") 
       }]);
     } finally {
       setIsLoading(false);
