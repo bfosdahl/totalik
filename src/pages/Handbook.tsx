@@ -834,11 +834,11 @@ const Handbook = () => {
               <span className="text-muted-foreground truncate flex-1">{getActionDescription(action, idx)}</span>
               <Badge variant="outline" className={cn(
                 "ml-2",
-                action.status === t("auto.fullfoert_2") ? "border-success text-success" :
-                action.status === t("auto.paagaar_2") ? "border-warning text-warning" :
+                action.status === "fullført" ? "border-success text-success" :
+                action.status === "pågår" ? "border-warning text-warning" :
                 "border-muted-foreground text-muted-foreground"
               )}>
-                {action.status === t("auto.fullfoert_2") ? t("auto.fullfoert") : action.status === t("auto.paagaar_2") ? t("auto.paagaar") : t("auto.ikke_startet")}
+                {action.status === "fullført" ? t("auto.fullfoert") : action.status === "pågår" ? t("auto.paagaar") : t("auto.ikke_startet")}
               </Badge>
             </div>
           ))}
