@@ -452,7 +452,7 @@ export function useSetupWizard() {
         .upsert({
           company_id: companyId,
           risks: JSON.parse(JSON.stringify(nestedRisks)),
-        }, { onConflict: "company_id" });
+        }, { onConflict: "company_id,department_id" });
 
       if (error) throw error;
       setRiskAssessment(data);
@@ -484,7 +484,7 @@ export function useSetupWizard() {
         .upsert({
           company_id: companyId,
           actions: JSON.parse(JSON.stringify(data.actions)),
-        }, { onConflict: "company_id" });
+        }, { onConflict: "company_id,department_id" });
 
       if (error) throw error;
       setActionPlan(data);
@@ -516,7 +516,7 @@ export function useSetupWizard() {
         .upsert({
           company_id: companyId,
           routines: JSON.parse(JSON.stringify(normalizeHmsRoutines(data.routines))),
-        }, { onConflict: "company_id" });
+        }, { onConflict: "company_id,department_id" });
 
       if (error) throw error;
       setRoutines(data);
