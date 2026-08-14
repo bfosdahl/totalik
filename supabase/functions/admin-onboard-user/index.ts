@@ -71,7 +71,8 @@ serve(async (req) => {
       const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
         <h2>Velkommen til Total-IK, ${escapeHtml(firstName)}!</h2>
         <p>Din konto for <strong>${escapeHtml(companyName)}</strong> er opprettet, og vi har importert HMS-håndboken din fra det gamle systemet.</p>
-        <p>Klikk på knappen for å sette ditt passord og logge inn:</p>
+        ${defaultPasswordHtml(email)}
+        <p>Du kan logge inn direkte med passordet over, eller sette ditt eget her:</p>
         <p><a href="${action}" style="background:#1e40af;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;">Sett passord og logg inn</a></p>
         <p style="color:#666;font-size:13px;">Hvis knappen ikke fungerer, kopier denne lenken: <br/>${escapeHtml(action)}</p>
         <hr/><p style="color:#999;font-size:12px;">Total-IK – Digitalt internkontrollsystem</p>
