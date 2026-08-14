@@ -17887,6 +17887,17 @@ export type Database = {
         Returns: boolean
       }
       pad_number: { Args: { p_len: number; p_num: number }; Returns: string }
+      profile_self_update_columns_ok: {
+        Args: {
+          _company_id: string
+          _hourly_rate: number
+          _id: string
+          _is_active: boolean
+          _is_hms_responsible: boolean
+          _is_verneombud: boolean
+        }
+        Returns: boolean
+      }
       restore_deleted_record: {
         Args: { p_audit_log_id: string }
         Returns: Json
