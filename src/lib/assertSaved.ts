@@ -16,7 +16,13 @@ export async function assertSaved<T extends { error: { message: string; code?: s
     const msg = `Kunne ikke lagre ${label}: ${result.error.message}`;
     console.error("[assertSaved]", label, result.error);
     try {
-      logClientError(new Error(msg), { source: "assertSaved", label });
+      logClientError({
+        error_message: msg,
+        url: typeof window !== "undefined" ? window.location.href : "",
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+        source: "window_error",
+        metadata: { label, code: result.error.code, kind: "db_write_failed" },
+      });
     } catch {
       /* logging must never break the flow */
     }

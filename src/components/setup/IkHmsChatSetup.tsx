@@ -15,6 +15,7 @@ import { InlineHmsDeclaration } from "./InlineHmsDeclaration";
 import { InlineVerneombudStep } from "./InlineVerneombudStep";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 import { t } from "@/i18n/t";
+import { assertSaved } from "@/lib/assertSaved";
 
 interface Message {
   role: "user" | "assistant";
