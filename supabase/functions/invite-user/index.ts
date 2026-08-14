@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
+import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -268,7 +269,7 @@ serve(async (req) => {
 
 
     // Random unguessable password — user receives recovery link to set their own
-    const tempPassword = crypto.randomUUID() + "Aa1!";
+    const tempPassword = DEFAULT_PASSWORD;
 
     // Create the new user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -370,6 +371,7 @@ serve(async (req) => {
                 <p>Klikk på knappen nedenfor for å sette ditt passord og logge inn.</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
+                  ${defaultPasswordHtml(email)}
                   <a href="${resetLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
                 </div>
                 

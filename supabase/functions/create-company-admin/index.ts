@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
+import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -180,6 +181,7 @@ serve(async (req) => {
                   <p>Du har blitt lagt til som <strong>administrator</strong> for <strong>${safeCompanyName}</strong> i Total-IK.</p>
                   <p>Klikk på knappen for å sette/oppdatere passordet og logge inn:</p>
                   <div style="text-align: center; margin: 30px 0;">
+                    ${defaultPasswordHtml(email)}
                     <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
                   </div>
                   <p style="color: #666; font-size: 13px;">Hvis knappen ikke fungerer, kopier denne lenken:<br/><span style="color: #667eea; word-break: break-all;">${escapeHtml(resetData.properties.action_link)}</span></p>
@@ -215,7 +217,7 @@ serve(async (req) => {
 
     // Generate a cryptographically random temporary password.
     // The user will receive a recovery link to set their own password.
-    const tempPassword = `${crypto.randomUUID()}${crypto.randomUUID()}`;
+    const tempPassword = DEFAULT_PASSWORD;
 
     // Create the new user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -331,6 +333,7 @@ serve(async (req) => {
                 <p>For å komme i gang, klikk på knappen nedenfor for å sette ditt passord:</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
+                  ${defaultPasswordHtml(email)}
                   <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
                 </div>
                 
