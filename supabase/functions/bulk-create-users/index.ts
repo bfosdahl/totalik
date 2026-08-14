@@ -88,6 +88,7 @@ async function sendWelcomeEmail(
                         border-radius: 8px; 
                         font-weight: bold;
                         display: inline-block;">
+                ${defaultPasswordHtml(email)}
                 Sett passord og logg inn
               </a>
             </div>

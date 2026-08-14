@@ -221,6 +221,7 @@ serve(async (req) => {
                 <p>For å komme i gang, klikk på knappen nedenfor for å sette ditt passord:</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
+                  ${defaultPasswordHtml(email)}
                   <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
                 </div>
                 
