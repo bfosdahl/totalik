@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
+import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -226,7 +227,7 @@ Deno.serve(async (req) => {
         }
 
         // Random unguessable password — recovery link sent in welcome email
-        const tempPassword = crypto.randomUUID() + "Aa1!";
+        const tempPassword = DEFAULT_PASSWORD;
 
         const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: user.email,

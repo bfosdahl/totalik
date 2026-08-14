@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { escapeHtml } from "../_shared/html-escape.ts";
+import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,7 +29,7 @@ serve(async (req) => {
 
     // Find or create user
     let userId: string;
-    const tempPassword = crypto.randomUUID() + "Aa1!";
+    const tempPassword = DEFAULT_PASSWORD;
     const { data: created, error: createErr } = await supa.auth.admin.createUser({
       email, password: tempPassword, email_confirm: true,
       user_metadata: { first_name: firstName, last_name: lastName },

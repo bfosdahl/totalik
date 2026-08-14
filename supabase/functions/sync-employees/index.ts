@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -126,7 +127,7 @@ serve(async (req) => {
           }
         } else {
           // Random unguessable password — user must use recovery link to set their own
-          const tempPassword = crypto.randomUUID() + "Aa1!";
+          const tempPassword = DEFAULT_PASSWORD;
           
           const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
             email: emp.email.toLowerCase(),

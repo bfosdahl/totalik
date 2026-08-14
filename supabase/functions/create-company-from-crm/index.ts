@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -162,7 +163,7 @@ serve(async (req) => {
     const moduleResults = await activateModules(supabaseAdmin, newCompany.id, body.modules);
 
     // --- 3. Create auth user ---
-    const tempPassword = body.password || (crypto.randomUUID() + "Aa1!");
+    const tempPassword = body.password || DEFAULT_PASSWORD;
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: tempPassword,

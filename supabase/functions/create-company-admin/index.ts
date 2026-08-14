@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
+import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -215,7 +216,7 @@ serve(async (req) => {
 
     // Generate a cryptographically random temporary password.
     // The user will receive a recovery link to set their own password.
-    const tempPassword = `${crypto.randomUUID()}${crypto.randomUUID()}`;
+    const tempPassword = DEFAULT_PASSWORD;
 
     // Create the new user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
