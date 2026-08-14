@@ -17713,6 +17713,29 @@ export type Database = {
         Args: { _contract_id: string }
         Returns: boolean
       }
+      employment_contract_self_update_columns_ok: {
+        Args: {
+          _company_id: string
+          _contract_type: string
+          _employee_id: string
+          _employer_signature: string
+          _employment_percentage: number
+          _end_date: string
+          _holiday_pay_percentage: number
+          _id: string
+          _notice_period_employee_months: number
+          _notice_period_employer_months: number
+          _position: string
+          _salary_amount: number
+          _salary_type: string
+          _signed_by_employer: boolean
+          _start_date: string
+          _vacation_days: number
+          _working_hours_per_day: number
+          _working_hours_per_week: number
+        }
+        Returns: boolean
+      }
       ensure_audit_schedule: {
         Args: {
           p_company_id: string
@@ -17848,6 +17871,21 @@ export type Database = {
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
       is_leader_or_verneombud: { Args: { p_user_id: string }; Returns: boolean }
       is_system_admin: { Args: { _user_id: string }; Returns: boolean }
+      ks_project_access_self_update_columns_ok: {
+        Args: {
+          _access_level: string
+          _email: string
+          _expires_at: string
+          _id: string
+          _invited_by: string
+          _project_id: string
+          _role_in_project: string
+          _status: string
+          _subcontractor_id: string
+          _user_id: string
+        }
+        Returns: boolean
+      }
       pad_number: { Args: { p_len: number; p_num: number }; Returns: string }
       restore_deleted_record: {
         Args: { p_audit_log_id: string }

@@ -1,0 +1,4 @@
+REVOKE EXECUTE ON FUNCTION public.employment_contract_self_update_columns_ok(uuid,uuid,uuid,text,text,integer,date,date,numeric,text,integer,numeric,numeric,numeric,integer,integer,boolean,text) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.ks_project_access_self_update_columns_ok(uuid,uuid,uuid,uuid,text,text,text,text,timestamptz,uuid) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.employment_contract_self_update_columns_ok(uuid,uuid,uuid,text,text,integer,date,date,numeric,text,integer,numeric,numeric,numeric,integer,integer,boolean,text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.ks_project_access_self_update_columns_ok(uuid,uuid,uuid,uuid,text,text,text,text,timestamptz,uuid) TO authenticated;
