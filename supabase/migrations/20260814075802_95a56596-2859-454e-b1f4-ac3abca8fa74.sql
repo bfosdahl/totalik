@@ -1,0 +1,1 @@
+UPDATE public.profiles SET preferred_language='no' WHERE email='joefosdahl@gmail.com';
