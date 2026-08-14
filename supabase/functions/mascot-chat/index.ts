@@ -570,7 +570,7 @@ async function executeToolCall(
             company_id: companyId,
             risks: updatedRisks,
             updated_at: new Date().toISOString()
-          }, { onConflict: "company_id" });
+          }, { onConflict: "company_id,department_id" });
 
         if (riskError) throw riskError;
 
@@ -627,7 +627,7 @@ async function executeToolCall(
             company_id: companyId,
             routines: updatedRoutines,
             updated_at: new Date().toISOString()
-          }, { onConflict: "company_id" });
+          }, { onConflict: "company_id,department_id" });
 
         if (error) throw error;
         return `✅ Rutine "${args.title}" er lagt til i HMS-systemet.`;

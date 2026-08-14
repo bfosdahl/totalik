@@ -8,6 +8,17 @@ on:
   workflow_dispatch:
 
 jobs:
+  db-write-guard:
+    runs-on: ubuntu-latest
+    name: upsert conflict audit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Verify onConflict keys match DB unique constraints
+        run: node scripts/upsert-conflict-audit.mjs
+
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 35

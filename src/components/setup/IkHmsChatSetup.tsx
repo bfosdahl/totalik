@@ -15,6 +15,7 @@ import { InlineHmsDeclaration } from "./InlineHmsDeclaration";
 import { InlineVerneombudStep } from "./InlineVerneombudStep";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 import { t } from "@/i18n/t";
+import { assertSaved } from "@/lib/assertSaved";
 
 interface Message {
   role: "user" | "assistant";
@@ -821,7 +822,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
               console.error("Failed to sync org_chart_nodes (non-critical):", orgChartError);
             }
           } else { orgContent = typeof data.organization === 'string' ? data.organization : JSON.stringify(data.organization); }
-          await supabase.from("company_organization").upsert({ company_id: companyId, custom_content: orgContent, is_custom: true }, { onConflict: "company_id,department_id" });
+          await assertSaved("company_organization", await supabase.from("company_organization").upsert({ company_id: companyId, custom_content: orgContent, is_custom: true }, { onConflict: "company_id,department_id" }));
         }
 
         // Universal fallback: ensure company_organization is populated from org_chart_nodes
@@ -879,17 +880,17 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         if (data.risks?.length > 0) {
           const { data: existing } = await supabase.from("company_risk_assessments").select("risks").eq("company_id", companyId).maybeSingle();
           const userRisks = (existing?.risks as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated);
-          await supabase.from("company_risk_assessments").upsert({ company_id: companyId, risks: [...userRisks, ...transformedRisks] }, { onConflict: "company_id,department_id" });
+          await assertSaved("company_risk_assessments", await supabase.from("company_risk_assessments").upsert({ company_id: companyId, risks: [...userRisks, ...transformedRisks] }, { onConflict: "company_id,department_id" }));
         }
         if (data.actions?.length > 0) {
           const { data: existing } = await supabase.from("company_action_plans").select("actions").eq("company_id", companyId).maybeSingle();
           const userActions = (existing?.actions as Array<Record<string, unknown>> || []).filter(a => !a.is_ai_generated);
-          await supabase.from("company_action_plans").upsert({ company_id: companyId, actions: [...userActions, ...transformedActions] }, { onConflict: "company_id,department_id" });
+          await assertSaved("company_action_plans", await supabase.from("company_action_plans").upsert({ company_id: companyId, actions: [...userActions, ...transformedActions] }, { onConflict: "company_id,department_id" }));
         }
         if (data.routines?.length > 0) {
           const { data: existing } = await supabase.from("company_routines").select("routines").eq("company_id", companyId).maybeSingle();
           const userRoutines = (existing?.routines as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated);
-          await supabase.from("company_routines").upsert({ company_id: companyId, routines: [...userRoutines, ...transformedRoutines] }, { onConflict: "company_id,department_id" });
+          await assertSaved("company_routines", await supabase.from("company_routines").upsert({ company_id: companyId, routines: [...userRoutines, ...transformedRoutines] }, { onConflict: "company_id,department_id" }));
         }
 
         // Auto-generate laws (Step 9)
