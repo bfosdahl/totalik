@@ -293,7 +293,7 @@ export const OrganizationStep = forwardRef<OrganizationStepRef, OrganizationStep
             company_id: companyId,
             custom_content: content,
             is_custom: true,
-          }, { onConflict: "company_id" });
+          }, { onConflict: "company_id,department_id" });
 
         // 4. Notify parent
         const data: OrganizationData = { roles, description };
