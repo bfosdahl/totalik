@@ -65,10 +65,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
       // Save to profile if logged in
       if (user?.id) {
-        await supabase
+        const { error } = await supabase
           .from("profiles")
           .update({ preferred_language: lang })
           .eq("user_id", user.id);
+        if (error) {
+          console.error("Kunne ikke lagre språkvalg på profilen:", error.message);
+        }
       }
 
       // Some texts (example/suggestion data) are built once at module load,
