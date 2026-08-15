@@ -303,6 +303,15 @@ export default function IkMatSensorer() {
                   </div>
                 </div>
 
+                <WebhookTestButton
+                  webhookUrl={webhookUrl}
+                  signatureSecret={(endpoint as unknown as { signature_secret?: string | null })?.signature_secret ?? null}
+                  signatureHeader={(endpoint as unknown as { signature_header?: string | null })?.signature_header ?? 'x-signature'}
+                  disabled={!endpoint.is_active}
+                  onFinished={() => refetch?.()}
+                />
+
+
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Switch
