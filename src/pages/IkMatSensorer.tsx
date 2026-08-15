@@ -20,6 +20,7 @@ import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
 import { SensorAlarmSettings } from '@/components/ik-mat/SensorAlarmSettings';
 import { SensorIntegrations } from '@/components/ik-mat/SensorIntegrations';
 import { SensorVendorDocs } from '@/components/ik-mat/SensorVendorDocs';
+import { LoraWanSetupGuide } from '@/components/ik-mat/LoraWanSetupGuide';
 import { SensorNotificationCard } from '@/components/ik-mat/SensorNotificationCard';
 import { useQuery } from '@tanstack/react-query';
 import { t } from "@/i18n/t";
@@ -583,6 +584,8 @@ export default function IkMatSensorer() {
           debugLogging={(endpoint as unknown as { debug_logging?: boolean })?.debug_logging ?? true}
           onUpdateEndpoint={(patch) => updateEndpoint.mutate(patch as never)}
         />
+
+        <LoraWanSetupGuide webhookUrl={webhookUrl} />
 
         <SensorVendorDocs webhookUrl={webhookUrl} />
 
