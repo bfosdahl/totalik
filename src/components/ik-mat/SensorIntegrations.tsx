@@ -353,17 +353,32 @@ export function SensorIntegrations({
                 onCheckedChange={(v) => onUpdateEndpoint?.({ debug_logging: v })}
               />
             </div>
-            <Button
-              size="sm"
-              onClick={() =>
-                onUpdateEndpoint?.({
-                  signature_secret: secretDraft || null,
-                  signature_header: headerDraft || 'x-signature',
-                })
-              }
-            >
-              {t("auto.lagre_signaturinnstillinger")}
-            </Button>
+
+            <SensorReadinessChecklist items={checklist} />
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button
+                size="sm"
+                disabled={!canSave}
+                onClick={() => {
+                  if (!canSave) {
+                    toast.error('Fullfør sjekklisten før du lagrer');
+                    return;
+                  }
+                  onUpdateEndpoint?.({
+                    signature_secret: secretDraft.trim() || null,
+                    signature_header: headerDraft.trim() || 'x-signature',
+                  });
+                }}
+              >
+                {t("auto.lagre_signaturinnstillinger")}
+              </Button>
+              {!canSave && (
+                <span className="text-xs text-destructive">
+                  Rett opp punktene markert med rødt før oppsettet kan lagres.
+                </span>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
