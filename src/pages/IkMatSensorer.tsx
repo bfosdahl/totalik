@@ -13,9 +13,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from 'sonner';
 import {
   Copy, RefreshCw, Radio, Plus, Trash2, Thermometer, BatteryMedium, Info, ShieldAlert,
-  WifiOff, CheckCircle2, AlertTriangle, Bell, Download, Filter, Activity, BookOpen, PlayCircle,
+  WifiOff, CheckCircle2, AlertTriangle, Bell, Download, Filter, Activity, BookOpen, PlayCircle, FileText,
 } from 'lucide-react';
 import { useIkMatSensors, getWebhookUrl, sensorStatus, type IkMatSensor } from '@/hooks/useIkMatSensors';
+import { generateSensorMapPdf } from '@/utils/ikMatSensorMapPdf';
+import { useAuth } from '@/contexts/AuthContext';
 import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
 import { SensorAlarmSettings } from '@/components/ik-mat/SensorAlarmSettings';
 import { SensorIntegrations } from '@/components/ik-mat/SensorIntegrations';
@@ -101,6 +103,7 @@ export default function IkMatSensorer() {
     updateNotificationSettings, getSensorLogs,
   } = useIkMatSensors();
   const { equipment } = useIkMatTemperature();
+  const { company } = useAuth();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newSensor, setNewSensor] = useState({ external_id: '', name: '', provider: '', equipment_id: UNMAPPED });
@@ -155,6 +158,35 @@ export default function IkMatSensorer() {
         <Icon className="h-3 w-3" /> {meta.label}
       </Badge>
     );
+  };
+
+  const exportSensorMapPdf = () => {
+    if (sensors.length === 0) {
+      toast.info('Ingen sensorer å eksportere');
+      return;
+    }
+    generateSensorMapPdf({
+      companyName: company?.name || '',
+      webhookConfigured: !!endpoint?.is_active,
+      rows: sensors.map((s) => {
+        const equip = equipment.find((e) => e.id === s.equipment_id);
+        return {
+          externalId: s.external_id,
+          name: s.name || '',
+          provider: s.provider || '',
+          location: s.location || '',
+          equipment: equip?.name || '',
+          minTemp: s.min_temp_override ?? equip?.min_temp ?? null,
+          maxTemp: s.max_temp_override ?? equip?.max_temp ?? null,
+          offlineAfterMinutes: s.offline_after_minutes || 120,
+          status: STATUS_META[sensorStatus(s)].label,
+          lastReadingAt: s.last_reading_at,
+          lastTemperature: s.last_temperature,
+          lastBattery: s.last_battery,
+        };
+      }),
+    });
+    toast.success('Sensorkart lastet ned');
   };
 
   const exportCsv = () => {
@@ -412,6 +444,9 @@ export default function IkMatSensorer() {
               </Select>
               <Button variant="outline" onClick={exportCsv}>
                 <Download className="h-4 w-4 mr-2" /> Eksporter varsler
+              </Button>
+              <Button variant="outline" onClick={exportSensorMapPdf}>
+                <FileText className="h-4 w-4 mr-2" /> Sensorkart (PDF)
               </Button>
             </div>
 
