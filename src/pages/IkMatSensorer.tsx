@@ -584,6 +584,8 @@ export default function IkMatSensorer() {
           onUpdateEndpoint={(patch) => updateEndpoint.mutate(patch as never)}
         />
 
+        <LoraWanSetupGuide webhookUrl={webhookUrl} />
+
         <SensorVendorDocs webhookUrl={webhookUrl} />
 
         {/* Help */}
