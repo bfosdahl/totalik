@@ -12,6 +12,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plug, Plus, RefreshCw, Trash2, KeyRound, PlayCircle, ScrollText, ShieldCheck } from 'lucide-react';
 import { useSensorIntegrations, type SensorIntegration } from '@/hooks/useSensorIntegrations';
+import { toast } from 'sonner';
+import {
+  SensorReadinessChecklist,
+  validateSensorSetup,
+  isSensorSetupSavable,
+} from '@/components/ik-mat/SensorReadinessChecklist';
 import { t } from "@/i18n/t";
 
 interface Props {
@@ -19,6 +25,9 @@ interface Props {
   signatureSecret?: string | null;
   signatureHeader?: string | null;
   debugLogging?: boolean;
+  webhookUrl?: string;
+  endpointActive?: boolean;
+  hasReceivedData?: boolean;
   onUpdateEndpoint?: (patch: { signature_secret?: string | null; signature_header?: string; debug_logging?: boolean }) => void;
 }
 
@@ -27,6 +36,9 @@ export function SensorIntegrations({
   signatureSecret,
   signatureHeader,
   debugLogging = true,
+  webhookUrl = '',
+  endpointActive = false,
+  hasReceivedData = false,
   onUpdateEndpoint,
 }: Props) {
   const {
@@ -52,6 +64,16 @@ export function SensorIntegrations({
   const [headerDraft, setHeaderDraft] = useState(signatureHeader ?? 'x-signature');
 
   const selectedProvider = providers.find((p) => p.id === providerId);
+
+  const checklist = validateSensorSetup({
+    endpointExists: !!endpointId,
+    endpointActive,
+    webhookUrl,
+    signatureSecret: secretDraft,
+    signatureHeader: headerDraft,
+    hasReceivedData,
+  });
+  const canSave = isSensorSetupSavable(checklist);
 
   const handleCreate = async () => {
     if (!providerId || !selectedProvider) return;
@@ -353,17 +375,32 @@ export function SensorIntegrations({
                 onCheckedChange={(v) => onUpdateEndpoint?.({ debug_logging: v })}
               />
             </div>
-            <Button
-              size="sm"
-              onClick={() =>
-                onUpdateEndpoint?.({
-                  signature_secret: secretDraft || null,
-                  signature_header: headerDraft || 'x-signature',
-                })
-              }
-            >
-              {t("auto.lagre_signaturinnstillinger")}
-            </Button>
+
+            <SensorReadinessChecklist items={checklist} />
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button
+                size="sm"
+                disabled={!canSave}
+                onClick={() => {
+                  if (!canSave) {
+                    toast.error('Fullfør sjekklisten før du lagrer');
+                    return;
+                  }
+                  onUpdateEndpoint?.({
+                    signature_secret: secretDraft.trim() || null,
+                    signature_header: headerDraft.trim() || 'x-signature',
+                  });
+                }}
+              >
+                {t("auto.lagre_signaturinnstillinger")}
+              </Button>
+              {!canSave && (
+                <span className="text-xs text-destructive">
+                  Rett opp punktene markert med rødt før oppsettet kan lagres.
+                </span>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
