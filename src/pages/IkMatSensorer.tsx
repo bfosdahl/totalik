@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useIkMatTemperature } from '@/hooks/useIkMatTemperature';
 import { SensorAlarmSettings } from '@/components/ik-mat/SensorAlarmSettings';
 import { SensorIntegrations } from '@/components/ik-mat/SensorIntegrations';
+import { WebhookTestButton } from '@/components/ik-mat/WebhookTestButton';
 import { SensorVendorDocs } from '@/components/ik-mat/SensorVendorDocs';
 import { LoraWanSetupGuide } from '@/components/ik-mat/LoraWanSetupGuide';
 import { SensorNotificationCard } from '@/components/ik-mat/SensorNotificationCard';
@@ -302,6 +303,14 @@ export default function IkMatSensorer() {
                     </Button>
                   </div>
                 </div>
+
+                <WebhookTestButton
+                  webhookUrl={webhookUrl}
+                  signatureSecret={(endpoint as unknown as { signature_secret?: string | null })?.signature_secret ?? null}
+                  signatureHeader={(endpoint as unknown as { signature_header?: string | null })?.signature_header ?? 'x-signature'}
+                  disabled={!endpoint.is_active}
+                />
+
 
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="flex items-center gap-2">
