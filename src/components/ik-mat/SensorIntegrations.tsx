@@ -36,6 +36,9 @@ export function SensorIntegrations({
   signatureSecret,
   signatureHeader,
   debugLogging = true,
+  webhookUrl = '',
+  endpointActive = false,
+  hasReceivedData = false,
   onUpdateEndpoint,
 }: Props) {
   const {
