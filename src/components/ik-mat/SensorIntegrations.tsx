@@ -12,6 +12,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plug, Plus, RefreshCw, Trash2, KeyRound, PlayCircle, ScrollText, ShieldCheck } from 'lucide-react';
 import { useSensorIntegrations, type SensorIntegration } from '@/hooks/useSensorIntegrations';
+import { toast } from 'sonner';
+import {
+  SensorReadinessChecklist,
+  validateSensorSetup,
+  isSensorSetupSavable,
+} from '@/components/ik-mat/SensorReadinessChecklist';
 import { t } from "@/i18n/t";
 
 interface Props {
@@ -19,6 +25,9 @@ interface Props {
   signatureSecret?: string | null;
   signatureHeader?: string | null;
   debugLogging?: boolean;
+  webhookUrl?: string;
+  endpointActive?: boolean;
+  hasReceivedData?: boolean;
   onUpdateEndpoint?: (patch: { signature_secret?: string | null; signature_header?: string; debug_logging?: boolean }) => void;
 }
 
