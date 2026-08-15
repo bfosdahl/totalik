@@ -65,6 +65,16 @@ export function SensorIntegrations({
 
   const selectedProvider = providers.find((p) => p.id === providerId);
 
+  const checklist = validateSensorSetup({
+    endpointExists: !!endpointId,
+    endpointActive,
+    webhookUrl,
+    signatureSecret: secretDraft,
+    signatureHeader: headerDraft,
+    hasReceivedData,
+  });
+  const canSave = isSensorSetupSavable(checklist);
+
   const handleCreate = async () => {
     if (!providerId || !selectedProvider) return;
     await createIntegration.mutateAsync({
