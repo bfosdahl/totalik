@@ -262,7 +262,19 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Testpayload fra Total-IK: token og signatur er allerede verifisert.
+    // Vi kvitterer uten aa opprette sensorer eller temperaturlogger.
+    if (payload && typeof payload === 'object' && (payload.totalik_test === true || payload.totalik_test === 'true')) {
+      await logPayload('test', 200, 0, null);
+      await supabase
+        .from('ik_mat_sensor_endpoints')
+        .update({ last_error: null, last_received_at: new Date().toISOString() })
+        .eq('id', endpoint.id);
+      return json({ ok: true, test: true, message: 'Testpayload mottatt' }, 200);
+    }
+
     const readings = parseReadings(payload);
+
     if (readings.length === 0) {
       await logPayload('parse_failed', 400, 0, 'Kunne ikke lese målinger fra mottatt data');
       await supabase
