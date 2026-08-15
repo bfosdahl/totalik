@@ -16,6 +16,7 @@ import { RecentDeviations } from "@/components/dashboard/RecentDeviations";
 import { ExpiryAlerts } from "@/components/dashboard/ExpiryAlerts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AdminHoursWidget } from "@/components/dashboard/AdminHoursWidget";
+import { SensorOfflineAlerts } from "@/components/dashboard/SensorOfflineAlerts";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useNavigate } from "react-router-dom";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
@@ -173,6 +174,7 @@ const Index = () => {
 
           {/* Right column */}
           <div className="space-y-4 md:space-y-6">
+            <SensorOfflineAlerts />
             <ExpiryAlerts />
             <QuickActions />
             
