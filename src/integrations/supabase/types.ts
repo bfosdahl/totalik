@@ -17709,6 +17709,13 @@ export type Database = {
         Args: { target_company_id: string }
         Returns: undefined
       }
+      employee_message_recipient_update_ok: {
+        Args: {
+          _new: Database["public"]["Tables"]["employee_messages"]["Row"]
+          _old: Database["public"]["Tables"]["employee_messages"]["Row"]
+        }
+        Returns: boolean
+      }
       employment_contract_self_update_allowed: {
         Args: { _contract_id: string }
         Returns: boolean
