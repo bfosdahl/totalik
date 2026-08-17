@@ -203,7 +203,7 @@ export function AiRoutineDialog({ module, onAdopt }: AiRoutineDialogProps) {
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2 border-blue-300 text-blue-700 hover:bg-blue-50">
           <Sparkles className="h-4 w-4" />
-          AI-hjelper
+          {t("auto.ai_hjelper")}
         </Button>
       </DialogTrigger>
       <DialogContent
