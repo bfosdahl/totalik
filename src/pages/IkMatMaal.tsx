@@ -90,7 +90,7 @@ const IkMatMaal = () => {
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              Lagre
+              {t("auto.lagre")}
             </Button>
           </div>
         </div>
@@ -110,7 +110,7 @@ const IkMatMaal = () => {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      Mål {index + 1}
+                      {t("auto.maal")} {index + 1}
                     </CardTitle>
                     <Button
                       variant="ghost"
