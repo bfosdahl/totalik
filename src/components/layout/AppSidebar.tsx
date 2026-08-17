@@ -608,7 +608,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         <div className="flex items-center justify-between px-5 pt-3 pb-1 border-b border-sidebar-border">
           <div className="flex items-center justify-center flex-1">
             <img
-              src="/total-ik-logo-light.png"
+              src="/total-ik-logo-white.svg"
               alt="Total-IK"
               className={cn(
                 "transition-all duration-200 object-contain",
