@@ -6677,8 +6677,8 @@
     "dagsrapport_med_80_bilder_verstefall": "Dagsrapport med 80 bilder (verstefall)",
     "hms_handbok_med_40_kapitler": "HMS-handbok med 40 kapitler",
     "avviksrapport_med_400_rader": "Avviksrapport med 400 rader",
-    "tillat_popup_vinduer_for_denne_siden_i_n": "Tillat popup-vinduer for denne siden i nettleseren for å skrive ut QR-koden."
-  },
-  "auto.bedriftens_maalsetting": "Bedriftens målsetting",
-  "auto.avdelingens_maalsetting": "Avdelingens målsetting"
+    "tillat_popup_vinduer_for_denne_siden_i_n": "Tillat popup-vinduer for denne siden i nettleseren for å skrive ut QR-koden.",
+    "bedriftens_maalsetting": "Bedriftens målsetting",
+    "avdelingens_maalsetting": "Avdelingens målsetting"
+  }
 }
