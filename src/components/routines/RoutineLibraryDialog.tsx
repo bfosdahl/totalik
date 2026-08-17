@@ -33,7 +33,7 @@ interface RoutineLibraryDialogProps {
 
 export function RoutineLibraryDialog({ 
   module, 
-  buttonLabel = "Rutinebibliotek",
+  buttonLabel,
   buttonVariant = "outline",
   onAdopt,
   adoptedIds: externalAdoptedIds,
@@ -79,14 +79,14 @@ export function RoutineLibraryDialog({
         <DialogTrigger asChild>
           <Button variant={buttonVariant}>
             <Library className="w-4 h-4 mr-2" />
-            {buttonLabel}
+            {buttonLabel ?? t("auto.rutinebibliotek")}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Library className="w-5 h-5" />
-              Rutinebibliotek
+              {t("auto.rutinebibliotek")}
             </DialogTitle>
           </DialogHeader>
           <p className="text-center text-muted-foreground py-8">
@@ -102,14 +102,14 @@ export function RoutineLibraryDialog({
       <DialogTrigger asChild>
         <Button variant={buttonVariant}>
           <Library className="w-4 h-4 mr-2" />
-          {buttonLabel}
+          {buttonLabel ?? t("auto.rutinebibliotek")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Library className="w-5 h-5" />
-            Rutinebibliotek
+            {t("auto.rutinebibliotek")}
           </DialogTitle>
         </DialogHeader>
 

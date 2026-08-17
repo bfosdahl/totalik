@@ -152,7 +152,7 @@ const IkMatRutiner = () => {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
               <BookOpen className="h-7 w-7 text-primary" />
-              Rutiner
+              {t("auto.rutiner")}
             </h1>
             <p className="text-muted-foreground mt-1">
               {t("auto.rutiner_og_prosedyrer_for_matsikkerhet")}

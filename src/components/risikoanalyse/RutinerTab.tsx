@@ -526,7 +526,7 @@ export const RutinerTab = () => {
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Library className="h-4 w-4 mr-2" />
-                    Rutinebibliotek
+                    {t("auto.rutinebibliotek")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[80vh]">
