@@ -256,9 +256,9 @@ export default function Auth() {
         {/* Logo */}
         <div className="text-center mb-8">
           <img 
-            src="/total-ik-logo-dark.png" 
+            src="/total-ik-logo-white.svg" 
             alt="Total-IK" 
-            className="h-28 mx-auto mix-blend-screen"
+            className="h-28 mx-auto"
           />
         </div>
 
