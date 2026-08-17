@@ -605,18 +605,21 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         )}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between px-5 pt-3 pb-1 border-b border-sidebar-border">
-          <div className="flex items-center justify-center flex-1">
-            <img
-              src="/total-ik-logo-white.svg"
-              alt="Total-IK"
-              className={cn(
-                "transition-all duration-200 object-contain",
-                collapsed ? "h-10" : "h-28"
-              )}
-            />
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="lg:hidden text-sidebar-foreground">
+        <div className="relative flex items-center justify-center px-5 pt-3 pb-1 border-b border-sidebar-border">
+          <img
+            src="/total-ik-logo-white.svg"
+            alt="Total-IK"
+            className={cn(
+              "mx-auto transition-all duration-200 object-contain",
+              collapsed ? "h-10" : "h-28"
+            )}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="absolute right-3 top-1/2 -translate-y-1/2 lg:hidden text-sidebar-foreground"
+          >
             <X className="w-5 h-5" />
           </Button>
         </div>
