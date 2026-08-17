@@ -207,7 +207,7 @@ const DepartmentGoals = () => {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">
-                      {goals.length > 1 ? `Mål ${index + 1}` : "Avdelingens målsetting"}
+                      {goals.length > 1 ? `${t("auto.maal")} ${index + 1}` : t("auto.avdelingens_maalsetting")}
                     </CardTitle>
                     <Button
                       variant="ghost"
