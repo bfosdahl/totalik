@@ -1,17 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320">
   <g fill="none" stroke="#0E1A2B" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="160" cy="160" r="118"/>
+    <circle cx="180" cy="160" r="118"/>
     <!-- Combined T / I / K monogram -->
-    <path d="M105 112 H215"/>
-    <path d="M160 112 V222"/>
-    <path d="M160 171 L215 125"/>
-    <path d="M160 171 L215 220"/>
+    <path d="M125 112 H235"/>
+    <path d="M180 112 V222"/>
+    <path d="M180 171 L235 125"/>
+    <path d="M180 171 L235 220"/>
   </g>
   <!-- i-dot placed above the T bar as in the chosen concept -->
-  <circle cx="160" cy="75" r="13" fill="#0E1A2B"/>
+  <circle cx="180" cy="75" r="13" fill="#0E1A2B"/>
 
   <!-- Wordmark -->
-  <text x="330" y="213"
+  <text x="350" y="213"
         fill="#0E1A2B"
         font-family="Inter, Manrope, 'Helvetica Neue', Arial, sans-serif"
         font-size="142"
