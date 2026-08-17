@@ -6678,5 +6678,7 @@
     "prosjektleder_har_ansvar_for_gjennomfoer": "Kierownik projektu jest odpowiedzialny za realizację projektów oraz za BHP na swoich projektach.",
     "avdelingsleder_har_ansvar_for_sin_avdeli": "Kierownik działu odpowiada za swój dział oraz sprawy kadrowe pracowników w tym dziale.",
     "alle_ansatte_har_en_plikt_til_aa_foelge_": "Wszyscy pracownicy mają obowiązek przestrzegania procedur BHP firmy oraz aktywnego wspierania bezpiecznego środowiska pracy."
-  }
+  },
+  "auto.bedriftens_maalsetting": "Cel firmy",
+  "auto.avdelingens_maalsetting": "Cel działu"
 }

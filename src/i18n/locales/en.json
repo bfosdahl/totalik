@@ -6678,5 +6678,7 @@
     "eksempelprosjekt_for_tilbygg_paa_eksiste": "Example project for an extension to an existing home. Shows documentation for the building application, foundations, load-bearing structure and completion.",
     "et_fullstendig_utfylt_demonstrasjonspros": "A fully completed demonstration project with meeting minutes, finances, checklists, nonconformities, subcontractors, JSA, safety inspections, change orders, claims, chemical register and milestones. Perfect for seeing how a complete project is documented.",
     "dagsrapport_med_30_bilder": "Daily report with 30 photos"
-  }
+  },
+  "auto.bedriftens_maalsetting": "The company's objective",
+  "auto.avdelingens_maalsetting": "The department's objective"
 }

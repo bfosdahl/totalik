@@ -6678,5 +6678,7 @@
     "eksempelprosjekt_for_tilbygg_paa_eksiste": "Pavyzdinis esamo namo priestato projektas. Pateikiama statybos leidimo paraiškos, pamatų klojimo, laikančiųjų konstrukcijų ir statybų užbaigimo dokumentacija.",
     "et_fullstendig_utfylt_demonstrasjonspros": "Pilnai užpildytas demonstracinis projektas su susirinkimų protokolais, finansais, kontroliniais sąrašais, neatitiktimis, subrangovais, DSA (SJA), saugos apžiūromis, pranešimais apie pakeitimus, pretenzijomis, cheminių medžiagų registru ir etapais. Puikiai tinka pamatyti, kaip dokumentuojamas visas projektas.",
     "dagsrapport_med_30_bilder": "Dienos ataskaita su 30 nuotraukų"
-  }
+  },
+  "auto.bedriftens_maalsetting": "Įmonės tikslas",
+  "auto.avdelingens_maalsetting": "Skyriaus tikslas"
 }
