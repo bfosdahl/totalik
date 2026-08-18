@@ -315,6 +315,86 @@ function respond(body: object) {
   });
 }
 
+// ── Tjenestee-poster (Athena HMS) ──
+
+const SERVICE_FROM = "Athena HMS <noreply@totalik.no>";
+const SERVICE_REPLY_TO = "joe@athenahms.no";
+
+async function sendServiceEmails(
+  supabase: ReturnType<typeof createClient>,
+  order: NextcomOrder,
+  templates: ServiceTemplateKey[],
+) {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey) {
+    console.error("[Service Email] RESEND_API_KEY mangler");
+    return;
+  }
+
+  const recipient = (order.customerEmail || "").trim().toLowerCase();
+  if (!recipient) return;
+
+  for (const key of templates) {
+    // Idempotens: hopp over hvis allerede sendt for denne ordren
+    const { data: existing } = await supabase
+      .from("nextcom_service_emails")
+      .select("id")
+      .eq("order_id", String(order.id))
+      .eq("template_key", key)
+      .maybeSingle();
+
+    if (existing) {
+      console.log(`[Service Email] Order ${order.id}: ${key} allerede sendt`);
+      continue;
+    }
+
+    const tpl = SERVICE_TEMPLATES[key];
+    let status = "sent";
+    let errorMessage: string | null = null;
+
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendKey}`,
+        },
+        body: JSON.stringify({
+          from: SERVICE_FROM,
+          to: [recipient],
+          cc: [SERVICE_REPLY_TO],
+          reply_to: SERVICE_REPLY_TO,
+          subject: tpl.subject,
+          html: tpl.html,
+        }),
+      });
+
+      if (!res.ok) {
+        status = "error";
+        errorMessage = (await res.text()).slice(0, 500);
+        console.error(`[Service Email] Order ${order.id}: ${key} feilet -`, errorMessage);
+      } else {
+        console.log(`[Service Email] Order ${order.id}: ${key} sendt til ${recipient}`);
+      }
+    } catch (err) {
+      status = "error";
+      errorMessage = String(err).slice(0, 500);
+      console.error(`[Service Email] Order ${order.id}: ${key} exception -`, err);
+    }
+
+    await supabase.from("nextcom_service_emails").upsert({
+      order_id: String(order.id),
+      template_key: key,
+      recipient_email: recipient,
+      company_name: order.customerCompany || null,
+      product_names: order.allProducts || null,
+      status,
+      error_message: errorMessage,
+      sent_at: new Date().toISOString(),
+    }, { onConflict: "order_id,template_key" });
+  }
+}
+
 // ── Detect IK modules from product names ──
 
 function detectModules(productNames: string[]): string[] {
