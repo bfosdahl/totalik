@@ -314,11 +314,18 @@ Deno.serve(async (req) => {
       }
     }
 
+    const today = toDateOnly(new Date())!;
     for (const [companyId, info] of best) {
+      // Sluttdato i fortiden = datagrunnlaget er trolig feil. Krever manuell vurdering.
+      if (info.end <= today) {
+        results.push({ company: info.company.name, status: "needs_review_past_date", end_date: info.end });
+        continue;
+      }
       if (info.company.scheduled_termination_date === info.end) {
         results.push({ company: info.company.name, status: "unchanged", end_date: info.end });
         continue;
       }
+
       if (dryRun) {
         results.push({ company: info.company.name, status: "dry_run", start: info.start, months: info.months, end_date: info.end });
         continue;
