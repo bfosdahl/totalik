@@ -353,10 +353,19 @@ Deno.serve(async (req) => {
 
     await recordJobRun("nextcom-license-sync", "success", startedAt, {
       itemsProcessed: terminatedOrders.length,
-      details: { scheduled, status_ids: statusIds, status_names: statusNames },
+      details: { scheduled, status_ids: statusIds, status_names: statusNames, skipped_old_status: skippedOldStatus, min_status_date: minStatusDate },
     });
 
-    return json({ success: true, terminated_orders: terminatedOrders.length, scheduled, results, dry_run: dryRun });
+    return json({
+      success: true,
+      terminated_orders: terminatedOrders.length,
+      skipped_old_status: skippedOldStatus,
+      min_status_date: minStatusDate,
+      scheduled,
+      results,
+      dry_run: dryRun,
+    });
+
   } catch (error) {
     console.error("[license-sync] Fatal:", error);
     await recordJobRun("nextcom-license-sync", "error", startedAt, { errorMessage: String(error) });
