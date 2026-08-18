@@ -17895,10 +17895,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      invoke_cron_edge_function: {
-        Args: { function_name: string }
-        Returns: number
-      }
+      invoke_cron_edge_function:
+        | { Args: { function_name: string }; Returns: number }
+        | { Args: { function_name: string; payload: Json }; Returns: number }
       is_any_department_admin: { Args: { _user_id: string }; Returns: boolean }
       is_company_admin: { Args: { _user_id: string }; Returns: boolean }
       is_department_admin_for: {
