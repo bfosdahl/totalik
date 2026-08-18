@@ -1335,6 +1335,9 @@ export type Database = {
           has_departments: boolean
           id: string
           industries: string[]
+          license_months: number | null
+          license_months_manual: boolean
+          license_start_date: string | null
           logo_url: string | null
           name: string
           org_number: string | null
@@ -1342,12 +1345,19 @@ export type Database = {
           personalliste_enabled: boolean
           phone: string | null
           postal_code: string | null
+          scheduled_termination_date: string | null
           seller_id: string | null
           sg_approval_areas: string[] | null
           sg_approved: boolean | null
           sg_expiry_date: string | null
           sg_org_number: string | null
           status: Database["public"]["Enums"]["company_status"]
+          terminated_at: string | null
+          termination_note: string | null
+          termination_order_id: string | null
+          termination_requested_at: string | null
+          termination_source: string | null
+          termination_warning_sent_at: string | null
           updated_at: string
         }
         Insert: {
@@ -1365,6 +1375,9 @@ export type Database = {
           has_departments?: boolean
           id?: string
           industries?: string[]
+          license_months?: number | null
+          license_months_manual?: boolean
+          license_start_date?: string | null
           logo_url?: string | null
           name: string
           org_number?: string | null
@@ -1372,12 +1385,19 @@ export type Database = {
           personalliste_enabled?: boolean
           phone?: string | null
           postal_code?: string | null
+          scheduled_termination_date?: string | null
           seller_id?: string | null
           sg_approval_areas?: string[] | null
           sg_approved?: boolean | null
           sg_expiry_date?: string | null
           sg_org_number?: string | null
           status?: Database["public"]["Enums"]["company_status"]
+          terminated_at?: string | null
+          termination_note?: string | null
+          termination_order_id?: string | null
+          termination_requested_at?: string | null
+          termination_source?: string | null
+          termination_warning_sent_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -1395,6 +1415,9 @@ export type Database = {
           has_departments?: boolean
           id?: string
           industries?: string[]
+          license_months?: number | null
+          license_months_manual?: boolean
+          license_start_date?: string | null
           logo_url?: string | null
           name?: string
           org_number?: string | null
@@ -1402,12 +1425,19 @@ export type Database = {
           personalliste_enabled?: boolean
           phone?: string | null
           postal_code?: string | null
+          scheduled_termination_date?: string | null
           seller_id?: string | null
           sg_approval_areas?: string[] | null
           sg_approved?: boolean | null
           sg_expiry_date?: string | null
           sg_org_number?: string | null
           status?: Database["public"]["Enums"]["company_status"]
+          terminated_at?: string | null
+          termination_note?: string | null
+          termination_order_id?: string | null
+          termination_requested_at?: string | null
+          termination_source?: string | null
+          termination_warning_sent_at?: string | null
           updated_at?: string
         }
         Relationships: [
