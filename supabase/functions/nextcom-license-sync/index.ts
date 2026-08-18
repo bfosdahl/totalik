@@ -241,17 +241,26 @@ Deno.serve(async (req) => {
     // Ingen konfigurasjon? Bruk standardnavnet «avsluttet kundeforhold».
     if (statusIds.length === 0 && statusNames.length === 0) statusNames = [...DEFAULT_STATUS_NAMES];
 
+    // Sikkerhetsfilter: kun ordre som fikk avslutningsstatus etter denne datoen.
+    // Hindrer at gamle historiske ordre med samme statuskode stenger aktive kunder.
+    const minStatusDate = String(body?.min_status_date || "2026-08-01");
+
     const terminatedOrders: Record<string, unknown>[] = [];
+    let skippedOldStatus = 0;
     for (let page = 0; page < maxPages; page++) {
       const offset = Math.max(0, totalCount - (page + 1) * limit);
       const d = await nextcomFetch(`/crm-system/orders?offset=${offset}&limit=${limit}&locale=nor`, auth);
       const items: Record<string, unknown>[] = d.items || [];
       if (!items.length) break;
       for (const o of items) {
-        if (matchesTermination(o, statusIds, statusNames)) terminatedOrders.push(o);
+        if (!matchesTermination(o, statusIds, statusNames)) continue;
+        const sd = toDateOnly(o.statusDate);
+        if (!sd || sd < minStatusDate) { skippedOldStatus++; continue; }
+        terminatedOrders.push(o);
       }
       if (offset === 0) break;
     }
+
 
 
     console.log(`[license-sync] ${terminatedOrders.length} ordre med avsluttet kundeforhold`);
@@ -305,11 +314,18 @@ Deno.serve(async (req) => {
       }
     }
 
+    const today = toDateOnly(new Date())!;
     for (const [companyId, info] of best) {
+      // Sluttdato i fortiden = datagrunnlaget er trolig feil. Krever manuell vurdering.
+      if (info.end <= today) {
+        results.push({ company: info.company.name, status: "needs_review_past_date", end_date: info.end });
+        continue;
+      }
       if (info.company.scheduled_termination_date === info.end) {
         results.push({ company: info.company.name, status: "unchanged", end_date: info.end });
         continue;
       }
+
       if (dryRun) {
         results.push({ company: info.company.name, status: "dry_run", start: info.start, months: info.months, end_date: info.end });
         continue;
@@ -337,10 +353,19 @@ Deno.serve(async (req) => {
 
     await recordJobRun("nextcom-license-sync", "success", startedAt, {
       itemsProcessed: terminatedOrders.length,
-      details: { scheduled, status_ids: statusIds, status_names: statusNames },
+      details: { scheduled, status_ids: statusIds, status_names: statusNames, skipped_old_status: skippedOldStatus, min_status_date: minStatusDate },
     });
 
-    return json({ success: true, terminated_orders: terminatedOrders.length, scheduled, results, dry_run: dryRun });
+    return json({
+      success: true,
+      terminated_orders: terminatedOrders.length,
+      skipped_old_status: skippedOldStatus,
+      min_status_date: minStatusDate,
+      scheduled,
+      results,
+      dry_run: dryRun,
+    });
+
   } catch (error) {
     console.error("[license-sync] Fatal:", error);
     await recordJobRun("nextcom-license-sync", "error", startedAt, { errorMessage: String(error) });
