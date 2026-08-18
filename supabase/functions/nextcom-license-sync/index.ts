@@ -11,6 +11,32 @@ const corsHeaders = {
 
 const NEXTCOM_BASE_URL = "https://hmsproffen.nextcom.no/rest-api/public/v2.0";
 const SETTINGS_KEY = "nextcom_termination_status_ids";
+const DEFAULT_STATUS_NAMES = ["avsluttet kundeforhold"];
+
+/** Henter statusnavn fra ordren uansett hvilket felt NextCom bruker. */
+function statusNameOf(o: Record<string, unknown>): string {
+  const candidates = [o.statusName, o.status, o.statusText, o.statusTitle, o.orderStatus, o.orderStatusName];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim()) return c.trim();
+    if (c && typeof c === "object") {
+      const n = (c as Record<string, unknown>).name ?? (c as Record<string, unknown>).title;
+      if (typeof n === "string" && n.trim()) return n.trim();
+    }
+  }
+  return "";
+}
+
+function matchesTermination(
+  o: Record<string, unknown>,
+  statusIds: number[],
+  statusNames: string[],
+): boolean {
+  if (statusIds.includes(Number(o.statusId))) return true;
+  const name = statusNameOf(o).toLowerCase();
+  if (!name) return false;
+  return statusNames.some((n) => n && name.includes(n));
+}
+
 
 // Produkter vi bryr oss om (IK-systemer). Kurs o.l. ignoreres.
 const SYSTEM_KEYWORDS = [
