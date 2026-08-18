@@ -141,12 +141,41 @@ Deno.serve(async (req) => {
     }
 
     if (debug) {
-      const sample = await nextcomFetch("/crm-system/orders?offset=0&limit=1&locale=nor", auth);
+      const probes: Record<string, unknown> = {};
+      const candidates = [
+        "/crm-system/order-statuses", "/crm-system/orderstatuses", "/crm-system/orders/statuses",
+        "/crm-system/statuses", "/crm-system/status", "/crm-system/order-status",
+        "/crm-system/lists", "/crm-system/settings/order-statuses",
+      ];
+      for (const path of candidates) {
+        try {
+          const d = await nextcomFetch(`${path}?locale=nor`, auth);
+          probes[path] = Array.isArray(d) ? d.slice(0, 40) : (d.items ? d.items.slice(0, 40) : d);
+        } catch (e) {
+          probes[path] = String(e).slice(0, 120);
+        }
+      }
+
+      // Distinkte statusId-er i de nyeste ordrene
+      const seen = new Map<number, { count: number; example: string }>();
+      const cd = await nextcomFetch("/crm-system/orders?offset=0&limit=1&locale=nor", auth);
+      const total = Number(cd.totalCount || cd.total || cd.count || 0);
+      for (let page = 0; page < 6; page++) {
+        const offset = Math.max(0, total - (page + 1) * 100);
+        const d = await nextcomFetch(`/crm-system/orders?offset=${offset}&limit=100&locale=nor`, auth);
+        for (const o of (d.items || [])) {
+          const sid = Number(o.statusId);
+          const cur = seen.get(sid) || { count: 0, example: String(o.customerCompany || "") };
+          cur.count++;
+          seen.set(sid, cur);
+        }
+        if (offset === 0) break;
+      }
+
       return json({
-        statuses,
+        probes,
+        status_id_counts: Array.from(seen.entries()).map(([id, v]) => ({ statusId: id, ...v })),
         termination_status_ids: terminationStatusIds,
-        sample_order_keys: Object.keys(sample.items?.[0] || {}),
-        sample_order: sample.items?.[0] || null,
       });
     }
 
