@@ -65,8 +65,9 @@ export default function AdminLicenses() {
     ]);
 
     setCompanies((comps as CompanyRow[]) || []);
-    const ids = ((setting?.value as { status_ids?: number[] } | null)?.status_ids || []) as number[];
-    setStatusIds(ids.join(", "));
+    const value = setting?.value as { status_ids?: number[]; status_names?: string[] } | null;
+    setStatusIds((value?.status_ids || []).join(", "));
+    setStatusNames((value?.status_names || ["avsluttet kundeforhold"]).join(", "));
     setLoading(false);
   };
 
@@ -79,11 +80,15 @@ export default function AdminLicenses() {
       .split(",")
       .map((s) => Number(s.trim()))
       .filter((n) => Number.isFinite(n) && n > 0);
+    const names = statusNames
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
 
     setBusy("save");
     const { error } = await supabase
       .from("system_settings")
-      .update({ value: { status_ids: ids } })
+      .update({ value: { status_ids: ids, status_names: names } })
       .eq("key", "nextcom_termination_status_ids");
     setBusy(null);
 
@@ -91,8 +96,9 @@ export default function AdminLicenses() {
       toast({ title: "Kunne ikke lagre", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Lagret", description: `Statuskoder: ${ids.join(", ") || "ingen"}` });
+    toast({ title: "Lagret", description: `Statusnavn: ${names.join(", ") || "ingen"}` });
   };
+
 
   const callSync = async (body: Record<string, unknown>, key: string) => {
     setBusy(key);
