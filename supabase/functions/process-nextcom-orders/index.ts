@@ -224,8 +224,8 @@ Deno.serve(async (req) => {
         // Skip course-only orders (handled by kurskontoret). Renewals are always processed.
         if (!isRenewal && (isCourseOnly || modules.length === 0)) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Skipping - ${isCourseOnly ? 'course product' : 'no IK modules detected'} (${order.allProducts})`);
-          await markOrderProcessed(supabase, order.id, "skipped_not_ik", { products: order.allProducts });
-          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "skipped", error: isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected" });
+          await markOrderProcessed(supabase, order.id, "skipped_not_ik", { products: order.allProducts, service_emails: serviceTemplates });
+          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: serviceTemplates.length > 0 ? "service_email_sent" : "skipped", modules: serviceTemplates, error: serviceTemplates.length > 0 ? undefined : (isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected") });
           continue;
         }
 
