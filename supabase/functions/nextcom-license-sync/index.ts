@@ -337,7 +337,7 @@ Deno.serve(async (req) => {
 
     await recordJobRun("nextcom-license-sync", "success", startedAt, {
       itemsProcessed: terminatedOrders.length,
-      details: { scheduled, status_ids: statusIds },
+      details: { scheduled, status_ids: statusIds, status_names: statusNames },
     });
 
     return json({ success: true, terminated_orders: terminatedOrders.length, scheduled, results, dry_run: dryRun });
