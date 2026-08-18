@@ -204,10 +204,11 @@ Deno.serve(async (req) => {
     }
 
     if (statusIds.length === 0) {
-      await recordJobRun("nextcom-license-sync", "error", startedAt, {
-        errorMessage: "Ingen statuskode for «avsluttet kundeforhold» er konfigurert",
+      // Ikke konfigurert ennå – ikke en feil, jobben har bare ingenting å gjøre.
+      await recordJobRun("nextcom-license-sync", "success", startedAt, {
+        details: { skipped: "ingen statuskoder konfigurert" },
       });
-      return json({ error: "Ingen statuskode for «avsluttet kundeforhold» er konfigurert i systeminnstillinger" }, 400);
+      return json({ success: true, skipped: true, message: "Ingen statuskode for «avsluttet kundeforhold» er konfigurert" });
     }
 
     const terminatedOrders: Record<string, unknown>[] = [];
