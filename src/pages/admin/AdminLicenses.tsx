@@ -27,9 +27,11 @@ interface CompanyRow {
 
 interface StatusRow {
   statusId: number;
+  statusName?: string;
   count: number;
   examples: string[];
 }
+
 
 function formatNo(date?: string | null) {
   if (!date) return "-";
