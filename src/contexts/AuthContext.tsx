@@ -34,6 +34,9 @@ interface CompanyInfo {
   has_departments: boolean;
   employee_count: number | null;
   brreg_employee_count: number | null;
+  status: string | null;
+  scheduled_termination_date: string | null;
+  terminated_at: string | null;
 }
 
 interface GuestAccessInfo {
@@ -60,6 +63,7 @@ interface AuthContextType {
   guestCheckComplete: boolean;
   isPendingApproval: boolean;
   isSuspended: boolean;
+  isCompanyTerminated: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -91,6 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isDepartmentAdmin = adminDepartmentIds.length > 0;
   const isPendingApproval = profile?.status === "pending_approval";
   const isSuspended = profile?.status === "suspended";
+  // Bedriften er stengt når lisensen er avsluttet (status inactive / terminated_at satt)
+  const isCompanyTerminated =
+    !!company && (company.status === "inactive" || !!company.terminated_at);
 
   const fetchAdminDepartments = async (userId: string) => {
     try {
@@ -203,7 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (profileData.company_id) {
           const { data: companyData } = await supabase
             .from("companies")
-            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count")
+            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count, status, scheduled_termination_date, terminated_at")
             .eq("id", profileData.company_id)
             .maybeSingle();
 
@@ -355,7 +362,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
         const { data: companyData } = await supabase
           .from("companies")
-          .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count")
+          .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count, status, scheduled_termination_date, terminated_at")
           .eq("id", profile.company_id)
           .maybeSingle();
 
@@ -402,6 +409,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     guestCheckComplete,
     isPendingApproval,
     isSuspended,
+    isCompanyTerminated,
     signIn,
     signUp,
     signOut,
@@ -423,6 +431,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     guestCheckComplete,
     isPendingApproval,
     isSuspended,
+    isCompanyTerminated,
     signIn,
     signUp,
     signOut,

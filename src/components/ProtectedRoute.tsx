@@ -26,7 +26,9 @@ export function ProtectedRoute({
     profile,
     guestCheckComplete,
     isPendingApproval,
-    isSuspended
+    isSuspended,
+    isCompanyTerminated,
+    company
   } = useAuth();
   const location = useLocation();
 
@@ -63,6 +65,32 @@ export function ProtectedRoute({
           <h1 className="text-xl font-bold mb-2">Konto suspendert</h1>
           <p className="text-muted-foreground mb-4">
             Din brukerkonto er suspendert. Ta kontakt med administrator for mer informasjon.
+          </p>
+          <button
+            onClick={() => window.location.href = "/auth"}
+            className="text-primary hover:underline text-sm"
+          >
+            {t("auto.tilbake_til_innlogging")}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Bedriftens lisens er avsluttet – full stenging (systemadmin har fortsatt tilgang)
+  if (isCompanyTerminated && !isSystemAdmin) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-hero">
+        <div className="bg-card rounded-2xl shadow-xl p-8 text-center max-w-md">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4">
+            <svg className="w-8 h-8 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold mb-2">Lisensen er utløpt</h1>
+          <p className="text-muted-foreground mb-4">
+            Abonnementet for {company?.name ?? "bedriften"} er avsluttet, og tilgangen til systemet er stengt.
+            Ta kontakt med oss på <a className="text-primary hover:underline" href="mailto:post@athenahms.no">post@athenahms.no</a> for å gjenåpne.
           </p>
           <button
             onClick={() => window.location.href = "/auth"}

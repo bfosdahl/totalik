@@ -21,6 +21,7 @@ import {
   Trash2,
   Activity,
   UserCheck,
+  CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ const adminNavItems = [
   { icon: Mail, label: t("auto.e_postlogg"), path: "/admin/email-log", color: undefined },
   { icon: Activity, label: t("auto.monitoring"), path: "/admin/monitoring", color: "text-warning" },
   { icon: UserCheck, label: t("auto.selgere"), path: "/admin/sellers", color: "text-accent" },
+  { icon: CalendarClock, label: "Lisenser", path: "/admin/licenses", color: "text-warning" },
   { icon: Trash2, label: t("auto.papirkurv"), path: "/admin/trash", color: "text-destructive" },
 ];
 
