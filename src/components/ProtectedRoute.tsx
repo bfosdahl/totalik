@@ -26,7 +26,9 @@ export function ProtectedRoute({
     profile,
     guestCheckComplete,
     isPendingApproval,
-    isSuspended
+    isSuspended,
+    isCompanyTerminated,
+    company
   } = useAuth();
   const location = useLocation();
 
