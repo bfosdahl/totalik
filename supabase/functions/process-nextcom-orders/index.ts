@@ -195,15 +195,30 @@ Deno.serve(async (req) => {
         // Detect renewal orders by product name (e.g. "Fornyelse av lisens")
         const isRenewal = productNames.some(p => p.toLowerCase().includes('fornyelse'));
 
+        // Employee count from Brreg — også brukt til å velge riktig renholdsmal
+        const employeeCount = await fetchBrregEmployeeCount(order.customerOrgNoOrSsn);
+        const serviceTemplates = detectServiceTemplates(productNames, employeeCount);
+
         if (dryRun) {
           results.push({
             order_id: order.id,
             company: order.customerCompany || "Unknown",
             status: "dry_run",
             modules,
-            details: { products: order.allProducts, email: order.customerEmail, is_course_only: isCourseOnly },
+            details: {
+              products: order.allProducts,
+              email: order.customerEmail,
+              is_course_only: isCourseOnly,
+              service_templates: serviceTemplates,
+            },
           });
           continue;
+        }
+
+        // Tjenestee-poster (HMS-kort, kompetansebevis, renholdsgodkjenning) sendes
+        // uavhengig av om ordren også inneholder IK-moduler.
+        if (serviceTemplates.length > 0 && order.customerEmail) {
+          await sendServiceEmails(supabase, order, serviceTemplates);
         }
 
         // Skip course-only orders (handled by kurskontoret). Renewals are always processed.
