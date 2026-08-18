@@ -45,7 +45,9 @@ export default function AdminLicenses() {
   const [busy, setBusy] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
   const [statusIds, setStatusIds] = useState("");
+  const [statusNames, setStatusNames] = useState("");
   const [statuses, setStatuses] = useState<StatusRow[]>([]);
+
   const [lookupQuery, setLookupQuery] = useState("");
   const [lookupResults, setLookupResults] = useState<Record<string, unknown>[]>([]);
 
