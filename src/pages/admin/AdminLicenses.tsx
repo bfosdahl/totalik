@@ -174,16 +174,26 @@ export default function AdminLicenses() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">NextCom-statuskode</CardTitle>
+            <CardTitle className="text-base">NextCom-status for oppsigelse</CardTitle>
             <CardDescription>
-              Legg inn statuskoden (statusId) som tilsvarer «avsluttet kundeforhold» (hvit). Flere koder skilles med komma.
+              Bruk statusnavnet slik det heter i NextCom, f.eks. «avsluttet kundeforhold». Statuskoder er valgfritt.
+              Flere verdier skilles med komma.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
               <div className="flex-1">
-                <Label htmlFor="statusIds">Statuskoder</Label>
-                <Input id="statusIds" value={statusIds} onChange={(e) => setStatusIds(e.target.value)} placeholder="f.eks. 98" />
+                <Label htmlFor="statusNames">Statusnavn</Label>
+                <Input
+                  id="statusNames"
+                  value={statusNames}
+                  onChange={(e) => setStatusNames(e.target.value)}
+                  placeholder="avsluttet kundeforhold"
+                />
+              </div>
+              <div className="sm:w-40">
+                <Label htmlFor="statusIds">Statuskoder (valgfritt)</Label>
+                <Input id="statusIds" value={statusIds} onChange={(e) => setStatusIds(e.target.value)} placeholder="f.eks. 29" />
               </div>
               <Button onClick={saveStatusIds} disabled={busy === "save"}>
                 {busy === "save" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Lagre"}
@@ -193,16 +203,17 @@ export default function AdminLicenses() {
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" onClick={scanStatuses} disabled={busy === "scan"}>
                 {busy === "scan" ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-                Vis statuskoder i bruk
+                Vis statuser i bruk
               </Button>
             </div>
 
             {statuses.length > 0 && (
               <div className="space-y-2 text-sm">
                 {statuses.map((s) => (
-                  <div key={s.statusId} className="rounded-lg border p-3">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">statusId {s.statusId}</Badge>
+                  <div key={`${s.statusId}-${s.statusName ?? ""}`} className="rounded-lg border p-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline">{s.statusName || `statusId ${s.statusId}`}</Badge>
+                      <span className="text-muted-foreground text-xs">kode {s.statusId}</span>
                       <span className="text-muted-foreground">{s.count} ordre</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 break-words">{s.examples.join(" · ")}</p>
@@ -212,7 +223,7 @@ export default function AdminLicenses() {
             )}
 
             <div className="pt-2 border-t space-y-2">
-              <Label htmlFor="lookup">Finn statuskode via en bestemt ordre</Label>
+              <Label htmlFor="lookup">Finn status via en bestemt ordre</Label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Input
                   id="lookup"
@@ -228,12 +239,13 @@ export default function AdminLicenses() {
                 <div key={i} className="rounded-lg border p-3 text-sm">
                   <div className="font-medium break-words">{String(m.company)}</div>
                   <div className="text-xs text-muted-foreground break-words">
-                    Ordre #{String(m.id)} · statusId <strong>{String(m.statusId)}</strong> · opprettet {formatNo(String(m.insertedDate))}
+                    Ordre #{String(m.id)} · status <strong>{String(m.statusName || m.statusId)}</strong> (kode {String(m.statusId)}) · opprettet {formatNo(String(m.insertedDate))}
                   </div>
                   <div className="text-xs text-muted-foreground break-words">{String(m.products ?? "")}</div>
                 </div>
               ))}
             </div>
+
           </CardContent>
         </Card>
 
