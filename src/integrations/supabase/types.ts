@@ -15357,6 +15357,42 @@ export type Database = {
         }
         Relationships: []
       }
+      nextcom_service_emails: {
+        Row: {
+          company_name: string | null
+          error_message: string | null
+          id: string
+          order_id: string
+          product_names: string | null
+          recipient_email: string
+          sent_at: string
+          status: string
+          template_key: string
+        }
+        Insert: {
+          company_name?: string | null
+          error_message?: string | null
+          id?: string
+          order_id: string
+          product_names?: string | null
+          recipient_email: string
+          sent_at?: string
+          status?: string
+          template_key: string
+        }
+        Update: {
+          company_name?: string | null
+          error_message?: string | null
+          id?: string
+          order_id?: string
+          product_names?: string | null
+          recipient_email?: string
+          sent_at?: string
+          status?: string
+          template_key?: string
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           body: string

@@ -1,4 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  SERVICE_TEMPLATES,
+  detectServiceTemplates,
+  type ServiceTemplateKey,
+} from "../_shared/service-email-templates/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -190,22 +195,37 @@ Deno.serve(async (req) => {
         // Detect renewal orders by product name (e.g. "Fornyelse av lisens")
         const isRenewal = productNames.some(p => p.toLowerCase().includes('fornyelse'));
 
+        // Employee count from Brreg — også brukt til å velge riktig renholdsmal
+        const employeeCount = await fetchBrregEmployeeCount(order.customerOrgNoOrSsn);
+        const serviceTemplates = detectServiceTemplates(productNames, employeeCount);
+
         if (dryRun) {
           results.push({
             order_id: order.id,
             company: order.customerCompany || "Unknown",
             status: "dry_run",
             modules,
-            details: { products: order.allProducts, email: order.customerEmail, is_course_only: isCourseOnly },
+            details: {
+              products: order.allProducts,
+              email: order.customerEmail,
+              is_course_only: isCourseOnly,
+              service_templates: serviceTemplates,
+            },
           });
           continue;
+        }
+
+        // Tjenestee-poster (HMS-kort, kompetansebevis, renholdsgodkjenning) sendes
+        // uavhengig av om ordren også inneholder IK-moduler.
+        if (serviceTemplates.length > 0 && order.customerEmail) {
+          await sendServiceEmails(supabase, order, serviceTemplates);
         }
 
         // Skip course-only orders (handled by kurskontoret). Renewals are always processed.
         if (!isRenewal && (isCourseOnly || modules.length === 0)) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Skipping - ${isCourseOnly ? 'course product' : 'no IK modules detected'} (${order.allProducts})`);
-          await markOrderProcessed(supabase, order.id, "skipped_not_ik", { products: order.allProducts });
-          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "skipped", error: isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected" });
+          await markOrderProcessed(supabase, order.id, "skipped_not_ik", { products: order.allProducts, service_emails: serviceTemplates });
+          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: serviceTemplates.length > 0 ? "service_email_sent" : "skipped", modules: serviceTemplates, error: serviceTemplates.length > 0 ? undefined : (isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected") });
           continue;
         }
 
@@ -216,8 +236,6 @@ Deno.serve(async (req) => {
           results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "skipped", error: "No email" });
           continue;
         }
-
-        const employeeCount = await fetchBrregEmployeeCount(order.customerOrgNoOrSsn);
 
         // Call create-company-from-crm
         const crmPayload = {
@@ -295,6 +313,86 @@ function respond(body: object) {
   return new Response(JSON.stringify(body), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+// ── Tjenestee-poster (Athena HMS) ──
+
+const SERVICE_FROM = "Athena HMS <noreply@totalik.no>";
+const SERVICE_REPLY_TO = "joe@athenahms.no";
+
+async function sendServiceEmails(
+  supabase: ReturnType<typeof createClient>,
+  order: NextcomOrder,
+  templates: ServiceTemplateKey[],
+) {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendKey) {
+    console.error("[Service Email] RESEND_API_KEY mangler");
+    return;
+  }
+
+  const recipient = (order.customerEmail || "").trim().toLowerCase();
+  if (!recipient) return;
+
+  for (const key of templates) {
+    // Idempotens: hopp over hvis allerede sendt for denne ordren
+    const { data: existing } = await supabase
+      .from("nextcom_service_emails")
+      .select("id")
+      .eq("order_id", String(order.id))
+      .eq("template_key", key)
+      .maybeSingle();
+
+    if (existing) {
+      console.log(`[Service Email] Order ${order.id}: ${key} allerede sendt`);
+      continue;
+    }
+
+    const tpl = SERVICE_TEMPLATES[key];
+    let status = "sent";
+    let errorMessage: string | null = null;
+
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendKey}`,
+        },
+        body: JSON.stringify({
+          from: SERVICE_FROM,
+          to: [recipient],
+          cc: [SERVICE_REPLY_TO],
+          reply_to: SERVICE_REPLY_TO,
+          subject: tpl.subject,
+          html: tpl.html,
+        }),
+      });
+
+      if (!res.ok) {
+        status = "error";
+        errorMessage = (await res.text()).slice(0, 500);
+        console.error(`[Service Email] Order ${order.id}: ${key} feilet -`, errorMessage);
+      } else {
+        console.log(`[Service Email] Order ${order.id}: ${key} sendt til ${recipient}`);
+      }
+    } catch (err) {
+      status = "error";
+      errorMessage = String(err).slice(0, 500);
+      console.error(`[Service Email] Order ${order.id}: ${key} exception -`, err);
+    }
+
+    await supabase.from("nextcom_service_emails").upsert({
+      order_id: String(order.id),
+      template_key: key,
+      recipient_email: recipient,
+      company_name: order.customerCompany || null,
+      product_names: order.allProducts || null,
+      status,
+      error_message: errorMessage,
+      sent_at: new Date().toISOString(),
+    }, { onConflict: "order_id,template_key" });
+  }
 }
 
 // ── Detect IK modules from product names ──
