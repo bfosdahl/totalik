@@ -163,32 +163,35 @@ Deno.serve(async (req) => {
     const totalCount = Number(countData.totalCount || countData.total || countData.count || 0);
     const maxPages = Number(body?.pages ?? 10);
 
-    // ── Modus: kartlegg hvilke statuskoder som finnes (brukes i admin for å velge riktig kode)
+    // ── Modus: kartlegg hvilke statuser som finnes (navn + kode)
     if (mode === "scan_statuses") {
-      const seen = new Map<number, { count: number; examples: string[] }>();
+      const seen = new Map<string, { statusId: number; statusName: string; count: number; examples: string[] }>();
+      let sampleKeys: string[] = [];
       for (let page = 0; page < maxPages; page++) {
         const offset = Math.max(0, totalCount - (page + 1) * limit);
         const d = await nextcomFetch(`/crm-system/orders?offset=${offset}&limit=${limit}&locale=nor`, auth);
         for (const o of (d.items || [])) {
+          if (!sampleKeys.length) sampleKeys = Object.keys(o);
           const sid = Number(o.statusId);
-          const cur = seen.get(sid) || { count: 0, examples: [] };
+          const sname = statusNameOf(o);
+          const key = `${sid}|${sname}`;
+          const cur = seen.get(key) || { statusId: sid, statusName: sname, count: 0, examples: [] };
           cur.count++;
           if (cur.examples.length < 5 && o.customerCompany) {
             cur.examples.push(`${o.customerCompany} (#${o.id}, ${toDateOnly(o.insertedDate)})`);
           }
-          seen.set(sid, cur);
+          seen.set(key, cur);
         }
         if (offset === 0) break;
       }
       return json({
         success: true,
-        statuses: Array.from(seen.entries())
-          .map(([statusId, v]) => ({ statusId, ...v }))
-          .sort((a, b) => b.count - a.count),
+        sample_fields: sampleKeys,
+        statuses: Array.from(seen.values()).sort((a, b) => b.count - a.count),
       });
     }
 
-    // ── Modus: slå opp én konkret ordre (for å lese av statusId etter statusbytte)
+    // ── Modus: slå opp én konkret ordre (for å lese av status etter statusbytte)
     if (mode === "lookup_order") {
       const needle = String(body?.query || "").toLowerCase().trim();
       const matches: unknown[] = [];
@@ -201,6 +204,7 @@ Deno.serve(async (req) => {
             matches.push({
               id: o.id,
               statusId: o.statusId,
+              statusName: statusNameOf(o),
               company: o.customerCompany,
               email: o.customerEmail,
               orgNumber: o.customerOrgNoOrSsn,
@@ -215,27 +219,27 @@ Deno.serve(async (req) => {
       return json({ success: true, matches: matches.slice(0, 25) });
     }
 
-    // ── Normal synk
+    // ── Normal synk: match på statuskode ELLER statusnavn
     let statusIds: number[] = Array.isArray(body?.status_ids)
       ? (body.status_ids as unknown[]).map(Number)
       : [];
+    let statusNames: string[] = Array.isArray(body?.status_names)
+      ? (body.status_names as unknown[]).map((n) => String(n).toLowerCase().trim()).filter(Boolean)
+      : [];
 
-    if (statusIds.length === 0) {
+    if (statusIds.length === 0 && statusNames.length === 0) {
       const { data: setting } = await supabase
         .from("system_settings")
         .select("value")
         .eq("key", SETTINGS_KEY)
         .maybeSingle();
-      statusIds = ((setting?.value as { status_ids?: unknown[] } | null)?.status_ids || []).map(Number);
+      const value = setting?.value as { status_ids?: unknown[]; status_names?: unknown[] } | null;
+      statusIds = (value?.status_ids || []).map(Number).filter((n) => Number.isFinite(n) && n > 0);
+      statusNames = (value?.status_names || []).map((n) => String(n).toLowerCase().trim()).filter(Boolean);
     }
 
-    if (statusIds.length === 0) {
-      // Ikke konfigurert ennå – ikke en feil, jobben har bare ingenting å gjøre.
-      await recordJobRun("nextcom-license-sync", "success", startedAt, {
-        details: { skipped: "ingen statuskoder konfigurert" },
-      });
-      return json({ success: true, skipped: true, message: "Ingen statuskode for «avsluttet kundeforhold» er konfigurert" });
-    }
+    // Ingen konfigurasjon? Bruk standardnavnet «avsluttet kundeforhold».
+    if (statusIds.length === 0 && statusNames.length === 0) statusNames = [...DEFAULT_STATUS_NAMES];
 
     const terminatedOrders: Record<string, unknown>[] = [];
     for (let page = 0; page < maxPages; page++) {
@@ -244,10 +248,11 @@ Deno.serve(async (req) => {
       const items: Record<string, unknown>[] = d.items || [];
       if (!items.length) break;
       for (const o of items) {
-        if (statusIds.includes(Number(o.statusId))) terminatedOrders.push(o);
+        if (matchesTermination(o, statusIds, statusNames)) terminatedOrders.push(o);
       }
       if (offset === 0) break;
     }
+
 
     console.log(`[license-sync] ${terminatedOrders.length} ordre med avsluttet kundeforhold`);
 
