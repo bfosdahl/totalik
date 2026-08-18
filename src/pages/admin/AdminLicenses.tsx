@@ -14,7 +14,7 @@ interface CompanyRow {
   id: string;
   name: string;
   org_number: string | null;
-  status: string | null;
+  status: "active" | "inactive" | "suspended" | null;
   license_months: number | null;
   license_start_date: string | null;
   license_months_manual: boolean | null;
