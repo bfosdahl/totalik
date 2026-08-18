@@ -237,8 +237,6 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const employeeCount = await fetchBrregEmployeeCount(order.customerOrgNoOrSsn);
-
         // Call create-company-from-crm
         const crmPayload = {
           company_name: order.customerCompany || `Bedrift ${order.customerOrgNoOrSsn || order.customerEmail}`,
