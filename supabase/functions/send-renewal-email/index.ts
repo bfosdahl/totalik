@@ -126,21 +126,25 @@ serve(async (req) => {
               </p>
             </div>
             
+            ${defaultPasswordHtml(email)}
+
+            <div style="text-align: center; margin: 24px 0;">
+              <a href="${loginUrl}/auth" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">Logg inn p&aring; Total-IK</a>
+            </div>
+            <p style="color: #444; font-size: 14px; text-align: center; margin: 0 0 8px 0;">
+              Fungerer ikke knappen? Kopier og lim inn denne adressen i nettleseren:
+            </p>
+            <p style="text-align: center; font-size: 15px; word-break: break-all; margin: 0 0 24px 0;">
+              <a href="${loginUrl}/auth" style="color: #0066cc;">${loginUrl}/auth</a>
+            </p>
+
             ${resetLink ? `
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${resetLink}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">Sett passord og logg inn</a>
-            </div>
-            <p style="color: #666; font-size: 14px; text-align: center;">
-              Lenken utløper om 24 timer.
+            <p style="color: #666; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
+              Vil du heller sette ditt eget passord med en gang?
+              <a href="${resetLink}" style="color: #0066cc;">Klikk her</a> (lenken utl&oslash;per om 24 timer).
             </p>
-            ` : `
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${loginUrl}/auth" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">Logg inn på Total-IK</a>
-            </div>
-            <p style="color: #666; font-size: 14px; text-align: center;">
-              Bruk "Glemt passord" hvis du trenger å sette nytt passord.
-            </p>
-            `}
+            ` : ``}
+
             
             <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 24px 0;">
               <p style="margin: 0 0 10px 0; font-weight: 600; color: #92400e;">🚀 Nyhet: Vi har lansert nytt IK-system!</p>
