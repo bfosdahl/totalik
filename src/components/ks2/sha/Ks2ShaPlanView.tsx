@@ -20,6 +20,8 @@ import {
   Eye,
   Download,
   MapPin,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
@@ -87,16 +89,39 @@ export function Ks2ShaPlanView({ projectId }: Props) {
 
   const riskAreas = editedRiskAreas || shaPlan.risk_areas || [];
 
-  const handleRiskAreaChange = (index: number, field: "checked" | "measures", value: boolean | string) => {
+  const handleRiskAreaChange = (index: number, field: "checked" | "measures" | "description", value: boolean | string) => {
     const updated = riskAreas.map((ra, i) => 
       i === index ? { ...ra, [field]: value } : ra
     );
     setEditedRiskAreas(updated);
   };
 
+  const isCustomRisk = (ra: RiskArea) => ra.id.startsWith("custom-");
+
+  const handleAddCustomRisk = () => {
+    const customCount = riskAreas.filter(isCustomRisk).length;
+    setEditedRiskAreas([
+      ...riskAreas,
+      {
+        id: `custom-${Date.now()}`,
+        paragraph: `Egen ${customCount + 1}`,
+        description: "",
+        checked: true,
+        measures: "",
+      },
+    ]);
+  };
+
+  const handleRemoveRisk = (index: number) => {
+    setEditedRiskAreas(riskAreas.filter((_, i) => i !== index));
+  };
+
   const handleSaveRiskAreas = async () => {
     if (!editedRiskAreas) return;
-    await updateShaPlan({ risk_areas: editedRiskAreas } as any);
+    const cleaned = editedRiskAreas.filter(
+      (ra) => !isCustomRisk(ra) || ra.description.trim().length > 0
+    );
+    await updateShaPlan({ risk_areas: cleaned } as any);
     setEditedRiskAreas(null);
   };
 
@@ -311,10 +336,31 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                         onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
                       />
                       <div className="flex-1">
+                        {isCustomRisk(ra) ? (
+                          <div className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-2 text-xs shrink-0">{ra.paragraph}</Badge>
+                            <Input
+                              value={ra.description}
+                              placeholder="Beskriv egendefinert risiko"
+                              onChange={(e) => handleRiskAreaChange(index, "description", e.target.value)}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="shrink-0 text-destructive"
+                              onClick={() => handleRemoveRisk(index)}
+                              aria-label="Fjern risiko"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
                         <Label htmlFor={`view-${ra.id}`} className="cursor-pointer text-sm">
                           <Badge variant="outline" className="mr-2 text-xs">{ra.paragraph}</Badge>
                           {ra.description}
                         </Label>
+                        )}
                         {riggLinks.length > 0 && (
                           <div className="mt-2 flex items-center flex-wrap gap-1.5">
                             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -352,6 +398,11 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                   </div>
                 );
               })}
+
+              <Button type="button" variant="outline" onClick={handleAddCustomRisk} className="w-full sm:w-auto">
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til egendefinert risiko
+              </Button>
 
               {editedRiskAreas && (
                 <Button onClick={handleSaveRiskAreas} disabled={isSaving}>
