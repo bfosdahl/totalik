@@ -87,16 +87,39 @@ export function Ks2ShaPlanView({ projectId }: Props) {
 
   const riskAreas = editedRiskAreas || shaPlan.risk_areas || [];
 
-  const handleRiskAreaChange = (index: number, field: "checked" | "measures", value: boolean | string) => {
+  const handleRiskAreaChange = (index: number, field: "checked" | "measures" | "description", value: boolean | string) => {
     const updated = riskAreas.map((ra, i) => 
       i === index ? { ...ra, [field]: value } : ra
     );
     setEditedRiskAreas(updated);
   };
 
+  const isCustomRisk = (ra: RiskArea) => ra.id.startsWith("custom-");
+
+  const handleAddCustomRisk = () => {
+    const customCount = riskAreas.filter(isCustomRisk).length;
+    setEditedRiskAreas([
+      ...riskAreas,
+      {
+        id: `custom-${Date.now()}`,
+        paragraph: `Egen ${customCount + 1}`,
+        description: "",
+        checked: true,
+        measures: "",
+      },
+    ]);
+  };
+
+  const handleRemoveRisk = (index: number) => {
+    setEditedRiskAreas(riskAreas.filter((_, i) => i !== index));
+  };
+
   const handleSaveRiskAreas = async () => {
     if (!editedRiskAreas) return;
-    await updateShaPlan({ risk_areas: editedRiskAreas } as any);
+    const cleaned = editedRiskAreas.filter(
+      (ra) => !isCustomRisk(ra) || ra.description.trim().length > 0
+    );
+    await updateShaPlan({ risk_areas: cleaned } as any);
     setEditedRiskAreas(null);
   };
 
