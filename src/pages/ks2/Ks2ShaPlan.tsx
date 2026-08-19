@@ -36,6 +36,25 @@ export default function Ks2ShaPlan() {
   const [activeTab, setActiveTab] = useState<string>("plan");
   const [showCreateFlow, setShowCreateFlow] = useState(false);
   const [createType, setCreateType] = useState<"internal" | "external" | null>(null);
+  const [pdfBusy, setPdfBusy] = useState<"preview" | "download" | null>(null);
+
+  const handlePdf = async (mode: "preview" | "download") => {
+    if (!shaPlan) return;
+    setPdfBusy(mode);
+    try {
+      if (mode === "preview") {
+        await previewShaPlanPdf(shaPlan, tilpasning);
+      } else {
+        await downloadShaPlanPdf(shaPlan, tilpasning);
+      }
+    } catch (e) {
+      console.error("SHA PDF error:", e);
+      toast.error("Kunne ikke lage PDF av SHA-planen");
+    } finally {
+      setPdfBusy(null);
+    }
+  };
+
 
   if (isLoading) {
     return (
