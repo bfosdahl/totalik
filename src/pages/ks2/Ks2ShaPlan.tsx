@@ -27,6 +27,9 @@ import { Ks2ShaPlanUpload } from "@/components/ks2/sha/Ks2ShaPlanUpload";
 import { Ks2ShaPlanView } from "@/components/ks2/sha/Ks2ShaPlanView";
 import { Ks2ShaTilpasning } from "@/components/ks2/sha/Ks2ShaTilpasning";
 import { t } from "@/i18n/t";
+import { toast } from "sonner";
+import { previewShaPlanPdf, downloadShaPlanPdf } from "@/utils/ksModule2ShaPlanPdf";
+
 
 export default function Ks2ShaPlan() {
   const { projectId } = useParams();
