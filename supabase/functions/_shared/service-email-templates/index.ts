@@ -2,18 +2,21 @@ import * as hmsKort from "./hms-kort.ts";
 import * as kompetansebevis from "./kompetansebevis.ts";
 import * as renholdMed from "./renhold-med-ansatte.ts";
 import * as renholdUten from "./renhold-uten-ansatte.ts";
+import * as sentralGodkjenning from "./sentral-godkjenning.ts";
 
 export type ServiceTemplateKey =
   | "hms-kort"
   | "kompetansebevis"
   | "renhold-med-ansatte"
-  | "renhold-uten-ansatte";
+  | "renhold-uten-ansatte"
+  | "sentral-godkjenning";
 
 export const SERVICE_TEMPLATES: Record<ServiceTemplateKey, { subject: string; html: string }> = {
   "hms-kort": { subject: hmsKort.subject, html: hmsKort.html },
   "kompetansebevis": { subject: kompetansebevis.subject, html: kompetansebevis.html },
   "renhold-med-ansatte": { subject: renholdMed.subject, html: renholdMed.html },
   "renhold-uten-ansatte": { subject: renholdUten.subject, html: renholdUten.html },
+  "sentral-godkjenning": { subject: sentralGodkjenning.subject, html: sentralGodkjenning.html },
 };
 
 // Produktnavn i NextCom → tjenestemal.
@@ -30,7 +33,13 @@ const KEYWORD_MAP: Array<{ keyword: string; template: ServiceTemplateKey | "renh
   { keyword: "renholdssøknad", template: "renhold" },
   { keyword: "renholdsoknad", template: "renhold" },
   { keyword: "godkjenning renhold", template: "renhold" },
+  { keyword: "sentral godkjenning", template: "sentral-godkjenning" },
+  { keyword: "sentralgodkjenning", template: "sentral-godkjenning" },
+  { keyword: "sentral-godkjenning", template: "sentral-godkjenning" },
+  { keyword: "sg-søknad", template: "sentral-godkjenning" },
+  { keyword: "sg soknad", template: "sentral-godkjenning" },
 ];
+
 
 /**
  * Finner hvilke tjenestemaler en ordre skal utløse.
