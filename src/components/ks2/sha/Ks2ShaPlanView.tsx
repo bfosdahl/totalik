@@ -20,6 +20,8 @@ import {
   Eye,
   Download,
   MapPin,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
