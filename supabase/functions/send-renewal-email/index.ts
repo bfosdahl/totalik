@@ -117,14 +117,12 @@ serve(async (req) => {
             <p>Vi setter stor pris på tilliten dere viser oss!</p>
             
             <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #0066cc;">
-              <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">🔐 Din innloggingsinformasjon</h3>
-              <p style="color: #555; margin: 0 0 8px 0;">
-                <strong>Brukernavn:</strong> ${email}
-              </p>
+              <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">Din innloggingsinformasjon</h3>
               <p style="color: #555; margin: 0;">
-                Klikk på knappen nedenfor for å sette ditt passord og logge inn.
+                Logg inn p&aring; <a href="${loginUrl}/auth" style="color:#0066cc;">${loginUrl}/auth</a> med informasjonen nedenfor.
               </p>
             </div>
+
             
             ${defaultPasswordHtml(email)}
 
