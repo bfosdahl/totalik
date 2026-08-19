@@ -334,10 +334,31 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                         onCheckedChange={(checked) => handleRiskAreaChange(index, "checked", !!checked)}
                       />
                       <div className="flex-1">
+                        {isCustomRisk(ra) ? (
+                          <div className="flex items-start gap-2">
+                            <Badge variant="outline" className="mt-2 text-xs shrink-0">{ra.paragraph}</Badge>
+                            <Input
+                              value={ra.description}
+                              placeholder="Beskriv egendefinert risiko"
+                              onChange={(e) => handleRiskAreaChange(index, "description", e.target.value)}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="shrink-0 text-destructive"
+                              onClick={() => handleRemoveRisk(index)}
+                              aria-label="Fjern risiko"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
                         <Label htmlFor={`view-${ra.id}`} className="cursor-pointer text-sm">
                           <Badge variant="outline" className="mr-2 text-xs">{ra.paragraph}</Badge>
                           {ra.description}
                         </Label>
+                        )}
                         {riggLinks.length > 0 && (
                           <div className="mt-2 flex items-center flex-wrap gap-1.5">
                             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
