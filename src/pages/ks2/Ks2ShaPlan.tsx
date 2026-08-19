@@ -27,6 +27,9 @@ import { Ks2ShaPlanUpload } from "@/components/ks2/sha/Ks2ShaPlanUpload";
 import { Ks2ShaPlanView } from "@/components/ks2/sha/Ks2ShaPlanView";
 import { Ks2ShaTilpasning } from "@/components/ks2/sha/Ks2ShaTilpasning";
 import { t } from "@/i18n/t";
+import { toast } from "sonner";
+import { previewShaPlanPdf, downloadShaPlanPdf } from "@/utils/ksModule2ShaPlanPdf";
+
 
 export default function Ks2ShaPlan() {
   const { projectId } = useParams();
@@ -36,6 +39,25 @@ export default function Ks2ShaPlan() {
   const [activeTab, setActiveTab] = useState<string>("plan");
   const [showCreateFlow, setShowCreateFlow] = useState(false);
   const [createType, setCreateType] = useState<"internal" | "external" | null>(null);
+  const [pdfBusy, setPdfBusy] = useState<"preview" | "download" | null>(null);
+
+  const handlePdf = async (mode: "preview" | "download") => {
+    if (!shaPlan) return;
+    setPdfBusy(mode);
+    try {
+      if (mode === "preview") {
+        await previewShaPlanPdf(shaPlan, tilpasning);
+      } else {
+        await downloadShaPlanPdf(shaPlan, tilpasning);
+      }
+    } catch (e) {
+      console.error("SHA PDF error:", e);
+      toast.error("Kunne ikke lage PDF av SHA-planen");
+    } finally {
+      setPdfBusy(null);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -221,15 +243,24 @@ export default function Ks2ShaPlan() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={() => handlePdf("preview")} disabled={pdfBusy !== null}>
+            {pdfBusy === "preview" ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Eye className="h-4 w-4 mr-2" />
+            )}
             {t("auto.forhaandsvis_pdf")}
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={() => handlePdf("download")} disabled={pdfBusy !== null}>
+            {pdfBusy === "download" ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             Last ned
           </Button>
         </div>
+
       </div>
 
       {/* Status Widget */}

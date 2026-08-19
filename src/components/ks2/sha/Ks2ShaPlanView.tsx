@@ -113,6 +113,26 @@ export function Ks2ShaPlanView({ projectId }: Props) {
     }
   };
 
+  const handleDownloadExternal = async () => {
+    const url = await getExternalFileUrl();
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = shaPlan?.external_file_name || "SHA-plan.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
+
+
   // External plan view
   if (shaPlan.plan_type === "external") {
     return (
@@ -139,10 +159,11 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                   <Eye className="h-4 w-4 mr-2" />
                   Vis
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleDownloadExternal}>
                   <Download className="h-4 w-4 mr-2" />
                   Last ned
                 </Button>
+
               </div>
             </div>
 
