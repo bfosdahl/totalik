@@ -221,15 +221,24 @@ export default function Ks2ShaPlan() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={() => handlePdf("preview")} disabled={pdfBusy !== null}>
+            {pdfBusy === "preview" ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Eye className="h-4 w-4 mr-2" />
+            )}
             {t("auto.forhaandsvis_pdf")}
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={() => handlePdf("download")} disabled={pdfBusy !== null}>
+            {pdfBusy === "download" ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             Last ned
           </Button>
         </div>
+
       </div>
 
       {/* Status Widget */}
