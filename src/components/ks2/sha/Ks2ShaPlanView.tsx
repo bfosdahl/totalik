@@ -397,6 +397,11 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                 );
               })}
 
+              <Button type="button" variant="outline" onClick={handleAddCustomRisk} className="w-full sm:w-auto">
+                <Plus className="h-4 w-4 mr-2" />
+                Legg til egendefinert risiko
+              </Button>
+
               {editedRiskAreas && (
                 <Button onClick={handleSaveRiskAreas} disabled={isSaving}>
                   {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
