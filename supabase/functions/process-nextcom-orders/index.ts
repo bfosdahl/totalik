@@ -172,16 +172,11 @@ Deno.serve(async (req) => {
       return respond({ success: true, message: "All orders already processed", orders_found: orders.length, already_processed: processedSet.size });
     }
 
-    // Step 3: Process each new order
-    const results: Array<{ order_id: string; company: string; status: string; modules?: string[]; details?: unknown; error?: string }> = [];
+    // Step 3: Process new orders in concurrent chunks (3 at a time)
+    type OrderResult = { order_id: string; company: string; status: string; modules?: string[]; details?: unknown; error?: string };
+    const results: OrderResult[] = [];
 
-    for (let i = 0; i < newOrders.length; i++) {
-      const order = newOrders[i];
-
-      if (i > 0) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-
+    const processOrder = async (order: NextcomOrder): Promise<OrderResult> => {
       try {
         // Parse products and determine which are IK-system modules
         const productNames = order.allProducts
@@ -200,7 +195,7 @@ Deno.serve(async (req) => {
         const serviceTemplates = detectServiceTemplates(productNames, employeeCount);
 
         if (dryRun) {
-          results.push({
+          return {
             order_id: order.id,
             company: order.customerCompany || "Unknown",
             status: "dry_run",
@@ -211,8 +206,7 @@ Deno.serve(async (req) => {
               is_course_only: isCourseOnly,
               service_templates: serviceTemplates,
             },
-          });
-          continue;
+          };
         }
 
         // Tjenestee-poster (HMS-kort, kompetansebevis, renholdsgodkjenning) sendes
@@ -225,16 +219,14 @@ Deno.serve(async (req) => {
         if (!isRenewal && (isCourseOnly || modules.length === 0)) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Skipping - ${isCourseOnly ? 'course product' : 'no IK modules detected'} (${order.allProducts})`);
           await markOrderProcessed(supabase, order.id, "skipped_not_ik", { products: order.allProducts, service_emails: serviceTemplates });
-          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: serviceTemplates.length > 0 ? "service_email_sent" : "skipped", modules: serviceTemplates, error: serviceTemplates.length > 0 ? undefined : (isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected") });
-          continue;
+          return { order_id: order.id, company: order.customerCompany || "Unknown", status: serviceTemplates.length > 0 ? "service_email_sent" : "skipped", modules: serviceTemplates, error: serviceTemplates.length > 0 ? undefined : (isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected") };
         }
 
         // Skip orders without email
         if (!order.customerEmail) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Skipping - no email`);
           await markOrderProcessed(supabase, order.id, "skipped_no_email");
-          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "skipped", error: "No email" });
-          continue;
+          return { order_id: order.id, company: order.customerCompany || "Unknown", status: "skipped", error: "No email" };
         }
 
         // Call create-company-from-crm
@@ -271,23 +263,30 @@ Deno.serve(async (req) => {
         if (crmResponse.ok) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Success -`, JSON.stringify(crmResult));
           await markOrderProcessed(supabase, order.id, "success", crmResult);
-          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "success", modules, details: crmResult });
+          return { order_id: order.id, company: order.customerCompany || "Unknown", status: "success", modules, details: crmResult };
         } else if (crmResponse.status === 409) {
           // Company already exists - not an error
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Company already exists`);
           await markOrderProcessed(supabase, order.id, "already_exists", crmResult);
-          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "already_exists", modules });
+          return { order_id: order.id, company: order.customerCompany || "Unknown", status: "already_exists", modules };
         } else {
           console.error(`[TotalIK NextCom Sync] Order ${order.id}: CRM failed -`, crmResult);
           await markOrderProcessed(supabase, order.id, "error", null, crmResult.error || JSON.stringify(crmResult));
-          results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "error", error: crmResult.error });
+          return { order_id: order.id, company: order.customerCompany || "Unknown", status: "error", error: crmResult.error };
         }
       } catch (err) {
         console.error(`[TotalIK NextCom Sync] Order ${order.id}: Exception -`, err);
         await markOrderProcessed(supabase, order.id, "error", null, String(err));
-        results.push({ order_id: order.id, company: order.customerCompany || "Unknown", status: "error", error: String(err) });
+        return { order_id: order.id, company: order.customerCompany || "Unknown", status: "error", error: String(err) };
       }
+    };
+
+    const CONCURRENCY = 3;
+    for (let i = 0; i < newOrders.length; i += CONCURRENCY) {
+      const chunk = newOrders.slice(i, i + CONCURRENCY);
+      results.push(...await Promise.all(chunk.map(processOrder)));
     }
+
 
     const summary = {
       success: true,
