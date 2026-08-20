@@ -26,6 +26,7 @@ import {
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
 import { useAuth } from "@/contexts/AuthContext";
+import ProjectOrganizationEditor from "@/components/ks2/organization/ProjectOrganizationEditor";
 import { t } from "@/i18n/t";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -475,6 +476,21 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                   Lagre endringer
                 </Button>
               )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Organization */}
+        <AccordionItem value="organization" className="border rounded-lg px-4">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-emerald-500" />
+              <span className="font-semibold">Organisering og ansvar</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-4">
+              <ProjectOrganizationEditor projectId={projectId} bare />
             </div>
           </AccordionContent>
         </AccordionItem>

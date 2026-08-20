@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import UserSelect from "@/components/audits/UserSelect";
+import ProjectOrganizationEditor from "@/components/ks2/organization/ProjectOrganizationEditor";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -312,38 +312,7 @@ export default function Ks2HmsPlan() {
 
         {/* Organization Tab */}
         <TabsContent value="organization" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="h-5 w-5 text-emerald-500" />
-                HMS-organisering
-              </CardTitle>
-              <CardDescription>
-                {t("auto.definer_roller_og_ansvar_for_hms_i_prosj")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {responsibilities.map((resp, index) => (
-                <div key={resp.role} className="p-4 rounded-lg border bg-card">
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                    <div className="flex-1 space-y-2">
-                      <Label className="font-semibold">{resp.role}</Label>
-                      <p className="text-sm text-muted-foreground">{resp.responsibilities}</p>
-                    </div>
-                    <div className="sm:w-64">
-                      <Label className="text-sm">{t("auto.navn_2")}</Label>
-                      <UserSelect
-                        placeholder={t("auto.velg_person_2")}
-                        value={resp.name}
-                        onValueChange={(val) => updateResponsible(index, val)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <ProjectOrganizationEditor projectId={projectId!} />
         </TabsContent>
 
         {/* Measures Tab */}
