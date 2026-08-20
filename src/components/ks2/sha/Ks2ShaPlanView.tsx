@@ -62,7 +62,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   useEffect(() => {
     const p = searchParams.get("paragraph");
     if (p) {
-      setAccordionValue("risks");
+      setOpenSections((prev) => (prev.includes("risks") ? prev : [...prev, "risks"]));
       setHighlightParagraph(p);
       searchParams.delete("paragraph");
       setSearchParams(searchParams, { replace: true });
