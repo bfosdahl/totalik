@@ -250,8 +250,9 @@ export function Ks2ShaPlanView({ projectId }: Props) {
     <div className="space-y-6">
       <Accordion
         type="multiple"
-        value={accordionValue ? Array.from(new Set(["info", "risks", accordionValue])) : ["info", "risks"]}
-        onValueChange={(v) => setAccordionValue(v[v.length - 1])}
+        value={openSections}
+        onValueChange={setOpenSections}
+
         className="space-y-4"
       >
         {/* Project Info */}
