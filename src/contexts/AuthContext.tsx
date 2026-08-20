@@ -146,36 +146,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsGuestUser(true);
         setGuestProjects(guestProjectsInfo);
         
-        // Update access status to active and log login
-        for (const access of accessData) {
-          if (access.status === 'invited') {
-            await supabase
-              .from("ks_module2_project_access")
-              .update({ status: 'active', last_login: new Date().toISOString() })
-              .eq("project_id", access.project_id)
-              .eq("user_id", userId);
-          } else {
-            // Increment login_count using raw SQL via rpc, fallback to +1
-            const currentCount = access.login_count ?? 0;
-            await supabase
-              .from("ks_module2_project_access")
-              .update({ 
-                last_login: new Date().toISOString(),
-                login_count: currentCount + 1
-              })
-              .eq("project_id", access.project_id)
-              .eq("user_id", userId);
-          }
-          
-          // Log access — use parameter instead of stale `user?.email`
-          await supabase.from("ks_module2_access_log").insert({
-            access_id: access.project_id,
-            project_id: access.project_id,
-            user_id: userId,
-            email: userEmail,
-            action: 'login',
-          });
+        // Batch DB writes instead of sequential per-project round trips
+        const nowIso = new Date().toISOString();
+
+        const invitedProjectIds = accessData
+          .filter(a => a.status === 'invited')
+          .map(a => a.project_id);
+
+        if (invitedProjectIds.length > 0) {
+          await supabase
+            .from("ks_module2_project_access")
+            .update({ status: 'active', last_login: nowIso })
+            .eq("user_id", userId)
+            .in("project_id", invitedProjectIds);
         }
+
+        // Active rows also increment login_count — group by current count so
+        // the increment is preserved while still batching the writes.
+        const activeRows = accessData.filter(a => a.status !== 'invited');
+        const byCount = new Map<number, string[]>();
+        for (const a of activeRows) {
+          const c = a.login_count ?? 0;
+          byCount.set(c, [...(byCount.get(c) || []), a.project_id]);
+        }
+        await Promise.all(
+          Array.from(byCount.entries()).map(([count, ids]) =>
+            supabase
+              .from("ks_module2_project_access")
+              .update({ last_login: nowIso, login_count: count + 1 })
+              .eq("user_id", userId)
+              .in("project_id", ids)
+          )
+        );
+
+        // Single bulk insert for access logs
+        const logsToInsert = accessData.map(access => ({
+          access_id: access.project_id,
+          project_id: access.project_id,
+          user_id: userId,
+          email: userEmail,
+          action: 'login',
+        }));
+
+        if (logsToInsert.length > 0) {
+          await supabase.from("ks_module2_access_log").insert(logsToInsert);
+        }
+
       } else {
         setIsGuestUser(false);
         setGuestProjects([]);
