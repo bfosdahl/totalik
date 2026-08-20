@@ -198,7 +198,7 @@ serve(async (req) => {
               from: "Total-IK <noreply@totalik.no>",
               to: [email],
               subject: `Du har fått tilgang igjen til ${companyName}`,
-              html: `<p>Hei,</p><p>Din konto i <strong>${esc(companyName)}</strong> er reaktivert. Klikk lenken under for å sette nytt passord og logge inn.</p><p><a href="${resetLink}">Sett nytt passord og logg inn</a></p><p>Lenken er gyldig i 24 timer.</p>`,
+              html: `<p>Hei,</p><p>Din konto i <strong>${esc(companyName)}</strong> er reaktivert.</p>${loginBlockHtml(email, resetLink)}`,
             });
             emailSent = true;
           } catch (e) {
