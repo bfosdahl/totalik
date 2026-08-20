@@ -17785,6 +17785,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_audit_and_snapshots: { Args: never; Returns: undefined }
+      cleanup_old_logs: { Args: never; Returns: undefined }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
       cleanup_soft_deleted_records: { Args: never; Returns: Json }
       complete_fdv_control: {
