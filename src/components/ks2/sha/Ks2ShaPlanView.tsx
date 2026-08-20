@@ -40,7 +40,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   const { plans: riggPlans } = useKsRiggPlan(projectId);
   const [editedRiskAreas, setEditedRiskAreas] = useState<RiskArea[] | null>(null);
   const [isApproving, setIsApproving] = useState(false);
-  const [accordionValue, setAccordionValue] = useState<string | undefined>(undefined);
+  const [openSections, setOpenSections] = useState<string[]>(["info", "risks"]);
   const [highlightParagraph, setHighlightParagraph] = useState<string | null>(null);
   const riskRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
