@@ -302,6 +302,42 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                 </p>
               </div>
             </div>
+
+            <div className="pt-6 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="font-semibold">Orientering om prosjektet</Label>
+                {projectDescription && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditedDescription(projectDescription)}
+                  >
+                    Hent fra prosjektbeskrivelse
+                  </Button>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Beskriv prosjektet kortfattet og i grove trekk.
+              </p>
+              <Textarea
+                rows={5}
+                value={descriptionValue}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                placeholder="F.eks. VVS- og sanitærarbeid. Prosjektet omfatter rørinstallasjon, sanitærutstyr og evt. varmeanlegg."
+              />
+              {editedDescription !== null && editedDescription !== (shaPlan.project_description || "") && (
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleSaveDescription} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Lagre orientering
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditedDescription(null)}>
+                    Avbryt
+                  </Button>
+                </div>
+              )}
+            </div>
           </AccordionContent>
         </AccordionItem>
 
