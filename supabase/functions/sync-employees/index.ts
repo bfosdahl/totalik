@@ -87,20 +87,32 @@ serve(async (req) => {
       errors: [] as { email: string; error: string }[],
     };
 
-    for (const emp of employees) {
+    const provisioningLogs: Record<string, unknown>[] = [];
+
+    // Bulk pre-fetch existing profiles for this company (single round-trip)
+    const emails = [...new Set(
+      employees.filter(e => e.email).map(e => e.email.toLowerCase())
+    )];
+    const existingByEmail = new Map<string, { id: string; user_id: string; email: string }>();
+    if (emails.length > 0) {
+      const { data: existingProfiles } = await supabaseAdmin
+        .from('profiles')
+        .select('id, user_id, email')
+        .eq('company_id', company_id)
+        .in('email', emails);
+      for (const p of existingProfiles ?? []) {
+        if (p.email) existingByEmail.set(String(p.email).toLowerCase(), p);
+      }
+    }
+
+    const processEmployee = async (emp: EmployeeData) => {
       try {
         if (!emp.email) {
           results.errors.push({ email: 'unknown', error: 'Missing email' });
-          continue;
+          return;
         }
 
-        // Check if employee already exists by email in this company
-        const { data: existingProfile } = await supabaseAdmin
-          .from('profiles')
-          .select('id, user_id, email')
-          .eq('email', emp.email.toLowerCase())
-          .eq('company_id', company_id)
-          .maybeSingle();
+        const existingProfile = existingByEmail.get(emp.email.toLowerCase());
 
         if (existingProfile) {
           // Update existing employee
@@ -143,7 +155,7 @@ serve(async (req) => {
             // User might exist in auth but not in this company
             console.error(`Error creating auth user ${emp.email}:`, authError);
             results.errors.push({ email: emp.email, error: authError.message });
-            continue;
+            return;
           }
 
           // Update profile with company and additional data
@@ -174,8 +186,8 @@ serve(async (req) => {
                 role: 'employee',
               });
 
-            // Log provisioning
-            await supabaseAdmin.from("user_provisioning_log").insert({
+            // Log provisioning (flushed in one bulk insert at the end)
+            provisioningLogs.push({
               email: emp.email,
               company_id: company_id,
               role: "employee",
@@ -196,6 +208,22 @@ serve(async (req) => {
       } catch (err) {
         console.error(`Error processing ${emp.email}:`, err);
         results.errors.push({ email: emp.email, error: String(err) });
+      }
+    };
+
+    // Process in parallel batches of 5 to cut round-trip latency
+    const CONCURRENCY = 5;
+    for (let i = 0; i < employees.length; i += CONCURRENCY) {
+      await Promise.all(employees.slice(i, i + CONCURRENCY).map(processEmployee));
+    }
+
+    // Single bulk audit write
+    if (provisioningLogs.length > 0) {
+      const { error: logError } = await supabaseAdmin
+        .from("user_provisioning_log")
+        .insert(provisioningLogs);
+      if (logError) {
+        console.error("Error writing provisioning log batch:", logError);
       }
     }
 
