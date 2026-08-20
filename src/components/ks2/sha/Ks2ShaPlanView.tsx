@@ -144,6 +144,15 @@ export function Ks2ShaPlanView({ projectId }: Props) {
     setEditedRiskAreas(null);
   };
 
+  const descriptionValue =
+    editedDescription !== null ? editedDescription : shaPlan.project_description || projectDescription || "";
+
+  const handleSaveDescription = async () => {
+    if (editedDescription === null) return;
+    const ok = await updateShaPlan({ project_description: editedDescription.trim() || null } as any);
+    if (ok) setEditedDescription(null);
+  };
+
   const handleApprove = async () => {
     setIsApproving(true);
     await approveAsEntrepreneur(currentUserName);
