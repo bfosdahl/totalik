@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
-import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
+import { DEFAULT_PASSWORD, defaultPasswordHtml, loginBlockHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -179,12 +179,7 @@ serve(async (req) => {
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
                   <p>Hei ${safeUserName},</p>
                   <p>Du har blitt lagt til som <strong>administrator</strong> for <strong>${safeCompanyName}</strong> i Total-IK.</p>
-                  <p>Klikk på knappen for å sette/oppdatere passordet og logge inn:</p>
-                  <div style="text-align: center; margin: 30px 0;">
-                    ${defaultPasswordHtml(email)}
-                    <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
-                  </div>
-                  <p style="color: #666; font-size: 13px;">Hvis knappen ikke fungerer, kopier denne lenken:<br/><span style="color: #667eea; word-break: break-all;">${escapeHtml(resetData.properties.action_link)}</span></p>
+                  ${loginBlockHtml(email, resetData.properties.action_link)}
                   <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
                   <p style="color: #888; font-size: 12px; text-align: center;">Denne e-posten ble sendt fra Total-IK.</p>
                 </div>
@@ -330,15 +325,7 @@ serve(async (req) => {
                   <li>Generere HMS-håndbok</li>
                 </ul>
                 
-                <p>For å komme i gang, klikk på knappen nedenfor for å sette ditt passord:</p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                  ${defaultPasswordHtml(email)}
-                  <a href="${resetData.properties.action_link}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
-                </div>
-                
-                <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier og lim inn denne lenken i nettleseren din:</p>
-                <p style="color: #667eea; font-size: 12px; word-break: break-all;">${resetData.properties.action_link}</p>
+                ${loginBlockHtml(email, resetData.properties.action_link)}
                 
                 ${getTermsNoticeHtml()}
                 

@@ -228,14 +228,7 @@ const handler = async (req: Request): Promise<Response> => {
       : 'gjeste-tilgang (lese, fylle ut sjekklister og registrere avvik)';
 
     // Build email content - use recovery link if available, otherwise just login link
-    const actionButtonHtml = recoveryLink
-      ? `<div style="text-align: center; margin: 30px 0;">
-          <a href="${recoveryLink}" style="background: linear-gradient(135deg, #5B6BFF 0%, #8B5CF6 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
-        </div>
-        <p style="color: #666; font-size: 14px; text-align: center;">Klikk på knappen over for å sette ditt passord og logge inn.</p>`
-      : `<div style="text-align: center; margin: 30px 0;">
-          <a href="${loginUrl}" style="background: linear-gradient(135deg, #5B6BFF 0%, #8B5CF6 100%); color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Logg inn nå</a>
-        </div>`;
+    const actionButtonHtml = loginBlockHtml(email, recoveryLink);
 
     const emailResponse = await resend.emails.send({
       from: "Total-IK <noreply@totalik.no>",

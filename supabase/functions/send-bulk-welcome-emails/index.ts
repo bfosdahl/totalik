@@ -147,26 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
                 Du har en brukerkonto hos ${companyName} i Total-IK systemet.
               </p>
               
-              <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #0066cc;">
-                <h3 style="color: #1a1a2e; margin: 0 0 12px 0;">📧 Din innloggingsinformasjon</h3>
-                <p style="color: #555; margin: 0;">
-                  <strong>Brukernavn:</strong> ${profile.email}
-                </p>
-              </div>
-              
-              <p style="color: #333; font-size: 16px;">
-                Klikk på knappen under for å sette et nytt passord og logge inn:
-              </p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetLink}" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px;">
-                  Sett passord og logg inn
-                </a>
-              </div>
-              
-              <p style="color: #666; font-size: 14px;">
-                Eller gå direkte til <a href="${loginUrl}" style="color: #0066cc;">${loginUrl}</a> og bruk "Glemt passord" funksjonen.
-              </p>
+              ${loginBlockHtml(profile.email, resetLink)}
               
               <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
               
