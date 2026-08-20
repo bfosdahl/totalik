@@ -39,6 +39,8 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   const { shaPlan, updateShaPlan, approveAsEntrepreneur, getExternalFileUrl, isLoading, isSaving } = useKsModule2ShaPlan(projectId);
   const { plans: riggPlans } = useKsRiggPlan(projectId);
   const [editedRiskAreas, setEditedRiskAreas] = useState<RiskArea[] | null>(null);
+  const [editedDescription, setEditedDescription] = useState<string | null>(null);
+  const [projectDescription, setProjectDescription] = useState<string>("");
   const [isApproving, setIsApproving] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>(["info", "risks"]);
   const [highlightParagraph, setHighlightParagraph] = useState<string | null>(null);
