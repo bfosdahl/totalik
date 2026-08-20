@@ -209,6 +209,22 @@ serve(async (req) => {
         console.error(`Error processing ${emp.email}:`, err);
         results.errors.push({ email: emp.email, error: String(err) });
       }
+    };
+
+    // Process in parallel batches of 5 to cut round-trip latency
+    const CONCURRENCY = 5;
+    for (let i = 0; i < employees.length; i += CONCURRENCY) {
+      await Promise.all(employees.slice(i, i + CONCURRENCY).map(processEmployee));
+    }
+
+    // Single bulk audit write
+    if (provisioningLogs.length > 0) {
+      const { error: logError } = await supabaseAdmin
+        .from("user_provisioning_log")
+        .insert(provisioningLogs);
+      if (logError) {
+        console.error("Error writing provisioning log batch:", logError);
+      }
     }
 
     console.log(`Sync complete. Created: ${results.created.length}, Updated: ${results.updated.length}, Errors: ${results.errors.length}`);
