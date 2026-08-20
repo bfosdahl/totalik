@@ -1,0 +1,1 @@
+ALTER TABLE public.ks_module2_sha_plans ADD COLUMN IF NOT EXISTS project_description text;
