@@ -7,6 +7,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface ProfileWithCompany {
+  user_id: string;
+  email: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  company_id: string | null;
+  is_active: boolean;
+  companies: { name: string } | null;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -91,13 +101,15 @@ const handler = async (req: Request): Promise<Response> => {
     let errorCount = 0;
     const errors: string[] = [];
 
-    for (const profile of profiles || []) {
+    const CONCURRENCY = 5;
+
+    const processProfile = async (profile: ProfileWithCompany) => {
       if (!profile.email) {
         console.log(`Skipping user ${profile.user_id} - no email`);
-        continue;
+        return;
       }
 
-      const companyName = (profile.companies as any)?.name || "Total-IK";
+      const companyName = profile.companies?.name || "Total-IK";
       const firstName = profile.first_name || "";
 
       try {
@@ -114,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
           console.error(`Failed to generate reset link for ${profile.email}:`, resetError);
           errors.push(`${profile.email}: ${resetError.message}`);
           errorCount++;
-          continue;
+          return;
         }
 
         const resetLink = resetData?.properties?.action_link || loginUrl;
@@ -168,14 +180,18 @@ const handler = async (req: Request): Promise<Response> => {
 
         console.log(`Email sent to ${profile.email}`);
         successCount++;
-        
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 100));
       } catch (emailError: any) {
         console.error(`Failed to send email to ${profile.email}:`, emailError);
         errors.push(`${profile.email}: ${emailError.message}`);
         errorCount++;
       }
+    };
+
+    // Process users in parallel chunks to avoid HTTP 544 timeouts
+    const activeProfiles = (profiles || []) as ProfileWithCompany[];
+    for (let i = 0; i < activeProfiles.length; i += CONCURRENCY) {
+      const chunk = activeProfiles.slice(i, i + CONCURRENCY);
+      await Promise.all(chunk.map((profile) => processProfile(profile)));
     }
 
     console.log(`Bulk email complete: ${successCount} sent, ${errorCount} failed`);
