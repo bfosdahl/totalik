@@ -11871,6 +11871,7 @@ export type Database = {
           planned_end_date: string | null
           planned_start_date: string | null
           previous_version_id: string | null
+          progress_risk_note: string | null
           project_address: string | null
           project_description: string | null
           project_id: string
@@ -11916,6 +11917,7 @@ export type Database = {
           planned_end_date?: string | null
           planned_start_date?: string | null
           previous_version_id?: string | null
+          progress_risk_note?: string | null
           project_address?: string | null
           project_description?: string | null
           project_id: string
@@ -11961,6 +11963,7 @@ export type Database = {
           planned_end_date?: string | null
           planned_start_date?: string | null
           previous_version_id?: string | null
+          progress_risk_note?: string | null
           project_address?: string | null
           project_description?: string | null
           project_id?: string
