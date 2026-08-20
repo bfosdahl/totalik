@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import UserSelect from "@/components/audits/UserSelect";
+import ProjectOrganizationEditor from "@/components/ks2/organization/ProjectOrganizationEditor";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,6 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { 
   FileText, 
   Plus, 
@@ -30,24 +29,11 @@ interface HmsGoal {
   isPredefined: boolean;
 }
 
-interface HmsResponsible {
-  role: string;
-  name: string;
-  responsibilities: string;
-}
-
 const DEFAULT_GOALS: HmsGoal[] = [
   { id: "1", text: "Null skader på personer", isPredefined: true },
   { id: "2", text: "Null skader på materiell", isPredefined: true },
   { id: "3", text: t("auto.alle_ansatte_skal_ha_noedvendig_opplaeri"), isPredefined: true },
   { id: "4", text: t("auto.alle_skal_bruke_paabudt_verneutstyr"), isPredefined: true },
-];
-
-const DEFAULT_RESPONSIBILITIES: HmsResponsible[] = [
-  { role: "Prosjektleder", name: "", responsibilities: "Overordnet ansvar for HMS i prosjektet. Sikrer at HMS-plan følges og at ressurser er tilgjengelige." },
-  { role: "HMS-ansvarlig", name: "", responsibilities: "Daglig oppfølging av HMS-arbeidet. Gjennomfører vernerunder og følger opp avvik." },
-  { role: "Verneombud", name: "", responsibilities: "Ivaretar arbeidstakernes interesser i HMS-spørsmål. Deltar i vernerunder og HMS-møter." },
-  { role: "Byggeleder", name: "", responsibilities: "Koordinerer arbeidet på byggeplass og sikrer at HMS-rutiner følges i det daglige." },
 ];
 
 const DEFAULT_MEASURES = `• Alle skal ha gjennomført HMS-opplæring før oppstart
@@ -68,9 +54,6 @@ export default function Ks2HmsPlan() {
   // HMS Goals
   const [goals, setGoals] = useState<HmsGoal[]>(DEFAULT_GOALS);
   const [newGoal, setNewGoal] = useState("");
-
-  // HMS Responsibilities
-  const [responsibilities, setResponsibilities] = useState<HmsResponsible[]>(DEFAULT_RESPONSIBILITIES);
 
   // HMS Measures
   const [generalMeasures, setGeneralMeasures] = useState(DEFAULT_MEASURES);
@@ -93,9 +76,7 @@ export default function Ks2HmsPlan() {
         if (data) {
           setExistingId(data.id);
           const loadedGoals = data.goals as unknown as HmsGoal[];
-          const loadedResp = data.responsibilities as unknown as HmsResponsible[];
           if (Array.isArray(loadedGoals) && loadedGoals.length > 0) setGoals(loadedGoals);
-          if (Array.isArray(loadedResp) && loadedResp.length > 0) setResponsibilities(loadedResp);
           if (data.general_measures) setGeneralMeasures(data.general_measures);
         }
       } catch (error) {
@@ -129,25 +110,17 @@ export default function Ks2HmsPlan() {
     toast.success(t("auto.maal_fjernet"));
   };
 
-  const updateResponsible = (index: number, name: string) => {
-    const updated = [...responsibilities];
-    updated[index] = { ...updated[index], name };
-    setResponsibilities(updated);
-  };
-
   const handleSave = async () => {
     if (!projectId) return;
     setIsSaving(true);
     try {
       const goalsJson = JSON.parse(JSON.stringify(goals));
-      const responsibilitiesJson = JSON.parse(JSON.stringify(responsibilities));
 
       if (existingId) {
         const { error } = await supabase
           .from("ks_module2_hms_plans")
           .update({
             goals: goalsJson,
-            responsibilities: responsibilitiesJson,
             general_measures: generalMeasures,
           })
           .eq("id", existingId);
@@ -158,7 +131,6 @@ export default function Ks2HmsPlan() {
           .insert({
             project_id: projectId,
             goals: goalsJson,
-            responsibilities: responsibilitiesJson,
             general_measures: generalMeasures,
           })
           .select("id")
@@ -312,38 +284,7 @@ export default function Ks2HmsPlan() {
 
         {/* Organization Tab */}
         <TabsContent value="organization" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="h-5 w-5 text-emerald-500" />
-                HMS-organisering
-              </CardTitle>
-              <CardDescription>
-                {t("auto.definer_roller_og_ansvar_for_hms_i_prosj")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {responsibilities.map((resp, index) => (
-                <div key={resp.role} className="p-4 rounded-lg border bg-card">
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                    <div className="flex-1 space-y-2">
-                      <Label className="font-semibold">{resp.role}</Label>
-                      <p className="text-sm text-muted-foreground">{resp.responsibilities}</p>
-                    </div>
-                    <div className="sm:w-64">
-                      <Label className="text-sm">{t("auto.navn_2")}</Label>
-                      <UserSelect
-                        placeholder={t("auto.velg_person_2")}
-                        value={resp.name}
-                        onValueChange={(val) => updateResponsible(index, val)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <ProjectOrganizationEditor projectId={projectId!} />
         </TabsContent>
 
         {/* Measures Tab */}

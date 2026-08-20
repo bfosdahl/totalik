@@ -123,21 +123,28 @@ export async function buildShaPlanPdf(
   });
 
   // Organization
-  const org = shaPlan.organization_data || {};
+  const org: any = shaPlan.organization_data || {};
   const orgRows: string[][] = [];
-  if (org.client?.name) orgRows.push(["Byggherre", org.client.name, org.client.role || ""]);
-  if (org.kp?.name) orgRows.push(["KP", org.kp.name, org.kp.role || ""]);
-  if (org.ku?.name) orgRows.push(["KU", org.ku.name, org.ku.role || ""]);
-  if (org.projectLeader?.name)
-    orgRows.push(["Prosjektleder", org.projectLeader.name, org.projectLeader.role || ""]);
-  (org.subcontractors || []).forEach((s) => orgRows.push(["Underleverandør", s.name, s.trade || ""]));
+  if (org.contract_form) orgRows.push(["Entrepriseform", org.contract_form, ""]);
+  if (Array.isArray(org.roles) && org.roles.length > 0) {
+    org.roles
+      .filter((r: any) => r?.name || r?.company)
+      .forEach((r: any) => orgRows.push([r.label || r.role || "-", r.name || "-", r.company || ""]));
+  } else {
+    if (org.client?.name) orgRows.push(["Byggherre", org.client.name, org.client.role || ""]);
+    if (org.kp?.name) orgRows.push(["KP", org.kp.name, org.kp.role || ""]);
+    if (org.ku?.name) orgRows.push(["KU", org.ku.name, org.ku.role || ""]);
+    if (org.projectLeader?.name)
+      orgRows.push(["Prosjektleder", org.projectLeader.name, org.projectLeader.role || ""]);
+  }
+  (org.subcontractors || []).forEach((s: any) => orgRows.push(["Underleverandør", s.name, s.trade || ""]));
 
   autoTable(doc, {
     startY: (doc as any).lastAutoTable.finalY + 8,
     theme: "grid",
     styles: { fontSize: 9, cellPadding: 2 },
     headStyles: { fillColor: [241, 245, 249], textColor: 30 },
-    head: [["Rolle", "Navn", "Funksjon"]],
+    head: [["Rolle", "Navn", "Firma / funksjon"]],
     body: orgRows.length > 0 ? orgRows : [["-", "Ingen organisasjon registrert", "-"]],
   });
 
