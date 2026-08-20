@@ -13,9 +13,16 @@ interface SelectableCardProps {
 /**
  * SelectableCard - A reusable component that correctly handles click propagation
  * between a clickable card container and its checkbox.
- * 
+ *
  * This prevents the common "double-toggle" bug where both the container onClick
  * and the checkbox onCheckedChange fire, causing the selection to flip twice.
+ *
+ * IMPORTANT: a click on the card body does NOT call onSelectedChange directly.
+ * Updating parent state straight from a plain <div> click inside a Radix Dialog
+ * triggers an infinite render loop ("Maximum update depth exceeded") in Radix'
+ * Presence/ref-composition, which crashed the "Opprett ny bedrift"-dialog when
+ * selecting more than one module. Instead we forward the click to the real
+ * checkbox element, which is the code path Radix handles safely.
  */
 export function SelectableCard({
   selected,
@@ -24,17 +31,23 @@ export function SelectableCard({
   className,
   disabled = false,
 }: SelectableCardProps) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
   const handleContainerClick = (e: React.MouseEvent) => {
-    // Only toggle if clicking the container, not the checkbox itself
-    if ((e.target as HTMLElement).closest('[data-selectable-card-checkbox]')) {
+    // Only forward if clicking the container, not the checkbox itself
+    if ((e.target as HTMLElement).closest("[data-selectable-card-checkbox]")) {
       return;
     }
-    setTimeout(() => { if (!disabled) onSelectedChange(!selected); }, 0);
+    if (disabled) return;
+    const checkbox = containerRef.current?.querySelector<HTMLElement>(
+      "[data-selectable-card-checkbox]"
+    );
+    checkbox?.click();
   };
-
 
   return (
     <div
+      ref={containerRef}
       className={cn(
         "flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors",
         selected
