@@ -30,24 +30,11 @@ interface HmsGoal {
   isPredefined: boolean;
 }
 
-interface HmsResponsible {
-  role: string;
-  name: string;
-  responsibilities: string;
-}
-
 const DEFAULT_GOALS: HmsGoal[] = [
   { id: "1", text: "Null skader på personer", isPredefined: true },
   { id: "2", text: "Null skader på materiell", isPredefined: true },
   { id: "3", text: t("auto.alle_ansatte_skal_ha_noedvendig_opplaeri"), isPredefined: true },
   { id: "4", text: t("auto.alle_skal_bruke_paabudt_verneutstyr"), isPredefined: true },
-];
-
-const DEFAULT_RESPONSIBILITIES: HmsResponsible[] = [
-  { role: "Prosjektleder", name: "", responsibilities: "Overordnet ansvar for HMS i prosjektet. Sikrer at HMS-plan følges og at ressurser er tilgjengelige." },
-  { role: "HMS-ansvarlig", name: "", responsibilities: "Daglig oppfølging av HMS-arbeidet. Gjennomfører vernerunder og følger opp avvik." },
-  { role: "Verneombud", name: "", responsibilities: "Ivaretar arbeidstakernes interesser i HMS-spørsmål. Deltar i vernerunder og HMS-møter." },
-  { role: "Byggeleder", name: "", responsibilities: "Koordinerer arbeidet på byggeplass og sikrer at HMS-rutiner følges i det daglige." },
 ];
 
 const DEFAULT_MEASURES = `• Alle skal ha gjennomført HMS-opplæring før oppstart
@@ -68,9 +55,6 @@ export default function Ks2HmsPlan() {
   // HMS Goals
   const [goals, setGoals] = useState<HmsGoal[]>(DEFAULT_GOALS);
   const [newGoal, setNewGoal] = useState("");
-
-  // HMS Responsibilities
-  const [responsibilities, setResponsibilities] = useState<HmsResponsible[]>(DEFAULT_RESPONSIBILITIES);
 
   // HMS Measures
   const [generalMeasures, setGeneralMeasures] = useState(DEFAULT_MEASURES);
@@ -93,9 +77,7 @@ export default function Ks2HmsPlan() {
         if (data) {
           setExistingId(data.id);
           const loadedGoals = data.goals as unknown as HmsGoal[];
-          const loadedResp = data.responsibilities as unknown as HmsResponsible[];
           if (Array.isArray(loadedGoals) && loadedGoals.length > 0) setGoals(loadedGoals);
-          if (Array.isArray(loadedResp) && loadedResp.length > 0) setResponsibilities(loadedResp);
           if (data.general_measures) setGeneralMeasures(data.general_measures);
         }
       } catch (error) {
@@ -129,25 +111,17 @@ export default function Ks2HmsPlan() {
     toast.success(t("auto.maal_fjernet"));
   };
 
-  const updateResponsible = (index: number, name: string) => {
-    const updated = [...responsibilities];
-    updated[index] = { ...updated[index], name };
-    setResponsibilities(updated);
-  };
-
   const handleSave = async () => {
     if (!projectId) return;
     setIsSaving(true);
     try {
       const goalsJson = JSON.parse(JSON.stringify(goals));
-      const responsibilitiesJson = JSON.parse(JSON.stringify(responsibilities));
 
       if (existingId) {
         const { error } = await supabase
           .from("ks_module2_hms_plans")
           .update({
             goals: goalsJson,
-            responsibilities: responsibilitiesJson,
             general_measures: generalMeasures,
           })
           .eq("id", existingId);
@@ -158,7 +132,6 @@ export default function Ks2HmsPlan() {
           .insert({
             project_id: projectId,
             goals: goalsJson,
-            responsibilities: responsibilitiesJson,
             general_measures: generalMeasures,
           })
           .select("id")
