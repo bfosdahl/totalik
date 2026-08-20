@@ -40,7 +40,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   const { plans: riggPlans } = useKsRiggPlan(projectId);
   const [editedRiskAreas, setEditedRiskAreas] = useState<RiskArea[] | null>(null);
   const [isApproving, setIsApproving] = useState(false);
-  const [accordionValue, setAccordionValue] = useState<string | undefined>(undefined);
+  const [openSections, setOpenSections] = useState<string[]>(["info", "risks"]);
   const [highlightParagraph, setHighlightParagraph] = useState<string | null>(null);
   const riskRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -62,7 +62,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   useEffect(() => {
     const p = searchParams.get("paragraph");
     if (p) {
-      setAccordionValue("risks");
+      setOpenSections((prev) => (prev.includes("risks") ? prev : [...prev, "risks"]));
       setHighlightParagraph(p);
       searchParams.delete("paragraph");
       setSearchParams(searchParams, { replace: true });
@@ -250,8 +250,9 @@ export function Ks2ShaPlanView({ projectId }: Props) {
     <div className="space-y-6">
       <Accordion
         type="multiple"
-        value={accordionValue ? Array.from(new Set(["info", "risks", accordionValue])) : ["info", "risks"]}
-        onValueChange={(v) => setAccordionValue(v[v.length - 1])}
+        value={openSections}
+        onValueChange={setOpenSections}
+
         className="space-y-4"
       >
         {/* Project Info */}
