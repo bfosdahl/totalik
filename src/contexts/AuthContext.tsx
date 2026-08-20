@@ -146,36 +146,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsGuestUser(true);
         setGuestProjects(guestProjectsInfo);
         
-        // Update access status to active and log login
-        for (const access of accessData) {
-          if (access.status === 'invited') {
-            await supabase
-              .from("ks_module2_project_access")
-              .update({ status: 'active', last_login: new Date().toISOString() })
-              .eq("project_id", access.project_id)
-              .eq("user_id", userId);
-          } else {
-            // Increment login_count using raw SQL via rpc, fallback to +1
-            const currentCount = access.login_count ?? 0;
-            await supabase
-              .from("ks_module2_project_access")
-              .update({ 
-                last_login: new Date().toISOString(),
-                login_count: currentCount + 1
-              })
-              .eq("project_id", access.project_id)
-              .eq("user_id", userId);
-          }
-          
-          // Log access — use parameter instead of stale `user?.email`
-          await supabase.from("ks_module2_access_log").insert({
-            access_id: access.project_id,
-            project_id: access.project_id,
-            user_id: userId,
-            email: userEmail,
-            action: 'login',
-          });
+        // Batch DB writes instead of sequential per-project round trips
+        const nowIso = new Date().toISOString();
+
+        const invitedProjectIds = accessData
+          .filter(a => a.status === 'invited')
+          .map(a => a.project_id);
+
+        if (invitedProjectIds.length > 0) {
+          await supabase
+            .from("ks_module2_project_access")
+            .update({ status: 'active', last_login: nowIso })
+            .eq("user_id", userId)
+            .in("project_id", invitedProjectIds);
         }
+
+        // Active rows also increment login_count — group by current count so
+        // the increment is preserved while still batching the writes.
+        const activeRows = accessData.filter(a => a.status !== 'invited');
+        const byCount = new Map<number, string[]>();
+        for (const a of activeRows) {
+          const c = a.login_count ?? 0;
+          byCount.set(c, [...(byCount.get(c) || []), a.project_id]);
+        }
+        await Promise.all(
+          Array.from(byCount.entries()).map(([count, ids]) =>
+            supabase
+              .from("ks_module2_project_access")
+              .update({ last_login: nowIso, login_count: count + 1 })
+              .eq("user_id", userId)
+              .in("project_id", ids)
+          )
+        );
+
+        // Single bulk insert for access logs
+        const logsToInsert = accessData.map(access => ({
+          access_id: access.project_id,
+          project_id: access.project_id,
+          user_id: userId,
+          email: userEmail,
+          action: 'login',
+        }));
+
+        if (logsToInsert.length > 0) {
+          await supabase.from("ks_module2_access_log").insert(logsToInsert);
+        }
+
       } else {
         setIsGuestUser(false);
         setGuestProjects([]);
@@ -196,13 +212,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchingRef.current = true;
 
     try {
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_reminder_sent_30_days, hms_card_reminder_sent_7_days, hms_card_reminder_sent_90_days, hms_card_reminder_sent_60_days, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at")
-        .eq("user_id", userId)
-        .maybeSingle();
+      // Profile, roles and admin departments are independent — run them in parallel
+      const [profileRes, rolesRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, primary_department_id, status")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId),
+        fetchAdminDepartments(userId),
+      ]);
 
+      const profileData = profileRes.data;
       if (profileData) {
         setProfile(profileData as UserProfile);
 
@@ -220,12 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Fetch roles
-      const { data: rolesData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
-
+      const rolesData = rolesRes.data;
       if (rolesData && rolesData.length > 0) {
         setRoles(rolesData.map((r) => r.role as AppRole));
         setGuestCheckComplete(true);
@@ -233,10 +252,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If no roles, check if this is a guest user — pass email to avoid stale closure
         await fetchGuestAccess(userId, userEmail);
       }
-
-      // Always fetch admin department IDs
-      await fetchAdminDepartments(userId);
     } catch (error) {
+
       console.error("Error fetching user data:", error);
     } finally {
       fetchingRef.current = false;
@@ -380,7 +397,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_reminder_sent_30_days, hms_card_reminder_sent_7_days, hms_card_reminder_sent_90_days, hms_card_reminder_sent_60_days, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at")
+        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, primary_department_id, status")
         .eq("user_id", user.id)
         .maybeSingle();
 
