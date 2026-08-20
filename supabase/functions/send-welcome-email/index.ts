@@ -4,6 +4,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { requireAuth } from "../_shared/auth-guard.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
+import { loginBlockHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
