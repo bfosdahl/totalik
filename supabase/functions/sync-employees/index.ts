@@ -155,7 +155,7 @@ serve(async (req) => {
             // User might exist in auth but not in this company
             console.error(`Error creating auth user ${emp.email}:`, authError);
             results.errors.push({ email: emp.email, error: authError.message });
-            continue;
+            return;
           }
 
           // Update profile with company and additional data
