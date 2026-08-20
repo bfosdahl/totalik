@@ -186,8 +186,8 @@ serve(async (req) => {
                 role: 'employee',
               });
 
-            // Log provisioning
-            await supabaseAdmin.from("user_provisioning_log").insert({
+            // Log provisioning (flushed in one bulk insert at the end)
+            provisioningLogs.push({
               email: emp.email,
               company_id: company_id,
               role: "employee",
