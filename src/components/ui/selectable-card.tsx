@@ -29,7 +29,7 @@ export function SelectableCard({
     if ((e.target as HTMLElement).closest('[data-selectable-card-checkbox]')) {
       return;
     }
-    console.log("[SelectableCard] container click (debug, no state change)");
+    setTimeout(() => { if (!disabled) onSelectedChange(!selected); }, 0);
   };
 
 
