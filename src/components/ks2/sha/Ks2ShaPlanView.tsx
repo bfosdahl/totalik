@@ -27,6 +27,7 @@ import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
 import { useAuth } from "@/contexts/AuthContext";
 import { t } from "@/i18n/t";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   projectId: string;
@@ -148,8 +149,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
     editedDescription !== null ? editedDescription : shaPlan.project_description || projectDescription || "";
 
   const handleSaveDescription = async () => {
-    if (editedDescription === null) return;
-    const ok = await updateShaPlan({ project_description: editedDescription.trim() || null } as any);
+    const ok = await updateShaPlan({ project_description: descriptionValue.trim() || null } as any);
     if (ok) setEditedDescription(null);
   };
 
@@ -354,7 +354,7 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                 onChange={(e) => setEditedDescription(e.target.value)}
                 placeholder="F.eks. VVS- og sanitærarbeid. Prosjektet omfatter rørinstallasjon, sanitærutstyr og evt. varmeanlegg."
               />
-              {editedDescription !== null && editedDescription !== (shaPlan.project_description || "") && (
+              {descriptionValue !== (shaPlan.project_description || "") && (
                 <div className="flex gap-2">
                   <Button size="sm" onClick={handleSaveDescription} disabled={isSaving}>
                     {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
