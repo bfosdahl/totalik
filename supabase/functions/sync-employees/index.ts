@@ -87,20 +87,32 @@ serve(async (req) => {
       errors: [] as { email: string; error: string }[],
     };
 
-    for (const emp of employees) {
+    const provisioningLogs: Record<string, unknown>[] = [];
+
+    // Bulk pre-fetch existing profiles for this company (single round-trip)
+    const emails = [...new Set(
+      employees.filter(e => e.email).map(e => e.email.toLowerCase())
+    )];
+    const existingByEmail = new Map<string, { id: string; user_id: string; email: string }>();
+    if (emails.length > 0) {
+      const { data: existingProfiles } = await supabaseAdmin
+        .from('profiles')
+        .select('id, user_id, email')
+        .eq('company_id', company_id)
+        .in('email', emails);
+      for (const p of existingProfiles ?? []) {
+        if (p.email) existingByEmail.set(String(p.email).toLowerCase(), p);
+      }
+    }
+
+    const processEmployee = async (emp: EmployeeData) => {
       try {
         if (!emp.email) {
           results.errors.push({ email: 'unknown', error: 'Missing email' });
-          continue;
+          return;
         }
 
-        // Check if employee already exists by email in this company
-        const { data: existingProfile } = await supabaseAdmin
-          .from('profiles')
-          .select('id, user_id, email')
-          .eq('email', emp.email.toLowerCase())
-          .eq('company_id', company_id)
-          .maybeSingle();
+        const existingProfile = existingByEmail.get(emp.email.toLowerCase());
 
         if (existingProfile) {
           // Update existing employee
