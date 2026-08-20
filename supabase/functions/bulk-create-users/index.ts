@@ -54,7 +54,7 @@ async function sendWelcomeEmail(
     const emailResponse = await resend.emails.send({
       from: "Total-IK <noreply@totalik.no>",
       to: [email],
-      subject: "Velkommen til Total-IK - Sett ditt passord",
+      subject: "Velkommen til Total-IK - innloggingsinformasjon",
       html: `
         <!DOCTYPE html>
         <html>

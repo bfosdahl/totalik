@@ -76,7 +76,7 @@ serve(async (req) => {
       </div>`;
       const r = await resend.emails.send({
         from: "Total-IK <noreply@totalik.no>", to: email,
-        subject: "Velkommen til Total-IK – sett passordet ditt", html,
+        subject: "Velkommen til Total-IK - innloggingsinformasjon", html,
       });
       emailId = r.data?.id || null;
     }
