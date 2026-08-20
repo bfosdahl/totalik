@@ -11872,6 +11872,7 @@ export type Database = {
           planned_start_date: string | null
           previous_version_id: string | null
           project_address: string | null
+          project_description: string | null
           project_id: string
           project_name: string | null
           risk_areas: Json | null
@@ -11916,6 +11917,7 @@ export type Database = {
           planned_start_date?: string | null
           previous_version_id?: string | null
           project_address?: string | null
+          project_description?: string | null
           project_id: string
           project_name?: string | null
           risk_areas?: Json | null
@@ -11960,6 +11962,7 @@ export type Database = {
           planned_start_date?: string | null
           previous_version_id?: string | null
           project_address?: string | null
+          project_description?: string | null
           project_id?: string
           project_name?: string | null
           risk_areas?: Json | null

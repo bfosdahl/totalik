@@ -95,6 +95,18 @@ export async function buildShaPlanPdf(
     columnStyles: { 0: { cellWidth: 60, fontStyle: "bold" } },
   });
 
+  // Orientering om prosjektet
+  if (shaPlan.project_description) {
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 8,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 2, overflow: "linebreak" },
+      headStyles: { fillColor: [241, 245, 249], textColor: 30 },
+      head: [["Orientering om prosjektet"]],
+      body: [[shaPlan.project_description]],
+    });
+  }
+
   // Risk areas
   const risks = (shaPlan.risk_areas || []).filter((r) => r.checked);
   autoTable(doc, {

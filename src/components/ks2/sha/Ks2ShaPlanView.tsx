@@ -27,6 +27,7 @@ import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
 import { useAuth } from "@/contexts/AuthContext";
 import { t } from "@/i18n/t";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   projectId: string;
@@ -39,6 +40,8 @@ export function Ks2ShaPlanView({ projectId }: Props) {
   const { shaPlan, updateShaPlan, approveAsEntrepreneur, getExternalFileUrl, isLoading, isSaving } = useKsModule2ShaPlan(projectId);
   const { plans: riggPlans } = useKsRiggPlan(projectId);
   const [editedRiskAreas, setEditedRiskAreas] = useState<RiskArea[] | null>(null);
+  const [editedDescription, setEditedDescription] = useState<string | null>(null);
+  const [projectDescription, setProjectDescription] = useState<string>("");
   const [isApproving, setIsApproving] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>(["info", "risks"]);
   const [highlightParagraph, setHighlightParagraph] = useState<string | null>(null);
@@ -72,6 +75,23 @@ export function Ks2ShaPlanView({ projectId }: Props) {
       }, 250);
     }
   }, [searchParams, setSearchParams]);
+
+  // Fetch project description from Prosjektinfo (used as source/suggestion)
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from("ks_module2_projects")
+        .select("description")
+        .eq("id", projectId)
+        .maybeSingle();
+      if (active) setProjectDescription(data?.description || "");
+    })();
+    return () => {
+      active = false;
+    };
+  }, [projectId]);
+
 
 
   // Get current user's full name for approval
@@ -123,6 +143,14 @@ export function Ks2ShaPlanView({ projectId }: Props) {
     );
     await updateShaPlan({ risk_areas: cleaned } as any);
     setEditedRiskAreas(null);
+  };
+
+  const descriptionValue =
+    editedDescription !== null ? editedDescription : shaPlan.project_description || projectDescription || "";
+
+  const handleSaveDescription = async () => {
+    const ok = await updateShaPlan({ project_description: descriptionValue.trim() || null } as any);
+    if (ok) setEditedDescription(null);
   };
 
   const handleApprove = async () => {
@@ -301,6 +329,42 @@ export function Ks2ShaPlanView({ projectId }: Props) {
                   {shaPlan.planned_end_date ? new Date(shaPlan.planned_end_date).toLocaleDateString("nb-NO") : "Ikke angitt"}
                 </p>
               </div>
+            </div>
+
+            <div className="pt-6 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="font-semibold">Orientering om prosjektet</Label>
+                {projectDescription && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditedDescription(projectDescription)}
+                  >
+                    Hent fra prosjektbeskrivelse
+                  </Button>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Beskriv prosjektet kortfattet og i grove trekk.
+              </p>
+              <Textarea
+                rows={5}
+                value={descriptionValue}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                placeholder="F.eks. VVS- og sanitærarbeid. Prosjektet omfatter rørinstallasjon, sanitærutstyr og evt. varmeanlegg."
+              />
+              {descriptionValue !== (shaPlan.project_description || "") && (
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={handleSaveDescription} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Lagre orientering
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setEditedDescription(null)}>
+                    Avbryt
+                  </Button>
+                </div>
+              )}
             </div>
           </AccordionContent>
         </AccordionItem>
