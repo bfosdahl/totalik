@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
-import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
+import { DEFAULT_PASSWORD, defaultPasswordHtml, loginBlockHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -368,15 +368,7 @@ serve(async (req) => {
                   <p style="margin: 8px 0 0 0;"><strong>E-post:</strong> ${esc(email)}</p>
                 </div>
                 
-                <p>Klikk på knappen nedenfor for å sette ditt passord og logge inn.</p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                  ${defaultPasswordHtml(email)}
-                  <a href="${resetLink}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Sett passord og logg inn</a>
-                </div>
-                
-                <p style="color: #666; font-size: 14px;">Hvis knappen ikke fungerer, kopier denne lenken (utløper om 24 timer):</p>
-                <p style="color: #667eea; font-size: 12px; word-break: break-all;">${resetLink}</p>
+                ${loginBlockHtml(email, resetLink)}
                 
                 ${getTermsNoticeHtml()}
                 
