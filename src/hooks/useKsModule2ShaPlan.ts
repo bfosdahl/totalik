@@ -17,6 +17,7 @@ export interface ShaPlan {
   template_id: string | null;
   project_name: string | null;
   project_address: string | null;
+  project_description: string | null;
   client_name: string | null;
   client_org_number: string | null;
   client_contact_person: string | null;
