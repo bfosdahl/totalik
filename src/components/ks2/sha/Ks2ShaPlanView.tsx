@@ -22,10 +22,12 @@ import {
   MapPin,
   Plus,
   Trash2,
+  CalendarDays,
 } from "lucide-react";
 import { useKsModule2ShaPlan, RiskArea } from "@/hooks/useKsModule2ShaPlan";
 import { useKsRiggPlan } from "@/hooks/useKsRiggPlan";
 import { useAuth } from "@/contexts/AuthContext";
+import ShaProgressPlan from "@/components/ks2/sha/ShaProgressPlan";
 import ProjectOrganizationEditor from "@/components/ks2/organization/ProjectOrganizationEditor";
 import { t } from "@/i18n/t";
 import { supabase } from "@/integrations/supabase/client";
@@ -491,6 +493,26 @@ export function Ks2ShaPlanView({ projectId }: Props) {
           <AccordionContent>
             <div className="pt-4">
               <ProjectOrganizationEditor projectId={projectId} bare />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Progress plan */}
+        <AccordionItem value="progress" className="border rounded-lg px-4">
+          <AccordionTrigger className="hover:no-underline">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-blue-500" />
+              <span className="font-semibold">Fremdriftsplan</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="pt-4">
+              <ShaProgressPlan
+                projectId={projectId}
+                riskNote={(shaPlan as any).progress_risk_note ?? null}
+                isSaving={isSaving}
+                onSaveRiskNote={(value) => updateShaPlan({ progress_risk_note: value } as any)}
+              />
             </div>
           </AccordionContent>
         </AccordionItem>

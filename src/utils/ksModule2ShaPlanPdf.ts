@@ -148,6 +148,43 @@ export async function buildShaPlanPdf(
     body: orgRows.length > 0 ? orgRows : [["-", "Ingen organisasjon registrert", "-"]],
   });
 
+  // Fremdrift / milepæler
+  const { data: milestones } = await supabase
+    .from("ks_module2_milestones")
+    .select("title, start_date, end_date, status, progress")
+    .eq("project_id", shaPlan.project_id)
+    .order("start_date", { ascending: true });
+
+  if ((milestones && milestones.length > 0) || shaPlan.progress_risk_note) {
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 8,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 2, overflow: "linebreak" },
+      headStyles: { fillColor: [241, 245, 249], textColor: 30 },
+      head: [["Milepæl", "Fra", "Til", "Status"]],
+      body:
+        milestones && milestones.length > 0
+          ? milestones.map((m: any) => [
+              m.title,
+              fmtDate(m.start_date),
+              fmtDate(m.end_date),
+              `${m.status} (${m.progress ?? 0}%)`,
+            ])
+          : [["Ingen milepæler registrert", "-", "-", "-"]],
+    });
+
+    if (shaPlan.progress_risk_note) {
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 4,
+        theme: "grid",
+        styles: { fontSize: 9, cellPadding: 2, overflow: "linebreak" },
+        headStyles: { fillColor: [241, 245, 249], textColor: 30 },
+        head: [["SHA-vurdering ved endret fremdrift"]],
+        body: [[shaPlan.progress_risk_note]],
+      });
+    }
+  }
+
   // Change routine
   if (shaPlan.change_routine_text) {
     autoTable(doc, {
