@@ -18,6 +18,7 @@ export interface ShaPlan {
   project_name: string | null;
   project_address: string | null;
   project_description: string | null;
+  progress_risk_note: string | null;
   client_name: string | null;
   client_org_number: string | null;
   client_contact_person: string | null;
