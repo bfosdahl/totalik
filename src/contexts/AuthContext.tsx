@@ -212,13 +212,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchingRef.current = true;
 
     try {
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_reminder_sent_30_days, hms_card_reminder_sent_7_days, hms_card_reminder_sent_90_days, hms_card_reminder_sent_60_days, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at")
-        .eq("user_id", userId)
-        .maybeSingle();
+      // Profile, roles and admin departments are independent — run them in parallel
+      const [profileRes, rolesRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, primary_department_id, status")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId),
+        fetchAdminDepartments(userId),
+      ]);
 
+      const profileData = profileRes.data;
       if (profileData) {
         setProfile(profileData as UserProfile);
 
@@ -236,12 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Fetch roles
-      const { data: rolesData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
-
+      const rolesData = rolesRes.data;
       if (rolesData && rolesData.length > 0) {
         setRoles(rolesData.map((r) => r.role as AppRole));
         setGuestCheckComplete(true);
@@ -249,10 +252,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If no roles, check if this is a guest user — pass email to avoid stale closure
         await fetchGuestAccess(userId, userEmail);
       }
-
-      // Always fetch admin department IDs
-      await fetchAdminDepartments(userId);
     } catch (error) {
+
       console.error("Error fetching user data:", error);
     } finally {
       fetchingRef.current = false;
