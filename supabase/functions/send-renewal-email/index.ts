@@ -124,25 +124,8 @@ serve(async (req) => {
               </p>
             </div>
 
-            
-            ${defaultPasswordHtml(email)}
+            ${loginBlockHtml(email, resetLink)}
 
-            <div style="text-align: center; margin: 24px 0;">
-              <a href="${loginUrl}/auth" style="background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">Logg inn p&aring; Total-IK</a>
-            </div>
-            <p style="color: #444; font-size: 14px; text-align: center; margin: 0 0 8px 0;">
-              Fungerer ikke knappen? Kopier og lim inn denne adressen i nettleseren:
-            </p>
-            <p style="text-align: center; font-size: 15px; word-break: break-all; margin: 0 0 24px 0;">
-              <a href="${loginUrl}/auth" style="color: #0066cc;">${loginUrl}/auth</a>
-            </p>
-
-            ${resetLink ? `
-            <p style="color: #666; font-size: 13px; text-align: center; margin: 0 0 24px 0;">
-              Vil du heller sette ditt eget passord med en gang?
-              <a href="${resetLink}" style="color: #0066cc;">Klikk her</a> (lenken utl&oslash;per om 24 timer).
-            </p>
-            ` : ``}
 
             
             <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 24px 0;">
