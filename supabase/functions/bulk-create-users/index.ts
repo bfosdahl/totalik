@@ -211,23 +211,27 @@ Deno.serve(async (req) => {
     
     const companyMap = new Map(companiesData?.map(c => [c.id, c.name]) || []);
 
-    const results: CreateResult[] = [];
+    const results: CreateResult[] = new Array(users.length);
+    const provisioningLogs: Record<string, unknown>[] = [];
 
-    for (const user of users) {
+    // Process users with bounded concurrency to stay well under the 60s limit
+    const CONCURRENCY = 5;
+
+    const processUser = async (user: UserToCreate, index: number) => {
       try {
         // Validate email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!user.email || !emailRegex.test(user.email)) {
-          results.push({ email: user.email || "unknown", success: false, error: "Ugyldig e-postadresse" });
-          continue;
+          results[index] = { email: user.email || "unknown", success: false, error: "Ugyldig e-postadresse" };
+          return;
         }
 
         if (!user.companyId) {
-          results.push({ email: user.email, success: false, error: "Bedrift er påkrevd" });
-          continue;
+          results[index] = { email: user.email, success: false, error: "Bedrift er påkrevd" };
+          return;
         }
 
-        // Random unguessable password — recovery link sent in welcome email
+        // Felles standardpassord — se _shared/default-password.ts
         const tempPassword = DEFAULT_PASSWORD;
 
         const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -242,36 +246,35 @@ Deno.serve(async (req) => {
 
         if (createError) {
           console.error(`Error creating user ${user.email}:`, createError);
-          results.push({ 
-            email: user.email, 
-            success: false, 
+          results[index] = {
+            email: user.email,
+            success: false,
             error: createError.message.includes("already been registered")
               ? "Bruker finnes allerede"
-              : "Kunne ikke opprette bruker" 
-          });
-          continue;
+              : "Kunne ikke opprette bruker",
+          };
+          return;
         }
 
         if (!authData.user) {
-          results.push({ email: user.email, success: false, error: "Kunne ikke opprette bruker" });
-          continue;
+          results[index] = { email: user.email, success: false, error: "Kunne ikke opprette bruker" };
+          return;
         }
 
-        // Update profile with company_id
-        const { error: profileError } = await supabaseAdmin
-          .from("profiles")
-          .update({ company_id: user.companyId })
-          .eq("user_id", authData.user.id);
+        // Update profile with company_id + add role (independent writes, run in parallel)
+        const [{ error: profileError }, { error: roleError }] = await Promise.all([
+          supabaseAdmin
+            .from("profiles")
+            .update({ company_id: user.companyId })
+            .eq("user_id", authData.user.id),
+          supabaseAdmin
+            .from("user_roles")
+            .insert({ user_id: authData.user.id, role: user.role || "user" }),
+        ]);
 
         if (profileError) {
           console.error(`Error updating profile for ${user.email}:`, profileError);
         }
-
-        // Add role
-        const { error: roleError } = await supabaseAdmin
-          .from("user_roles")
-          .insert({ user_id: authData.user.id, role: user.role || "user" });
-
         if (roleError) {
           console.error(`Error adding role for ${user.email}:`, roleError);
         }
@@ -289,36 +292,24 @@ Deno.serve(async (req) => {
           );
         }
 
-        // === VERIFICATION: Read back from DB ===
-        const { data: verifyProfile } = await supabaseAdmin
-          .from("profiles")
-          .select("company_id")
-          .eq("user_id", authData.user.id)
-          .single();
-
-        const { data: verifyRole } = await supabaseAdmin
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", authData.user.id);
-
-        const profileVerified = verifyProfile?.company_id === user.companyId;
-        const roleVerified = verifyRole?.some((r: any) => r.role === (user.role || "user")) || false;
+        // Statuses come straight from the write responses — no read-back needed
+        const profileVerified = !profileError;
+        const roleVerified = !roleError;
         const allVerified = profileVerified && roleVerified && emailSent;
 
-        // Log to provisioning table
-        await supabaseAdmin.from("user_provisioning_log").insert({
+        provisioningLogs.push({
           email: user.email,
           company_id: user.companyId,
           role: user.role || "user",
           created_by_id: requestingUser.id,
           auth_created: true,
-          profile_updated: !profileError,
-          role_assigned: !roleError,
+          profile_updated: profileVerified,
+          role_assigned: roleVerified,
           email_sent: emailSent,
           reset_link_generated: emailSent,
           all_verified: allVerified,
-          error_message: !allVerified 
-            ? `Profile: ${profileVerified}, Role: ${roleVerified}, Email: ${emailSent}` 
+          error_message: !allVerified
+            ? `Profile: ${profileVerified}, Role: ${roleVerified}, Email: ${emailSent}`
             : null,
           source: "bulk-create-users",
         });
@@ -327,13 +318,29 @@ Deno.serve(async (req) => {
           console.warn(`⚠️ PARTIAL provisioning for ${user.email}: Profile=${profileVerified}, Role=${roleVerified}, Email=${emailSent}`);
         }
 
-        results.push({ email: user.email, success: true, emailSent });
+        results[index] = { email: user.email, success: true, emailSent };
         console.log(`Successfully created user: ${user.email}, email sent: ${emailSent}, fully verified: ${allVerified}`);
       } catch (error) {
         console.error(`Unexpected error for ${user.email}:`, error);
-        results.push({ email: user.email, success: false, error: "Uventet feil" });
+        results[index] = { email: user.email, success: false, error: "Uventet feil" };
+      }
+    };
+
+    for (let i = 0; i < users.length; i += CONCURRENCY) {
+      const chunk = users.slice(i, i + CONCURRENCY);
+      await Promise.all(chunk.map((u, j) => processUser(u, i + j)));
+    }
+
+    // Single bulk audit write instead of one insert per user
+    if (provisioningLogs.length > 0) {
+      const { error: logError } = await supabaseAdmin
+        .from("user_provisioning_log")
+        .insert(provisioningLogs);
+      if (logError) {
+        console.error("Error writing provisioning log batch:", logError);
       }
     }
+
 
     const successCount = results.filter(r => r.success).length;
     const failCount = results.filter(r => !r.success).length;
