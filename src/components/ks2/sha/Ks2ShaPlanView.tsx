@@ -75,6 +75,23 @@ export function Ks2ShaPlanView({ projectId }: Props) {
     }
   }, [searchParams, setSearchParams]);
 
+  // Fetch project description from Prosjektinfo (used as source/suggestion)
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from("ks_module2_projects")
+        .select("description")
+        .eq("id", projectId)
+        .maybeSingle();
+      if (active) setProjectDescription(data?.description || "");
+    })();
+    return () => {
+      active = false;
+    };
+  }, [projectId]);
+
+
 
   // Get current user's full name for approval
   const currentUserName = profile 
