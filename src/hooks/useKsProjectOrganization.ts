@@ -233,7 +233,11 @@ export function useKsProjectOrganization(projectId: string | undefined) {
       const orgData = (sha?.organization_data as any) || {};
       const fromSha = normalizeRoles(orgData.roles);
       const fromHms = normalizeRoles(hms?.responsibilities as any);
-      setRoles(fromSha || fromHms || DEFAULT_ORG_ROLES);
+      const fromLegacySha = fromLegacyShaShape(orgData);
+      const combined =
+        mergeRoleSets(mergeRoleSets(fromSha, fromHms), fromLegacySha) || DEFAULT_ORG_ROLES;
+      setRoles(combined);
+
       setContractForm(orgData.contract_form || "");
     } catch (error) {
       console.error("Error loading project organization:", error);
