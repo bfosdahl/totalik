@@ -124,3 +124,6 @@ verify_jwt = false
 
 [functions.notify-e2e-failure]
 verify_jwt = false
+
+[functions.send-mascot-oneoff]
+verify_jwt = false
