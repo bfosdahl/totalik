@@ -92,12 +92,48 @@ export const DEFAULT_ORG_ROLES: OrgRole[] = [
   },
 ];
 
+/** Legacy labels written by the old HMS-plan editor mapped to current role keys */
+const LEGACY_LABEL_ALIASES: Record<string, string> = {
+  prosjektleder: "prosjektleder",
+  byggeleder: "prosjektleder",
+  anleggsleder: "prosjektleder",
+  "prosjekt-/bygge-/anleggsleder": "prosjektleder",
+  byggherre: "byggherre",
+  "byggherrens representant": "byggherre_rep",
+  "koordinator prosjektering": "kp",
+  "koordinator prosjektering (kp)": "kp",
+  "koordinator utførelse": "ku",
+  "koordinator utførelse (ku)": "ku",
+  prosjekterende: "prosjekterende",
+  "entreprenør(er)": "entreprenor",
+  entreprenør: "entreprenor",
+  hovedbedrift: "hovedbedrift",
+  "hms-ansvarlig": "hms_ansvarlig",
+  verneombud: "verneombud",
+};
+
+function resolveKey(r: any): string | undefined {
+  if (r?.key) return r.key;
+  const label = String(r?.role || r?.label || "").trim().toLowerCase();
+  if (!label) return undefined;
+  const direct = DEFAULT_ORG_ROLES.find((d) => d.label.toLowerCase() === label);
+  if (direct) return direct.key;
+  return LEGACY_LABEL_ALIASES[label];
+}
+
 function normalizeRoles(input: any): OrgRole[] | null {
   if (!Array.isArray(input) || input.length === 0) return null;
   const byKey = new Map<string, any>();
+  const unmatched: any[] = [];
   input.forEach((r: any) => {
-    const key = r?.key || DEFAULT_ORG_ROLES.find((d) => d.label === r?.role || d.label === r?.label)?.key;
-    if (key) byKey.set(key, r);
+    const key = resolveKey(r);
+    if (key) {
+      // don't let an empty legacy row overwrite a filled one
+      const existing = byKey.get(key);
+      if (!existing || (!existing.name && r?.name)) byKey.set(key, { ...existing, ...r });
+    } else if (r?.role || r?.label) {
+      unmatched.push(r);
+    }
   });
   const merged = DEFAULT_ORG_ROLES.map((d) => {
     const found = byKey.get(d.key);
@@ -111,20 +147,59 @@ function normalizeRoles(input: any): OrgRole[] | null {
       : d;
   });
   // keep extra custom roles that are not part of the defaults
-  input.forEach((r: any) => {
-    const key = r?.key;
-    if (key && !DEFAULT_ORG_ROLES.some((d) => d.key === key)) {
-      merged.push({
-        key,
-        label: r.label || r.role || key,
-        name: r.name || "",
-        company: r.company || "",
-        responsibilities: r.responsibilities || "",
-      });
-    }
+  unmatched.forEach((r: any) => {
+    const label = r.label || r.role;
+    merged.push({
+      key: r.key || `custom_${String(label).toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+      label,
+      name: r.name || "",
+      company: r.company || "",
+      responsibilities: r.responsibilities || "",
+    });
   });
   return merged;
 }
+
+/** Fallback for legacy SHA organization_data shape (client/kp/ku/projectLeader) */
+function fromLegacyShaShape(orgData: any): OrgRole[] | null {
+  if (!orgData) return null;
+  const mapping: Record<string, string> = {
+    client: "byggherre",
+    kp: "kp",
+    ku: "ku",
+    projectLeader: "prosjektleder",
+  };
+  const names = new Map<string, string>();
+  Object.entries(mapping).forEach(([field, key]) => {
+    const name = orgData?.[field]?.name;
+    if (name) names.set(key, name);
+  });
+  if (names.size === 0) return null;
+  return DEFAULT_ORG_ROLES.map((d) =>
+    names.has(d.key) ? { ...d, name: names.get(d.key)! } : d
+  );
+}
+
+function mergeRoleSets(primary: OrgRole[] | null, secondary: OrgRole[] | null): OrgRole[] | null {
+  if (!primary) return secondary;
+  if (!secondary) return primary;
+  const secByKey = new Map(secondary.map((r) => [r.key, r]));
+  const merged = primary.map((r) => {
+    const s = secByKey.get(r.key);
+    if (!s) return r;
+    return {
+      ...r,
+      name: r.name || s.name,
+      company: r.company || s.company,
+      responsibilities: r.responsibilities || s.responsibilities,
+    };
+  });
+  secondary.forEach((s) => {
+    if (!merged.some((m) => m.key === s.key)) merged.push(s);
+  });
+  return merged;
+}
+
 
 /**
  * Shared project organization ("Organisering og ansvar").
@@ -158,7 +233,11 @@ export function useKsProjectOrganization(projectId: string | undefined) {
       const orgData = (sha?.organization_data as any) || {};
       const fromSha = normalizeRoles(orgData.roles);
       const fromHms = normalizeRoles(hms?.responsibilities as any);
-      setRoles(fromSha || fromHms || DEFAULT_ORG_ROLES);
+      const fromLegacySha = fromLegacyShaShape(orgData);
+      const combined =
+        mergeRoleSets(mergeRoleSets(fromSha, fromHms), fromLegacySha) || DEFAULT_ORG_ROLES;
+      setRoles(combined);
+
       setContractForm(orgData.contract_form || "");
     } catch (error) {
       console.error("Error loading project organization:", error);
