@@ -59,11 +59,12 @@ Deno.serve(async (req) => {
       supabaseAdmin.from("user_roles").select("role").eq("user_id", userId),
     ]);
 
-    if (targetRes.error || rolesRes.error || reqProfileRes.error) {
+    if (targetRes.error || rolesRes.error || reqProfileRes.error || targetRolesRes.error) {
       console.error("Authorization lookup error:", {
         target: targetRes.error,
         roles: rolesRes.error,
         profile: reqProfileRes.error,
+        targetRoles: targetRolesRes.error,
       });
       return json({ error: "Kunne ikke verifisere tilgang" }, 500);
     }
@@ -82,6 +83,12 @@ Deno.serve(async (req) => {
       requestingProfile.company_id === targetProfile.company_id;
 
     if (!isSystemAdmin && !(isCompanyAdmin && sameCompany)) {
+      return json({ error: "Du har ikke tilgang til å endre e-post for denne brukeren" }, 403);
+    }
+
+    // Only system_admin may change a system_admin's login email (takeover guard)
+    const targetIsSystemAdmin = !!targetRolesRes.data?.some((r) => r.role === "system_admin");
+    if (targetIsSystemAdmin && !isSystemAdmin) {
       return json({ error: "Du har ikke tilgang til å endre e-post for denne brukeren" }, 403);
     }
 
