@@ -52,10 +52,11 @@ Deno.serve(async (req) => {
     );
 
     // 1. Parallel fetch of authorization and permission context
-    const [targetRes, rolesRes, reqProfileRes] = await Promise.all([
+    const [targetRes, rolesRes, reqProfileRes, targetRolesRes] = await Promise.all([
       supabaseAdmin.from("profiles").select("id, company_id").eq("user_id", userId).maybeSingle(),
       supabaseAdmin.from("user_roles").select("role").eq("user_id", requestingUserId),
       supabaseAdmin.from("profiles").select("company_id").eq("user_id", requestingUserId).maybeSingle(),
+      supabaseAdmin.from("user_roles").select("role").eq("user_id", userId),
     ]);
 
     if (targetRes.error || rolesRes.error || reqProfileRes.error) {
