@@ -18,11 +18,9 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Ikke autorisert" }, 401);
 
-    const anonClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const anonClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
+      global: { headers: { Authorization: authHeader } },
+    });
     const { data: authed, error: authedErr } = await anonClient.auth.getUser();
     if (authedErr || !authed?.user) return json({ error: "Ikke autorisert" }, 401);
     const requestingUserId = authed.user.id;
@@ -39,7 +37,7 @@ Deno.serve(async (req) => {
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { autoRefreshToken: false, persistSession: false } }
+      { auth: { autoRefreshToken: false, persistSession: false } },
     );
 
     // Target profile
@@ -51,10 +49,7 @@ Deno.serve(async (req) => {
     if (!targetProfile) return json({ error: "Bruker ikke funnet" }, 404);
 
     // Authorization: system_admin, or company_admin in same company
-    const { data: roles } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", requestingUserId);
+    const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", requestingUserId);
     const isSystemAdmin = !!roles?.some((r) => r.role === "system_admin");
     const isCompanyAdmin = !!roles?.some((r) => r.role === "company_admin");
 
@@ -74,11 +69,7 @@ Deno.serve(async (req) => {
     }
 
     // Ensure email is not taken by another profile
-    const { data: existing } = await supabaseAdmin
-      .from("profiles")
-      .select("user_id")
-      .eq("email", email)
-      .maybeSingle();
+    const { data: existing } = await supabaseAdmin.from("profiles").select("user_id").eq("email", email).maybeSingle();
     if (existing && existing.user_id !== userId) {
       return json({ error: "E-postadressen er allerede i bruk av en annen bruker" }, 400);
     }
@@ -94,10 +85,7 @@ Deno.serve(async (req) => {
     }
 
     // Keep profile in sync
-    const { error: profileErr } = await supabaseAdmin
-      .from("profiles")
-      .update({ email })
-      .eq("user_id", userId);
+    const { error: profileErr } = await supabaseAdmin.from("profiles").update({ email }).eq("user_id", userId);
     if (profileErr) {
       console.error("Profile email update error:", profileErr);
       return json({ error: "E-post endret i innlogging, men profilen ble ikke oppdatert" }, 500);
