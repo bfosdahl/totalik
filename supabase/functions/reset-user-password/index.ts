@@ -170,14 +170,62 @@ Deno.serve(async (req) => {
 
       console.log(`Password set directly for user ${userId} by admin ${requestingUserId}`);
 
+      // Send the new password by email if requested (previously this branch silently skipped it)
+      let directEmailSent = false;
+      if (sendEmail) {
+        const resendApiKey = Deno.env.get("RESEND_API_KEY");
+        if (resendApiKey) {
+          try {
+            const { data: profile } = await supabaseAdmin
+              .from("profiles")
+              .select("first_name")
+              .eq("id", profileId)
+              .maybeSingle();
+            const firstName = profile?.first_name ? String(profile.first_name) : "";
+            const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const resend = new Resend(resendApiKey);
+            const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <h1 style="color:#1a1a2e;text-align:center;margin:0 0 24px 0;">Nytt passord til Total-IK</h1>
+              <p style="color:#333;font-size:16px;">Hei${firstName ? ` ${esc(firstName)}` : ""},</p>
+              <p style="color:#333;font-size:16px;">Passordet ditt er endret av administrator. Her er innloggingsinformasjonen din:</p>
+              <div style="background:#f4f7fb;border:1px solid #d0d7e2;border-radius:8px;padding:20px;margin:24px 0;">
+                <p style="margin:0 0 8px 0;"><strong>Innloggingsadresse:</strong> <a href="https://totalik.no/auth" style="color:#0066cc;">https://totalik.no/auth</a></p>
+                <p style="margin:0 0 8px 0;"><strong>E-post:</strong> ${esc(targetUser.user.email!)}</p>
+                <p style="margin:0;"><strong>Passord:</strong> <code style="background:#fff;padding:4px 8px;border-radius:4px;border:1px solid #d0d7e2;">${esc(newPassword)}</code></p>
+                <p style="margin:12px 0 0 0;color:#b8500a;font-size:13px;">Bytt passord etter f&oslash;rste innlogging (Innstillinger &rarr; Passord).</p>
+              </div>
+              <div style="text-align:center;margin:24px 0;">
+                <a href="https://totalik.no/auth" style="background:linear-gradient(135deg,#0066cc 0%,#0052a3 100%);color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;font-size:16px;">Logg inn p&aring; Total-IK</a>
+              </div>
+              <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
+              <p style="color:#999;font-size:12px;text-align:center;">Automatisk e-post fra Total-IK.</p>
+            </div>`;
+            const sendRes = await resend.emails.send({
+              from: "Total-IK <noreply@totalik.no>",
+              to: [targetUser.user.email!],
+              subject: "Nytt passord til Total-IK",
+              html,
+            });
+            directEmailSent = !!sendRes?.data?.id;
+            if (!directEmailSent) console.error("Resend returned no id:", sendRes);
+          } catch (e) {
+            console.error("Failed to send password email:", e);
+          }
+        } else {
+          console.error("RESEND_API_KEY missing - cannot send password email");
+        }
+      }
+
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: "Passordet er oppdatert",
-          passwordSet: true
+          passwordSet: true,
+          emailSent: directEmailSent
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+
     }
 
     // Otherwise, generate a secure password reset link — redirectTo MUST point to /auth
