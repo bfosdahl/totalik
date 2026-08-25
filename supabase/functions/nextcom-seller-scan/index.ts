@@ -29,17 +29,9 @@ function dateOnly(v: unknown): string | null {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function sellerOf(o: Record<string, unknown>): string {
-  const keys = Object.keys(o).filter((k) => /seller|agent|salesman|owner|user|employee|consultant|responsible/i.test(k));
-  for (const k of keys) {
-    const v = o[k];
-    if (typeof v === "string" && v.trim()) return v.trim();
-    if (v && typeof v === "object") {
-      const n = (v as Record<string, unknown>).name ?? (v as Record<string, unknown>).fullName;
-      if (typeof n === "string" && n.trim()) return n.trim();
-    }
-  }
-  return "";
+function sellerOf(o: Record<string, unknown>, users: Map<string, string>): string {
+  const uid = String(o.userId ?? "");
+  return users.get(uid) || (uid ? `userId ${uid}` : "");
 }
 
 Deno.serve(async (req) => {
@@ -57,6 +49,23 @@ Deno.serve(async (req) => {
     const raw = Deno.env.get("NEXTCOM_BASIC_AUTH");
     if (!raw) return json({ error: "NEXTCOM_BASIC_AUTH missing" }, 500);
     const auth = btoa(raw.includes(":") ? raw : `kimiclaw:${raw}`);
+
+    const users = new Map<string, string>();
+    let userProbe: unknown = null;
+    for (const path of ["/crm-system/users?offset=0&limit=200", "/admin/users?offset=0&limit=200", "/crm-system/user?offset=0&limit=200"]) {
+      try {
+        const u = await nc(`${path}&locale=nor`, auth);
+        const items = u.items || u.users || [];
+        if (Array.isArray(items) && items.length) {
+          userProbe = items[0];
+          for (const it of items) {
+            const name = [it.firstName, it.lastName].filter(Boolean).join(" ").trim() || it.name || it.username || it.email;
+            if (it.id != null && name) users.set(String(it.id), String(name));
+          }
+          break;
+        }
+      } catch (_) { /* prøv neste */ }
+    }
 
     const head = await nc("/crm-system/orders?offset=0&limit=1&locale=nor", auth);
     const total = Number(head.totalCount || head.total || head.count || 0);
@@ -82,7 +91,7 @@ Deno.serve(async (req) => {
         const created = dateOnly(o.insertedDate) || dateOnly(o.sendDate);
         if (!created || created < cutoffStr) continue;
         inWindow++;
-        const s = sellerOf(o) || "(ukjent)";
+        const s = sellerOf(o, users) || "(ukjent)";
         const entry = sellers.get(s) || { count: 0, customers: new Map() };
         entry.count++;
         const org = String(o.customerOrgNoOrSsn || "").replace(/\D/g, "");
@@ -106,7 +115,7 @@ Deno.serve(async (req) => {
       .sort((a, b) => b.orders - a.orders);
 
     if (mode === "fields") {
-      return json({ success: true, total_orders: total, scanned, sample_fields: sampleFields });
+      return json({ success: true, total_orders: total, scanned, sample_fields: sampleFields, users: Array.from(users.entries()), user_probe: userProbe });
     }
 
     if (mode === "detail") {
