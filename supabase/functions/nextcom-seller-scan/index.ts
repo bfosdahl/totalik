@@ -34,6 +34,18 @@ function sellerOf(o: Record<string, unknown>, users: Map<string, string>): strin
   return users.get(uid) || (uid ? `userId ${uid}` : "");
 }
 
+// Eierskapsregel: Viktor og Martin eier kun sine egne. Alle andre selgere
+// (tidligere/andre ansatte) faller til Gard, som overtar porteføljen.
+const OWN_PORTFOLIO: Record<string, string> = {
+  "61": "Viktor Ørnelund",
+  "169": "Martin Hovland",
+};
+const FALLBACK_SELLER = "Gard Fosdahl";
+
+function ownerOf(o: Record<string, unknown>): string {
+  return OWN_PORTFOLIO[String(o.userId ?? "")] ?? FALLBACK_SELLER;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.headers.get("x-scan-secret") !== Deno.env.get("NEXTCOM_SCAN_SECRET")) {
@@ -91,7 +103,7 @@ Deno.serve(async (req) => {
         const created = dateOnly(o.insertedDate) || dateOnly(o.sendDate);
         if (!created || created < cutoffStr) continue;
         inWindow++;
-        const s = sellerOf(o, users) || "(ukjent)";
+        const s = mode === "assign" ? ownerOf(o) : (sellerOf(o, users) || "(ukjent)");
         const entry = sellers.get(s) || { count: 0, customers: new Map() };
         entry.count++;
         const org = String(o.customerOrgNoOrSsn || "").replace(/\D/g, "");
@@ -127,6 +139,51 @@ Deno.serve(async (req) => {
           .map((c) => `${c.name} (${c.last})`),
       }));
       return json({ success: true, cutoff: cutoffStr, sellers: out });
+    }
+
+    if (mode === "assign") {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const sres = await fetch(`${supabaseUrl}/rest/v1/sellers?select=id,name`, {
+        headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+      });
+      const sellerRows: { id: string; name: string }[] = await sres.json();
+      const sellerId = new Map(sellerRows.map((r) => [r.name, r.id]));
+
+      const dryRun = body.dry_run !== false;
+      const result: Record<string, { matched: number; updated: number; missing: number }> = {};
+
+      for (const [name, v] of sellers.entries()) {
+        const id = sellerId.get(name);
+        const stat = { matched: 0, updated: 0, missing: 0 };
+        result[name] = stat;
+        if (!id) continue;
+        const orgs = Array.from(v.customers.values()).map((c) => c.org).filter((o) => o.length === 9);
+        for (let i = 0; i < orgs.length; i += 100) {
+          const chunk = orgs.slice(i, i + 100);
+          const inList = chunk.join(",");
+          const q = `${supabaseUrl}/rest/v1/companies?select=id,org_number&org_number=in.(${inList})`;
+          const cres = await fetch(q, { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } });
+          const found: { id: string; org_number: string }[] = await cres.json();
+          stat.matched += found.length;
+          stat.missing += chunk.length - found.length;
+          if (dryRun || !found.length) continue;
+          const ids = found.map((f) => f.id).join(",");
+          const ures = await fetch(`${supabaseUrl}/rest/v1/companies?id=in.(${ids})`, {
+            method: "PATCH",
+            headers: {
+              apikey: serviceKey,
+              Authorization: `Bearer ${serviceKey}`,
+              "Content-Type": "application/json",
+              Prefer: "return=minimal",
+            },
+            body: JSON.stringify({ seller_id: id }),
+          });
+          if (ures.ok) stat.updated += found.length;
+        }
+      }
+
+      return json({ success: true, dry_run: dryRun, cutoff: cutoffStr, scanned, in_window: inWindow, result });
     }
 
     if (mode === "detail") {
