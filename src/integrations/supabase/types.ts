@@ -17848,6 +17848,7 @@ export type Database = {
         }
         Returns: string
       }
+      exec_never_logged_in_report: { Args: never; Returns: Json }
       generate_anonymous_message_number: {
         Args: { p_company_id: string }
         Returns: string
