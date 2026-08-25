@@ -118,6 +118,17 @@ Deno.serve(async (req) => {
       return json({ success: true, total_orders: total, scanned, sample_fields: sampleFields, users: Array.from(users.entries()), user_probe: userProbe });
     }
 
+    if (mode === "examples") {
+      const out = summary.slice(0, 8).map(({ seller }) => ({
+        seller,
+        examples: Array.from(sellers.get(seller)!.customers.values())
+          .sort((a, b) => b.last.localeCompare(a.last))
+          .slice(0, 6)
+          .map((c) => `${c.name} (${c.last})`),
+      }));
+      return json({ success: true, cutoff: cutoffStr, sellers: out });
+    }
+
     if (mode === "detail") {
       const want = String(body.seller || "");
       const v = sellers.get(want);
