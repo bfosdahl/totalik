@@ -127,3 +127,6 @@ verify_jwt = false
 
 [functions.send-mascot-oneoff]
 verify_jwt = false
+
+[functions.report-never-logged-in]
+verify_jwt = false
