@@ -193,8 +193,7 @@ Deno.serve(async (req) => {
       // 3) E-post via Resend (best effort)
       try {
         const resendKey = Deno.env.get("RESEND_API_KEY");
-        const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-        if (resendKey && lovableKey && employee?.email) {
+        if (resendKey && employee?.email) {
           const html = `
             <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
               <h2 style="color:#1e3a8a">Timene dine er justert</h2>
