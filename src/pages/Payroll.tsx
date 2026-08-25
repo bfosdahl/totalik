@@ -202,7 +202,7 @@ export default function Payroll() {
       }
       setIsLoading(false);
     })();
-  }, [profile?.company_id, period.start.getTime(), period.end.getTime(), reloadTick]);
+  }, [profile?.company_id, period.start.getTime(), period.end.getTime(), reloadTick, statusFilter]);
 
   // Filtered rows by project + employee
   const filteredRows = useMemo(() => {
