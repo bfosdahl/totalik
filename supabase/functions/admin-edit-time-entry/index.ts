@@ -211,12 +211,11 @@ Deno.serve(async (req) => {
                 Dette er en automatisk melding fra Total-IK. Spørsmål? Kontakt din leder.
               </p>
             </div>`;
-          const emailResponse = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+          const emailResponse = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${lovableKey}`,
-              "X-Connection-Api-Key": resendKey,
+              Authorization: `Bearer ${resendKey}`,
             },
             body: JSON.stringify({
               from: "Total-IK <noreply@totalik.no>",
