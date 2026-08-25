@@ -459,6 +459,20 @@ export default function Payroll() {
             </div>
 
             <div className="w-full sm:w-auto">
+              <Label className="text-xs">Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 w-full sm:w-[220px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="approved">Kun godkjente</SelectItem>
+                  <SelectItem value="submitted">Til godkjenning</SelectItem>
+                  <SelectItem value="all">Alle (inkl. ikke godkjente)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full sm:w-auto">
               <Label className="text-xs">{t("auto.ansatt")}</Label>
               <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
                 <SelectTrigger className="h-9 w-full sm:w-[220px]">
