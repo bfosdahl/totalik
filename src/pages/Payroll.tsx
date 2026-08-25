@@ -160,14 +160,16 @@ export default function Payroll() {
     if (!profile?.company_id) return;
     setIsLoading(true);
     (async () => {
-      const { data: entries, error } = await supabase
+      let query = supabase
         .from("time_entries")
         .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, project_id, description, status, approved_by_name, approved_at, hour_type, overtime_segments")
         .eq("company_id", profile.company_id)
-        .eq("status", "approved")
         .gte("entry_date", fmt(period.start))
-        .lte("entry_date", fmt(period.end))
-        .order("entry_date", { ascending: true });
+        .lte("entry_date", fmt(period.end));
+      if (statusFilter === "approved") query = query.eq("status", "approved");
+      else if (statusFilter === "submitted") query = query.eq("status", "submitted");
+      else query = query.in("status", ["approved", "submitted", "draft", "rejected"]);
+      const { data: entries, error } = await query.order("entry_date", { ascending: true });
       if (error) {
         console.error(error);
         toast.error(t("auto.kunne_ikke_hente_timer"));
