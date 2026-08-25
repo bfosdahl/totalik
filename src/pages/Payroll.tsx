@@ -100,6 +100,7 @@ export default function Payroll() {
   const [customRange, setCustomRange] = useState<{ from: string; to: string } | null>(null);
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [employeeFilter, setEmployeeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("approved");
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [ratesOpen, setRatesOpen] = useState(false);
@@ -159,14 +160,16 @@ export default function Payroll() {
     if (!profile?.company_id) return;
     setIsLoading(true);
     (async () => {
-      const { data: entries, error } = await supabase
+      let query = supabase
         .from("time_entries")
         .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, project_id, description, status, approved_by_name, approved_at, hour_type, overtime_segments")
         .eq("company_id", profile.company_id)
-        .eq("status", "approved")
         .gte("entry_date", fmt(period.start))
-        .lte("entry_date", fmt(period.end))
-        .order("entry_date", { ascending: true });
+        .lte("entry_date", fmt(period.end));
+      if (statusFilter === "approved") query = query.eq("status", "approved");
+      else if (statusFilter === "submitted") query = query.eq("status", "submitted");
+      else query = query.in("status", ["approved", "submitted", "draft", "rejected"]);
+      const { data: entries, error } = await query.order("entry_date", { ascending: true });
       if (error) {
         console.error(error);
         toast.error(t("auto.kunne_ikke_hente_timer"));
@@ -199,7 +202,7 @@ export default function Payroll() {
       }
       setIsLoading(false);
     })();
-  }, [profile?.company_id, period.start.getTime(), period.end.getTime(), reloadTick]);
+  }, [profile?.company_id, period.start.getTime(), period.end.getTime(), reloadTick, statusFilter]);
 
   // Filtered rows by project + employee
   const filteredRows = useMemo(() => {
@@ -454,6 +457,20 @@ export default function Payroll() {
                   {projects.map((p) => (
                     <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-full sm:w-auto">
+              <Label className="text-xs">Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 w-full sm:w-[220px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="approved">Kun godkjente</SelectItem>
+                  <SelectItem value="submitted">Til godkjenning</SelectItem>
+                  <SelectItem value="all">Alle (inkl. ikke godkjente)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
