@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           from: "Total-IK <noreply@totalik.no>",
-          to: RECIPIENTS,
+          to: Array.isArray(body.to) && body.to.length ? body.to : RECIPIENTS,
           subject: body.subject ?? "Bedrifter som aldri har logget inn - Total-IK",
           html: body.html ?? "<p>Se vedlagt PDF.</p>",
           attachments: [
