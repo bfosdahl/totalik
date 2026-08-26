@@ -42,24 +42,46 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
     const adminId = userData.user.id;
 
-    const body: EditPayload = await req.json();
-    if (!body.time_entry_id || !body.reason || body.reason.trim().length < 3) {
+    const body: EditPayload | null = await req.json().catch(() => null);
+    if (!body || !body.time_entry_id || !body.reason || body.reason.trim().length < 3) {
       return json({ error: "Mangler time_entry_id eller årsak (min 3 tegn)" }, 400);
     }
 
+    // Strict validation of the requested changes
+    const c = body.changes || {};
+    const isDate = (v: unknown) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+    const isTime = (v: unknown) => typeof v === "string" && /^\d{2}:\d{2}(:\d{2})?$/.test(v);
+    if (c.entry_date !== undefined && !isDate(c.entry_date)) {
+      return json({ error: "Ugyldig dato (forventet YYYY-MM-DD)" }, 400);
+    }
+    if (c.hours !== undefined) {
+      const h = Number(c.hours);
+      if (!Number.isFinite(h) || h <= 0 || h > 24) {
+        return json({ error: "Timer må være et tall mellom 0 og 24" }, 400);
+      }
+      c.hours = h;
+    }
+    if (c.start_time !== undefined && c.start_time !== null && !isTime(c.start_time)) {
+      return json({ error: "Ugyldig starttid (forventet HH:MM)" }, 400);
+    }
+    if (c.end_time !== undefined && c.end_time !== null && !isTime(c.end_time)) {
+      return json({ error: "Ugyldig sluttid (forventet HH:MM)" }, 400);
+    }
+    if (c.hour_type !== undefined && !["normal", "overtime_50", "overtime_100"].includes(c.hour_type)) {
+      return json({ error: "Ugyldig timetype" }, 400);
+    }
+    if (c.description !== undefined && c.description !== null && typeof c.description !== "string") {
+      return json({ error: "Ugyldig beskrivelse" }, 400);
+    }
+    if (c.project_name !== undefined && c.project_name !== null && typeof c.project_name !== "string") {
+      return json({ error: "Ugyldig prosjektnavn" }, 400);
+    }
+    if (typeof c.description === "string") c.description = c.description.trim().slice(0, 2000) || null;
+    if (typeof c.project_name === "string") c.project_name = c.project_name.trim().slice(0, 200) || null;
+
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    const { data: roleRows } = await admin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", adminId);
-    const isSystemAdmin = !!roleRows?.some((r: any) => r.role === "system_admin");
-    const isCompanyAdmin = !!roleRows?.some((r: any) => r.role === "company_admin");
-    if (!isSystemAdmin && !isCompanyAdmin) {
-      return json({ error: "Forbidden: krever admin" }, 403);
-    }
-
-    // Hent eksisterende time-entry
+    // Fetch the target row first so permissions can be checked for ITS company
     const { data: existing, error: exErr } = await admin
       .from("time_entries")
       .select("*")
@@ -67,32 +89,42 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (exErr || !existing) return json({ error: "Fant ikke timeregistrering" }, 404);
 
-    // Hent adminprofil for samme selskap som timen. Viktig for brukere med flere selskaper:
-    // .maybeSingle() kun på user_id kan feile eller velge feil selskap.
-    const { data: adminProfile, error: adminProfileErr } = await admin
-      .from("profiles")
-      .select("company_id, first_name, last_name, email")
-      .eq("user_id", adminId)
-      .eq("company_id", existing.company_id)
-      .maybeSingle();
+    // Roles and the admin's profile for exactly this company, in parallel
+    const [roleRes, adminProfileRes] = await Promise.all([
+      admin.from("user_roles").select("role").eq("user_id", adminId),
+      admin
+        .from("profiles")
+        .select("company_id, first_name, last_name, email")
+        .eq("user_id", adminId)
+        .eq("company_id", existing.company_id)
+        .maybeSingle(),
+    ]);
 
-    if (adminProfileErr) {
-      console.error("admin profile lookup error", adminProfileErr);
+    if (roleRes.error) {
+      console.error("role lookup error", roleRes.error);
+      return json({ error: "Kunne ikke verifisere admin-tilgang" }, 500);
+    }
+    if (adminProfileRes.error) {
+      console.error("admin profile lookup error", adminProfileRes.error);
       return json({ error: "Kunne ikke verifisere admin-tilgang" }, 500);
     }
 
-    if (!isSystemAdmin && !adminProfile) {
-      return json({ error: "Forbidden: annet selskap" }, 403);
+    const isSystemAdmin = !!roleRes.data?.some((r: any) => r.role === "system_admin");
+    const isCompanyAdmin = !!roleRes.data?.some((r: any) => r.role === "company_admin");
+    const adminProfile = adminProfileRes.data;
+
+    // System admins may edit anywhere; company admins only inside their own company.
+    if (!isSystemAdmin && (!isCompanyAdmin || !adminProfile)) {
+      return json({ error: "Forbidden: krever admin for dette selskapet" }, 403);
     }
 
-    // Bygg patch
+    // Build patch
     const patch: Record<string, any> = {
       admin_edit_reason: body.reason.trim(),
       admin_edited_by: adminId,
       admin_edited_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    const c = body.changes || {};
     if (c.entry_date !== undefined) patch.entry_date = c.entry_date;
     if (c.hours !== undefined) patch.hours = c.hours;
     if (c.start_time !== undefined) patch.start_time = c.start_time;
@@ -101,29 +133,28 @@ Deno.serve(async (req) => {
     if (c.hour_type !== undefined) patch.hour_type = c.hour_type;
     if (c.project_name !== undefined) patch.project_name = c.project_name;
 
-    const { error: updErr } = await admin
-      .from("time_entries")
-      .update(patch)
-      .eq("id", body.time_entry_id);
+    // Optimistic locking on updated_at (skipped defensively if the row has none)
+    const expectedUpdatedAt = existing.updated_at as string | null;
+    let updateQuery = admin.from("time_entries").update(patch).eq("id", body.time_entry_id);
+    if (expectedUpdatedAt) updateQuery = updateQuery.eq("updated_at", expectedUpdatedAt);
+
+    const { data: updatedRows, error: updErr } = await updateQuery.select();
     if (updErr) {
       console.error("time_entries update error", updErr);
-      return json({ error: updErr.message }, 500);
+      return json({ error: "Kunne ikke lagre timeregistreringen" }, 500);
+    }
+    if (!updatedRows || updatedRows.length === 0) {
+      return json(
+        { error: "Timeregistreringen ble endret av en annen bruker imens. Oppdater siden og prøv igjen." },
+        409,
+      );
     }
 
-    let updated: any = { ...existing, ...patch };
+    let updated: any = updatedRows[0];
 
     // Everything after the DB update is best-effort. A notification/e-mail/push failure must never
     // make the admin see "Edge Function returned a non-2xx status code" after the hours are saved.
     try {
-      // Hent oppdatert + ansattprofil
-      const { data: updatedRow, error: updatedErr } = await admin
-        .from("time_entries")
-        .select("*")
-        .eq("id", body.time_entry_id)
-        .maybeSingle();
-      if (updatedErr) console.error("updated row lookup error", updatedErr.message);
-      if (updatedRow) updated = updatedRow;
-
       const { data: employee, error: employeeErr } = await admin
         .from("profiles")
         .select("user_id, email, first_name, last_name")
