@@ -30,6 +30,9 @@ Deno.serve(async (req) => {
     const email = clean((body as any).email, 200).toLowerCase();
     const phone = clean((body as any).phone, 30);
     const termsAccepted = (body as any).termsAccepted === true;
+    const allowedSources = ['nybygg', 'nyreggrenhold', 'nyreggfrisor', 'nyreggservering'];
+    const rawSource = clean((body as any).source, 40);
+    const source = allowedSources.includes(rawSource) ? rawSource : 'nybygg';
 
     if (!/^\d{9}$/.test(orgNumber)) return json({ error: 'Organisasjonsnummer må ha 9 siffer' }, 400);
     if (!companyName) return json({ error: 'Bedriftsnavn mangler' }, 400);
