@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
         email,
         phone,
         terms_accepted: true,
-        source: 'nybygg',
+        source,
       })
       .select('id')
       .single();
