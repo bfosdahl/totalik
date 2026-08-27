@@ -21,6 +21,9 @@ const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const Nybygg = lazy(() => import("./pages/public/Nybygg"));
 const NybyggVilkar = lazy(() => import("./pages/public/NybyggVilkar"));
 const Personvern = lazy(() => import("./pages/public/Personvern"));
+const NyRegRenhold = lazy(() => import("./pages/public/NyRegRenhold"));
+const NyRegFrisor = lazy(() => import("./pages/public/NyRegFrisor"));
+const NyRegServering = lazy(() => import("./pages/public/NyRegServering"));
 
 
 // Lazy imports — all other pages
@@ -212,6 +215,10 @@ const App = () => (
                   <Route path="/stemple" element={<TimeClock />} />
                   <Route path="/nybygg" element={<Nybygg />} />
                   <Route path="/nybygg/vilkar" element={<NybyggVilkar />} />
+                  <Route path="/vilkar" element={<NybyggVilkar />} />
+                  <Route path="/nyreggrenhold" element={<NyRegRenhold />} />
+                  <Route path="/nyreggfrisor" element={<NyRegFrisor />} />
+                  <Route path="/nyreggservering" element={<NyRegServering />} />
                   <Route path="/personvern" element={<Personvern />} />
 
                 
