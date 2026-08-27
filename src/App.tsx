@@ -215,6 +215,10 @@ const App = () => (
                   <Route path="/stemple" element={<TimeClock />} />
                   <Route path="/nybygg" element={<Nybygg />} />
                   <Route path="/nybygg/vilkar" element={<NybyggVilkar />} />
+                  <Route path="/vilkar" element={<NybyggVilkar />} />
+                  <Route path="/nyreggrenhold" element={<NyRegRenhold />} />
+                  <Route path="/nyreggfrisor" element={<NyRegFrisor />} />
+                  <Route path="/nyreggservering" element={<NyRegServering />} />
                   <Route path="/personvern" element={<Personvern />} />
 
                 
