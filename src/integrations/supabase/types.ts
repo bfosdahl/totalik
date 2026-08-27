@@ -15453,6 +15453,51 @@ export type Database = {
           },
         ]
       }
+      nybygg_leads: {
+        Row: {
+          company_name: string
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          notes: string | null
+          org_number: string
+          phone: string
+          source: string
+          status: string
+          terms_accepted: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          notes?: string | null
+          org_number: string
+          phone: string
+          source?: string
+          status?: string
+          terms_accepted?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          notes?: string | null
+          org_number?: string
+          phone?: string
+          source?: string
+          status?: string
+          terms_accepted?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       org_chart_node_persons: {
         Row: {
           created_at: string
