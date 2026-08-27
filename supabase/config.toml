@@ -130,3 +130,6 @@ verify_jwt = false
 
 [functions.report-never-logged-in]
 verify_jwt = false
+
+[functions.submit-nybygg-lead]
+verify_jwt = false
