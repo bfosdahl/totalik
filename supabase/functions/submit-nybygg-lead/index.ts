@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       await Promise.allSettled([
         send(
           ['viktor@athenahms.no', 'post@athenahms.no'],
-          `Ny aktivering (nybygg): ${companyName}`,
+          `Ny aktivering (${source}): ${companyName}`,
           `<h2>Ny velkomstpakke aktivert</h2>${rows}`,
         ),
         send(
