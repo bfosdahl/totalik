@@ -18,6 +18,9 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const Nybygg = lazy(() => import("./pages/public/Nybygg"));
+const NybyggVilkar = lazy(() => import("./pages/public/NybyggVilkar"));
+const Personvern = lazy(() => import("./pages/public/Personvern"));
 
 
 // Lazy imports — all other pages
@@ -207,6 +210,10 @@ const App = () => (
                   <Route path="/install" element={<InstallApp />} />
                   <Route path="/install/avvik" element={<InstallAvvikApp />} />
                   <Route path="/stemple" element={<TimeClock />} />
+                  <Route path="/nybygg" element={<Nybygg />} />
+                  <Route path="/nybygg/vilkar" element={<NybyggVilkar />} />
+                  <Route path="/personvern" element={<Personvern />} />
+
                 
                   {/* Protected app routes */}
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
