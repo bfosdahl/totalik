@@ -18,6 +18,9 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+const Nybygg = lazy(() => import("./pages/public/Nybygg"));
+const NybyggVilkar = lazy(() => import("./pages/public/NybyggVilkar"));
+const Personvern = lazy(() => import("./pages/public/Personvern"));
 
 
 // Lazy imports — all other pages
