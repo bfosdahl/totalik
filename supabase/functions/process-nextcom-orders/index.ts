@@ -301,11 +301,23 @@ Deno.serve(async (req) => {
     return respond(summary);
 
   } catch (error) {
+    // Midlertidig nedetid hos NextCom skal ikke velte jobben (unngår 502 + alarm).
+    if (error instanceof NextcomUpstreamError) {
+      console.warn(`[TotalIK NextCom Sync] Upstream unavailable (${error.status}): ${error.message}`);
+      return respond({
+        success: false,
+        skipped: true,
+        reason: "nextcom_upstream_unavailable",
+        upstream_status: error.status,
+        message: "NextCom API utilgjengelig – ingen ordre behandlet. Neste kjøring prøver på nytt.",
+      });
+    }
     console.error("[TotalIK NextCom Sync] Fatal error:", error);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
+
 });
 
 function respond(body: object) {
