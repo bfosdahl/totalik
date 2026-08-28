@@ -453,6 +453,39 @@ async function fetchBrregEmployeeCount(orgNumber?: string): Promise<number | nul
 
 // ── NextCom API ──
 
+class NextcomUpstreamError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "NextcomUpstreamError";
+    this.status = status;
+  }
+}
+
+/** Henter fra NextCom med retry/backoff på 5xx og 429. */
+async function nextcomFetch(url: string, basicAuth: string, attempts = 3): Promise<Response> {
+  let last: { status: number; text: string } | null = null;
+
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 1000 * 2 ** (i - 1)));
+    try {
+      const res = await fetch(url, {
+        headers: { "Authorization": `Basic ${basicAuth}`, "Accept": "application/json" },
+      });
+      if (res.ok) return res;
+      const text = (await res.text()).slice(0, 500);
+      last = { status: res.status, text };
+      if (res.status < 500 && res.status !== 429) break;
+      console.warn(`[NextCom] ${res.status} på forsøk ${i + 1}/${attempts}`);
+    } catch (e) {
+      last = { status: 0, text: String(e) };
+      console.warn(`[NextCom] Nettverksfeil på forsøk ${i + 1}/${attempts}: ${e}`);
+    }
+  }
+
+  throw new NextcomUpstreamError(last?.status ?? 0, `NextCom API error ${last?.status ?? 0}: ${last?.text ?? "unknown"}`);
+}
+
 async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | null, deepFetch = false): Promise<NextcomOrder[]> {
   const allOrders: NextcomOrder[] = [];
   const limit = 100;
@@ -461,14 +494,7 @@ async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | n
 
   // Get total count with a single lightweight call
   const countUrl = `${NEXTCOM_BASE_URL}/crm-system/orders?offset=0&limit=1&locale=eng`;
-  const countResponse = await fetch(countUrl, {
-    headers: { "Authorization": `Basic ${basicAuth}`, "Accept": "application/json" },
-  });
-
-  if (!countResponse.ok) {
-    const text = await countResponse.text();
-    throw new Error(`NextCom API error ${countResponse.status}: ${text}`);
-  }
+  const countResponse = await nextcomFetch(countUrl, basicAuth);
 
   const countData = await countResponse.json();
   const totalCount = countData.totalCount || countData.total || countData.count || 0;
@@ -480,14 +506,8 @@ async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | n
     const url = `${NEXTCOM_BASE_URL}/crm-system/orders?offset=${offset}&limit=${limit}&locale=eng`;
     console.log(`[NextCom] Fetching offset=${offset} (${page + 1}/${maxPages})...`);
 
-    const response = await fetch(url, {
-      headers: { "Authorization": `Basic ${basicAuth}`, "Accept": "application/json" },
-    });
+    const response = await nextcomFetch(url, basicAuth);
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`NextCom API error ${response.status}: ${text}`);
-    }
 
     const data = await response.json();
     const items = data.items || [];
