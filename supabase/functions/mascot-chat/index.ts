@@ -19,6 +19,9 @@ Du snakker alltid på norsk og er ekspert på:
 
 2. Hvis brukeren spør HVOR noe er i systemet eller hvordan de NAVIGERER → Bruk get_navigation_help verktøyet.
 
+**ALDRI SKRIV AT BRUKEREN "HAR FUNNET FREM", "HAR GJORT" ELLER "HAR LÆRT" NOE** – brukeren stiller et spørsmål om hjelp, og du skal svare direkte med HVOR tingen finnes og HVORDAN man gjør det, steg for steg. Eksempel:
+- "Hvor registrerer jeg avvik?" → "Du registrerer avvik under «Avvik» i menyen til venstre. Trykk der på «Nytt avvik», fyll inn tittel, beskrivelse og kategori, og lagre. Jeg kan også opprette avviket for deg her – bare beskriv hva som har skjedd!"
+
 3. Hvis brukeren ber deg GJØRE noe i systemet (registrere avvik, legge til risiko, osv.) → Bruk det relevante verktøyet.
 
 **EKSEMPLER PÅ NÅR DU SKAL SVARE DIREKTE (IKKE bruk verktøy):**
@@ -487,7 +490,7 @@ async function executeToolCall(
           { keywords: ["ferie", "fri", "permisjon", "feriesøknad"], path: "/time-off", name: "Ferie og fri", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Feriesøknader og godkjenning" },
           { keywords: ["arbeidsplan", "vaktplan", "turnus", "arbeidstid"], path: "/work-schedule", name: "Arbeidsplan", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Vaktplaner og arbeidstid" },
           { keywords: ["møte", "møter", "møtereferat"], path: "/hr/meetings", name: "Møter", menuLocation: "I menyen til venstre under «HR / Ansatte»", description: "Møteplanlegging og referater" },
-          { keywords: ["avvik", "ruh", "uønsket hendelse", "kvalitetsavvik", "hendelse", "rapportere"], path: "/deviations", name: "Avvik", menuLocation: "I menyen til venstre – klikk på «Avvik» (under «IK/HMS» eller som eget punkt)", description: "Her registrerer og følger du opp kvalitetsavvik og uønskede hendelser (RUH). Du kan opprette nye avvik, tildele ansvarlig og sette frist." },
+          { keywords: ["avvik", "ruh", "uønsket hendelse", "kvalitetsavvik", "hendelse", "rapportere"], path: "/deviations", name: "Avvik", menuLocation: "I menyen til venstre – klikk på «Avvik» (under «IK/HMS» eller som eget punkt)", description: "Slik gjør du det: 1) Åpne «Avvik» i menyen. 2) Trykk «Nytt avvik». 3) Fyll inn tittel, beskrivelse og kategori (f.eks. sikkerhet eller kvalitet/RUH). 4) Lagre – deretter kan du tildele ansvarlig, sette frist og registrere tiltak. 💡 Tips: Jeg kan også opprette avviket for deg direkte her i chatten – bare beskriv hva som har skjedd!" },
           { keywords: ["revisjon", "internrevisjon", "vernerunde", "hms-aktivitet", "el-kontroll", "elektro"], path: "/audits", name: "Revisjoner", menuLocation: "I menyen til venstre under «IK/HMS»", description: "HMS-aktiviteter, vernerunder, internrevisjoner" },
           { keywords: ["ks", "kvalitetssystem", "bygg", "prosjekt", "byggeprosjekt"], path: "/ks2", name: "KS-modul", menuLocation: "I menyen til venstre under «KS-modul»", description: "Kvalitetssystem for bygg og anlegg" },
           { keywords: ["sjekkliste", "egenkontroll", "kontrollpunkt"], path: "/ks2/sjekklister", name: "Sjekklister", menuLocation: "I menyen til venstre under «KS-modul»", description: "KS-sjekklister for egenkontroll" },
@@ -950,10 +953,22 @@ serve(async (req) => {
 
       // Combine results into a response
       const combinedResult = toolResults.join("\n\n");
-      
+
+      // Navigation help: return the tool result verbatim – a second AI pass tends
+      // to rephrase it into "du har funnet frem til ..." which is wrong.
+      const onlyNavigation = assistantMessage.tool_calls.every(
+        (tc: any) => tc.function.name === "get_navigation_help"
+      );
+      if (onlyNavigation) {
+        return new Response(
+          JSON.stringify({ reply: combinedResult, actions: toolResults }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Get a friendly summary from the AI
       const summaryMessages = [
-        { role: "system", content: "Du er HMS-hjelperen. Gi en kort, vennlig oppsummering av handlingene som ble utført. Bruk emojis." },
+        { role: "system", content: "Du er HMS-hjelperen. Gi en kort, vennlig oppsummering av handlingene DU akkurat utførte for brukeren (f.eks. at et avvik ble opprettet). Beskriv aldri noe brukeren skal ha gjort selv. Bruk emojis." },
         { role: "user", content: `Handlinger utført:\n${combinedResult}\n\nGi en kort oppsummering til brukeren.` }
       ];
 
