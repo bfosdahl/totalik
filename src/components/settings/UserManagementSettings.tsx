@@ -61,6 +61,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments } from "@/hooks/useDepartments";
+import { useInvalidateCompanyUsers } from "@/hooks/useCompanyUsers";
 import { t } from "@/i18n/t";
 
 interface UserManagementSettingsProps {
@@ -118,6 +119,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
   // Fetch departments if company has departments enabled
   const { departments } = useDepartments(company?.id);
+  const invalidateCompanyUsers = useInvalidateCompanyUsers();
   const hasDepartments = company?.has_departments && departments.length > 0;
 
   // Edit form state
@@ -205,6 +207,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
   useEffect(() => {
     loadUsers();
+      invalidateCompanyUsers();
   }, [company?.id]);
 
   const handleInviteUser = async () => {
@@ -238,6 +241,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       setInviteDialogOpen(false);
       setInviteForm({ email: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       loadUsers();
+      invalidateCompanyUsers();
     } catch (error: any) {
       console.error("Error inviting user:", error);
       toast.error(error.message || "Kunne ikke invitere bruker");
@@ -305,6 +309,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       setShowPassword(false);
       loadUsers();
+      invalidateCompanyUsers();
     } catch (error: any) {
       console.error("Error creating user:", error);
       toast.error(error.message || "Kunne ikke opprette bruker");
@@ -419,6 +424,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       setEditDialogOpen(false);
       setSelectedUser(null);
       loadUsers();
+      invalidateCompanyUsers();
     } catch (error: any) {
       console.error("Error updating user:", error);
       toast.error(error.message || "Kunne ikke oppdatere bruker");
@@ -449,6 +455,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       setDeleteDialogOpen(false);
       setSelectedUser(null);
       loadUsers();
+      invalidateCompanyUsers();
     } catch (error: any) {
       console.error("Error deactivating user:", error);
       toast.error(error.message || "Kunne ikke deaktivere bruker");
@@ -468,6 +475,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       toast.success(`${companyUser.first_name || companyUser.email} er nå godkjent!`);
       loadUsers();
+      invalidateCompanyUsers();
     } catch (error: any) {
       console.error("Error approving user:", error);
       toast.error(error.message || "Kunne ikke godkjenne bruker");
@@ -490,6 +498,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       toast.success(t("auto.bruker_suspendert"));
       loadUsers();
+      invalidateCompanyUsers();
     } catch (error: any) {
       console.error("Error suspending user:", error);
       toast.error(error.message || "Kunne ikke suspendere bruker");
@@ -507,6 +516,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       toast.success(t("auto.bruker_reaktivert_husk_aa_tildele_avdeli"));
       loadUsers();
+      invalidateCompanyUsers();
     } catch (error: any) {
       console.error("Error reactivating user:", error);
       toast.error(error.message || "Kunne ikke reaktivere bruker");

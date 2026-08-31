@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -10,43 +11,52 @@ export interface CompanyUser {
   email: string | null;
 }
 
+export const COMPANY_USERS_QUERY_KEY = "company-users";
+
+/** Call after any profiles create/update/deactivate so cached user lists refresh. */
+export function useInvalidateCompanyUsers() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    () => queryClient.invalidateQueries({ queryKey: [COMPANY_USERS_QUERY_KEY] }),
+    [queryClient]
+  );
+}
+
 export function useCompanyUsers() {
   const { profile } = useAuth();
-  const [users, setUsers] = useState<CompanyUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const companyId = profile?.company_id;
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      if (!profile?.company_id) {
-        setIsLoading(false);
-        return;
-      }
+  const {
+    data: users = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["company-users", companyId],
+    queryFn: async () => {
+      if (!companyId) return [];
 
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, user_id, first_name, last_name, email")
-          .eq("company_id", profile.company_id)
-          .eq("is_active", true);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, user_id, first_name, last_name, email")
+        .eq("company_id", companyId)
+        .eq("is_active", true)
+        .order("first_name", { ascending: true });
 
-        if (error) throw error;
-        setUsers(data || []);
-      } catch (error) {
-        console.error("Error fetching company users:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      if (error) throw error;
+      return data as CompanyUser[];
+    },
+    enabled: Boolean(companyId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-    fetchUsers();
-  }, [profile?.company_id]);
-
-  const getUserDisplayName = (user: CompanyUser) => {
+  const getUserDisplayName = useCallback((user: CompanyUser) => {
     if (user.first_name || user.last_name) {
       return `${user.first_name || ""} ${user.last_name || ""}`.trim();
     }
     return user.email || "Ukjent bruker";
-  };
+  }, []);
 
-  return { users, isLoading, getUserDisplayName };
+  return { users, isLoading, error, refetch, getUserDisplayName };
 }
