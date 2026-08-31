@@ -535,46 +535,86 @@ export default function AdminUsers() {
     setCurrentPage(1);
   };
 
-  const exportUsersToCSV = useCallback(() => {
-    if (!profiles || profiles.length === 0) {
-      toast({ title: t("auto.ingen_brukere"), description: t("auto.det_er_ingen_brukere_aa_eksportere"), variant: "destructive" });
-      return;
+  // CSV export fetches ALL matching rows on demand (respecting the active
+  // search/company filter) — independent of the paginated view.
+  const exportUsersToCSV = useCallback(async () => {
+    try {
+      const buildQuery = (from: number, to: number) => {
+        let q = supabase
+          .from("profiles")
+          .select("user_id, first_name, last_name, email, is_active, companies(name)")
+          .order("created_at", { ascending: false })
+          .range(from, to);
+        if (companyFilter) q = q.eq("company_id", companyFilter);
+        if (debouncedSearch) {
+          const s = debouncedSearch.replace(/[%,()]/g, "");
+          q = q.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,email.ilike.%${s}%`);
+        }
+        return q;
+      };
+
+      const PAGE = 1000;
+      const all: any[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await buildQuery(from, from + PAGE - 1);
+        if (error) throw error;
+        all.push(...(data || []));
+        if (!data || data.length < PAGE) break;
+      }
+
+      if (all.length === 0) {
+        toast({ title: t("auto.ingen_brukere"), description: t("auto.det_er_ingen_brukere_aa_eksportere"), variant: "destructive" });
+        return;
+      }
+
+      // Fetch roles for exactly these users, chunked under the IN() limit
+      const ids = all.map((p) => p.user_id).filter(Boolean) as string[];
+      const rolesByUser = new Map<string, string[]>();
+      for (let i = 0; i < ids.length; i += 500) {
+        const { data: roleRows, error: rolesErr } = await supabase
+          .from("user_roles")
+          .select("user_id, role")
+          .in("user_id", ids.slice(i, i + 500));
+        if (rolesErr) throw rolesErr;
+        for (const r of roleRows || []) {
+          rolesByUser.set(r.user_id, [...(rolesByUser.get(r.user_id) || []), r.role]);
+        }
+      }
+
+      const headers = ["E-post", "Fornavn", "Etternavn", "Bedrift", "Roller", "Status"];
+      const rows = all.map((profile) => {
+        const roles = (rolesByUser.get(profile.user_id) || []).join(", ");
+        const companyName = (profile as any).companies?.name || "Ingen bedrift";
+        return [
+          profile.email || "",
+          profile.first_name || "",
+          profile.last_name || "",
+          companyName,
+          roles || "Ingen roller",
+          profile.is_active ? "Aktiv" : "Inaktiv",
+        ];
+      });
+
+      const csvContent = [
+        headers.join(";"),
+        ...rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(";")),
+      ].join("\n");
+
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `brukere-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      toast({ title: t("auto.eksport_fullfoert"), description: `${all.length} brukere eksportert til CSV` });
+    } catch (err) {
+      console.error("Error exporting users:", err);
+      toast({ title: t("auto.eksport_feilet"), description: t("auto.kunne_ikke_eksportere_brukere"), variant: "destructive" });
     }
-
-    const dataToExport = filteredProfiles || profiles;
-    
-    // Build CSV content
-    const headers = ["E-post", "Fornavn", "Etternavn", "Bedrift", "Roller", "Status"];
-    const rows = dataToExport.map(profile => {
-      const roles = getUserRoles(profile.user_id).join(", ");
-      const companyName = (profile as any).companies?.name || "Ingen bedrift";
-      return [
-        profile.email || "",
-        profile.first_name || "",
-        profile.last_name || "",
-        companyName,
-        roles || "Ingen roller",
-        profile.is_active ? "Aktiv" : "Inaktiv"
-      ];
-    });
-
-    const csvContent = [
-      headers.join(";"),
-      ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(";"))
-    ].join("\n");
-
-    // Add BOM for Excel UTF-8 compatibility
-    const BOM = "\uFEFF";
-    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `brukere-${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    
-    toast({ title: t("auto.eksport_fullfoert"), description: `${dataToExport.length} brukere eksportert til CSV` });
-  }, [profiles, filteredProfiles, getUserRoles, toast]);
+  }, [companyFilter, debouncedSearch, toast]);
 
 
   // Error handling for profiles query
