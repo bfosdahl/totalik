@@ -155,12 +155,19 @@ export default function AdminUsers() {
     queryKey: ["admin-user-roles"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("id, user_id, role")
-          .limit(1000);
-        if (error) throw error;
-        return data;
+        // Fetch ALL role rows in 1000-row pages (table exceeds 1000 rows).
+        const PAGE = 1000;
+        const all: any[] = [];
+        for (let from = 0; ; from += PAGE) {
+          const { data, error } = await supabase
+            .from("user_roles")
+            .select("id, user_id, role")
+            .range(from, from + PAGE - 1);
+          if (error) throw error;
+          all.push(...(data || []));
+          if (!data || data.length < PAGE) break;
+        }
+        return all;
       } catch (err) {
         console.error("Error fetching user roles:", err);
         throw err;
