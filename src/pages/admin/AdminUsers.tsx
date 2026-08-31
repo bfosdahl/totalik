@@ -107,19 +107,27 @@ export default function AdminUsers() {
     queryKey: ["admin-profiles", companyFilter],
     queryFn: async () => {
       try {
-        let query = supabase
-          .from("profiles")
-          .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_expiry_date, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at, companies(name)")
-          .order("created_at", { ascending: false })
-          .limit(500);
+        // Fetch ALL profiles in 1000-row pages so client-side pagination
+        // covers every user, not just the newest chunk.
+        const PAGE = 1000;
+        const all: any[] = [];
+        for (let from = 0; ; from += PAGE) {
+          let query = supabase
+            .from("profiles")
+            .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_expiry_date, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at, companies(name)")
+            .order("created_at", { ascending: false })
+            .range(from, from + PAGE - 1);
 
-        if (companyFilter) {
-          query = query.eq("company_id", companyFilter);
+          if (companyFilter) {
+            query = query.eq("company_id", companyFilter);
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+          all.push(...(data || []));
+          if (!data || data.length < PAGE) break;
         }
-
-        const { data, error } = await query;
-        if (error) throw error;
-        return data;
+        return all;
       } catch (err) {
         console.error("Error fetching profiles:", err);
         throw err;
