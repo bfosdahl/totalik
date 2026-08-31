@@ -378,6 +378,7 @@ export function useUpdateEmployee() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       queryClient.invalidateQueries({ queryKey: ["my-employee-card"] });
+      queryClient.invalidateQueries({ queryKey: ["company-users"] });
       toast({ title: "Ansatt oppdatert" });
     },
     onError: (error) => {
