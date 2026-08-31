@@ -158,16 +158,23 @@ export default function AdminCompanies() {
   const { data: companies, isLoading } = useQuery({
     queryKey: ["admin-companies"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("companies")
-        .select(
-          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas"
-        )
-        .order("created_at", { ascending: false })
-        .limit(1000);
+      // Fetch ALL companies in 1000-row pages so pagination covers everyone.
+      const PAGE = 1000;
+      const all: any[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("companies")
+          .select(
+            "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas"
+          )
+          .order("created_at", { ascending: false })
+          .range(from, from + PAGE - 1);
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        all.push(...(data || []));
+        if (!data || data.length < PAGE) break;
+      }
+      return all;
     },
   });
 
