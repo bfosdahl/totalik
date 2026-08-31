@@ -707,12 +707,24 @@ export default function AdminUsers() {
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      {t("auto.laster")}
-                    </td>
-                  </tr>
-                ) : filteredProfiles.length === 0 ? (
+                  Array.from({ length: Math.min(pageSize, 10) }).map((_, i) => (
+                    <tr key={`skeleton-${i}`}>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="w-8 h-8 rounded-lg" />
+                          <div className="space-y-1.5">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-3 w-56" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4"><Skeleton className="h-4 w-32" /></td>
+                      <td className="p-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                      <td className="p-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                      <td className="p-4 text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></td>
+                    </tr>
+                  ))
+                ) : paginatedProfiles.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
                       {t("auto.ingen_brukere_funnet")}
@@ -845,10 +857,22 @@ export default function AdminUsers() {
           className="md:hidden space-y-3"
         >
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
-              {t("auto.laster")}
-            </div>
-          ) : filteredProfiles.length === 0 ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={`skeleton-m-${i}`} className="bg-card rounded-xl border border-border p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-8 h-8 rounded-lg" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-44" />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+              </div>
+            ))
+          ) : paginatedProfiles.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
               {t("auto.ingen_brukere_funnet")}
             </div>
@@ -962,7 +986,7 @@ export default function AdminUsers() {
         </motion.div>
 
         {/* Pagination */}
-        {filteredProfiles.length > 0 && (
+        {totalCount > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card rounded-xl border border-border p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{t("auto.vis")}</span>
@@ -977,7 +1001,7 @@ export default function AdminUsers() {
               </select>
               <span>{t("auto.per_side")}</span>
               <span className="ml-2">
-                ({((safePage - 1) * pageSize) + 1}–{Math.min(safePage * pageSize, filteredProfiles.length)} av {filteredProfiles.length})
+                ({((safePage - 1) * pageSize) + 1}–{Math.min(safePage * pageSize, totalCount)} av {totalCount})
               </span>
             </div>
             <div className="flex items-center gap-1">
