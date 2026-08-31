@@ -110,39 +110,52 @@ export default function AdminUsers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: profiles, isLoading, error: profilesError } = useQuery({
-    queryKey: ["admin-profiles", companyFilter],
+  // Server-side pagination: fetch only the current page with only the
+  // fields the table/cards actually render. `count: "exact"` gives the
+  // total for the pagination bar without loading every row.
+  const {
+    data: profilesPage,
+    isLoading,
+    isFetching,
+    error: profilesError,
+  } = useQuery({
+    queryKey: ["admin-profiles", companyFilter, currentPage, pageSize, debouncedSearch],
     queryFn: async () => {
-      try {
-        // Fetch ALL profiles in 1000-row pages so client-side pagination
-        // covers every user, not just the newest chunk.
-        const PAGE = 1000;
-        const all: any[] = [];
-        for (let from = 0; ; from += PAGE) {
-          let query = supabase
-            .from("profiles")
-            .select("id, user_id, company_id, first_name, last_name, email, phone, avatar_url, is_active, created_at, updated_at, hms_card_required, hms_card_obtained, hms_card_expiry_date, is_verneombud, is_hms_responsible, primary_department_id, status, is_assigned_to_main, preferred_language, deleted_at, companies(name)")
-            .order("created_at", { ascending: false })
-            .range(from, from + PAGE - 1);
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
+      let query = supabase
+        .from("profiles")
+        .select("id, user_id, company_id, first_name, last_name, email, is_active, created_at, companies(name)", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
-          if (companyFilter) {
-            query = query.eq("company_id", companyFilter);
-          }
-
-          const { data, error } = await query;
-          if (error) throw error;
-          all.push(...(data || []));
-          if (!data || data.length < PAGE) break;
-        }
-        return all;
-      } catch (err) {
-        console.error("Error fetching profiles:", err);
-        throw err;
+      if (companyFilter) {
+        query = query.eq("company_id", companyFilter);
       }
+      if (debouncedSearch) {
+        const s = debouncedSearch.replace(/[%,()]/g, "");
+        query = query.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,email.ilike.%${s}%`);
+      }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return { rows: data || [], total: count ?? 0 };
     },
     retry: 1,
     staleTime: 30000,
+    placeholderData: keepPreviousData,
   });
+
+  const profiles = profilesPage?.rows;
+  const totalCount = profilesPage?.total ?? 0;
+
+  // Page-scoped role lookup: only fetch roles for the users on screen
+  // instead of the entire user_roles table.
+  const pageUserIds = useMemo(
+    () => (profiles || []).map((p) => p.user_id).filter(Boolean) as string[],
+    [profiles]
+  );
+  const pageUserIdsKey = pageUserIds.join(",");
 
   const { data: companies } = useQuery({
     queryKey: ["admin-companies-list"],
@@ -158,30 +171,21 @@ export default function AdminUsers() {
     },
   });
 
-  const { data: userRoles, error: rolesError } = useQuery({
-    queryKey: ["admin-user-roles"],
+  const { data: userRoles } = useQuery({
+    queryKey: ["admin-user-roles", pageUserIdsKey],
     queryFn: async () => {
-      try {
-        // Fetch ALL role rows in 1000-row pages (table exceeds 1000 rows).
-        const PAGE = 1000;
-        const all: any[] = [];
-        for (let from = 0; ; from += PAGE) {
-          const { data, error } = await supabase
-            .from("user_roles")
-            .select("id, user_id, role")
-            .range(from, from + PAGE - 1);
-          if (error) throw error;
-          all.push(...(data || []));
-          if (!data || data.length < PAGE) break;
-        }
-        return all;
-      } catch (err) {
-        console.error("Error fetching user roles:", err);
-        throw err;
-      }
+      if (pageUserIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("id, user_id, role")
+        .in("user_id", pageUserIds);
+      if (error) throw error;
+      return data || [];
     },
+    enabled: pageUserIds.length > 0,
     retry: 1,
     staleTime: 30000,
+    placeholderData: keepPreviousData,
   });
 
   const assignCompanyMutation = useMutation({
