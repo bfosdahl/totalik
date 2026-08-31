@@ -611,7 +611,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             alt="Total-IK"
             className={cn(
               "mx-auto transition-all duration-200 object-contain",
-              collapsed ? "h-10" : "h-28"
+              collapsed ? "h-10" : "h-24"
             )}
           />
           <Button
