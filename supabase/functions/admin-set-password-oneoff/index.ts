@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,18 +6,37 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
+  // 1. Handle CORS Preflight
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // 2. Validate Authorization Secret
     const cronSecret = req.headers.get("x-cron-secret");
     const expected = Deno.env.get("ADMIN_ACTIONS_SECRET");
     if (!expected || !cronSecret || cronSecret !== expected) {
-      return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: corsHeaders });
+      return new Response(
+        JSON.stringify({ error: "unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const { email, password } = await req.json();
-    if (!email || !password) {
-      return new Response(JSON.stringify({ error: "missing email/password" }), { status: 400, headers: corsHeaders });
+    // 3. Safe JSON parsing & Input Validation
+    const body = await req.json().catch(() => null);
+    if (!body || !body.email || !body.password) {
+      return new Response(
+        JSON.stringify({ error: "missing email or password" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const cleanEmail = String(body.email).trim().toLowerCase();
+    const { password } = body;
+
+    if (String(password).length < 8) {
+      return new Response(
+        JSON.stringify({ error: "password must be at least 8 characters" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const admin = createClient(
@@ -25,23 +44,42 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    if (listErr) throw listErr;
-    const user = list.users.find((u) => u.email?.toLowerCase() === String(email).toLowerCase());
-    if (!user) {
-      return new Response(JSON.stringify({ error: "user not found" }), { status: 404, headers: corsHeaders });
+    // 4. Fast indexed lookup via profiles table instead of listUsers pagination scan
+    const { data: profile, error: profileErr } = await admin
+      .from("profiles")
+      .select("user_id")
+      .eq("email", cleanEmail)
+      .maybeSingle();
+
+    if (profileErr) {
+      console.error("Profile lookup error:", profileErr);
+      throw profileErr;
     }
 
-    const { error: updErr } = await admin.auth.admin.updateUserById(user.id, { password });
-    if (updErr) throw updErr;
+    if (!profile?.user_id) {
+      return new Response(
+        JSON.stringify({ error: "user not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    return new Response(JSON.stringify({ ok: true, user_id: user.id }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // 5. Direct Password Update by resolved user_id
+    const { error: updErr } = await admin.auth.admin.updateUserById(profile.user_id, { password });
+    if (updErr) {
+      console.error("Update password error:", updErr);
+      throw updErr;
+    }
+
+    return new Response(
+      JSON.stringify({ ok: true, user_id: profile.user_id }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
   } catch (e) {
-    return new Response(JSON.stringify({ error: String((e as Error).message ?? e) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("admin-update-user-password error:", e);
+    return new Response(
+      JSON.stringify({ error: "En uventet feil oppstod" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
