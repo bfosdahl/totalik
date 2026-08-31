@@ -336,7 +336,10 @@ Deno.serve(async (req) => {
             }
 
             if (emailBatchPayload.length > 0) {
-              await resend.batch.send(emailBatchPayload);
+              const { error: batchError } = await resend.batch.send(emailBatchPayload);
+              if (batchError) {
+                console.error("Resend batch send returned error:", batchError);
+              }
             }
           }
         }
