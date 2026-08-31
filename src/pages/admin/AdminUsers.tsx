@@ -506,24 +506,10 @@ export default function AdminUsers() {
     return rolesMap.get(userId) || [];
   }, [rolesMap]);
 
-  const filteredProfiles = useMemo(() => {
-    if (!search) return profiles || [];
-    const s = search.toLowerCase();
-    return (profiles || []).filter(
-      (p) =>
-        p.first_name?.toLowerCase().includes(s) ||
-        p.last_name?.toLowerCase().includes(s) ||
-        p.email?.toLowerCase().includes(s)
-    );
-  }, [profiles, search]);
-
-  // Reset to page 1 when search or pageSize changes
-  const totalPages = Math.max(1, Math.ceil((filteredProfiles?.length || 0) / pageSize));
+  // Filtering and slicing happen server-side; the current page IS the list.
+  const paginatedProfiles = profiles || [];
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const safePage = Math.min(currentPage, totalPages);
-  const paginatedProfiles = useMemo(() => {
-    const start = (safePage - 1) * pageSize;
-    return filteredProfiles.slice(start, start + pageSize);
-  }, [filteredProfiles, safePage, pageSize]);
 
   const getRoleBadge = (role: AppRole) => {
     switch (role) {
