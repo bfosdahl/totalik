@@ -265,13 +265,17 @@ Deno.serve(async (req) => {
           html: buildWelcomeEmailHtml(item.displayName, item.companyName, item.email, item.resetLink)
         }));
 
-        await resend.batch.send(emailBatchPayload);
+        const { error: batchError } = await resend.batch.send(emailBatchPayload);
 
-        pendingEmails.forEach(item => {
-          if (results[item.resultIndex]) {
-            results[item.resultIndex].emailSent = true;
-          }
-        });
+        if (batchError) {
+          console.error("Resend batch send returned error:", batchError);
+        } else {
+          pendingEmails.forEach(item => {
+            if (results[item.resultIndex]) {
+              results[item.resultIndex].emailSent = true;
+            }
+          });
+        }
       } catch (emailErr) {
         console.error("Error sending batch emails via Resend:", emailErr);
       }
