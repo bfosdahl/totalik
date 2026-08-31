@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -9,6 +9,17 @@ export interface CompanyUser {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+}
+
+export const COMPANY_USERS_QUERY_KEY = "company-users";
+
+/** Call after any profiles create/update/deactivate so cached user lists refresh. */
+export function useInvalidateCompanyUsers() {
+  const queryClient = useQueryClient();
+  return useCallback(
+    () => queryClient.invalidateQueries({ queryKey: [COMPANY_USERS_QUERY_KEY] }),
+    [queryClient]
+  );
 }
 
 export function useCompanyUsers() {
