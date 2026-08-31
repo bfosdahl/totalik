@@ -1166,6 +1166,46 @@ export default function AdminCompanies() {
               </div>
             ))
           )}
+
+          {/* Pagination controls - Mobile */}
+          {!isLoading && totalFiltered > 0 && (
+            <div className="flex flex-col items-center gap-3 bg-card rounded-xl border border-border px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>{t("auto.vis")}</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="rounded-md border border-input bg-background px-2 py-1 text-sm"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span>{t("auto.per_side")}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Forrige
+                </Button>
+                <span className="px-3 text-sm text-muted-foreground">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  {t("auto.neste")}
+                </Button>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Invite Admin Dialog */}
