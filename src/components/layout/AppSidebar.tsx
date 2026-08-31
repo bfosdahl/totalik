@@ -610,8 +610,8 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             src="/total-ik-logo-white.svg"
             alt="Total-IK"
             className={cn(
-              "mx-auto transition-all duration-200 object-contain",
-              collapsed ? "h-10" : "h-24"
+"mx-auto transition-all duration-200 object-contain",
+              collapsed ? "h-10" : "h-16"
             )}
           />
           <Button
