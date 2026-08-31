@@ -550,9 +550,7 @@ export default function AdminCompanies() {
     }
   }, [currentPage, totalPages]);
 
-  const getStatusBadgeCb = useCallback(getStatusBadge, []);
-
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = useCallback((status: string) => {
     switch (status) {
       case "active":
         return <Badge variant="success">{t("auto.aktiv")}</Badge>;
@@ -563,7 +561,7 @@ export default function AdminCompanies() {
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
-  };
+  }, []);
 
   return (
     <AdminLayout>
