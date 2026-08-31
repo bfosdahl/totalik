@@ -579,48 +579,6 @@ export default function AdminUsers() {
     toast({ title: t("auto.eksport_fullfoert"), description: `${dataToExport.length} brukere eksportert til CSV` });
   }, [profiles, filteredProfiles, getUserRoles, toast]);
 
-        {/* Pagination */}
-        {filteredProfiles.length > 0 && (
-          <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{t("auto.vis")}</span>
-              <select
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="rounded-md border border-input bg-background px-2 py-1 text-sm"
-              >
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span>{t("auto.per_side")}</span>
-              <span className="ml-2">
-                ({((safePage - 1) * pageSize) + 1}–{Math.min(safePage * pageSize, filteredProfiles.length)} av {filteredProfiles.length})
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={safePage <= 1}
-                onClick={() => setCurrentPage(safePage - 1)}
-              >
-                Forrige
-              </Button>
-              <span className="px-3 text-sm text-muted-foreground">
-                {safePage} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={safePage >= totalPages}
-                onClick={() => setCurrentPage(safePage + 1)}
-              >
-                {t("auto.neste")}
-              </Button>
-            </div>
-          </div>
-        )}
 
   // Error handling for profiles query
   if (profilesError) {
