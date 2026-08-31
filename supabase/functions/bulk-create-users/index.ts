@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
-import { DEFAULT_PASSWORD, defaultPasswordHtml, loginBlockHtml } from "../_shared/default-password.ts";
+import { DEFAULT_PASSWORD, loginBlockHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,94 +24,50 @@ interface CreateResult {
   emailSent?: boolean;
 }
 
-// Function to send welcome email with password reset link
-async function sendWelcomeEmail(
-  resend: Resend,
-  supabaseAdmin: any,
-  email: string,
-  firstName: string | null,
-  companyName: string
-): Promise<boolean> {
-  try {
-    // Generate password recovery link — redirectTo MUST point to /auth so the recovery
-    // hash is detected by Auth.tsx and the "set new password" form is shown.
-    const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-      type: "recovery",
-      email,
-      options: {
-        redirectTo: "https://totalik.no/auth",
-      },
-    });
+interface PendingEmail {
+  email: string;
+  displayName: string;
+  companyName: string;
+  resetLink: string;
+  resultIndex: number;
+}
 
-    if (resetError || !resetData?.properties?.action_link) {
-      console.error(`Error generating recovery link for ${email}:`, resetError);
-      return false;
-    }
-
-    const displayName = firstName || email.split("@")[0];
-    const resetLink = resetData.properties.action_link;
-    
-    const emailResponse = await resend.emails.send({
-      from: "Total-IK <noreply@totalik.no>",
-      to: [email],
-      subject: "Velkommen til Total-IK - innloggingsinformasjon",
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Total-IK</h1>
-            <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Velkommen til ditt HMS-system</p>
-          </div>
-          
-          <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #1f2937; margin-top: 0;">Hei ${escapeHtml(displayName)}!</h2>
-            
-            <p>Din brukerkonto hos <strong>${escapeHtml(companyName)}</strong> er nå opprettet i Total-IK.</p>
-            
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #374151;">Din påloggingsinformasjon:</h3>
-              <p style="margin: 5px 0;"><strong>E-post:</strong> ${escapeHtml(email)}</p>
-              <p style="margin: 5px 0;">Klikk på knappen nedenfor for å sette ditt passord.</p>
-            </div>
-            
-            ${loginBlockHtml(email, resetLink)}
-            
-            ${getTermsNoticeHtml()}
-            
-            ${getTermsHtml()}
-            
-            <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
-              <p style="margin: 0; color: #004085; font-size: 14px;">
-                <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
-              </p>
-            </div>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-            
-            <p style="color: #6b7280; font-size: 14px;">
-              Har du spørsmål? Kontakt din bedriftsadministrator eller svar på denne e-posten.
-            </p>
-          </div>
-          
-          <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
-            <p>© 2025 Total-IK. Alle rettigheter reservert.</p>
-          </div>
-        </body>
-        </html>
-      `,
-    });
-
-    console.log(`Welcome email sent to ${email}:`, emailResponse);
-    return true;
-  } catch (error) {
-    console.error(`Failed to send welcome email to ${email}:`, error);
-    return false;
-  }
+function buildWelcomeEmailHtml(displayName: string, companyName: string, email: string, resetLink: string): string {
+  const currentYear = new Date().getFullYear();
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 28px;">Total-IK</h1>
+        <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Velkommen til ditt HMS-system</p>
+      </div>
+      <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+        <h2 style="color: #1f2937; margin-top: 0;">Hei ${escapeHtml(displayName)}!</h2>
+        <p>Din brukerkonto hos <strong>${escapeHtml(companyName)}</strong> er nå opprettet i Total-IK.</p>
+        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #374151;">Din påloggingsinformasjon:</h3>
+          <p style="margin: 5px 0;"><strong>E-post:</strong> ${escapeHtml(email)}</p>
+          <p style="margin: 5px 0;">Klikk på knappen nedenfor for å sette ditt passord.</p>
+        </div>
+        ${loginBlockHtml(email, resetLink)}
+        ${getTermsNoticeHtml()}
+        ${getTermsHtml()}
+        <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+          <p style="margin: 0; color: #004085; font-size: 14px;">
+            <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
+          </p>
+        </div>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        <p style="color: #6b7280; font-size: 14px;">Har du spørsmål? Kontakt din bedriftsadministrator eller svar på denne e-posten.</p>
+      </div>
+      <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
+        <p>© ${currentYear} Total-IK. Alle rettigheter reservert.</p>
+      </div>
+    </body>
+    </html>
+  `;
 }
 
 Deno.serve(async (req) => {
@@ -151,19 +107,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if requesting user is a system admin
-    const { data: isSystemAdmin } = await supabaseAdmin.rpc("is_system_admin", {
+    const { data: isSystemAdmin, error: rpcError } = await supabaseAdmin.rpc("is_system_admin", {
       _user_id: requestingUser.id,
     });
 
-    if (!isSystemAdmin) {
+    if (rpcError || !isSystemAdmin) {
       return new Response(
         JSON.stringify({ error: "Only system administrators can bulk create users" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const { users } = await req.json() as { users: UserToCreate[] };
+    const body = await req.json().catch(() => null);
+    const users = body?.users as UserToCreate[] | undefined;
 
     if (!users || !Array.isArray(users) || users.length === 0) {
       return new Response(
@@ -179,60 +135,58 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Initialize Resend for sending emails
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-    if (!resend) {
-      console.warn("RESEND_API_KEY not configured - welcome emails will not be sent");
-    }
-
-    // Pre-fetch company names for all unique company IDs
-    const companyIds = [...new Set(users.map(u => u.companyId))];
-    const { data: companiesData } = await supabaseAdmin
-      .from("companies")
-      .select("id, name")
-      .in("id", companyIds);
+    const companyIds = [...new Set(users.map(u => u?.companyId).filter((id): id is string => Boolean(id)))];
+    const companyMap = new Map<string, string>();
     
-    const companyMap = new Map(companiesData?.map(c => [c.id, c.name]) || []);
+    if (companyIds.length > 0) {
+      const { data: companiesData } = await supabaseAdmin
+        .from("companies")
+        .select("id, name")
+        .in("id", companyIds);
+      
+      companiesData?.forEach(c => companyMap.set(c.id, c.name));
+    }
 
     const results: CreateResult[] = new Array(users.length);
     const provisioningLogs: Record<string, unknown>[] = [];
-
-    // Process users with bounded concurrency to stay well under the 60s limit
-    const CONCURRENCY = 5;
+    const pendingEmails: PendingEmail[] = [];
+    
+    const CONCURRENCY = 10;
 
     const processUser = async (user: UserToCreate, index: number) => {
       try {
-        // Validate email
+        const cleanEmail = String(user?.email || "").trim().toLowerCase();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!user.email || !emailRegex.test(user.email)) {
-          results[index] = { email: user.email || "unknown", success: false, error: "Ugyldig e-postadresse" };
+
+        if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+          results[index] = { email: user?.email || "unknown", success: false, error: "Ugyldig e-postadresse" };
           return;
         }
 
         if (!user.companyId) {
-          results[index] = { email: user.email, success: false, error: "Bedrift er påkrevd" };
+          results[index] = { email: cleanEmail, success: false, error: "Bedrift er påkrevd" };
           return;
         }
 
-        // Felles standardpassord — se _shared/default-password.ts
+        const validRole = (user.role === "company_admin" || user.role === "user") ? user.role : "user";
         const tempPassword = DEFAULT_PASSWORD;
 
         const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-          email: user.email,
+          email: cleanEmail,
           password: tempPassword,
           email_confirm: true,
           user_metadata: {
-            first_name: user.firstName || null,
-            last_name: user.lastName || null,
+            first_name: user.firstName?.trim() || null,
+            last_name: user.lastName?.trim() || null,
           },
         });
 
         if (createError) {
-          console.error(`Error creating user ${user.email}:`, createError);
           results[index] = {
-            email: user.email,
+            email: cleanEmail,
             success: false,
             error: createError.message.includes("already been registered")
               ? "Bruker finnes allerede"
@@ -242,72 +196,58 @@ Deno.serve(async (req) => {
         }
 
         if (!authData.user) {
-          results[index] = { email: user.email, success: false, error: "Kunne ikke opprette bruker" };
+          results[index] = { email: cleanEmail, success: false, error: "Kunne ikke opprette bruker" };
           return;
         }
 
-        // Update profile with company_id + add role (independent writes, run in parallel)
-        const [{ error: profileError }, { error: roleError }] = await Promise.all([
+        const [{ error: profileError }, { error: roleError }, resetResult] = await Promise.all([
           supabaseAdmin
             .from("profiles")
-            .update({ company_id: user.companyId })
-            .eq("user_id", authData.user.id),
+            .upsert({ user_id: authData.user.id, company_id: user.companyId }, { onConflict: "user_id" }),
           supabaseAdmin
             .from("user_roles")
-            .insert({ user_id: authData.user.id, role: user.role || "user" }),
+            .insert({ user_id: authData.user.id, role: validRole }),
+          resend ? supabaseAdmin.auth.admin.generateLink({
+            type: "recovery",
+            email: cleanEmail,
+            options: { redirectTo: "https://totalik.no/auth" },
+          }) : null
         ]);
 
-        if (profileError) {
-          console.error(`Error updating profile for ${user.email}:`, profileError);
-        }
-        if (roleError) {
-          console.error(`Error adding role for ${user.email}:`, roleError);
-        }
-
-        // Send welcome email with password reset link
-        let emailSent = false;
-        if (resend) {
-          const companyName = companyMap.get(user.companyId) || "din bedrift";
-          emailSent = await sendWelcomeEmail(
-            resend,
-            supabaseAdmin,
-            user.email,
-            user.firstName || null,
-            companyName
-          );
-        }
-
-        // Statuses come straight from the write responses — no read-back needed
         const profileVerified = !profileError;
         const roleVerified = !roleError;
-        const allVerified = profileVerified && roleVerified && emailSent;
+        const resetLink = resetResult?.data?.properties?.action_link;
+
+        if (resend && resetLink) {
+          const companyName = companyMap.get(user.companyId) || "din bedrift";
+          const displayName = user.firstName?.trim() || cleanEmail.split("@")[0];
+          pendingEmails.push({
+            email: cleanEmail,
+            displayName,
+            companyName,
+            resetLink,
+            resultIndex: index,
+          });
+        }
 
         provisioningLogs.push({
-          email: user.email,
+          email: cleanEmail,
           company_id: user.companyId,
-          role: user.role || "user",
+          role: validRole,
           created_by_id: requestingUser.id,
           auth_created: true,
           profile_updated: profileVerified,
           role_assigned: roleVerified,
-          email_sent: emailSent,
-          reset_link_generated: emailSent,
-          all_verified: allVerified,
-          error_message: !allVerified
-            ? `Profile: ${profileVerified}, Role: ${roleVerified}, Email: ${emailSent}`
-            : null,
+          email_sent: false,
+          reset_link_generated: Boolean(resetLink),
+          all_verified: profileVerified && roleVerified && Boolean(resetLink),
           source: "bulk-create-users",
         });
 
-        if (!allVerified) {
-          console.warn(`⚠️ PARTIAL provisioning for ${user.email}: Profile=${profileVerified}, Role=${roleVerified}, Email=${emailSent}`);
-        }
-
-        results[index] = { email: user.email, success: true, emailSent };
-        console.log(`Successfully created user: ${user.email}, email sent: ${emailSent}, fully verified: ${allVerified}`);
+        results[index] = { email: cleanEmail, success: true, emailSent: false };
       } catch (error) {
-        console.error(`Unexpected error for ${user.email}:`, error);
-        results[index] = { email: user.email, success: false, error: "Uventet feil" };
+        console.error(`Unexpected error for ${user?.email}:`, error);
+        results[index] = { email: user?.email || "unknown", success: false, error: "Uventet feil" };
       }
     };
 
@@ -316,22 +256,43 @@ Deno.serve(async (req) => {
       await Promise.all(chunk.map((u, j) => processUser(u, i + j)));
     }
 
-    // Single bulk audit write instead of one insert per user
-    if (provisioningLogs.length > 0) {
-      const { error: logError } = await supabaseAdmin
-        .from("user_provisioning_log")
-        .insert(provisioningLogs);
-      if (logError) {
-        console.error("Error writing provisioning log batch:", logError);
+    if (resend && pendingEmails.length > 0) {
+      try {
+        const emailBatchPayload = pendingEmails.map(item => ({
+          from: "Total-IK <noreply@totalik.no>",
+          to: [item.email],
+          subject: "Velkommen til Total-IK - innloggingsinformasjon",
+          html: buildWelcomeEmailHtml(item.displayName, item.companyName, item.email, item.resetLink)
+        }));
+
+        const { error: batchError } = await resend.batch.send(emailBatchPayload);
+
+        if (batchError) {
+          console.error("Resend batch send returned error:", batchError);
+        } else {
+          pendingEmails.forEach(item => {
+            if (results[item.resultIndex]) {
+              results[item.resultIndex].emailSent = true;
+            }
+          });
+        }
+      } catch (emailErr) {
+        console.error("Error sending batch emails via Resend:", emailErr);
       }
     }
 
+    if (provisioningLogs.length > 0) {
+      provisioningLogs.forEach(log => {
+        const res = results.find(r => r.email === log.email);
+        if (res) log.email_sent = Boolean(res.emailSent);
+      });
+
+      await supabaseAdmin.from("user_provisioning_log").insert(provisioningLogs);
+    }
 
     const successCount = results.filter(r => r.success).length;
     const failCount = results.filter(r => !r.success).length;
     const emailsSent = results.filter(r => r.emailSent).length;
-
-    console.log(`Bulk import complete: ${successCount} success, ${failCount} failed, ${emailsSent} emails sent`);
 
     return new Response(
       JSON.stringify({ 
