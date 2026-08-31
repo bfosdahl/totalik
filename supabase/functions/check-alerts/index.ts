@@ -1,4 +1,5 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 import { recordJobRun } from "../_shared/jobRun.ts";
 
 const corsHeaders = {
@@ -223,98 +224,131 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const results: { type: string; triggered: boolean; alertCreated: boolean }[] = [];
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-    for (const check of ALERT_CHECKS) {
-      try {
-        const result = await check.check(adminClient);
-
-        if (result.triggered) {
-          // Dedup: check if same alert_type was created within the window
-          const dedupCutoff = new Date(Date.now() - DEDUP_WINDOW_MINUTES * 60 * 1000).toISOString();
-          const { data: existing } = await adminClient
-            .from("system_alerts")
-            .select("id")
-            .eq("alert_type", check.alert_type)
-            .eq("status", "active")
-            .gte("created_at", dedupCutoff)
-            .limit(1);
-
-          if (existing && existing.length > 0) {
-            results.push({ type: check.alert_type, triggered: true, alertCreated: false });
-            continue;
-          }
-
-          await adminClient.from("system_alerts").insert({
-            alert_type: check.alert_type,
-            severity: check.severity,
-            title: check.title,
-            message: result.message,
-            metric_value: result.metric,
-            threshold_value: result.threshold,
-            details: result.details ?? null,
-            status: "active",
-          });
-
-          results.push({ type: check.alert_type, triggered: true, alertCreated: true });
-
-          // Send email to system admins via Resend
-          try {
-            const resendApiKey = Deno.env.get("RESEND_API_KEY");
-            if (resendApiKey) {
-              // Get system admin emails
-              const { data: adminRoles } = await adminClient
-                .from("user_roles")
-                .select("user_id")
-                .eq("role", "system_admin");
-
-              if (adminRoles && adminRoles.length > 0) {
-                const adminIds = adminRoles.map((r: any) => r.user_id);
-                const { data: adminProfiles } = await adminClient
-                  .from("profiles")
-                  .select("email")
-                  .in("user_id", adminIds)
-                  .eq("is_active", true);
-
-                const emails = adminProfiles?.map((p: any) => p.email).filter(Boolean) || [];
-
-                for (const email of emails) {
-                  await fetch("https://api.resend.com/emails", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${resendApiKey}`,
-                    },
-                    body: JSON.stringify({
-                      from: "Total IK Alerts <alerts@notify.totalik.no>",
-                      to: email,
-                      subject: `[${check.severity.toUpperCase()}] ${check.title}`,
-                      html: `
-                        <h2>⚠️ ${check.title}</h2>
-                        <p>${result.message}</p>
-                        <p><strong>Alvorlighet:</strong> ${check.severity}</p>
-                        <p><strong>Tidspunkt:</strong> ${new Date().toLocaleString("nb-NO")}</p>
-                        <hr/>
-                        <p style="color:#888;font-size:12px;">Denne e-posten ble sendt automatisk fra Total IK monitoring.</p>
-                      `,
-                    }),
-                  });
-                }
-              }
-            }
-          } catch (emailErr) {
-            console.error("Failed to send alert email:", emailErr);
-          }
-        } else {
-          results.push({ type: check.alert_type, triggered: false, alertCreated: false });
+    // Concurrently evaluate all system alert checks
+    const checkEvaluations = await Promise.all(
+      ALERT_CHECKS.map(async (check) => {
+        try {
+          const res = await check.check(adminClient);
+          return { check, res, error: null };
+        } catch (err) {
+          console.error(`Alert check failed: ${check.alert_type}`, err);
+          return { check, res: null, error: err };
         }
-      } catch (checkErr) {
-        console.error(`Alert check failed: ${check.alert_type}`, checkErr);
+      })
+    );
+
+    const results: { type: string; triggered: boolean; alertCreated: boolean }[] = [];
+    const alertsToNotify: { title: string; severity: string; message: string }[] = [];
+    const dedupCutoff = new Date(Date.now() - DEDUP_WINDOW_MINUTES * 60 * 1000).toISOString();
+
+    for (const item of checkEvaluations) {
+      if (!item.res) {
+        results.push({ type: item.check.alert_type, triggered: false, alertCreated: false });
+        continue;
+      }
+
+      const { check, res } = item;
+
+      if (res.triggered) {
+        // Dedup check
+        const { data: existing } = await adminClient
+          .from("system_alerts")
+          .select("id")
+          .eq("alert_type", check.alert_type)
+          .eq("status", "active")
+          .gte("created_at", dedupCutoff)
+          .maybeSingle();
+
+        if (existing) {
+          results.push({ type: check.alert_type, triggered: true, alertCreated: false });
+          continue;
+        }
+
+        // Insert new alert
+        const { error: insertError } = await adminClient.from("system_alerts").insert({
+          alert_type: check.alert_type,
+          severity: check.severity,
+          title: check.title,
+          message: res.message,
+          metric_value: res.metric,
+          threshold_value: res.threshold,
+          details: res.details ?? null,
+          status: "active",
+        });
+
+        if (!insertError) {
+          results.push({ type: check.alert_type, triggered: true, alertCreated: true });
+          alertsToNotify.push({
+            title: check.title,
+            severity: check.severity,
+            message: res.message,
+          });
+        } else {
+          console.error(`Failed to insert system_alert for ${check.alert_type}:`, insertError);
+          results.push({ type: check.alert_type, triggered: true, alertCreated: false });
+        }
+      } else {
         results.push({ type: check.alert_type, triggered: false, alertCreated: false });
       }
     }
 
-    const triggered = results.filter((r: any) => r.triggered).length;
+    // Dispatch email notifications in bulk if any alerts were newly created
+    if (alertsToNotify.length > 0 && resend) {
+      try {
+        const { data: adminRoles } = await adminClient
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "system_admin");
+
+        if (adminRoles && adminRoles.length > 0) {
+          const adminIds = adminRoles.map((r: any) => r.user_id);
+          const { data: adminProfiles } = await adminClient
+            .from("profiles")
+            .select("email")
+            .in("user_id", adminIds)
+            .eq("is_active", true);
+
+          const adminEmails = adminProfiles?.map((p: any) => p.email).filter(Boolean) || [];
+
+          if (adminEmails.length > 0) {
+            const nowFormatted = new Date().toLocaleString("nb-NO");
+            const emailBatchPayload = [];
+
+            for (const alert of alertsToNotify) {
+              for (const email of adminEmails) {
+                emailBatchPayload.push({
+                  from: "Total IK Alerts <alerts@notify.totalik.no>",
+                  to: [email],
+                  subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
+                  html: `
+                    <h2>⚠️ ${alert.title}</h2>
+                    <p>${alert.message}</p>
+                    <p><strong>Alvorlighet:</strong> ${alert.severity}</p>
+                    <p><strong>Tidspunkt:</strong> ${nowFormatted}</p>
+                    <hr/>
+                    <p style="color:#888;font-size:12px;">Denne e-posten ble sendt automatisk fra Total IK monitoring.</p>
+                  `,
+                });
+              }
+            }
+
+            if (emailBatchPayload.length > 0) {
+              const { error: batchError } = await resend.batch.send(emailBatchPayload);
+              if (batchError) {
+                console.error("Resend batch send returned error:", batchError);
+              }
+            }
+          }
+        }
+      } catch (emailErr) {
+        console.error("Failed to send alert emails via Resend:", emailErr);
+      }
+    }
+
+    const triggered = results.filter((r) => r.triggered).length;
     await recordJobRun("check-alerts", "success", jobStart, {
       itemsProcessed: results.length,
       notificationsSent: triggered,
