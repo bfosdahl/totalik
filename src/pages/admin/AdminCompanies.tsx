@@ -835,12 +835,24 @@ export default function AdminCompanies() {
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      {t("auto.laster")}
-                    </td>
-                  </tr>
-                ) : filteredCompanies?.length === 0 ? (
+                  Array.from({ length: Math.min(pageSize, 8) }).map((_, i) => (
+                    <tr key={`skeleton-${i}`}>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-8 rounded-lg" />
+                          <div className="space-y-1.5">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-3 w-28" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4"><Skeleton className="h-4 w-24" /></td>
+                      <td className="p-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                      <td className="p-4"><Skeleton className="h-4 w-20" /></td>
+                      <td className="p-4 text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></td>
+                    </tr>
+                  ))
+                ) : companies.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
                       {t("auto.ingen_bedrifter_funnet")}
@@ -1008,10 +1020,24 @@ export default function AdminCompanies() {
           className="md:hidden space-y-3"
         >
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
-              {t("auto.laster")}
-            </div>
-          ) : filteredCompanies?.length === 0 ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={`skeleton-m-${i}`} className="bg-card rounded-xl border border-border p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-32" />
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                  <Skeleton className="h-8 rounded-md" />
+                  <Skeleton className="h-8 rounded-md" />
+                </div>
+              </div>
+            ))
+          ) : companies.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
               {t("auto.ingen_bedrifter_funnet")}
             </div>
