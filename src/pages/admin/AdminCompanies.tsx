@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -84,6 +86,7 @@ const MODULE_OPTIONS = [
 
 export default function AdminCompanies() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -155,28 +158,40 @@ export default function AdminCompanies() {
     }
   }, []);
 
-  const { data: companies, isLoading } = useQuery({
-    queryKey: ["admin-companies"],
-    queryFn: async () => {
-      // Fetch ALL companies in 1000-row pages so pagination covers everyone.
-      const PAGE = 1000;
-      const all: any[] = [];
-      for (let from = 0; ; from += PAGE) {
-        const { data, error } = await supabase
-          .from("companies")
-          .select(
-            "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas"
-          )
-          .order("created_at", { ascending: false })
-          .range(from, from + PAGE - 1);
+  // Debounce search to avoid a query per keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-        if (error) throw error;
-        all.push(...(data || []));
-        if (!data || data.length < PAGE) break;
+  const { data: companiesPage, isLoading } = useQuery({
+    queryKey: ["admin-companies", currentPage, pageSize, debouncedSearch],
+    queryFn: async () => {
+      const from = (currentPage - 1) * pageSize;
+      let query = supabase
+        .from("companies")
+        .select(
+          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas",
+          { count: "exact" }
+        )
+        .order("created_at", { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (debouncedSearch) {
+        const pattern = `%${debouncedSearch.replace(/[%,()]/g, "")}%`;
+        query = query.or(`name.ilike.${pattern},org_number.ilike.${pattern}`);
       }
-      return all;
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return { companies: data || [], total: count ?? 0 };
     },
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
   });
+
+  const companies = useMemo(() => companiesPage?.companies ?? [], [companiesPage]);
+  const totalFiltered = companiesPage?.total ?? 0;
 
   const createMutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
@@ -519,24 +534,14 @@ export default function AdminCompanies() {
     setIsDialogOpen(true);
   };
 
-  const filteredCompanies = companies?.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.org_number?.includes(search)
-  );
-
-  const totalFiltered = filteredCompanies?.length || 0;
+  // Server-side pagination: the current page's rows arrive directly from the query
+  const paginatedCompanies = companies;
   const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const paginatedCompanies = filteredCompanies?.slice(
-    (safeCurrentPage - 1) * pageSize,
-    safeCurrentPage * pageSize
-  );
 
   // Reset to page 1 when search or pageSize changes — guard to avoid redundant updates
   useEffect(() => {
     setCurrentPage((prev) => (prev === 1 ? prev : 1));
-  }, [search, pageSize]);
+  }, [debouncedSearch, pageSize]);
 
   // Keep currentPage in valid range without causing render loops
   useEffect(() => {
@@ -545,7 +550,7 @@ export default function AdminCompanies() {
     }
   }, [currentPage, totalPages]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = useCallback((status: string) => {
     switch (status) {
       case "active":
         return <Badge variant="success">{t("auto.aktiv")}</Badge>;
@@ -556,7 +561,7 @@ export default function AdminCompanies() {
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
-  };
+  }, []);
 
   return (
     <AdminLayout>
@@ -830,12 +835,24 @@ export default function AdminCompanies() {
               </thead>
               <tbody className="divide-y divide-border">
                 {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      {t("auto.laster")}
-                    </td>
-                  </tr>
-                ) : filteredCompanies?.length === 0 ? (
+                  Array.from({ length: Math.min(pageSize, 8) }).map((_, i) => (
+                    <tr key={`skeleton-${i}`}>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-8 rounded-lg" />
+                          <div className="space-y-1.5">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-3 w-28" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4"><Skeleton className="h-4 w-24" /></td>
+                      <td className="p-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                      <td className="p-4"><Skeleton className="h-4 w-20" /></td>
+                      <td className="p-4 text-right"><Skeleton className="h-8 w-8 ml-auto rounded-md" /></td>
+                    </tr>
+                  ))
+                ) : companies.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
                       {t("auto.ingen_bedrifter_funnet")}
@@ -1003,10 +1020,24 @@ export default function AdminCompanies() {
           className="md:hidden space-y-3"
         >
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
-              {t("auto.laster")}
-            </div>
-          ) : filteredCompanies?.length === 0 ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={`skeleton-m-${i}`} className="bg-card rounded-xl border border-border p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-32" />
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                  <Skeleton className="h-8 rounded-md" />
+                  <Skeleton className="h-8 rounded-md" />
+                </div>
+              </div>
+            ))
+          ) : companies.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground bg-card rounded-xl border border-border">
               {t("auto.ingen_bedrifter_funnet")}
             </div>
@@ -1134,6 +1165,46 @@ export default function AdminCompanies() {
                 </div>
               </div>
             ))
+          )}
+
+          {/* Pagination controls - Mobile */}
+          {!isLoading && totalFiltered > 0 && (
+            <div className="flex flex-col items-center gap-3 bg-card rounded-xl border border-border px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>{t("auto.vis")}</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="rounded-md border border-input bg-background px-2 py-1 text-sm"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span>{t("auto.per_side")}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Forrige
+                </Button>
+                <span className="px-3 text-sm text-muted-foreground">
+                  {currentPage} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  {t("auto.neste")}
+                </Button>
+              </div>
+            </div>
           )}
         </motion.div>
 
