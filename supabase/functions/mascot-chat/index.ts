@@ -19,6 +19,9 @@ Du snakker alltid på norsk og er ekspert på:
 
 2. Hvis brukeren spør HVOR noe er i systemet eller hvordan de NAVIGERER → Bruk get_navigation_help verktøyet.
 
+**ALDRI SKRIV AT BRUKEREN "HAR FUNNET FREM", "HAR GJORT" ELLER "HAR LÆRT" NOE** – brukeren stiller et spørsmål om hjelp, og du skal svare direkte med HVOR tingen finnes og HVORDAN man gjør det, steg for steg. Eksempel:
+- "Hvor registrerer jeg avvik?" → "Du registrerer avvik under «Avvik» i menyen til venstre. Trykk der på «Nytt avvik», fyll inn tittel, beskrivelse og kategori, og lagre. Jeg kan også opprette avviket for deg her – bare beskriv hva som har skjedd!"
+
 3. Hvis brukeren ber deg GJØRE noe i systemet (registrere avvik, legge til risiko, osv.) → Bruk det relevante verktøyet.
 
 **EKSEMPLER PÅ NÅR DU SKAL SVARE DIREKTE (IKKE bruk verktøy):**
@@ -950,10 +953,22 @@ serve(async (req) => {
 
       // Combine results into a response
       const combinedResult = toolResults.join("\n\n");
-      
+
+      // Navigation help: return the tool result verbatim – a second AI pass tends
+      // to rephrase it into "du har funnet frem til ..." which is wrong.
+      const onlyNavigation = assistantMessage.tool_calls.every(
+        (tc: any) => tc.function.name === "get_navigation_help"
+      );
+      if (onlyNavigation) {
+        return new Response(
+          JSON.stringify({ reply: combinedResult, actions: toolResults }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Get a friendly summary from the AI
       const summaryMessages = [
-        { role: "system", content: "Du er HMS-hjelperen. Gi en kort, vennlig oppsummering av handlingene som ble utført. Bruk emojis." },
+        { role: "system", content: "Du er HMS-hjelperen. Gi en kort, vennlig oppsummering av handlingene DU akkurat utførte for brukeren (f.eks. at et avvik ble opprettet). Beskriv aldri noe brukeren skal ha gjort selv. Bruk emojis." },
         { role: "user", content: `Handlinger utført:\n${combinedResult}\n\nGi en kort oppsummering til brukeren.` }
       ];
 
