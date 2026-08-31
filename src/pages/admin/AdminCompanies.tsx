@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -84,6 +86,7 @@ const MODULE_OPTIONS = [
 
 export default function AdminCompanies() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -155,28 +158,40 @@ export default function AdminCompanies() {
     }
   }, []);
 
-  const { data: companies, isLoading } = useQuery({
-    queryKey: ["admin-companies"],
-    queryFn: async () => {
-      // Fetch ALL companies in 1000-row pages so pagination covers everyone.
-      const PAGE = 1000;
-      const all: any[] = [];
-      for (let from = 0; ; from += PAGE) {
-        const { data, error } = await supabase
-          .from("companies")
-          .select(
-            "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas"
-          )
-          .order("created_at", { ascending: false })
-          .range(from, from + PAGE - 1);
+  // Debounce search to avoid a query per keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-        if (error) throw error;
-        all.push(...(data || []));
-        if (!data || data.length < PAGE) break;
+  const { data: companiesPage, isLoading } = useQuery({
+    queryKey: ["admin-companies", currentPage, pageSize, debouncedSearch],
+    queryFn: async () => {
+      const from = (currentPage - 1) * pageSize;
+      let query = supabase
+        .from("companies")
+        .select(
+          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas",
+          { count: "exact" }
+        )
+        .order("created_at", { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (debouncedSearch) {
+        const pattern = `%${debouncedSearch.replace(/[%,()]/g, "")}%`;
+        query = query.or(`name.ilike.${pattern},org_number.ilike.${pattern}`);
       }
-      return all;
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return { companies: data || [], total: count ?? 0 };
     },
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
   });
+
+  const companies = useMemo(() => companiesPage?.companies ?? [], [companiesPage]);
+  const totalFiltered = companiesPage?.total ?? 0;
 
   const createMutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
@@ -519,24 +534,14 @@ export default function AdminCompanies() {
     setIsDialogOpen(true);
   };
 
-  const filteredCompanies = companies?.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.org_number?.includes(search)
-  );
-
-  const totalFiltered = filteredCompanies?.length || 0;
+  // Server-side pagination: the current page's rows arrive directly from the query
+  const paginatedCompanies = companies;
   const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const paginatedCompanies = filteredCompanies?.slice(
-    (safeCurrentPage - 1) * pageSize,
-    safeCurrentPage * pageSize
-  );
 
   // Reset to page 1 when search or pageSize changes — guard to avoid redundant updates
   useEffect(() => {
     setCurrentPage((prev) => (prev === 1 ? prev : 1));
-  }, [search, pageSize]);
+  }, [debouncedSearch, pageSize]);
 
   // Keep currentPage in valid range without causing render loops
   useEffect(() => {
@@ -544,6 +549,8 @@ export default function AdminCompanies() {
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  const getStatusBadgeCb = useCallback(getStatusBadge, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
