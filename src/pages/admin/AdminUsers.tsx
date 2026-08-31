@@ -116,7 +116,6 @@ export default function AdminUsers() {
   const {
     data: profilesPage,
     isLoading,
-    isFetching,
     error: profilesError,
   } = useQuery({
     queryKey: ["admin-profiles", companyFilter, currentPage, pageSize, debouncedSearch],
@@ -510,6 +509,11 @@ export default function AdminUsers() {
   const paginatedProfiles = profiles || [];
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const safePage = Math.min(currentPage, totalPages);
+
+  // If filters/search shrink the result set below the current page, snap back
+  useEffect(() => {
+    if (!isLoading && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [isLoading, currentPage, totalPages]);
 
   const getRoleBadge = (role: AppRole) => {
     switch (role) {
