@@ -291,6 +291,8 @@ export function BulkUserImportDialog({
       setImportProgress(100);
       setStep("results");
 
+      const totalSuccess = allResults.filter(r => r.success).length;
+
       toast({
         title: t("auto.import_fullfoert"),
         description: `${totalSuccess} av ${usersToCreate.length} brukere ble opprettet`,
