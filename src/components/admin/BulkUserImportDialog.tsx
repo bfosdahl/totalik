@@ -251,7 +251,6 @@ export function BulkUserImportDialog({
       }
 
       const allResults: ImportResult[] = [];
-      let totalSuccess = 0;
       let chunkFailures = 0;
 
       for (let i = 0; i < chunks.length; i++) {
@@ -269,9 +268,7 @@ export function BulkUserImportDialog({
             : chunk.map(u => ({ email: u.email, success: true }));
 
           allResults.push(...chunkResults);
-          totalSuccess += typeof data?.summary?.success === "number"
-            ? data.summary.success
-            : chunkResults.filter(r => r.success).length;
+
         } catch (chunkError: any) {
           chunkFailures++;
           allResults.push(
@@ -293,6 +290,8 @@ export function BulkUserImportDialog({
 
       setImportProgress(100);
       setStep("results");
+
+      const totalSuccess = allResults.filter(r => r.success).length;
 
       toast({
         title: t("auto.import_fullfoert"),
