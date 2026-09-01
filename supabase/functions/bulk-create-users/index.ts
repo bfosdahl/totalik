@@ -257,29 +257,34 @@ Deno.serve(async (req) => {
     }
 
     if (resend && pendingEmails.length > 0) {
-      try {
-        const emailBatchPayload = pendingEmails.map(item => ({
-          from: "Total-IK <noreply@totalik.no>",
-          to: [item.email],
-          subject: "Velkommen til Total-IK - innloggingsinformasjon",
-          html: buildWelcomeEmailHtml(item.displayName, item.companyName, item.email, item.resetLink)
-        }));
+      const RESEND_BATCH_SIZE = 50;
+      for (let i = 0; i < pendingEmails.length; i += RESEND_BATCH_SIZE) {
+        const chunk = pendingEmails.slice(i, i + RESEND_BATCH_SIZE);
+        try {
+          const emailBatchPayload = chunk.map(item => ({
+            from: "Total-IK <noreply@totalik.no>",
+            to: [item.email],
+            subject: "Velkommen til Total-IK - innloggingsinformasjon",
+            html: buildWelcomeEmailHtml(item.displayName, item.companyName, item.email, item.resetLink)
+          }));
 
-        const { error: batchError } = await resend.batch.send(emailBatchPayload);
+          const { error: batchError } = await resend.batch.send(emailBatchPayload);
 
-        if (batchError) {
-          console.error("Resend batch send returned error:", batchError);
-        } else {
-          pendingEmails.forEach(item => {
-            if (results[item.resultIndex]) {
-              results[item.resultIndex].emailSent = true;
-            }
-          });
+          if (batchError) {
+            console.error(`Resend batch send returned error (chunk ${i / RESEND_BATCH_SIZE}):`, batchError);
+          } else {
+            chunk.forEach(item => {
+              if (results[item.resultIndex]) {
+                results[item.resultIndex].emailSent = true;
+              }
+            });
+          }
+        } catch (emailErr) {
+          console.error(`Error sending batch emails via Resend (chunk ${i / RESEND_BATCH_SIZE}):`, emailErr);
         }
-      } catch (emailErr) {
-        console.error("Error sending batch emails via Resend:", emailErr);
       }
     }
+
 
     if (provisioningLogs.length > 0) {
       provisioningLogs.forEach(log => {
