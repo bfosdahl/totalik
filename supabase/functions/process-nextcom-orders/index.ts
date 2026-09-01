@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
     if (markHistorical && newOrders.length > 0) {
       let marked = 0;
       for (const order of newOrders) {
-        await markOrderProcessed(supabase, String(order.id), "historical_skip");
+        await markOrderProcessed(supabase, order, "historical_skip");
         marked++;
       }
       return respond({ success: true, message: `Marked ${marked} orders as historical`, marked_historical: marked });
@@ -246,14 +246,14 @@ Deno.serve(async (req) => {
         // Skip course-only orders (handled by kurskontoret). Renewals are always processed.
         if (!isRenewal && (isCourseOnly || modules.length === 0)) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Skipping - ${isCourseOnly ? 'course product' : 'no IK modules detected'} (${order.allProducts})`);
-          await markOrderProcessed(supabase, order.id, "skipped_not_ik", { products: order.allProducts, service_emails: serviceTemplates });
+          await markOrderProcessed(supabase, order, "skipped_not_ik", { products: order.allProducts, service_emails: serviceTemplates });
           return { order_id: order.id, company: order.customerCompany || "Unknown", status: serviceTemplates.length > 0 ? "service_email_sent" : "skipped", modules: serviceTemplates, error: serviceTemplates.length > 0 ? undefined : (isCourseOnly ? "Course product (handled by kurskontoret)" : "No IK modules detected") };
         }
 
         // Skip orders without email
         if (!order.customerEmail) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Skipping - no email`);
-          await markOrderProcessed(supabase, order.id, "skipped_no_email");
+          await markOrderProcessed(supabase, order, "skipped_no_email");
           return { order_id: order.id, company: order.customerCompany || "Unknown", status: "skipped", error: "No email" };
         }
 
@@ -290,21 +290,21 @@ Deno.serve(async (req) => {
 
         if (crmResponse.ok) {
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Success -`, JSON.stringify(crmResult));
-          await markOrderProcessed(supabase, order.id, "success", crmResult);
+          await markOrderProcessed(supabase, order, "success", crmResult);
           return { order_id: order.id, company: order.customerCompany || "Unknown", status: "success", modules, details: crmResult };
         } else if (crmResponse.status === 409) {
           // Company already exists - not an error
           console.log(`[TotalIK NextCom Sync] Order ${order.id}: Company already exists`);
-          await markOrderProcessed(supabase, order.id, "already_exists", crmResult);
+          await markOrderProcessed(supabase, order, "already_exists", crmResult);
           return { order_id: order.id, company: order.customerCompany || "Unknown", status: "already_exists", modules };
         } else {
           console.error(`[TotalIK NextCom Sync] Order ${order.id}: CRM failed -`, crmResult);
-          await markOrderProcessed(supabase, order.id, "error", null, crmResult.error || JSON.stringify(crmResult));
+          await markOrderProcessed(supabase, order, "error", null, crmResult.error || JSON.stringify(crmResult));
           return { order_id: order.id, company: order.customerCompany || "Unknown", status: "error", error: crmResult.error };
         }
       } catch (err) {
         console.error(`[TotalIK NextCom Sync] Order ${order.id}: Exception -`, err);
-        await markOrderProcessed(supabase, order.id, "error", null, String(err));
+        await markOrderProcessed(supabase, order, "error", null, String(err));
         return { order_id: order.id, company: order.customerCompany || "Unknown", status: "error", error: String(err) };
       }
     };
@@ -562,20 +562,38 @@ async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | n
 
 async function markOrderProcessed(
   supabase: ReturnType<typeof createClient>,
-  orderId: string,
+  order: NextcomOrder,
   status: string,
   result?: unknown,
   errorMessage?: string | null,
 ) {
+  const orderId = String(order.id);
+  const facts = orderFacts(order);
+
   const { error } = await supabase.from("nextcom_processed_orders").upsert({
     order_id: orderId,
     status,
-    result: result || null,
+    // Beholder tidligere sammendrag, men legger alltid ved ordrefakta fra CRM
+    result: { ...(result && typeof result === "object" ? result as Record<string, unknown> : { summary: result ?? null }), nextcom_order: facts },
     error_message: errorMessage || null,
     processed_at: new Date().toISOString(),
+    ...facts,
   }, { onConflict: "order_id" });
 
   if (error) {
     console.error(`Failed to mark order ${orderId}:`, error);
+  }
+
+  // Speil kundekommentaren på bedriften slik at den er lett synlig for admin
+  if (facts.order_comments && facts.org_number) {
+    const { error: compError } = await supabase
+      .from("companies")
+      .update({
+        crm_order_comment: facts.order_comments,
+        crm_order_comment_at: new Date().toISOString(),
+        crm_last_order_id: orderId,
+      })
+      .eq("org_number", facts.org_number);
+    if (compError) console.error(`Failed to store CRM comment for order ${orderId}:`, compError);
   }
 }
