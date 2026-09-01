@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, FileText, CheckCircle2, User, ArrowRight } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
+import { useSignatureCanvasResize } from "@/lib/useSignatureCanvasResize";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { t } from "@/i18n/t";
@@ -41,6 +42,7 @@ export function InlineHmsDeclaration({
   const [isSaving, setIsSaving] = useState(false);
   const [alreadySigned, setAlreadySigned] = useState(false);
   const sigRef = useRef<SignatureCanvas | null>(null);
+  useSignatureCanvasResize(sigRef as any, [step]);
 
   useEffect(() => {
     // Check if already signed

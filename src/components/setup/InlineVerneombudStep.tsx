@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, CheckCircle2, User, ArrowRight, Info, FileText } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
+import { useSignatureCanvasResize } from "@/lib/useSignatureCanvasResize";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { t } from "@/i18n/t";
@@ -46,6 +47,7 @@ export function InlineVerneombudStep({
   const [alreadyHasAgreement, setAlreadyHasAgreement] = useState(false);
   const [alreadyHasExemption, setAlreadyHasExemption] = useState(false);
   const sigRef = useRef<SignatureCanvas | null>(null);
+  useSignatureCanvasResize(sigRef as any, [mode]);
 
   useEffect(() => {
     // Check existing agreements
