@@ -936,15 +936,15 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
         <div className="p-3 border-t border-sidebar-border">
           <NavLink to="/install">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               className={cn(
-                "w-full gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground border-sidebar-border hover:bg-sidebar-accent",
+                "w-full gap-2 bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-foreground border border-sidebar-border",
                 collapsed && "px-0"
               )}
             >
               <Download className="w-4 h-4 shrink-0" />
-              {!collapsed && <span className="text-sm">{t("auth.downloadApp")}</span>}
+              {!collapsed && <span className="text-sm font-medium">{t("auth.downloadApp")}</span>}
             </Button>
           </NavLink>
         </div>
