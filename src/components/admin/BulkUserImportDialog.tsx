@@ -268,9 +268,7 @@ export function BulkUserImportDialog({
             : chunk.map(u => ({ email: u.email, success: true }));
 
           allResults.push(...chunkResults);
-          totalSuccess += typeof data?.summary?.success === "number"
-            ? data.summary.success
-            : chunkResults.filter(r => r.success).length;
+
         } catch (chunkError: any) {
           chunkFailures++;
           allResults.push(
