@@ -233,7 +233,7 @@ export function BulkUserImportDialog({
     }
 
     setStep("importing");
-    setImportProgress(10);
+    setImportProgress(0);
 
     try {
       const usersToCreate = validUsers.map(u => ({
@@ -244,27 +244,60 @@ export function BulkUserImportDialog({
         role: defaultRole,
       }));
 
-      setImportProgress(30);
+      const CHUNK_SIZE = 5;
+      const chunks: typeof usersToCreate[] = [];
+      for (let i = 0; i < usersToCreate.length; i += CHUNK_SIZE) {
+        chunks.push(usersToCreate.slice(i, i + CHUNK_SIZE));
+      }
 
-      const { data, error } = await supabase.functions.invoke("bulk-create-users", {
-        body: { users: usersToCreate },
-      });
+      const allResults: ImportResult[] = [];
+      let totalSuccess = 0;
+      let chunkFailures = 0;
 
-      setImportProgress(90);
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        try {
+          const { data, error } = await supabase.functions.invoke("bulk-create-users", {
+            body: { users: chunk },
+          });
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
 
-      setImportResults(data.results || []);
+          const chunkResults: ImportResult[] = Array.isArray(data?.results)
+            ? data.results
+            : chunk.map(u => ({ email: u.email, success: true }));
+
+          allResults.push(...chunkResults);
+          totalSuccess += typeof data?.summary?.success === "number"
+            ? data.summary.success
+            : chunkResults.filter(r => r.success).length;
+        } catch (chunkError: any) {
+          chunkFailures++;
+          allResults.push(
+            ...chunk.map(u => ({
+              email: u.email,
+              success: false,
+              error: chunkError?.message || "Ukjent feil",
+            }))
+          );
+        }
+
+        setImportResults([...allResults]);
+        setImportProgress(Math.round(((i + 1) / chunks.length) * 100));
+      }
+
+      if (chunkFailures === chunks.length) {
+        throw new Error(allResults[0]?.error || "Import feilet");
+      }
+
       setImportProgress(100);
       setStep("results");
 
-      if (data.summary) {
-        toast({
-          title: t("auto.import_fullfoert"),
-          description: `${data.summary.success} av ${data.summary.total} brukere ble opprettet`,
-        });
-      }
+      toast({
+        title: t("auto.import_fullfoert"),
+        description: `${totalSuccess} av ${usersToCreate.length} brukere ble opprettet`,
+      });
 
       onSuccess();
     } catch (error: any) {
@@ -273,6 +306,7 @@ export function BulkUserImportDialog({
       setStep("preview");
     }
   }, [selectedCompanyId, parsedUsers, defaultRole, toast, onSuccess]);
+
 
   const validCount = parsedUsers.filter(u => u.valid).length;
   const invalidCount = parsedUsers.filter(u => !u.valid).length;
