@@ -1330,6 +1330,9 @@ export type Database = {
           brreg_synced_at: string | null
           city: string | null
           created_at: string
+          crm_last_order_id: string | null
+          crm_order_comment: string | null
+          crm_order_comment_at: string | null
           email: string | null
           employee_count: number | null
           has_departments: boolean
@@ -1370,6 +1373,9 @@ export type Database = {
           brreg_synced_at?: string | null
           city?: string | null
           created_at?: string
+          crm_last_order_id?: string | null
+          crm_order_comment?: string | null
+          crm_order_comment_at?: string | null
           email?: string | null
           employee_count?: number | null
           has_departments?: boolean
@@ -1410,6 +1416,9 @@ export type Database = {
           brreg_synced_at?: string | null
           city?: string | null
           created_at?: string
+          crm_last_order_id?: string | null
+          crm_order_comment?: string | null
+          crm_order_comment_at?: string | null
           email?: string | null
           employee_count?: number | null
           has_departments?: boolean
@@ -15335,30 +15344,54 @@ export type Database = {
       }
       nextcom_processed_orders: {
         Row: {
+          company_name: string | null
           created_at: string | null
+          customer_email: string | null
           error_message: string | null
           id: string
+          order_comments: string | null
+          order_date: string | null
           order_id: string
+          order_sum: number | null
+          org_number: string | null
           processed_at: string | null
+          products: string | null
           result: Json | null
+          seller_user_id: string | null
           status: string
         }
         Insert: {
+          company_name?: string | null
           created_at?: string | null
+          customer_email?: string | null
           error_message?: string | null
           id?: string
+          order_comments?: string | null
+          order_date?: string | null
           order_id: string
+          order_sum?: number | null
+          org_number?: string | null
           processed_at?: string | null
+          products?: string | null
           result?: Json | null
+          seller_user_id?: string | null
           status?: string
         }
         Update: {
+          company_name?: string | null
           created_at?: string | null
+          customer_email?: string | null
           error_message?: string | null
           id?: string
+          order_comments?: string | null
+          order_date?: string | null
           order_id?: string
+          order_sum?: number | null
+          org_number?: string | null
           processed_at?: string | null
+          products?: string | null
           result?: Json | null
+          seller_user_id?: string | null
           status?: string
         }
         Relationships: []
