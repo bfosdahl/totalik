@@ -67,7 +67,35 @@ interface NextcomOrder {
   customerPostalCode?: string;
   customerCity?: string;
   sellerName?: string;
+  // Ekstra felter fra CRM-ordren (samme API-kall, ingen ekstra henting)
+  comments?: string | null;
+  insertedDate?: string | null;
+  sendDate?: string | null;
+  sumValue?: number | null;
+  userId?: number | string | null;
+  customerCellPhone?: string | null;
+  customerPhone?: string | null;
+  customerZipCode?: string | null;
+  customerPostalArea?: string | null;
+  customerHouseNumber?: string | null;
+  orderRef?: string | null;
 }
+
+/** Felter fra NextCom-ordren som alltid lagres, uansett utfall. */
+function orderFacts(order: NextcomOrder) {
+  const orgNumber = (order.customerOrgNoOrSsn || "").replace(/\D/g, "");
+  return {
+    order_comments: (order.comments || "").trim() || null,
+    org_number: orgNumber.length === 9 ? orgNumber : null,
+    company_name: order.customerCompany || null,
+    customer_email: (order.customerEmail || "").trim().toLowerCase() || null,
+    products: order.allProducts || null,
+    order_date: order.insertedDate || order.sendDate || null,
+    order_sum: typeof order.sumValue === "number" ? order.sumValue : null,
+    seller_user_id: order.userId != null ? String(order.userId) : null,
+  };
+}
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
