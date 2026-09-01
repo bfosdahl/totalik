@@ -251,7 +251,6 @@ export function BulkUserImportDialog({
       }
 
       const allResults: ImportResult[] = [];
-      let totalSuccess = 0;
       let chunkFailures = 0;
 
       for (let i = 0; i < chunks.length; i++) {
