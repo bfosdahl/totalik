@@ -233,6 +233,7 @@ Deno.serve(async (req) => {
               email: order.customerEmail,
               is_course_only: isCourseOnly,
               service_templates: serviceTemplates,
+              nextcom_order: orderFacts(order),
             },
           };
         }
