@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { SupportedLanguage, LANGUAGE_CONFIG } from "@/contexts/LanguageContext";
@@ -56,6 +56,7 @@ import { useCompanyLawsRegulations } from "@/hooks/useCompanyLawsRegulations";
 import { useHmsDeclarations } from "@/hooks/useHmsDeclarations";
 import { useVerneombudAgreement } from "@/hooks/useVerneombudAgreement";
 import { useEmployees } from "@/hooks/useEmployees";
+import { useOrgChart, type TreeNode } from "@/hooks/useOrgChart";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { EmailSendDialog } from "@/components/shared/EmailSendDialog";
@@ -130,6 +131,26 @@ const Handbook = () => {
   const { selfDeclaration, verneombudExemption, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
   const { verneombudAgreement, verneombudFromProfile, verneombudFromAiSetup, hasVerneombudAgreement, hasAnyVerneombud } = useVerneombudAgreement();
   const { employees } = useEmployees();
+  const { tree: orgChartTree } = useOrgChart();
+
+  // Flatten the hierarchical org chart (org_chart_nodes) into an ordered list with depth
+  const orgChartRoles = useMemo(() => {
+    const out: { title: string; personName: string; description: string; depth: number; childCount: number }[] = [];
+    const walk = (nodes: TreeNode[]) => {
+      nodes.forEach((node) => {
+        out.push({
+          title: node.role_title || "",
+          personName: (node.persons || []).map((p) => p.person_name).filter(Boolean).join(", "),
+          description: node.role_description || "",
+          depth: node.depth ?? 0,
+          childCount: node.children?.length ?? 0,
+        });
+        if (node.children?.length) walk(node.children);
+      });
+    };
+    walk(orgChartTree || []);
+    return out;
+  }, [orgChartTree]);
   
   // For verneombud: BRREG employee count is the source of truth.
   // Companies with 5+ employees MUST have a verneombud and cannot use exemption agreement.
@@ -181,16 +202,23 @@ const Handbook = () => {
     return goal.goal_text;
   }, [isTranslationActive, translatedContent]);
   
-  const getOrganizationRoles = useCallback(() => {
+  const getOrganizationRoles = useCallback((): { title: string; personName: string; description: string; depth?: number }[] => {
     if (isTranslationActive && translatedContent?.organizationRoles) {
-      return translatedContent.organizationRoles;
+      // Keep hierarchy from the chart when translation only replaced texts
+      return translatedContent.organizationRoles.map((r, i) => ({
+        ...r,
+        depth: orgChartRoles[i]?.depth ?? 0,
+      }));
     }
+    // Primary source: the hierarchical org chart built on /organisering
+    if (orgChartRoles.length > 0) return orgChartRoles;
     return organization?.roles?.map(r => ({
       title: r.title,
       personName: r.personName,
-      description: r.description
+      description: r.description,
+      depth: (r as any).depth ?? 0,
     })) || [];
-  }, [isTranslationActive, translatedContent, organization?.roles]);
+  }, [isTranslationActive, translatedContent, organization?.roles, orgChartRoles]);
   
   const getOrganizationDescription = useCallback(() => {
     if (isTranslationActive && translatedContent?.organizationDescription) {
@@ -750,15 +778,15 @@ const Handbook = () => {
     {
       id: "organization",
       title: `${sectionOffset + 2}${t("auto.organisering_og_ansvar_2")}`,
-      status: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? "complete" : "incomplete",
+      status: (getOrganizationRoles().length > 0 || (organization?.description && organization.description.trim().length > 0)) ? "complete" : "incomplete",
       stepIndex: 1,
       icon: Users,
-      content: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? (
+      content: (getOrganizationRoles().length > 0 || (organization?.description && organization.description.trim().length > 0)) ? (
         <div className="text-sm text-muted-foreground space-y-1 max-h-48 overflow-y-auto">
-          {(organization?.roles?.length ?? 0) > 0 ? (
+          {getOrganizationRoles().length > 0 ? (
             <>
               {getOrganizationRoles().slice(0, 5).map((role, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="flex items-center gap-2" style={{ paddingLeft: (role.depth ?? 0) * 12 }}>
                   <span className="font-medium">{role.title}</span>
                   {role.personName && <span className="text-xs">({role.personName})</span>}
                 </div>
@@ -783,8 +811,8 @@ const Handbook = () => {
       ) : (
         <p className="text-sm text-muted-foreground">{t("auto.organisering_er_ikke_definert_ennaa")}</p>
       ),
-      summary: (organization?.roles?.length ?? 0) > 0 
-        ? `${organization?.roles?.length} ${t("auto.roller_definert")}` 
+      summary: getOrganizationRoles().length > 0 
+        ? `${getOrganizationRoles().length} ${t("auto.roller_definert")}` 
         : (organization?.description && organization.description.trim().length > 0)
           ? t("auto.organisering_definert")
           : t("auto.ikke_definert"),
@@ -1712,59 +1740,65 @@ const Handbook = () => {
         doc.text(orgChartLabel, margin, yPos);
         yPos += 10;
         
-        const boxWidth = 80;
-        const boxHeight = 20;
-        const centerX = pageWidth / 2;
-        const indentPerLevel = 15;
-        
-        // Track positions for drawing connectors
+        const indentPerLevel = 12;
+        const boxHeight = 18;
+        const maxDepth = pdfOrgRoles.reduce((m, r) => Math.max(m, (r as any).depth ?? 0), 0);
+        const baseX = margin + 4;
+        const boxWidth = Math.max(60, contentWidth - 8 - maxDepth * indentPerLevel);
+
+        // Bottom Y of the last box drawn at each depth (for the vertical spine)
         const levelLastY: Record<number, number> = {};
-        
-        pdfOrgRoles.forEach((role, index) => {
+
+        pdfOrgRoles.forEach((role) => {
           const depth = (role as any).depth ?? 0;
-          checkPageBreak(35);
-          
-          // Draw connecting line from parent level
-          if (index > 0) {
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineWidth(0.5);
-            // Vertical line down to this box
-            const lineX = centerX - boxWidth / 2 + depth * indentPerLevel - 5;
-            const parentY = levelLastY[depth - 1] ?? (yPos - 5);
-            if (depth > 0) {
-              // L-shaped connector: vertical from parent, then horizontal to box
-              doc.line(lineX, parentY, lineX, yPos + boxHeight / 2);
-              doc.line(lineX, yPos + boxHeight / 2, centerX - boxWidth / 2 + depth * indentPerLevel, yPos + boxHeight / 2);
-            } else {
-              doc.line(centerX, yPos - 5, centerX, yPos);
-            }
+          checkPageBreak(boxHeight + 12);
+
+          const boxX = baseX + depth * indentPerLevel;
+
+          // L-shaped connector from the parent box down/right into this box
+          if (depth > 0 && levelLastY[depth - 1] !== undefined) {
+            const spineX = baseX + (depth - 1) * indentPerLevel + 6;
+            doc.setDrawColor(180, 190, 205);
+            doc.setLineWidth(0.4);
+            doc.line(spineX, levelLastY[depth - 1], spineX, yPos + boxHeight / 2);
+            doc.line(spineX, yPos + boxHeight / 2, boxX, yPos + boxHeight / 2);
           }
-          
-          // Draw box offset by depth
-          const boxX = centerX - boxWidth / 2 + depth * indentPerLevel;
+
           doc.setFillColor(248, 250, 252);
           doc.setDrawColor(59, 130, 246);
           doc.setLineWidth(0.5);
           doc.roundedRect(boxX, yPos, boxWidth, boxHeight, 2, 2, "FD");
-          
+
           // Role title
           doc.setFontSize(10);
           doc.setFont(PDF_FONT, "bold");
           doc.setTextColor(0, 0, 0);
           const titleText = role.title || L.untitled;
-          doc.text(titleText, boxX + boxWidth / 2, yPos + 8, { align: "center" });
-          
-          // Person name
+          doc.text(
+            doc.splitTextToSize(titleText, boxWidth - 8)[0],
+            boxX + 4,
+            yPos + (role.personName ? 7 : 11)
+          );
+
+          // Person name(s)
           if (role.personName) {
             doc.setFontSize(8);
             doc.setFont(PDF_FONT, "normal");
             doc.setTextColor(100, 100, 100);
-            doc.text(role.personName, boxX + boxWidth / 2, yPos + 14, { align: "center" });
+            doc.text(
+              doc.splitTextToSize(role.personName, boxWidth - 8)[0],
+              boxX + 4,
+              yPos + 13
+            );
           }
-          
+
           doc.setTextColor(0, 0, 0);
           levelLastY[depth] = yPos + boxHeight;
-          yPos += boxHeight + 10;
+          // Deeper levels start fresh under this node
+          Object.keys(levelLastY).forEach((k) => {
+            if (Number(k) > depth) delete levelLastY[Number(k)];
+          });
+          yPos += boxHeight + 6;
         });
         
         yPos += 10;
