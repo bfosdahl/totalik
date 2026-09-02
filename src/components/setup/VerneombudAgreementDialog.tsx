@@ -190,13 +190,37 @@ export function VerneombudAgreementDialog({
   };
 
   const handleSubmit = async () => {
-    if (!verneombudName || !employerSignature) {
+    if (!verneombudName) {
+      toast.error(t("auto.vennligst_fyll_ut_alle_paakrevde_felt"));
+      return;
+    }
+    if (signedExternally && !externalFile) {
+      toast.error("Last opp dokumentasjon på den signerte avtalen");
+      return;
+    }
+    if (!signedExternally && !employerSignature) {
       toast.error(t("auto.vennligst_fyll_ut_alle_paakrevde_felt"));
       return;
     }
 
     setIsSaving(true);
     try {
+      let externalPath: string | null = null;
+      if (signedExternally && externalFile) {
+        const safeName = externalFile.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[æÆ]/g, "ae")
+          .replace(/[øØ]/g, "o")
+          .replace(/[åÅ]/g, "a")
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+        externalPath = `${companyId}/verneombudsavtale-${Date.now()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage
+          .from("verneombud-documents")
+          .upload(externalPath, externalFile, { upsert: false });
+        if (uploadError) throw uploadError;
+      }
+
       // Check if there's an existing agreement
       const { data: existing } = await supabase
         .from("verneombud_agreements")
@@ -214,16 +238,23 @@ export function VerneombudAgreementDialog({
         election_method: electionMethod || null,
         term_start: termStart || null,
         term_end: termEnd || null,
-        verneombud_signature: verneombudSignature || null,
-        verneombud_signed_at: verneombudSignature ? new Date().toISOString() : null,
+        verneombud_signature: signedExternally ? null : verneombudSignature || null,
+        verneombud_signed_at: !signedExternally && verneombudSignature ? new Date().toISOString() : null,
         employer_name: employerName || null,
-        employer_signature: employerSignature,
-        employer_signed_at: new Date().toISOString(),
+        employer_signature: signedExternally ? null : employerSignature,
+        employer_signed_at: signedExternally
+          ? (externalSignedDate ? new Date(externalSignedDate).toISOString() : new Date().toISOString())
+          : new Date().toISOString(),
         training_completed: trainingCompleted,
         training_date: trainingDate || null,
         notes: notes || null,
         status: "active",
+        signed_externally: signedExternally,
+        external_document_path: externalPath,
+        external_document_name: signedExternally ? externalFile?.name ?? null : null,
+        external_signed_date: signedExternally ? externalSignedDate || null : null,
       };
+
 
       if (existing) {
         const { error } = await supabase
