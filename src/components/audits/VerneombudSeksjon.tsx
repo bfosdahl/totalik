@@ -30,6 +30,8 @@ import { generateVerneombudExemptionPdf } from "@/utils/generateVerneombudExempt
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function VerneombudSeksjon() {
   const { profile, company } = useAuth();
@@ -41,10 +43,23 @@ export default function VerneombudSeksjon() {
   // Falls back to system count only if Brreg data is missing.
   const employeeCount = company?.brreg_employee_count ?? company?.employee_count ?? employees?.length ?? 0;
   const requiresVerneombud = employeeCount >= 5;
-  
+
   const [showVerneombudDialog, setShowVerneombudDialog] = useState(false);
   const [showVerneombudAgreementDialog, setShowVerneombudAgreementDialog] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState("dokumenter");
+
+  const openExternalDoc = async (path?: string | null) => {
+    if (!path) return;
+    const { data, error } = await supabase.storage
+      .from("verneombud-documents")
+      .createSignedUrl(path, 60 * 10);
+    if (error || !data?.signedUrl) {
+      toast.error("Kunne ikke åpne vedlegget");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
 
   if (isLoading || isLoadingVerneombud) {
     return (
@@ -181,8 +196,23 @@ export default function VerneombudSeksjon() {
                         </>
                       )}
 
+                      {(verneombudAgreement as any).signed_externally && (
+                        <>
+                          <Separator />
+                          <div className="bg-muted/40 rounded-lg p-3 text-sm">
+                            <p className="font-medium mb-1">Signert på annen måte (papir)</p>
+                            <p className="text-muted-foreground text-xs">
+                              {(verneombudAgreement as any).external_document_name || "Vedlagt dokument"}
+                              {(verneombudAgreement as any).external_signed_date
+                                ? ` · signert ${formatDate((verneombudAgreement as any).external_signed_date)}`
+                                : ""}
+                            </p>
+                          </div>
+                        </>
+                      )}
+
                       <Separator />
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Button 
                           variant="outline" 
                           onClick={() => setShowVerneombudAgreementDialog(true)}
@@ -190,7 +220,17 @@ export default function VerneombudSeksjon() {
                           <PenLine className="w-4 h-4 mr-2" />
                           Oppdater verneombud
                         </Button>
+                        {(verneombudAgreement as any).external_document_path && (
+                          <Button
+                            variant="outline"
+                            onClick={() => openExternalDoc((verneombudAgreement as any).external_document_path)}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Last ned signert avtale
+                          </Button>
+                        )}
                       </div>
+
                     </>
                   ) : hasVerneombudFromProfile && verneombudFromProfile ? (
                     // Show verneombud from profile (set via Organisering page)
@@ -347,8 +387,33 @@ export default function VerneombudSeksjon() {
                         </>
                       )}
 
+                      {(verneombudExemption as any).signed_externally && (
+                        <>
+                          <Separator />
+                          <div className="bg-muted/40 rounded-lg p-3 text-sm">
+                            <p className="font-medium mb-1">Signert på annen måte (papir)</p>
+                            <p className="text-muted-foreground text-xs">
+                              {(verneombudExemption as any).external_document_name || "Vedlagt dokument"}
+                              {(verneombudExemption as any).external_signed_date
+                                ? ` · signert ${formatDate((verneombudExemption as any).external_signed_date)}`
+                                : ""}
+                            </p>
+                          </div>
+                        </>
+                      )}
+
                       <Separator />
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
+                        {(verneombudExemption as any).external_document_path && (
+                          <Button
+                            variant="outline"
+                            onClick={() => openExternalDoc((verneombudExemption as any).external_document_path)}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Last ned signert avtale
+                          </Button>
+                        )}
+
                         <Button 
                           variant="outline" 
                           onClick={() => setShowVerneombudDialog(true)}
