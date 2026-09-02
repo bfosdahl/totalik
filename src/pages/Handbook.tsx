@@ -131,6 +131,26 @@ const Handbook = () => {
   const { selfDeclaration, verneombudExemption, hasSelfDeclaration, hasVerneombudExemption } = useHmsDeclarations();
   const { verneombudAgreement, verneombudFromProfile, verneombudFromAiSetup, hasVerneombudAgreement, hasAnyVerneombud } = useVerneombudAgreement();
   const { employees } = useEmployees();
+  const { tree: orgChartTree } = useOrgChart();
+
+  // Flatten the hierarchical org chart (org_chart_nodes) into an ordered list with depth
+  const orgChartRoles = useMemo(() => {
+    const out: { title: string; personName: string; description: string; depth: number; childCount: number }[] = [];
+    const walk = (nodes: TreeNode[]) => {
+      nodes.forEach((node) => {
+        out.push({
+          title: node.role_title || "",
+          personName: (node.persons || []).map((p) => p.person_name).filter(Boolean).join(", "),
+          description: node.role_description || "",
+          depth: node.depth ?? 0,
+          childCount: node.children?.length ?? 0,
+        });
+        if (node.children?.length) walk(node.children);
+      });
+    };
+    walk(orgChartTree || []);
+    return out;
+  }, [orgChartTree]);
   
   // For verneombud: BRREG employee count is the source of truth.
   // Companies with 5+ employees MUST have a verneombud and cannot use exemption agreement.
