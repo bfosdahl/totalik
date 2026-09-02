@@ -1740,59 +1740,65 @@ const Handbook = () => {
         doc.text(orgChartLabel, margin, yPos);
         yPos += 10;
         
-        const boxWidth = 80;
-        const boxHeight = 20;
-        const centerX = pageWidth / 2;
-        const indentPerLevel = 15;
-        
-        // Track positions for drawing connectors
+        const indentPerLevel = 12;
+        const boxHeight = 18;
+        const maxDepth = pdfOrgRoles.reduce((m, r) => Math.max(m, (r as any).depth ?? 0), 0);
+        const baseX = margin + 4;
+        const boxWidth = Math.max(60, contentWidth - 8 - maxDepth * indentPerLevel);
+
+        // Bottom Y of the last box drawn at each depth (for the vertical spine)
         const levelLastY: Record<number, number> = {};
-        
-        pdfOrgRoles.forEach((role, index) => {
+
+        pdfOrgRoles.forEach((role) => {
           const depth = (role as any).depth ?? 0;
-          checkPageBreak(35);
-          
-          // Draw connecting line from parent level
-          if (index > 0) {
-            doc.setDrawColor(200, 200, 200);
-            doc.setLineWidth(0.5);
-            // Vertical line down to this box
-            const lineX = centerX - boxWidth / 2 + depth * indentPerLevel - 5;
-            const parentY = levelLastY[depth - 1] ?? (yPos - 5);
-            if (depth > 0) {
-              // L-shaped connector: vertical from parent, then horizontal to box
-              doc.line(lineX, parentY, lineX, yPos + boxHeight / 2);
-              doc.line(lineX, yPos + boxHeight / 2, centerX - boxWidth / 2 + depth * indentPerLevel, yPos + boxHeight / 2);
-            } else {
-              doc.line(centerX, yPos - 5, centerX, yPos);
-            }
+          checkPageBreak(boxHeight + 12);
+
+          const boxX = baseX + depth * indentPerLevel;
+
+          // L-shaped connector from the parent box down/right into this box
+          if (depth > 0 && levelLastY[depth - 1] !== undefined) {
+            const spineX = baseX + (depth - 1) * indentPerLevel + 6;
+            doc.setDrawColor(180, 190, 205);
+            doc.setLineWidth(0.4);
+            doc.line(spineX, levelLastY[depth - 1], spineX, yPos + boxHeight / 2);
+            doc.line(spineX, yPos + boxHeight / 2, boxX, yPos + boxHeight / 2);
           }
-          
-          // Draw box offset by depth
-          const boxX = centerX - boxWidth / 2 + depth * indentPerLevel;
+
           doc.setFillColor(248, 250, 252);
           doc.setDrawColor(59, 130, 246);
           doc.setLineWidth(0.5);
           doc.roundedRect(boxX, yPos, boxWidth, boxHeight, 2, 2, "FD");
-          
+
           // Role title
           doc.setFontSize(10);
           doc.setFont(PDF_FONT, "bold");
           doc.setTextColor(0, 0, 0);
           const titleText = role.title || L.untitled;
-          doc.text(titleText, boxX + boxWidth / 2, yPos + 8, { align: "center" });
-          
-          // Person name
+          doc.text(
+            doc.splitTextToSize(titleText, boxWidth - 8)[0],
+            boxX + 4,
+            yPos + (role.personName ? 7 : 11)
+          );
+
+          // Person name(s)
           if (role.personName) {
             doc.setFontSize(8);
             doc.setFont(PDF_FONT, "normal");
             doc.setTextColor(100, 100, 100);
-            doc.text(role.personName, boxX + boxWidth / 2, yPos + 14, { align: "center" });
+            doc.text(
+              doc.splitTextToSize(role.personName, boxWidth - 8)[0],
+              boxX + 4,
+              yPos + 13
+            );
           }
-          
+
           doc.setTextColor(0, 0, 0);
           levelLastY[depth] = yPos + boxHeight;
-          yPos += boxHeight + 10;
+          // Deeper levels start fresh under this node
+          Object.keys(levelLastY).forEach((k) => {
+            if (Number(k) > depth) delete levelLastY[Number(k)];
+          });
+          yPos += boxHeight + 6;
         });
         
         yPos += 10;
