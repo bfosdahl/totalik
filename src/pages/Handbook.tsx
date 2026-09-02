@@ -1500,6 +1500,9 @@ const Handbook = () => {
         }
 
         await addExternalSignedDoc(verneombudExemption as any);
+      }
+
+
 
 
       // SECTION: VALG AV VERNEOMBUD (for companies with 5+ employees)
