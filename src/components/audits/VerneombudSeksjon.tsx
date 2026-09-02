@@ -30,6 +30,8 @@ import { generateVerneombudExemptionPdf } from "@/utils/generateVerneombudExempt
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function VerneombudSeksjon() {
   const { profile, company } = useAuth();
