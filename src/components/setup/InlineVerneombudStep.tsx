@@ -46,6 +46,9 @@ export function InlineVerneombudStep({
   const [isSaving, setIsSaving] = useState(false);
   const [alreadyHasAgreement, setAlreadyHasAgreement] = useState(false);
   const [alreadyHasExemption, setAlreadyHasExemption] = useState(false);
+  const [signedExternally, setSignedExternally] = useState(false);
+  const [externalFile, setExternalFile] = useState<File | null>(null);
+  const [externalSignedDate, setExternalSignedDate] = useState(new Date().toISOString().split("T")[0]);
   const sigRef = useRef<SignatureCanvas | null>(null);
   useSignatureCanvasResize(sigRef as any, [mode]);
 
