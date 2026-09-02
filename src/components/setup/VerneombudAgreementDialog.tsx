@@ -556,6 +556,7 @@ export function VerneombudAgreementDialog({
               </div>
             )}
 
+            {!signedExternally && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>{t("auto.arbeidsgivers_signatur")}</Label>
@@ -601,6 +602,37 @@ export function VerneombudAgreementDialog({
                 </span>
               )}
             </div>
+            )}
+
+            {signedExternally && (
+              <VerneombudExternalDocUpload
+                file={externalFile}
+                onFileChange={setExternalFile}
+                signedDate={externalSignedDate}
+                onSignedDateChange={setExternalSignedDate}
+                disabled={isSaving}
+              />
+            )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-muted-foreground"
+              onClick={() => {
+                setSignedExternally((prev) => !prev);
+                if (!signedExternally) {
+                  handleClearEmployerSig();
+                } else {
+                  setExternalFile(null);
+                }
+              }}
+            >
+              <FileUp className="w-4 h-4 mr-2" />
+              {signedExternally
+                ? "Signer digitalt i stedet"
+                : "Avtalen er signert på annen måte – last opp vedlegg"}
+            </Button>
           </div>
         )}
 
