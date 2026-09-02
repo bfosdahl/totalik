@@ -1653,7 +1653,10 @@ const Handbook = () => {
           doc.text(noteLines, margin, yPos);
           yPos += noteLines.length * 5 + 5;
         }
+
+        await addExternalSignedDoc(verneombudAgreement as any);
       }
+
 
       // SECTION: GOALS - use translated content if available
       doc.addPage();
