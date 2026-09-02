@@ -1498,7 +1498,9 @@ const Handbook = () => {
             yPos += 40;
           });
         }
-      }
+
+        await addExternalSignedDoc(verneombudExemption as any);
+
 
       // SECTION: VALG AV VERNEOMBUD (for companies with 5+ employees)
       if (hasVerneombudAgreement && verneombudAgreement && requiresVerneombud) {
