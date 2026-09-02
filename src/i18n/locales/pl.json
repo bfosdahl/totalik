@@ -6680,6 +6680,17 @@
     "alle_ansatte_har_en_plikt_til_aa_foelge_": "Wszyscy pracownicy mają obowiązek przestrzegania procedur BHP firmy oraz aktywnego wspierania bezpiecznego środowiska pracy.",
     "bedriftens_maalsetting": "Cel firmy",
     "avdelingens_maalsetting": "Cel działu",
-    "ai_hjelper": "Asystent AI"
+    "ai_hjelper": "Asystent AI",
+    "registrer_og_foelg_opp_avvik_og_hendelse": "Rejestruj i śledź odchylenia i zdarzenia",
+    "meld_arbeidsulykke": "Zgłoś wypadek przy pracy",
+    "ulykke": "Wypadek",
+    "ingen_avvik_matcher_soeket": "Brak odchyleń pasujących do wyszukiwania",
+    "proev_aa_endre_soekeordet_eller_fjern_st": "Spróbuj zmienić wyszukiwane hasło lub wyczyścić filtry",
+    "nullstill_filter": "Zresetuj filtry",
+    "ingen_avvik_registrert_ennaa": "Nie zarejestrowano jeszcze odchyleń",
+    "registrer_det_foerste_avviket_for_aa_sta": "Zarejestruj pierwsze odchylenie, aby zacząć",
+    "arbeidsulykke_registrert": "Wypadek przy pracy zarejestrowany",
+    "eksport_feilet": "Eksport nie powiódł się",
+    "kunne_ikke_eksportere_brukere": "Nie można wyeksportować użytkowników"
   }
 }
