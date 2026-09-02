@@ -1126,7 +1126,77 @@ const Handbook = () => {
         yPos += 15;
       };
 
+      // Renders info + embedded scan for agreements signed on paper / externally
+      const addExternalSignedDoc = async (record: any) => {
+        if (!record?.signed_externally) return;
+
+        checkPageBreak(40);
+        doc.setFillColor(254, 249, 231);
+        doc.roundedRect(margin, yPos, contentWidth, 32, 2, 2, "F");
+        doc.setFont(PDF_FONT, "bold");
+        doc.setFontSize(11);
+        doc.text("Avtalen er signert på papir / på annen måte", margin + 5, yPos + 8);
+        doc.setFont(PDF_FONT, "normal");
+        doc.setFontSize(9);
+        const infoLines = doc.splitTextToSize(
+          `Dokumentasjon: ${record.external_document_name || "vedlagt dokument"}` +
+            (record.external_signed_date
+              ? ` · signert ${formatDateForPdf(new Date(record.external_signed_date))}`
+              : "") +
+            ". Signert originaldokument er lastet opp og arkivert i Total-IK (HMS → Verneombud → «Last ned signert avtale»).",
+          contentWidth - 10
+        );
+        doc.text(infoLines, margin + 5, yPos + 15);
+        doc.setFontSize(11);
+        yPos += 37;
+
+        // Embed the scanned document when it is an image
+        const path: string | undefined = record.external_document_path || undefined;
+        if (!path) return;
+        const ext = path.split(".").pop()?.toLowerCase() || "";
+        if (!["jpg", "jpeg", "png"].includes(ext)) {
+          checkPageBreak(12);
+          doc.setFontSize(9);
+          doc.text(
+            "Vedlegget er en PDF/dokumentfil og kan lastes ned fra Total-IK.",
+            margin,
+            yPos
+          );
+          doc.setFontSize(11);
+          yPos += 10;
+          return;
+        }
+
+        try {
+          const { data: signed } = await supabase.storage
+            .from("verneombud-documents")
+            .createSignedUrl(path, 60 * 10);
+          if (!signed?.signedUrl) return;
+          const dataUrl = await loadImageAsBase64(signed.signedUrl);
+          if (!dataUrl) return;
+
+          const props = doc.getImageProperties(dataUrl);
+          doc.addPage();
+          yPos = margin;
+          doc.setFont(PDF_FONT, "bold");
+          doc.setFontSize(12);
+          doc.text("Vedlegg: signert avtale (skannet)", margin, yPos);
+          yPos += 8;
+
+          const maxW = contentWidth;
+          const maxH = pageHeight - yPos - margin;
+          const ratio = Math.min(maxW / props.width, maxH / props.height);
+          const w = props.width * ratio;
+          const h = props.height * ratio;
+          doc.addImage(dataUrl, ext === "png" ? "PNG" : "JPEG", margin + (maxW - w) / 2, yPos, w, h);
+          yPos += h + 5;
+        } catch (e) {
+          console.warn("Could not embed external verneombud document:", e);
+        }
+      };
+
       // Table of contents (rendered after content is generated so page numbers are correct)
+
       type TocEntry = { title: string; page: number };
       const tocEntries: TocEntry[] = [];
       let tocPageNumber = 0;
@@ -1428,7 +1498,12 @@ const Handbook = () => {
             yPos += 40;
           });
         }
+
+        await addExternalSignedDoc(verneombudExemption as any);
       }
+
+
+
 
       // SECTION: VALG AV VERNEOMBUD (for companies with 5+ employees)
       if (hasVerneombudAgreement && verneombudAgreement && requiresVerneombud) {
@@ -1578,7 +1653,10 @@ const Handbook = () => {
           doc.text(noteLines, margin, yPos);
           yPos += noteLines.length * 5 + 5;
         }
+
+        await addExternalSignedDoc(verneombudAgreement as any);
       }
+
 
       // SECTION: GOALS - use translated content if available
       doc.addPage();
