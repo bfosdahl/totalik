@@ -685,7 +685,7 @@ export function VerneombudAgreementDialog({
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                disabled={isSaving || !employerName || !employerSignature}
+                disabled={isSaving || !employerName || (signedExternally ? !externalFile : !employerSignature)}
               >
                 {isSaving ? (
                   <>
