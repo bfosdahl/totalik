@@ -111,23 +111,53 @@ export function InlineVerneombudStep({
       return;
     }
 
-    const sig = usingSavedSignature ? savedSignature : sigRef.current?.toDataURL() || "";
-    if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
-      toast.error(t("auto.vennligst_signer"));
+    let sig = "";
+    if (!signedExternally) {
+      sig = usingSavedSignature ? savedSignature || "" : sigRef.current?.toDataURL() || "";
+      if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
+        toast.error(t("auto.vennligst_signer"));
+        return;
+      }
+    } else if (!externalFile) {
+      toast.error("Last opp dokumentasjon på den signerte avtalen");
       return;
     }
 
     setIsSaving(true);
     try {
+      let externalPath: string | null = null;
+      if (signedExternally && externalFile) {
+        const safeName = externalFile.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[æÆ]/g, "ae")
+          .replace(/[øØ]/g, "o")
+          .replace(/[åÅ]/g, "a")
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+        externalPath = `${companyId}/fritaksavtale-${Date.now()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage
+          .from("verneombud-documents")
+          .upload(externalPath, externalFile, { upsert: false });
+        if (uploadError) throw uploadError;
+      }
+
       const { error } = await supabase.from("verneombud_exemption_agreements").insert([{
         company_id: companyId,
         total_employees: employeeCount,
         employer_name: verneombudName || "Daglig leder",
-        employer_signature: sig,
-        employer_signed_at: new Date().toISOString(),
+        employer_signature: signedExternally ? null : sig,
+        employer_signed_at: signedExternally
+          ? (externalSignedDate ? new Date(externalSignedDate).toISOString() : new Date().toISOString())
+          : new Date().toISOString(),
         employee_signatures: [],
         status: "active",
-        agreement_date: new Date().toISOString().split("T")[0],
+        agreement_date: signedExternally && externalSignedDate
+          ? externalSignedDate
+          : new Date().toISOString().split("T")[0],
+        signed_externally: signedExternally,
+        external_document_path: externalPath,
+        external_document_name: signedExternally ? externalFile?.name ?? null : null,
+        external_signed_date: signedExternally ? externalSignedDate || null : null,
       }]);
       if (error) throw error;
       toast.success(t("auto.avtale_om_fritak_signert"));
@@ -140,6 +170,7 @@ export function InlineVerneombudStep({
       setIsSaving(false);
     }
   };
+
 
   const handleSaveVerneombud = async () => {
     if (!verneombudName.trim()) {
