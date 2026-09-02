@@ -94,6 +94,10 @@ export function VerneombudAgreementDialog({
   const [usingSavedVerneombudSig, setUsingSavedVerneombudSig] = useState(false);
   const [usingSavedEmployerSig, setUsingSavedEmployerSig] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [signedExternally, setSignedExternally] = useState(false);
+  const [externalFile, setExternalFile] = useState<File | null>(null);
+  const [externalSignedDate, setExternalSignedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+
   
   const verneombudSigRef = useRef<SignatureCanvas>(null);
   const employerSigRef = useRef<SignatureCanvas>(null);
