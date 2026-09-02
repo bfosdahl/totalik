@@ -319,25 +319,54 @@ export function InlineVerneombudStep({
 
           <div className="space-y-2">
             <Input value={verneombudName} onChange={(e) => setVerneombudName(e.target.value)} placeholder="Navn (arbeidsgiver)" />
-            
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">{t("auto.signatur")}</Label>
-              {savedSignature && !usingSavedSignature && (
-                <Button type="button" variant="outline" size="sm" onClick={() => {
-                  sigRef.current?.fromDataURL(savedSignature);
-                  setUsingSavedSignature(true);
-                }} className="text-xs h-7 gap-1">
-                  <User className="h-3 w-3" /> Bruk min signatur
+
+            {!signedExternally ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">{t("auto.signatur")}</Label>
+                  {savedSignature && !usingSavedSignature && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => {
+                      sigRef.current?.fromDataURL(savedSignature);
+                      setUsingSavedSignature(true);
+                    }} className="text-xs h-7 gap-1">
+                      <User className="h-3 w-3" /> Bruk min signatur
+                    </Button>
+                  )}
+                </div>
+                <div className="border rounded-lg bg-white relative">
+                  <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-24 touch-none" }} backgroundColor="white" />
+                </div>
+                <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => { sigRef.current?.clear(); setUsingSavedSignature(false); }}>
+                  {t("auto.toem_signatur")}
                 </Button>
-              )}
-            </div>
-            <div className="border rounded-lg bg-white relative">
-              <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-24 touch-none" }} backgroundColor="white" />
-            </div>
-            <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => { sigRef.current?.clear(); setUsingSavedSignature(false); }}>
-              {t("auto.toem_signatur")}
+              </>
+            ) : (
+              <VerneombudExternalDocUpload
+                file={externalFile}
+                onFileChange={setExternalFile}
+                signedDate={externalSignedDate}
+                onSignedDateChange={setExternalSignedDate}
+                disabled={isSaving}
+              />
+            )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-muted-foreground text-xs"
+              onClick={() => {
+                setSignedExternally((prev) => !prev);
+                sigRef.current?.clear();
+                setUsingSavedSignature(false);
+                if (signedExternally) setExternalFile(null);
+              }}
+            >
+              <FileUp className="w-4 h-4 mr-2" />
+              {signedExternally ? "Signer digitalt i stedet" : "Avtalen er signert på annen måte – last opp vedlegg"}
             </Button>
           </div>
+
 
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={() => setMode("choose")}>{t("auto.tilbake")}</Button>
