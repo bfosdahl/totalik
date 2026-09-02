@@ -17631,8 +17631,12 @@ export type Database = {
           employer_name: string | null
           employer_signature: string | null
           employer_signed_at: string | null
+          external_document_name: string | null
+          external_document_path: string | null
+          external_signed_date: string | null
           id: string
           notes: string | null
+          signed_externally: boolean
           status: string | null
           term_end: string | null
           term_start: string | null
@@ -17653,8 +17657,12 @@ export type Database = {
           employer_name?: string | null
           employer_signature?: string | null
           employer_signed_at?: string | null
+          external_document_name?: string | null
+          external_document_path?: string | null
+          external_signed_date?: string | null
           id?: string
           notes?: string | null
+          signed_externally?: boolean
           status?: string | null
           term_end?: string | null
           term_start?: string | null
@@ -17675,8 +17683,12 @@ export type Database = {
           employer_name?: string | null
           employer_signature?: string | null
           employer_signed_at?: string | null
+          external_document_name?: string | null
+          external_document_path?: string | null
+          external_signed_date?: string | null
           id?: string
           notes?: string | null
+          signed_externally?: boolean
           status?: string | null
           term_end?: string | null
           term_start?: string | null
@@ -17708,8 +17720,12 @@ export type Database = {
           employer_name: string
           employer_signature: string | null
           employer_signed_at: string | null
+          external_document_name: string | null
+          external_document_path: string | null
+          external_signed_date: string | null
           id: string
           notes: string | null
+          signed_externally: boolean
           status: string
           total_employees: number
           updated_at: string
@@ -17723,8 +17739,12 @@ export type Database = {
           employer_name: string
           employer_signature?: string | null
           employer_signed_at?: string | null
+          external_document_name?: string | null
+          external_document_path?: string | null
+          external_signed_date?: string | null
           id?: string
           notes?: string | null
+          signed_externally?: boolean
           status?: string
           total_employees: number
           updated_at?: string
@@ -17738,8 +17758,12 @@ export type Database = {
           employer_name?: string
           employer_signature?: string | null
           employer_signed_at?: string | null
+          external_document_name?: string | null
+          external_document_path?: string | null
+          external_signed_date?: string | null
           id?: string
           notes?: string | null
+          signed_externally?: boolean
           status?: string
           total_employees?: number
           updated_at?: string

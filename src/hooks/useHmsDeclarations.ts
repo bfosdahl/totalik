@@ -96,7 +96,7 @@ export function useHmsDeclarations() {
           employee_signatures: data.employee_signatures as VerneombudExemptionAgreement["employee_signatures"],
         } as VerneombudExemptionAgreement;
       }
-      return data as VerneombudExemptionAgreement | null;
+      return data as unknown as VerneombudExemptionAgreement | null;
     },
     enabled: !!companyId,
   });

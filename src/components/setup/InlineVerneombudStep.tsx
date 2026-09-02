@@ -6,8 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Shield, CheckCircle2, User, ArrowRight, Info, FileText } from "lucide-react";
+import { Loader2, Shield, CheckCircle2, User, ArrowRight, Info, FileText, FileUp } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
+import { VerneombudExternalDocUpload } from "./VerneombudExternalDocUpload";
 import { useSignatureCanvasResize } from "@/lib/useSignatureCanvasResize";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +47,9 @@ export function InlineVerneombudStep({
   const [isSaving, setIsSaving] = useState(false);
   const [alreadyHasAgreement, setAlreadyHasAgreement] = useState(false);
   const [alreadyHasExemption, setAlreadyHasExemption] = useState(false);
+  const [signedExternally, setSignedExternally] = useState(false);
+  const [externalFile, setExternalFile] = useState<File | null>(null);
+  const [externalSignedDate, setExternalSignedDate] = useState(new Date().toISOString().split("T")[0]);
   const sigRef = useRef<SignatureCanvas | null>(null);
   useSignatureCanvasResize(sigRef as any, [mode]);
 
@@ -108,23 +112,53 @@ export function InlineVerneombudStep({
       return;
     }
 
-    const sig = usingSavedSignature ? savedSignature : sigRef.current?.toDataURL() || "";
-    if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
-      toast.error(t("auto.vennligst_signer"));
+    let sig = "";
+    if (!signedExternally) {
+      sig = usingSavedSignature ? savedSignature || "" : sigRef.current?.toDataURL() || "";
+      if (!sig || (sigRef.current?.isEmpty() && !usingSavedSignature)) {
+        toast.error(t("auto.vennligst_signer"));
+        return;
+      }
+    } else if (!externalFile) {
+      toast.error("Last opp dokumentasjon på den signerte avtalen");
       return;
     }
 
     setIsSaving(true);
     try {
+      let externalPath: string | null = null;
+      if (signedExternally && externalFile) {
+        const safeName = externalFile.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[æÆ]/g, "ae")
+          .replace(/[øØ]/g, "o")
+          .replace(/[åÅ]/g, "a")
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+        externalPath = `${companyId}/fritaksavtale-${Date.now()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage
+          .from("verneombud-documents")
+          .upload(externalPath, externalFile, { upsert: false });
+        if (uploadError) throw uploadError;
+      }
+
       const { error } = await supabase.from("verneombud_exemption_agreements").insert([{
         company_id: companyId,
         total_employees: employeeCount,
         employer_name: verneombudName || "Daglig leder",
-        employer_signature: sig,
-        employer_signed_at: new Date().toISOString(),
+        employer_signature: signedExternally ? null : sig,
+        employer_signed_at: signedExternally
+          ? (externalSignedDate ? new Date(externalSignedDate).toISOString() : new Date().toISOString())
+          : new Date().toISOString(),
         employee_signatures: [],
         status: "active",
-        agreement_date: new Date().toISOString().split("T")[0],
+        agreement_date: signedExternally && externalSignedDate
+          ? externalSignedDate
+          : new Date().toISOString().split("T")[0],
+        signed_externally: signedExternally,
+        external_document_path: externalPath,
+        external_document_name: signedExternally ? externalFile?.name ?? null : null,
+        external_signed_date: signedExternally ? externalSignedDate || null : null,
       }]);
       if (error) throw error;
       toast.success(t("auto.avtale_om_fritak_signert"));
@@ -137,6 +171,7 @@ export function InlineVerneombudStep({
       setIsSaving(false);
     }
   };
+
 
   const handleSaveVerneombud = async () => {
     if (!verneombudName.trim()) {
@@ -285,25 +320,54 @@ export function InlineVerneombudStep({
 
           <div className="space-y-2">
             <Input value={verneombudName} onChange={(e) => setVerneombudName(e.target.value)} placeholder="Navn (arbeidsgiver)" />
-            
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">{t("auto.signatur")}</Label>
-              {savedSignature && !usingSavedSignature && (
-                <Button type="button" variant="outline" size="sm" onClick={() => {
-                  sigRef.current?.fromDataURL(savedSignature);
-                  setUsingSavedSignature(true);
-                }} className="text-xs h-7 gap-1">
-                  <User className="h-3 w-3" /> Bruk min signatur
+
+            {!signedExternally ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">{t("auto.signatur")}</Label>
+                  {savedSignature && !usingSavedSignature && (
+                    <Button type="button" variant="outline" size="sm" onClick={() => {
+                      sigRef.current?.fromDataURL(savedSignature);
+                      setUsingSavedSignature(true);
+                    }} className="text-xs h-7 gap-1">
+                      <User className="h-3 w-3" /> Bruk min signatur
+                    </Button>
+                  )}
+                </div>
+                <div className="border rounded-lg bg-white relative">
+                  <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-24 touch-none" }} backgroundColor="white" />
+                </div>
+                <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => { sigRef.current?.clear(); setUsingSavedSignature(false); }}>
+                  {t("auto.toem_signatur")}
                 </Button>
-              )}
-            </div>
-            <div className="border rounded-lg bg-white relative">
-              <SignatureCanvas ref={sigRef} canvasProps={{ className: "w-full h-24 touch-none" }} backgroundColor="white" />
-            </div>
-            <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => { sigRef.current?.clear(); setUsingSavedSignature(false); }}>
-              {t("auto.toem_signatur")}
+              </>
+            ) : (
+              <VerneombudExternalDocUpload
+                file={externalFile}
+                onFileChange={setExternalFile}
+                signedDate={externalSignedDate}
+                onSignedDateChange={setExternalSignedDate}
+                disabled={isSaving}
+              />
+            )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-muted-foreground text-xs"
+              onClick={() => {
+                setSignedExternally((prev) => !prev);
+                sigRef.current?.clear();
+                setUsingSavedSignature(false);
+                if (signedExternally) setExternalFile(null);
+              }}
+            >
+              <FileUp className="w-4 h-4 mr-2" />
+              {signedExternally ? "Signer digitalt i stedet" : "Avtalen er signert på annen måte – last opp vedlegg"}
             </Button>
           </div>
+
 
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={() => setMode("choose")}>{t("auto.tilbake")}</Button>

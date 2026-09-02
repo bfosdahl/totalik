@@ -10,10 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { CheckCircle2, Loader2, PenLine, X, ArrowLeft, ArrowRight, Shield, User } from "lucide-react";
+import { CheckCircle2, Loader2, PenLine, X, ArrowLeft, ArrowRight, Shield, User, FileUp } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { VerneombudExternalDocUpload } from "./VerneombudExternalDocUpload";
 import { t } from "@/i18n/t";
 
 interface VerneombudAgreementDialogProps {
@@ -93,6 +94,10 @@ export function VerneombudAgreementDialog({
   const [usingSavedVerneombudSig, setUsingSavedVerneombudSig] = useState(false);
   const [usingSavedEmployerSig, setUsingSavedEmployerSig] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [signedExternally, setSignedExternally] = useState(false);
+  const [externalFile, setExternalFile] = useState<File | null>(null);
+  const [externalSignedDate, setExternalSignedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+
   
   const verneombudSigRef = useRef<SignatureCanvas>(null);
   const employerSigRef = useRef<SignatureCanvas>(null);
@@ -185,13 +190,37 @@ export function VerneombudAgreementDialog({
   };
 
   const handleSubmit = async () => {
-    if (!verneombudName || !employerSignature) {
+    if (!verneombudName) {
+      toast.error(t("auto.vennligst_fyll_ut_alle_paakrevde_felt"));
+      return;
+    }
+    if (signedExternally && !externalFile) {
+      toast.error("Last opp dokumentasjon på den signerte avtalen");
+      return;
+    }
+    if (!signedExternally && !employerSignature) {
       toast.error(t("auto.vennligst_fyll_ut_alle_paakrevde_felt"));
       return;
     }
 
     setIsSaving(true);
     try {
+      let externalPath: string | null = null;
+      if (signedExternally && externalFile) {
+        const safeName = externalFile.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[æÆ]/g, "ae")
+          .replace(/[øØ]/g, "o")
+          .replace(/[åÅ]/g, "a")
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+        externalPath = `${companyId}/verneombudsavtale-${Date.now()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage
+          .from("verneombud-documents")
+          .upload(externalPath, externalFile, { upsert: false });
+        if (uploadError) throw uploadError;
+      }
+
       // Check if there's an existing agreement
       const { data: existing } = await supabase
         .from("verneombud_agreements")
@@ -209,16 +238,23 @@ export function VerneombudAgreementDialog({
         election_method: electionMethod || null,
         term_start: termStart || null,
         term_end: termEnd || null,
-        verneombud_signature: verneombudSignature || null,
-        verneombud_signed_at: verneombudSignature ? new Date().toISOString() : null,
+        verneombud_signature: signedExternally ? null : verneombudSignature || null,
+        verneombud_signed_at: !signedExternally && verneombudSignature ? new Date().toISOString() : null,
         employer_name: employerName || null,
-        employer_signature: employerSignature,
-        employer_signed_at: new Date().toISOString(),
+        employer_signature: signedExternally ? null : employerSignature,
+        employer_signed_at: signedExternally
+          ? (externalSignedDate ? new Date(externalSignedDate).toISOString() : new Date().toISOString())
+          : new Date().toISOString(),
         training_completed: trainingCompleted,
         training_date: trainingDate || null,
         notes: notes || null,
         status: "active",
+        signed_externally: signedExternally,
+        external_document_path: externalPath,
+        external_document_name: signedExternally ? externalFile?.name ?? null : null,
+        external_signed_date: signedExternally ? externalSignedDate || null : null,
       };
+
 
       if (existing) {
         const { error } = await supabase
@@ -520,6 +556,7 @@ export function VerneombudAgreementDialog({
               </div>
             )}
 
+            {!signedExternally && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>{t("auto.arbeidsgivers_signatur")}</Label>
@@ -565,6 +602,37 @@ export function VerneombudAgreementDialog({
                 </span>
               )}
             </div>
+            )}
+
+            {signedExternally && (
+              <VerneombudExternalDocUpload
+                file={externalFile}
+                onFileChange={setExternalFile}
+                signedDate={externalSignedDate}
+                onSignedDateChange={setExternalSignedDate}
+                disabled={isSaving}
+              />
+            )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-muted-foreground"
+              onClick={() => {
+                setSignedExternally((prev) => !prev);
+                if (!signedExternally) {
+                  handleClearEmployerSig();
+                } else {
+                  setExternalFile(null);
+                }
+              }}
+            >
+              <FileUp className="w-4 h-4 mr-2" />
+              {signedExternally
+                ? "Signer digitalt i stedet"
+                : "Avtalen er signert på annen måte – last opp vedlegg"}
+            </Button>
           </div>
         )}
 
@@ -617,7 +685,7 @@ export function VerneombudAgreementDialog({
               </Button>
               <Button 
                 onClick={handleSubmit} 
-                disabled={isSaving || !employerName || !employerSignature}
+                disabled={isSaving || !employerName || (signedExternally ? !externalFile : !employerSignature)}
               >
                 {isSaving ? (
                   <>
