@@ -10,10 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { CheckCircle2, Loader2, PenLine, X, ArrowLeft, ArrowRight, Shield, User } from "lucide-react";
+import { CheckCircle2, Loader2, PenLine, X, ArrowLeft, ArrowRight, Shield, User, FileUp } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
+import { VerneombudExternalDocUpload } from "./VerneombudExternalDocUpload";
 import { t } from "@/i18n/t";
 
 interface VerneombudAgreementDialogProps {
