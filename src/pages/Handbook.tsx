@@ -202,16 +202,23 @@ const Handbook = () => {
     return goal.goal_text;
   }, [isTranslationActive, translatedContent]);
   
-  const getOrganizationRoles = useCallback(() => {
+  const getOrganizationRoles = useCallback((): { title: string; personName: string; description: string; depth?: number }[] => {
     if (isTranslationActive && translatedContent?.organizationRoles) {
-      return translatedContent.organizationRoles;
+      // Keep hierarchy from the chart when translation only replaced texts
+      return translatedContent.organizationRoles.map((r, i) => ({
+        ...r,
+        depth: orgChartRoles[i]?.depth ?? 0,
+      }));
     }
+    // Primary source: the hierarchical org chart built on /organisering
+    if (orgChartRoles.length > 0) return orgChartRoles;
     return organization?.roles?.map(r => ({
       title: r.title,
       personName: r.personName,
-      description: r.description
+      description: r.description,
+      depth: (r as any).depth ?? 0,
     })) || [];
-  }, [isTranslationActive, translatedContent, organization?.roles]);
+  }, [isTranslationActive, translatedContent, organization?.roles, orgChartRoles]);
   
   const getOrganizationDescription = useCallback(() => {
     if (isTranslationActive && translatedContent?.organizationDescription) {
