@@ -92,7 +92,7 @@ export default function IkKsOrganisering() {
           .from("company_ks_organization")
           .select("*")
           .eq("company_id", profile.company_id)
-          .single();
+          .maybeSingle();
 
         if (error && error.code !== "PGRST116") throw error;
         

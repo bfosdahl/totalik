@@ -6680,6 +6680,17 @@
     "dagsrapport_med_30_bilder": "Dienos ataskaita su 30 nuotraukų",
     "bedriftens_maalsetting": "Įmonės tikslas",
     "avdelingens_maalsetting": "Skyriaus tikslas",
-    "ai_hjelper": "AI pagalbininkas"
+    "ai_hjelper": "AI pagalbininkas",
+    "registrer_og_foelg_opp_avvik_og_hendelse": "Registruokite ir stebėkite neatitiktis ir įvykius",
+    "meld_arbeidsulykke": "Pranešti apie nelaimingą atsitikimą darbe",
+    "ulykke": "Nelaimingas atsitikimas",
+    "ingen_avvik_matcher_soeket": "Nėra neatitikčių, atitinkančių paiešką",
+    "proev_aa_endre_soekeordet_eller_fjern_st": "Pabandykite pakeisti paieškos žodį arba pašalinti filtrus",
+    "nullstill_filter": "Atstatyti filtrus",
+    "ingen_avvik_registrert_ennaa": "Neatitikčių dar neužregistruota",
+    "registrer_det_foerste_avviket_for_aa_sta": "Užregistruokite pirmąją neatitiktį, kad pradėtumėte",
+    "arbeidsulykke_registrert": "Nelaimingas atsitikimas darbe užregistruotas",
+    "eksport_feilet": "Eksportas nepavyko",
+    "kunne_ikke_eksportere_brukere": "Nepavyko eksportuoti naudotojų"
   }
 }

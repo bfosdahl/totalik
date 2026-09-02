@@ -6680,6 +6680,17 @@
     "dagsrapport_med_30_bilder": "Daily report with 30 photos",
     "bedriftens_maalsetting": "The company's objective",
     "avdelingens_maalsetting": "The department's objective",
-    "ai_hjelper": "AI assistant"
+    "ai_hjelper": "AI assistant",
+    "registrer_og_foelg_opp_avvik_og_hendelse": "Register and follow up deviations and incidents",
+    "meld_arbeidsulykke": "Report work accident",
+    "ulykke": "Accident",
+    "ingen_avvik_matcher_soeket": "No deviations match your search",
+    "proev_aa_endre_soekeordet_eller_fjern_st": "Try changing the search term or clearing the filters",
+    "nullstill_filter": "Reset filters",
+    "ingen_avvik_registrert_ennaa": "No deviations registered yet",
+    "registrer_det_foerste_avviket_for_aa_sta": "Register the first deviation to get started",
+    "arbeidsulykke_registrert": "Work accident registered",
+    "eksport_feilet": "Export failed",
+    "kunne_ikke_eksportere_brukere": "Could not export users"
   }
 }

@@ -545,8 +545,8 @@ export const RutinerTab = () => {
                     </div>
                     <ScrollArea className="h-[400px]">
                       <div className="space-y-2">
-                        {filteredLibraryRoutines.map((routine) => (
-                          <Card key={routine.routine_number} className="p-4">
+                        {filteredLibraryRoutines.map((routine, idx) => (
+                          <Card key={`${routine.routine_number}-${idx}`} className="p-4">
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">

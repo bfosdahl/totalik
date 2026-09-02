@@ -6680,6 +6680,17 @@
     "tillat_popup_vinduer_for_denne_siden_i_n": "Tillat popup-vinduer for denne siden i nettleseren for å skrive ut QR-koden.",
     "bedriftens_maalsetting": "Bedriftens målsetting",
     "avdelingens_maalsetting": "Avdelingens målsetting",
-    "ai_hjelper": "AI-hjelper"
+    "ai_hjelper": "AI-hjelper",
+    "registrer_og_foelg_opp_avvik_og_hendelse": "Registrer og følg opp avvik og hendelser",
+    "meld_arbeidsulykke": "Meld arbeidsulykke",
+    "ulykke": "Ulykke",
+    "ingen_avvik_matcher_soeket": "Ingen avvik matcher søket",
+    "proev_aa_endre_soekeordet_eller_fjern_st": "Prøv å endre søkeordet eller fjern filtrene",
+    "nullstill_filter": "Nullstill filter",
+    "ingen_avvik_registrert_ennaa": "Ingen avvik registrert ennå",
+    "registrer_det_foerste_avviket_for_aa_sta": "Registrer det første avviket for å starte",
+    "arbeidsulykke_registrert": "Arbeidsulykke registrert",
+    "eksport_feilet": "Eksport feilet",
+    "kunne_ikke_eksportere_brukere": "Kunne ikke eksportere brukere"
   }
 }

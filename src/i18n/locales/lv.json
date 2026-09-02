@@ -6680,6 +6680,17 @@
     "ergonomiske_belastninger_ved_kontorarbei": "Ergonomiskā slodze biroja darbā",
     "bedriftens_maalsetting": "Uzņēmuma mērķis",
     "avdelingens_maalsetting": "Nodaļas mērķis",
-    "ai_hjelper": "AI palīgs"
+    "ai_hjelper": "AI palīgs",
+    "registrer_og_foelg_opp_avvik_og_hendelse": "Reģistrējiet un sekojiet līdzi neatbilstībām un notikumiem",
+    "meld_arbeidsulykke": "Ziņot par darba negadījumu",
+    "ulykke": "Negadījums",
+    "ingen_avvik_matcher_soeket": "Neviena neatbilstība neatbilst meklējumam",
+    "proev_aa_endre_soekeordet_eller_fjern_st": "Mēģiniet mainīt meklēšanas vārdu vai noņemt filtrus",
+    "nullstill_filter": "Atiestatīt filtrus",
+    "ingen_avvik_registrert_ennaa": "Vēl nav reģistrētu neatbilstību",
+    "registrer_det_foerste_avviket_for_aa_sta": "Reģistrējiet pirmo neatbilstību, lai sāktu",
+    "arbeidsulykke_registrert": "Darba negadījums reģistrēts",
+    "eksport_feilet": "Eksports neizdevās",
+    "kunne_ikke_eksportere_brukere": "Neizdevās eksportēt lietotājus"
   }
 }
