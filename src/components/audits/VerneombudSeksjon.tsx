@@ -387,8 +387,33 @@ export default function VerneombudSeksjon() {
                         </>
                       )}
 
+                      {(verneombudExemption as any).signed_externally && (
+                        <>
+                          <Separator />
+                          <div className="bg-muted/40 rounded-lg p-3 text-sm">
+                            <p className="font-medium mb-1">Signert på annen måte (papir)</p>
+                            <p className="text-muted-foreground text-xs">
+                              {(verneombudExemption as any).external_document_name || "Vedlagt dokument"}
+                              {(verneombudExemption as any).external_signed_date
+                                ? ` · signert ${formatDate((verneombudExemption as any).external_signed_date)}`
+                                : ""}
+                            </p>
+                          </div>
+                        </>
+                      )}
+
                       <Separator />
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
+                        {(verneombudExemption as any).external_document_path && (
+                          <Button
+                            variant="outline"
+                            onClick={() => openExternalDoc((verneombudExemption as any).external_document_path)}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Last ned signert avtale
+                          </Button>
+                        )}
+
                         <Button 
                           variant="outline" 
                           onClick={() => setShowVerneombudDialog(true)}
