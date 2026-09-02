@@ -778,15 +778,15 @@ const Handbook = () => {
     {
       id: "organization",
       title: `${sectionOffset + 2}${t("auto.organisering_og_ansvar_2")}`,
-      status: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? "complete" : "incomplete",
+      status: (getOrganizationRoles().length > 0 || (organization?.description && organization.description.trim().length > 0)) ? "complete" : "incomplete",
       stepIndex: 1,
       icon: Users,
-      content: ((organization?.roles?.length ?? 0) > 0 || (organization?.description && organization.description.trim().length > 0)) ? (
+      content: (getOrganizationRoles().length > 0 || (organization?.description && organization.description.trim().length > 0)) ? (
         <div className="text-sm text-muted-foreground space-y-1 max-h-48 overflow-y-auto">
-          {(organization?.roles?.length ?? 0) > 0 ? (
+          {getOrganizationRoles().length > 0 ? (
             <>
               {getOrganizationRoles().slice(0, 5).map((role, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="flex items-center gap-2" style={{ paddingLeft: (role.depth ?? 0) * 12 }}>
                   <span className="font-medium">{role.title}</span>
                   {role.personName && <span className="text-xs">({role.personName})</span>}
                 </div>
@@ -811,8 +811,8 @@ const Handbook = () => {
       ) : (
         <p className="text-sm text-muted-foreground">{t("auto.organisering_er_ikke_definert_ennaa")}</p>
       ),
-      summary: (organization?.roles?.length ?? 0) > 0 
-        ? `${organization?.roles?.length} ${t("auto.roller_definert")}` 
+      summary: getOrganizationRoles().length > 0 
+        ? `${getOrganizationRoles().length} ${t("auto.roller_definert")}` 
         : (organization?.description && organization.description.trim().length > 0)
           ? t("auto.organisering_definert")
           : t("auto.ikke_definert"),
