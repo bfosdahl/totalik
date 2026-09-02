@@ -69,8 +69,8 @@ export default function Ks2ProjectChat() {
           supabase.from("ks_module2_projects").select("*").eq("id", projectId).single(),
       supabase.from("ks_module2_checklists").select("id, title, status, template_name, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
           supabase.from("ks_module2_subcontractors").select("id, firm_name, trade, approval_status, contact_person").eq("project_id", projectId),
-          supabase.from("ks_module2_deviations" as any).select("id, title, severity, status").eq("project_id", projectId),
-          supabase.from("ks_module2_milestones" as any).select("id, name, status, target_date").eq("project_id", projectId),
+          supabase.from("ks_module2_avvik" as any).select("id, title, severity, status").eq("project_id", projectId),
+          supabase.from("ks_module2_milestones" as any).select("id, title, status, end_date").eq("project_id", projectId),
         ]);
 
         setProjectContext({
