@@ -41,10 +41,23 @@ export default function VerneombudSeksjon() {
   // Falls back to system count only if Brreg data is missing.
   const employeeCount = company?.brreg_employee_count ?? company?.employee_count ?? employees?.length ?? 0;
   const requiresVerneombud = employeeCount >= 5;
-  
+
   const [showVerneombudDialog, setShowVerneombudDialog] = useState(false);
   const [showVerneombudAgreementDialog, setShowVerneombudAgreementDialog] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState("dokumenter");
+
+  const openExternalDoc = async (path?: string | null) => {
+    if (!path) return;
+    const { data, error } = await supabase.storage
+      .from("verneombud-documents")
+      .createSignedUrl(path, 60 * 10);
+    if (error || !data?.signedUrl) {
+      toast.error("Kunne ikke åpne vedlegget");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
 
   if (isLoading || isLoadingVerneombud) {
     return (
