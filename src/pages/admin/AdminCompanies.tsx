@@ -167,19 +167,47 @@ export default function AdminCompanies() {
   const { data: companiesPage, isLoading, isFetching } = useQuery({
     queryKey: ["admin-companies", currentPage, pageSize, debouncedSearch],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_admin_companies_fast", {
-        page_num: currentPage,
-        page_size: pageSize,
-        search_term: debouncedSearch,
-      });
+      try {
+        // 1. Try the fast RPC first
+        const { data, error } = await supabase.rpc("get_admin_companies_fast", {
+          page_num: currentPage,
+          page_size: pageSize,
+          search_term: debouncedSearch,
+        });
 
+        if (!error && data && data.length > 0) {
+          const items = data as any[];
+          return { companies: items, total: Number(items[0].total_count) };
+        }
+        if (error) {
+          console.warn("RPC get_admin_companies_fast failed, falling back", error);
+        }
+      } catch (err) {
+        console.warn("RPC fetch failed, falling back to standard query", err);
+      }
+
+      // 2. Fallback to the standard paginated query
+      const from = (currentPage - 1) * pageSize;
+      let query = supabase
+        .from("companies")
+        .select(
+          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas",
+          { count: "exact" }
+        )
+        .order("created_at", { ascending: false })
+        .range(from, from + pageSize - 1);
+
+      if (debouncedSearch) {
+        const pattern = `%${debouncedSearch.replace(/[%,()]/g, "")}%`;
+        query = query.or(`name.ilike.${pattern},org_number.ilike.${pattern}`);
+      }
+
+      const { data, error, count } = await query;
       if (error) throw error;
 
-      const items = (data || []) as any[];
-      const total = items.length > 0 ? Number(items[0].total_count) : 0;
-
-      return { companies: items, total };
+      return { companies: (data || []) as any[], total: count ?? 0 };
     },
+
     placeholderData: keepPreviousData,
     staleTime: 60_000,
   });
