@@ -12,10 +12,10 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const [totalCompaniesRes, activeCompaniesRes, totalUsersRes, activeUsersRes] =
         await Promise.all([
-          supabase.from("companies").select("*", { count: "exact", head: true }),
-          supabase.from("companies").select("*", { count: "exact", head: true }).eq("status", "active"),
-          supabase.from("profiles").select("*", { count: "exact", head: true }),
-          supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_active", true),
+          supabase.from("companies").select("id", { count: "exact", head: true }),
+          supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active"),
+          supabase.from("profiles").select("id", { count: "exact", head: true }),
+          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_active", true),
         ]);
 
       const firstError =
