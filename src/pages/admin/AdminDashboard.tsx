@@ -10,16 +10,51 @@ export default function AdminDashboard() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_admin_dashboard_stats");
-      if (error) throw error;
-      return data as unknown as {
-        totalCompanies: number;
-        activeCompanies: number;
-        totalUsers: number;
-        activeUsers: number;
+      try {
+        const { data, error } = await supabase.rpc("get_admin_dashboard_stats");
+        if (!error && data) {
+          const row = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | undefined;
+          if (row) {
+            const num = (...keys: string[]) => {
+              for (const k of keys) {
+                if (row[k] != null) return Number(row[k]);
+              }
+              return 0;
+            };
+            return {
+              totalCompanies: num("total_companies", "totalCompanies"),
+              activeCompanies: num("active_companies", "activeCompanies"),
+              totalUsers: num("total_users", "totalUsers"),
+              activeUsers: num("active_users", "activeUsers"),
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("RPC stats failed, falling back to direct count:", err);
+      }
+
+      const [
+        { count: totalCompanies },
+        { count: activeCompanies },
+        { count: totalUsers },
+        { count: activeUsers },
+      ] = await Promise.all([
+        supabase.from("companies").select("*", { count: "exact", head: true }),
+        supabase.from("companies").select("*", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).eq("status", "active"),
+      ]);
+
+      return {
+        totalCompanies: totalCompanies ?? 0,
+        activeCompanies: activeCompanies ?? 0,
+        totalUsers: totalUsers ?? 0,
+        activeUsers: activeUsers ?? 0,
       };
     },
+    staleTime: 60_000,
   });
+
 
 
   const statCards = [
