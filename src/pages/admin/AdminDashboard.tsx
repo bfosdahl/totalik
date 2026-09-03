@@ -10,24 +10,27 @@ export default function AdminDashboard() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [companiesResult, profilesResult] = await Promise.all([
-        supabase.from("companies").select("id, status", { count: "exact" }),
-        supabase.from("profiles").select("id, is_active", { count: "exact" }),
-      ]);
+      const [totalCompaniesRes, activeCompaniesRes, totalUsersRes, activeUsersRes] =
+        await Promise.all([
+          supabase.from("companies").select("*", { count: "exact", head: true }),
+          supabase.from("companies").select("*", { count: "exact", head: true }).eq("status", "active"),
+          supabase.from("profiles").select("*", { count: "exact", head: true }),
+          supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_active", true),
+        ]);
 
-      const activeCompanies = companiesResult.data?.filter(c => c.status === "active").length || 0;
-      const totalCompanies = companiesResult.count || 0;
-      const activeUsers = profilesResult.data?.filter(p => p.is_active).length || 0;
-      const totalUsers = profilesResult.count || 0;
+      const firstError =
+        totalCompaniesRes.error || activeCompaniesRes.error || totalUsersRes.error || activeUsersRes.error;
+      if (firstError) throw firstError;
 
       return {
-        totalCompanies,
-        activeCompanies,
-        totalUsers,
-        activeUsers,
+        totalCompanies: totalCompaniesRes.count ?? 0,
+        activeCompanies: activeCompaniesRes.count ?? 0,
+        totalUsers: totalUsersRes.count ?? 0,
+        activeUsers: activeUsersRes.count ?? 0,
       };
     },
   });
+
 
   const statCards = [
     {
