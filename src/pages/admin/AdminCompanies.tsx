@@ -540,10 +540,11 @@ export default function AdminCompanies() {
 
   // Keep currentPage in valid range without causing render loops
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (totalFiltered > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages]);
+  }, [totalFiltered, totalPages]);
+
 
   const getStatusBadge = useCallback((status: string) => {
     switch (status) {
