@@ -18017,10 +18017,10 @@ export type Database = {
       get_admin_dashboard_stats: {
         Args: never
         Returns: {
-          activecompanies: number
-          activeusers: number
-          totalcompanies: number
-          totalusers: number
+          active_companies: number
+          active_users: number
+          total_companies: number
+          total_users: number
         }[]
       }
       get_admin_department_ids: {
