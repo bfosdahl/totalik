@@ -164,34 +164,29 @@ export default function AdminCompanies() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data: companiesPage, isLoading } = useQuery({
+  const { data: companiesPage, isLoading, isFetching } = useQuery({
     queryKey: ["admin-companies", currentPage, pageSize, debouncedSearch],
     queryFn: async () => {
-      const from = (currentPage - 1) * pageSize;
-      let query = supabase
-        .from("companies")
-        .select(
-          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas",
-          { count: "exact" }
-        )
-        .order("created_at", { ascending: false })
-        .range(from, from + pageSize - 1);
+      const { data, error } = await supabase.rpc("get_admin_companies_fast", {
+        page_num: currentPage,
+        page_size: pageSize,
+        search_term: debouncedSearch,
+      });
 
-      if (debouncedSearch) {
-        const pattern = `%${debouncedSearch.replace(/[%,()]/g, "")}%`;
-        query = query.or(`name.ilike.${pattern},org_number.ilike.${pattern}`);
-      }
-
-      const { data, error, count } = await query;
       if (error) throw error;
-      return { companies: data || [], total: count ?? 0 };
+
+      const items = (data || []) as any[];
+      const total = items.length > 0 ? Number(items[0].total_count) : 0;
+
+      return { companies: items, total };
     },
     placeholderData: keepPreviousData,
-    staleTime: 30_000,
+    staleTime: 60_000,
   });
 
   const companies = useMemo(() => companiesPage?.companies ?? [], [companiesPage]);
   const totalFiltered = companiesPage?.total ?? 0;
+
 
   const createMutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
@@ -545,10 +540,11 @@ export default function AdminCompanies() {
 
   // Keep currentPage in valid range without causing render loops
   useEffect(() => {
-    if (currentPage > totalPages) {
+    if (totalFiltered > 0 && currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages]);
+  }, [totalFiltered, totalPages]);
+
 
   const getStatusBadge = useCallback((status: string) => {
     switch (status) {

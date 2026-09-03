@@ -17990,7 +17990,39 @@ export type Database = {
         Returns: string
       }
       generate_travel_expense_report_number: { Args: never; Returns: string }
-      get_admin_dashboard_stats: { Args: never; Returns: Json }
+      get_admin_companies_fast: {
+        Args: { page_num: number; page_size: number; search_term?: string }
+        Returns: {
+          address: string
+          brreg_employee_count: number
+          city: string
+          created_at: string
+          email: string
+          employee_count: number
+          has_departments: boolean
+          id: string
+          industries: Json
+          name: string
+          org_number: string
+          phone: string
+          postal_code: string
+          seller_id: string
+          sg_approval_areas: Json
+          sg_approved: boolean
+          sg_expiry_date: string
+          status: string
+          total_count: number
+        }[]
+      }
+      get_admin_dashboard_stats: {
+        Args: never
+        Returns: {
+          activecompanies: number
+          activeusers: number
+          totalcompanies: number
+          totalusers: number
+        }[]
+      }
       get_admin_department_ids: {
         Args: { _user_id: string }
         Returns: string[]
@@ -18122,6 +18154,8 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: undefined
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       soft_delete_record: {
         Args: { p_record_id: string; p_table_name: string }
         Returns: Json
