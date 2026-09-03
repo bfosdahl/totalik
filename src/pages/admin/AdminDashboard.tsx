@@ -10,23 +10,13 @@ export default function AdminDashboard() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [totalCompaniesRes, activeCompaniesRes, totalUsersRes, activeUsersRes] =
-        await Promise.all([
-          supabase.from("companies").select("id", { count: "exact", head: true }),
-          supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active"),
-          supabase.from("profiles").select("id", { count: "exact", head: true }),
-          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_active", true),
-        ]);
-
-      const firstError =
-        totalCompaniesRes.error || activeCompaniesRes.error || totalUsersRes.error || activeUsersRes.error;
-      if (firstError) throw firstError;
-
-      return {
-        totalCompanies: totalCompaniesRes.count ?? 0,
-        activeCompanies: activeCompaniesRes.count ?? 0,
-        totalUsers: totalUsersRes.count ?? 0,
-        activeUsers: activeUsersRes.count ?? 0,
+      const { data, error } = await supabase.rpc("get_admin_dashboard_stats");
+      if (error) throw error;
+      return data as unknown as {
+        totalCompanies: number;
+        activeCompanies: number;
+        totalUsers: number;
+        activeUsers: number;
       };
     },
   });
