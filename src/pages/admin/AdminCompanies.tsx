@@ -191,7 +191,7 @@ export default function AdminCompanies() {
       let query = supabase
         .from("companies")
         .select(
-          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, employee_count, brreg_employee_count, has_departments, seller_id, industries, sg_approved, sg_expiry_date, sg_approval_areas",
+          "id, name, org_number, address, city, postal_code, phone, email, status, created_at, sg_approved",
           { count: "exact" }
         )
         .order("created_at", { ascending: false })
