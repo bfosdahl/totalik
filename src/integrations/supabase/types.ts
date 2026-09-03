@@ -17990,6 +17990,7 @@ export type Database = {
         Returns: string
       }
       generate_travel_expense_report_number: { Args: never; Returns: string }
+      get_admin_dashboard_stats: { Args: never; Returns: Json }
       get_admin_department_ids: {
         Args: { _user_id: string }
         Returns: string[]
