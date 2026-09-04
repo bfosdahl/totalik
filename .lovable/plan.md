@@ -8,7 +8,7 @@ Kunden savner en lesbar timerapport. Vedlegget «Uke 35, 2026» er en utskriftsv
 - Velg fritt fra-dato og til-dato (hurtigvalg: denne uken, forrige uken, denne måneden).
 - Liggende A4 med firmalogo øverst og periodetittel, f.eks. «26.08–01.09.2026».
 - Kolonner som i vedlegget: Dato, Kunde, Prosjekt, Prosjektnummer, Underprosjekt, Bruker, Varighet (7 t 30 m + 07:00–15:00), Pause, Tagger, Overtid (50/100 %), KM, Kostnader, Materialforbruk, Notat.
-- Sortert på dato, sидe-brytende tabell med gjentatt overskrift.
+- Sortert på dato, med gjentatt tabelloverskrift på hver side.
 - Egen oppsummering til slutt: Timer, Pause, Kostnader, KM og materialforbruk per type.
 
 **2. Ryddigere Excel**
