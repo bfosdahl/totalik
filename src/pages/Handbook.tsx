@@ -1751,55 +1751,70 @@ const Handbook = () => {
 
         pdfOrgRoles.forEach((role) => {
           const depth = (role as any).depth ?? 0;
-          checkPageBreak(boxHeight + 12);
-
           const boxX = baseX + depth * indentPerLevel;
+
+          // Wrap title and person names to as many lines as needed
+          doc.setFontSize(10);
+          doc.setFont(PDF_FONT, "bold");
+          const titleLines: string[] = doc.splitTextToSize(role.title || L.untitled, boxWidth - 8);
+          doc.setFontSize(8);
+          doc.setFont(PDF_FONT, "normal");
+          const nameLines: string[] = role.personName
+            ? doc.splitTextToSize(role.personName, boxWidth - 8)
+            : [];
+
+          const dynamicHeight = Math.max(
+            boxHeight,
+            6 + titleLines.length * 5 + (nameLines.length ? nameLines.length * 4 + 2 : 0)
+          );
+
+          checkPageBreak(dynamicHeight + 12);
 
           // L-shaped connector from the parent box down/right into this box
           if (depth > 0 && levelLastY[depth - 1] !== undefined) {
             const spineX = baseX + (depth - 1) * indentPerLevel + 6;
             doc.setDrawColor(180, 190, 205);
             doc.setLineWidth(0.4);
-            doc.line(spineX, levelLastY[depth - 1], spineX, yPos + boxHeight / 2);
-            doc.line(spineX, yPos + boxHeight / 2, boxX, yPos + boxHeight / 2);
+            doc.line(spineX, levelLastY[depth - 1], spineX, yPos + dynamicHeight / 2);
+            doc.line(spineX, yPos + dynamicHeight / 2, boxX, yPos + dynamicHeight / 2);
           }
 
           doc.setFillColor(248, 250, 252);
           doc.setDrawColor(59, 130, 246);
           doc.setLineWidth(0.5);
-          doc.roundedRect(boxX, yPos, boxWidth, boxHeight, 2, 2, "FD");
+          doc.roundedRect(boxX, yPos, boxWidth, dynamicHeight, 2, 2, "FD");
 
           // Role title
           doc.setFontSize(10);
           doc.setFont(PDF_FONT, "bold");
           doc.setTextColor(0, 0, 0);
-          const titleText = role.title || L.untitled;
-          doc.text(
-            doc.splitTextToSize(titleText, boxWidth - 8)[0],
-            boxX + 4,
-            yPos + (role.personName ? 7 : 11)
-          );
+          let textY = yPos + 6;
+          titleLines.forEach((line: string) => {
+            doc.text(line, boxX + 4, textY);
+            textY += 5;
+          });
 
-          // Person name(s)
-          if (role.personName) {
+          // Person name(s) — wrapped over multiple lines
+          if (nameLines.length) {
             doc.setFontSize(8);
             doc.setFont(PDF_FONT, "normal");
             doc.setTextColor(100, 100, 100);
-            doc.text(
-              doc.splitTextToSize(role.personName, boxWidth - 8)[0],
-              boxX + 4,
-              yPos + 13
-            );
+            textY += 1;
+            nameLines.forEach((line: string) => {
+              doc.text(line, boxX + 4, textY);
+              textY += 4;
+            });
           }
 
           doc.setTextColor(0, 0, 0);
-          levelLastY[depth] = yPos + boxHeight;
+          levelLastY[depth] = yPos + dynamicHeight;
           // Deeper levels start fresh under this node
           Object.keys(levelLastY).forEach((k) => {
             if (Number(k) > depth) delete levelLastY[Number(k)];
           });
-          yPos += boxHeight + 6;
+          yPos += dynamicHeight + 6;
         });
+
         
         yPos += 10;
         
