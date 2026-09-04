@@ -74,6 +74,8 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
   const { hasModule } = useCompanyModules();
   const hasBygg = hasModule("IK_BYGG");
   const [projects, setProjects] = useState<{ id: string; project_name: string; project_number: string | null }[]>([]);
+  const [projectTab, setProjectTab] = useState<"project" | "free">("project");
+
   const [customLocation, setCustomLocation] = useState(false);
   const [customRole, setCustomRole] = useState(false);
   const [useRange, setUseRange] = useState(false);
@@ -157,7 +159,9 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
         is_responsible: editShift.is_responsible || false,
         notes: editShift.notes || "",
       });
+      setProjectTab(editShift.project_id ? "project" : editShift.project_name ? "free" : "project");
       setCustomLocation(!!editShift.location && !LOCATIONS[editShift.location]);
+
       setCustomRole(!!editShift.shift_role && !ROLES[editShift.shift_role]);
       setUseRange(false);
     } else if (defaultDate) {
@@ -244,6 +248,8 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
         notes: "",
       });
       setUseRange(false);
+      setProjectTab("project");
+
       setEndDate("");
       setCustomLocation(false);
       setCustomRole(false);
@@ -421,19 +427,21 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                 <Label>Prosjekt</Label>
                 {hasBygg && projects.length > 0 ? (
                   <Tabs
-                    value={formData.project_id ? "project" : "free"}
-                    onValueChange={(v) =>
-                      setFormData({
-                        ...formData,
+                    value={projectTab}
+                    onValueChange={(v) => {
+                      setProjectTab(v as "project" | "free");
+                      setFormData((prev) => ({
+                        ...prev,
                         project_id: null,
-                        project_name: v === "project" ? "" : formData.project_name,
-                      })
-                    }
+                        project_name: "",
+                      }));
+                    }}
                   >
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="project">Velg prosjekt</TabsTrigger>
                       <TabsTrigger value="free">Fritekst</TabsTrigger>
                     </TabsList>
+
                     <TabsContent value="project" className="pt-2">
                       <Select
                         value={formData.project_id || "__none__"}
