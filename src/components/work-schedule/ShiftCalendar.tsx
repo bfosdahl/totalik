@@ -222,7 +222,9 @@ export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick }: Shif
         })}
       </div>
     </div>
+    </>
   );
+
 }
 
 export { LOCATIONS, ROLES };
