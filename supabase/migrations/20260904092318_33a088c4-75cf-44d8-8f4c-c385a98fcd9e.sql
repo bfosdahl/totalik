@@ -1,0 +1,15 @@
+ALTER POLICY "Guest users can view their accessible projects" ON public.ks_module2_projects TO authenticated;
+ALTER POLICY "Users can view project templates in their company" ON public.ks_module2_project_templates TO authenticated;
+ALTER POLICY "Leaders and verneombud can delete anonymous messages" ON public.anonymous_messages TO authenticated;
+ALTER POLICY "Leaders and verneombud can view anonymous messages" ON public.anonymous_messages TO authenticated;
+ALTER POLICY "Leaders and verneombud can update anonymous messages" ON public.anonymous_messages TO authenticated;
+ALTER POLICY "Leaders and verneombud can delete discussions" ON public.anonymous_message_discussions TO authenticated;
+ALTER POLICY "Leaders and verneombud can view discussions" ON public.anonymous_message_discussions TO authenticated;
+ALTER POLICY "Leaders and verneombud can add discussions" ON public.anonymous_message_discussions TO authenticated;
+ALTER POLICY "Guests can view milestones for their projects" ON public.ks_module2_milestones TO authenticated;
+ALTER POLICY "Guests can view claims for their projects" ON public.ks_module2_claims TO authenticated;
+ALTER POLICY "Users can view company forms" ON public.ks_module2_byggesak_forms TO authenticated;
+ALTER POLICY "Users can view company byggesak" ON public.ks_module2_byggesak TO authenticated;
+ALTER POLICY "Users can view meeting items" ON public.ks_module2_meeting_items TO authenticated;
+ALTER POLICY "Admins, HMS-responsible and verneombud can view forsvarlighetsv" ON public.hms_forsvarlighetsvurderinger TO authenticated;
+ALTER POLICY "Admins and verneombud can view verneombud agreements" ON public.verneombud_agreements TO authenticated;
