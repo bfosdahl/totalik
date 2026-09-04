@@ -1937,11 +1937,14 @@ const Handbook = () => {
           margin: { left: margin, right: margin },
           didDrawCell: (data) => {
             if (data.section === "body" && data.column.index === 4) {
-              const riskValue = Number(riskTableData[data.row.index][3]) || 0;
+              const raw = Array.isArray(data.row.raw) ? (data.row.raw as string[]) : undefined;
+              const fallback = riskTableData[data.row.index];
+              const riskValue = Number(raw?.[3] ?? fallback?.[3] ?? 0) || 0;
               const color = getRiskLevelColor(riskValue);
               doc.setTextColor(color[0], color[1], color[2]);
             }
           },
+
           willDrawCell: () => {
             doc.setTextColor(0, 0, 0);
           },
