@@ -3,9 +3,10 @@ import { format, addDays, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { MapPin, Star, Clock } from "lucide-react";
+import { MapPin, Star, Clock, Briefcase } from "lucide-react";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
 import { t } from "@/i18n/t";
+import { LOCATIONS, ROLES, getLocationOption, getRoleLabel } from "./shiftOptions";
 
 interface ShiftCalendarProps {
   selectedWeek: Date;
@@ -13,22 +14,6 @@ interface ShiftCalendarProps {
   onScheduleClick?: (schedule: WorkSchedule) => void;
 }
 
-const LOCATIONS: Record<string, { label: string; color: string }> = {
-  kitchen: { label: t("auto.kjoekken"), color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200" },
-  service: { label: t("auto.servering"), color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  takeaway: { label: t("auto.gatekjoekken"), color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
-  storage: { label: t("auto.lager"), color: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200" },
-  office: { label: t("auto.kontor"), color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-};
-
-const ROLES: Record<string, string> = {
-  chef: "Kokk",
-  shift_leader: "Skiftleder",
-  server: "Servitør",
-  cleaner: "Renholder",
-  cashier: "Kasserer",
-  prep: "Forberedelse",
-};
 
 export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick }: ShiftCalendarProps) {
   const weekDays = useMemo(() => {
@@ -89,7 +74,7 @@ export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick }: Shif
               )}
             >
               {daySchedules.map((schedule) => {
-                const location = schedule.location ? LOCATIONS[schedule.location] : null;
+                const location = getLocationOption(schedule.location);
                 
                 return (
                   <div
@@ -115,6 +100,14 @@ export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick }: Shif
                       </span>
                     </div>
 
+                    {/* Project */}
+                    {schedule.project_name && (
+                      <div className="flex items-center gap-1 mt-0.5 text-[9px] sm:text-[10px] text-muted-foreground">
+                        <Briefcase className="w-2.5 h-2.5 shrink-0" />
+                        <span className="truncate">{schedule.project_name}</span>
+                      </div>
+                    )}
+
                     {/* Location & Role - hidden on very small screens */}
                     <div className="hidden sm:flex flex-wrap gap-1 mt-1">
                       {location && (
@@ -125,7 +118,7 @@ export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick }: Shif
                       )}
                       {schedule.shift_role && (
                         <Badge variant="outline" className="text-[9px] px-1 py-0">
-                          {ROLES[schedule.shift_role] || schedule.shift_role}
+                          {getRoleLabel(schedule.shift_role)}
                         </Badge>
                       )}
                     </div>
