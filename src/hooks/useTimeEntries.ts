@@ -29,6 +29,9 @@ export interface TimeEntry {
   project_id: string | null;
   ks_project_id?: string | null;
   customer_name?: string | null;
+  project_number?: string | null;
+  subproject?: string | null;
+  tags?: string[] | null;
   hour_type?: HourType;
   description: string | null;
   status: "draft" | "submitted" | "approved" | "rejected" | "pending_confirmation";
@@ -67,6 +70,9 @@ export interface CreateTimeEntry {
   project_id?: string;
   ks_project_id?: string | null;
   customer_name?: string | null;
+  project_number?: string | null;
+  subproject?: string | null;
+  tags?: string[] | null;
   hour_type?: HourType;
   description?: string;
   status?: "draft" | "submitted";
@@ -280,6 +286,9 @@ export function useTimeEntries() {
         project_id: entry.project_id || null,
         ks_project_id: entry.ks_project_id || null,
         customer_name: entry.customer_name || null,
+        project_number: entry.project_number || null,
+        subproject: entry.subproject || null,
+        tags: entry.tags && entry.tags.length > 0 ? entry.tags : null,
         hour_type: entry.hour_type || "normal",
         description: entry.description || null,
         status: entry.status || "submitted",

@@ -22,6 +22,9 @@ export interface AdminEditableEntry {
   description?: string | null;
   hour_type?: string | null;
   project_name?: string | null;
+  project_number?: string | null;
+  subproject?: string | null;
+  tags?: string[] | null;
 }
 
 interface Props {
@@ -48,6 +51,9 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
   const [hourType, setHourType] = useState<HourType>("normal");
   const [description, setDescription] = useState("");
   const [projectName, setProjectName] = useState("");
+  const [projectNumber, setProjectNumber] = useState("");
+  const [subproject, setSubproject] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -60,6 +66,9 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
     setHourType((entry.hour_type as HourType) || "normal");
     setDescription(entry.description || "");
     setProjectName(entry.project_name || "");
+    setProjectNumber(entry.project_number || "");
+    setSubproject(entry.subproject || "");
+    setTagsInput((entry.tags ?? []).join(", "));
     setReason("");
   }, [open, entry]);
 
@@ -88,6 +97,9 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
             description: description || null,
             hour_type: hourType,
             project_name: projectName || null,
+            project_number: projectNumber.trim() || null,
+            subproject: subproject.trim() || null,
+            tags: tagsInput.split(",").map((x) => x.trim()).filter(Boolean),
           },
         },
       });
@@ -175,6 +187,23 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
             <Label>{t("auto.prosjekt")}</Label>
             <Input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("auto.prosjektnavn_valgfritt")} />
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label>Prosjektnummer</Label>
+              <Input value={projectNumber} onChange={(e) => setProjectNumber(e.target.value)} placeholder="Valgfritt" />
+            </div>
+            <div className="space-y-1">
+              <Label>Underprosjekt</Label>
+              <Input value={subproject} onChange={(e) => setSubproject(e.target.value)} placeholder="Valgfritt" />
+            </div>
+            <div className="space-y-1">
+              <Label>Tagger</Label>
+              <Input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="Skill med komma" />
+            </div>
+          </div>
+
+
 
           <div className="space-y-1">
             <Label>{t("auto.beskrivelse")}</Label>

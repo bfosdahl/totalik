@@ -19,6 +19,9 @@ interface EditPayload {
     description?: string | null;
     hour_type?: "normal" | "overtime_50" | "overtime_100";
     project_name?: string | null;
+    project_number?: string | null;
+    subproject?: string | null;
+    tags?: string[] | null;
   };
 }
 
@@ -78,6 +81,17 @@ Deno.serve(async (req) => {
     }
     if (typeof c.description === "string") c.description = c.description.trim().slice(0, 2000) || null;
     if (typeof c.project_name === "string") c.project_name = c.project_name.trim().slice(0, 200) || null;
+    if (typeof c.project_number === "string") c.project_number = c.project_number.trim().slice(0, 60) || null;
+    if (typeof c.subproject === "string") c.subproject = c.subproject.trim().slice(0, 200) || null;
+    if (c.tags !== undefined && c.tags !== null) {
+      if (!Array.isArray(c.tags)) return json({ error: "Ugyldige tagger" }, 400);
+      c.tags = c.tags
+        .filter((x: unknown) => typeof x === "string")
+        .map((x: string) => x.trim().slice(0, 60))
+        .filter(Boolean)
+        .slice(0, 20);
+      if (c.tags.length === 0) c.tags = null;
+    }
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -132,6 +146,9 @@ Deno.serve(async (req) => {
     if (c.description !== undefined) patch.description = c.description;
     if (c.hour_type !== undefined) patch.hour_type = c.hour_type;
     if (c.project_name !== undefined) patch.project_name = c.project_name;
+    if (c.project_number !== undefined) patch.project_number = c.project_number;
+    if (c.subproject !== undefined) patch.subproject = c.subproject;
+    if (c.tags !== undefined) patch.tags = c.tags;
 
     // Optimistic locking on updated_at (skipped defensively if the row has none)
     const expectedUpdatedAt = existing.updated_at as string | null;
