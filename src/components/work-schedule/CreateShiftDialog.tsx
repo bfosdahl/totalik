@@ -74,6 +74,8 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
   const { hasModule } = useCompanyModules();
   const hasBygg = hasModule("IK_BYGG");
   const [projects, setProjects] = useState<{ id: string; project_name: string; project_number: string | null }[]>([]);
+  const [projectTab, setProjectTab] = useState<"project" | "free">("project");
+
   const [customLocation, setCustomLocation] = useState(false);
   const [customRole, setCustomRole] = useState(false);
   const [useRange, setUseRange] = useState(false);
