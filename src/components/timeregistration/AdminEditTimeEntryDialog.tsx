@@ -188,6 +188,23 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
             <Input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("auto.prosjektnavn_valgfritt")} />
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label>Prosjektnummer</Label>
+              <Input value={projectNumber} onChange={(e) => setProjectNumber(e.target.value)} placeholder="Valgfritt" />
+            </div>
+            <div className="space-y-1">
+              <Label>Underprosjekt</Label>
+              <Input value={subproject} onChange={(e) => setSubproject(e.target.value)} placeholder="Valgfritt" />
+            </div>
+            <div className="space-y-1">
+              <Label>Tagger</Label>
+              <Input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="Skill med komma" />
+            </div>
+          </div>
+
+
+
           <div className="space-y-1">
             <Label>{t("auto.beskrivelse")}</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[60px]" />
