@@ -14,7 +14,8 @@ import {
   Plus,
   AlertCircle,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Briefcase
 } from "lucide-react";
 import { useWorkSchedules, WorkSchedule } from "@/hooks/useWorkSchedules";
 import { useShiftRequests, ShiftRequest } from "@/hooks/useShiftRequests";
