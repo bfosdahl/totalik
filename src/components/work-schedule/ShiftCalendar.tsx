@@ -32,9 +32,88 @@ export function ShiftCalendar({ selectedWeek, schedules, onScheduleClick }: Shif
   const isToday = (date: Date) => isSameDay(date, new Date());
 
   return (
-    <div className="bg-card rounded-lg border overflow-hidden">
+    <>
+    {/* Mobile: readable day-by-day list */}
+    <div className="sm:hidden space-y-3">
+      {weekDays.map((day, index) => {
+        const dayStr = format(day, "yyyy-MM-dd");
+        const daySchedules = schedulesByDay[dayStr] || [];
+        return (
+          <div
+            key={index}
+            className={cn(
+              "bg-card rounded-lg border overflow-hidden",
+              isToday(day) && "border-primary"
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center justify-between px-3 py-2 border-b bg-muted/40",
+                isToday(day) && "bg-primary/10"
+              )}
+            >
+              <span className="text-sm font-semibold capitalize">
+                {format(day, "EEEE d. MMMM", { locale: nb })}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {daySchedules.length > 0 ? `${daySchedules.length} vakt${daySchedules.length > 1 ? "er" : ""}` : "Ingen vakter"}
+              </span>
+            </div>
+            {daySchedules.length > 0 && (
+              <div className="divide-y">
+                {daySchedules.map((schedule) => {
+                  const location = getLocationOption(schedule.location);
+                  return (
+                    <button
+                      key={schedule.id}
+                      type="button"
+                      onClick={() => onScheduleClick?.(schedule)}
+                      className="w-full text-left px-3 py-2.5 active:bg-muted/50"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-sm truncate">
+                          {schedule.employee_name}
+                        </span>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {schedule.start_time.substring(0, 5)}–{schedule.end_time.substring(0, 5)}
+                        </span>
+                      </div>
+                      {schedule.project_name && (
+                        <div className="flex items-center gap-1.5 mt-1 text-sm">
+                          <Briefcase className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                          <span className="truncate">{schedule.project_name}</span>
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {location && (
+                          <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", location.color)}>
+                            <MapPin className="w-2.5 h-2.5 mr-0.5" />
+                            {location.label}
+                          </Badge>
+                        )}
+                        {schedule.shift_role && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            {getRoleLabel(schedule.shift_role)}
+                          </Badge>
+                        )}
+                        {schedule.is_responsible && (
+                          <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+
+    <div className="hidden sm:block bg-card rounded-lg border overflow-hidden">
       {/* Header */}
       <div className="grid grid-cols-7 bg-muted/50 border-b">
+
         {weekDays.map((day, index) => (
           <div
             key={index}
