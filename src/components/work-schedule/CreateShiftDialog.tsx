@@ -421,19 +421,21 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                 <Label>Prosjekt</Label>
                 {hasBygg && projects.length > 0 ? (
                   <Tabs
-                    value={formData.project_id ? "project" : "free"}
-                    onValueChange={(v) =>
-                      setFormData({
-                        ...formData,
+                    value={projectTab}
+                    onValueChange={(v) => {
+                      setProjectTab(v as "project" | "free");
+                      setFormData((prev) => ({
+                        ...prev,
                         project_id: null,
-                        project_name: v === "project" ? "" : formData.project_name,
-                      })
-                    }
+                        project_name: "",
+                      }));
+                    }}
                   >
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="project">Velg prosjekt</TabsTrigger>
                       <TabsTrigger value="free">Fritekst</TabsTrigger>
                     </TabsList>
+
                     <TabsContent value="project" className="pt-2">
                       <Select
                         value={formData.project_id || "__none__"}
