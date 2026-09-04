@@ -131,14 +131,17 @@ export default function TimeRegistration() {
                 <span className="hidden sm:inline">{t("auto.qr_stempling")}</span>
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => setReportOpen(true)} className="shrink-0">
-              <FileText className="h-4 w-4 sm:mr-2" />
+            <Button variant="outline" size="sm" onClick={() => setReportOpen(true)} className="shrink-0" aria-label="Timerapport">
+              <FileText className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="sm:hidden">Rapport</span>
               <span className="hidden sm:inline">Timerapport</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExport} className="shrink-0">
-              <Download className="h-4 w-4 sm:mr-2" />
+            <Button variant="outline" size="sm" onClick={handleExport} className="shrink-0" aria-label="Eksporter til Excel">
+              <Download className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="sm:hidden">Excel</span>
               <span className="hidden sm:inline">{t("auto.eksporter")}</span>
             </Button>
+
             <Button size="sm" onClick={() => setDialogOpen(true)} className="shrink-0">
               <Plus className="h-4 w-4 sm:mr-2" />
               <span className="sm:hidden">{t("auto.timer")}</span>
