@@ -671,6 +671,8 @@ const IkHmsOrganisering = () => {
           onOpenChange={setPersonDialogOpen}
           onSave={handleSavePerson}
           nodeTitle={selectedNodeId ? getNodeById(selectedNodeId)?.role_title || '' : ''}
+          existingPersons={selectedNodeId ? getNodeById(selectedNodeId)?.persons || [] : []}
+          onRemovePerson={(personId) => removePerson.mutate(personId)}
           isLoading={addPerson.isPending}
         />
 
