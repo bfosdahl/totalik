@@ -259,7 +259,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
           <DialogHeader className="flex-shrink-0">
             <DialogTitle>{isEditMode ? "Endre vakt" : "Ny vakt"}</DialogTitle>
             <DialogDescription>
-              {isEditMode ? "Rediger vaktdetaljer" : "Opprett en ny vakt med sted og rolle"}
+              {isEditMode ? "Rediger vaktdetaljer" : "Opprett vakt med prosjekt, sted og rolle – for én dag eller en hel periode"}
             </DialogDescription>
           </DialogHeader>
 
@@ -317,6 +317,63 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                 />
               </div>
 
+              {/* Period / repeat */}
+              {!isEditMode && (
+                <div className="space-y-3 rounded-md border p-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="use_range"
+                      checked={useRange}
+                      onCheckedChange={(checked) => setUseRange(checked as boolean)}
+                    />
+                    <Label htmlFor="use_range" className="cursor-pointer">
+                      Planlegg for en periode (flere dager)
+                    </Label>
+                  </div>
+
+                  {useRange && (
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="end_date">Til og med dato</Label>
+                        <Input
+                          id="end_date"
+                          type="date"
+                          value={endDate}
+                          min={formData.schedule_date || undefined}
+                          onChange={(e) => setEndDate(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ukedager</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {WEEKDAYS.map((day) => {
+                            const active = weekdays.includes(day.value);
+                            return (
+                              <Button
+                                key={day.value}
+                                type="button"
+                                size="sm"
+                                variant={active ? "default" : "outline"}
+                                onClick={() =>
+                                  setWeekdays((prev) =>
+                                    active ? prev.filter((d) => d !== day.value) : [...prev, day.value]
+                                  )
+                                }
+                              >
+                                {day.label}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Samme arbeidstid brukes på alle valgte dager i perioden.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {sundayWarning && (
                 <div
                   className={`flex gap-2 rounded-md border p-3 text-sm ${
@@ -357,14 +414,92 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                 </div>
               </div>
 
+              {/* Project */}
+              <div className="space-y-2">
+                <Label>Prosjekt</Label>
+                {hasBygg && projects.length > 0 ? (
+                  <Tabs
+                    value={formData.project_id ? "project" : "free"}
+                    onValueChange={(v) =>
+                      setFormData({
+                        ...formData,
+                        project_id: null,
+                        project_name: v === "project" ? "" : formData.project_name,
+                      })
+                    }
+                  >
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="project">Velg prosjekt</TabsTrigger>
+                      <TabsTrigger value="free">Fritekst</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="project" className="pt-2">
+                      <Select
+                        value={formData.project_id || "__none__"}
+                        onValueChange={(value) => {
+                          if (value === "__none__") {
+                            setFormData({ ...formData, project_id: null, project_name: "" });
+                            return;
+                          }
+                          const proj = projects.find((pr) => pr.id === value);
+                          setFormData({
+                            ...formData,
+                            project_id: value,
+                            project_name: proj
+                              ? `${proj.project_number ? proj.project_number + " – " : ""}${proj.project_name}`
+                              : "",
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg prosjekt" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Ingen valgt</SelectItem>
+                          {projects.map((proj) => (
+                            <SelectItem key={proj.id} value={proj.id}>
+                              {proj.project_number ? `${proj.project_number} – ` : ""}
+                              {proj.project_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TabsContent>
+                    <TabsContent value="free" className="pt-2">
+                      <Input
+                        placeholder="F.eks. Service Nordvegen 12"
+                        value={formData.project_name || ""}
+                        onChange={(e) => setFormData({ ...formData, project_name: e.target.value, project_id: null })}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <>
+                    <Input
+                      placeholder="F.eks. Service Nordvegen 12 eller Oppdrag Kari Nordmann"
+                      value={formData.project_name || ""}
+                      onChange={(e) => setFormData({ ...formData, project_name: e.target.value, project_id: null })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Skriv inn prosjekt eller oppdrag som fritekst.
+                    </p>
+                  </>
+                )}
+              </div>
+
               {/* Location */}
               <div className="space-y-2">
                 <Label htmlFor="location">{t("auto.sted_omraade")}</Label>
                 <Select
-                  value={formData.location || "__none__"}
-                  onValueChange={(value) => 
-                    setFormData({ ...formData, location: value === "__none__" ? undefined : value })
-                  }
+                  value={customLocation ? CUSTOM : formData.location || "__none__"}
+                  onValueChange={(value) => {
+                    if (value === CUSTOM) {
+                      setCustomLocation(true);
+                      setFormData({ ...formData, location: "" });
+                      return;
+                    }
+                    setCustomLocation(false);
+                    setFormData({ ...formData, location: value === "__none__" ? undefined : value });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("auto.velg_sted")} />
@@ -376,18 +511,32 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                         {loc.label}
                       </SelectItem>
                     ))}
+                    <SelectItem value={CUSTOM}>Annet (skriv selv)</SelectItem>
                   </SelectContent>
                 </Select>
+                {customLocation && (
+                  <Input
+                    placeholder="Skriv sted/område"
+                    value={formData.location || ""}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                )}
               </div>
 
               {/* Role */}
               <div className="space-y-2">
                 <Label htmlFor="role">{t("auto.rolle")}</Label>
                 <Select
-                  value={formData.shift_role || "__none__"}
-                  onValueChange={(value) => 
-                    setFormData({ ...formData, shift_role: value === "__none__" ? undefined : value })
-                  }
+                  value={customRole ? CUSTOM : formData.shift_role || "__none__"}
+                  onValueChange={(value) => {
+                    if (value === CUSTOM) {
+                      setCustomRole(true);
+                      setFormData({ ...formData, shift_role: "" });
+                      return;
+                    }
+                    setCustomRole(false);
+                    setFormData({ ...formData, shift_role: value === "__none__" ? undefined : value });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("auto.velg_rolle")} />
@@ -399,8 +548,16 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                         {label}
                       </SelectItem>
                     ))}
+                    <SelectItem value={CUSTOM}>Annet (skriv selv)</SelectItem>
                   </SelectContent>
                 </Select>
+                {customRole && (
+                  <Input
+                    placeholder="Skriv rolle/funksjon"
+                    value={formData.shift_role || ""}
+                    onChange={(e) => setFormData({ ...formData, shift_role: e.target.value })}
+                  />
+                )}
               </div>
 
               {/* Responsible */}
