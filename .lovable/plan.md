@@ -1,62 +1,41 @@
-# Automatisk aktiveringsflyt for nye KS Bygg-kunder
+# Bedre timerapporter (PDF + Excel)
 
-Mål: en ny KS Bygg-kunde skal komme fra "modul aktivert" til "første prosjekt i gang med maler, rutiner og sjekklister" på under 10 minutter, uten manuell hjelp fra dere.
+Kunden savner en lesbar timerapport. Vedlegget «Uke 35, 2026» er en utskriftsvennlig PDF med logo, én linje per timeføring gruppert på dato, og en oppsummering til slutt. Vi lager tilsvarende – og rydder samtidig opp i Excel-fila.
 
-## Hva finnes allerede
-- `KsOppsett.tsx` + `KsSetupChat.tsx`: AI-chat som setter opp firmanivå (kvalitetsmål, systemmål, sjekklistemaler).
-- `Ks2WelcomeCard.tsx`: enkel steg-liste inne i et eksisterende prosjekt (maler, prosjektinfo, UE).
-- `NewProjectDialog.tsx` + `Ks2ProjectSetupChat.tsx`: prosjektopprettelse med AI-hjelp.
-- Admin-maler: `admin_checklist_templates`, `admin_routine_templates_v2`, `admin_project_type_templates`.
+## Hva du får
 
-Problemet i dag: bitene finnes, men de henger ikke sammen. Kunden logger inn, ser et tomt dashboard og vet ikke hvor den skal starte (jf. Fasadeteknikk – bestilte, logget inn én gang, brukte aldri modulen).
+**1. Ny knapp «Timerapport (PDF)»**
+- Velg fritt fra-dato og til-dato (hurtigvalg: denne uken, forrige uken, denne måneden).
+- Liggende A4 med firmalogo øverst og periodetittel, f.eks. «26.08–01.09.2026».
+- Kolonner som i vedlegget: Dato, Kunde, Prosjekt, Prosjektnummer, Underprosjekt, Bruker, Varighet (7 t 30 m + 07:00–15:00), Pause, Tagger, Overtid (50/100 %), KM, Kostnader, Materialforbruk, Notat.
+- Sortert på dato, sидe-brytende tabell med gjentatt overskrift.
+- Egen oppsummering til slutt: Timer, Pause, Kostnader, KM og materialforbruk per type.
 
-## Foreslått løsning: én sammenhengende aktiveringsveiviser
+**2. Ryddigere Excel**
+- Ny første fane «Timeliste» med nøyaktig de samme kolonnene som PDF-en, riktige kolonnebredder, frosset toppen og sumlinje.
+- Dagens lønnsfaner beholdes uendret for de som bruker dem til lønn.
 
-### 1. Aktiveringsstatus i databasen
-Ny tabell `ks_activation_progress` (per company):
-- `company_id`, `current_step`, `completed_steps` (jsonb), `first_project_id`, `completed_at`, `dismissed_at`, tidsstempler.
-- RLS: kun eget company (`get_user_company_id()`), admin-skriv, service_role for edge functions.
+**3. Tre nye felt på timeføring**
+- Prosjektnummer (fylles automatisk fra valgt prosjekt, kan overstyres)
+- Underprosjekt (fritekst)
+- Tagger (fritekst/flervalg, f.eks. «hjelp høyspent»)
 
-Dette gir både kunden en huskeliste og dere en rapport over hvem som står fast.
+**4. Tilgang**
+- Admin/leder: hele bedriften, med filtre på ansatt, prosjekt og kunde.
+- Ansatt: kun sine egne timer i valgt periode.
 
-### 2. Veiviser i 5 steg (`/ks/aktivering`)
-Én side, ett steg om gangen, alltid mulig å hoppe over:
+## Teknisk
 
-1. **Bedriftsprofil** – bransje, entreprenørtype (total/hoved/under), antall ansatte, sentralgodkjenning ja/nei. Gjenbruker eksisterende AI-oppsett i bakgrunnen.
-2. **Grunnmaler opprettes automatisk** – ett klikk. Systemet kopierer et kuratert basissett fra admin-malene, filtrert på bransje/entreprenørtype:
-   - 6–10 sjekklister (oppstart, egenkontroll, vernerunde, sluttkontroll, m.m.)
-   - 5–8 KS-rutiner (avviksbehandling, endringsmelding, dokumentstyring, UE-oppfølging)
-   - Kvalitetsmål og systemmål
-   - Standard dokumentmapper
-   Med visning av hva som ble opprettet, og mulighet til å velge bort.
-3. **Første prosjekt** – kort skjema (navn, adresse, byggherre, prosjekttype). Oppretter prosjektet og kobler på malsettet fra steg 2.
-4. **Team** – inviter 1–3 kolleger (gjenbruker `invite-user`), sett prosjektleder/HMS-ansvarlig.
-5. **Prøv det ut** – guidet mikro-oppgave: fyll ut én sjekkliste eller én dagsrapport, med direktelenke. Fullført steg = aktivert kunde.
+- Database: tre nye kolonner på `time_entries` (`project_number`, `subproject`, `tags`). Ingen endring i RLS – eksisterende regler dekker feltene. Prosjektnummer backfilles fra `ks_module2_projects` der `ks_project_id` er satt.
+- Ny `src/utils/timeReportPdf.ts` (jsPDF + autotable, `registerPdfFont` for æøå, logo via `loadImageAsBase64`). Pause utledes fra `start_time`/`end_time` minus `hours` når den ikke er oppgitt.
+- Utvider `src/utils/timeEntryExport.ts` med «Timeliste»-fanen; eksisterende funksjoner og faner beholdes.
+- Nye felt legges inn i `NewTimeEntryDialog.tsx` (samlet under «Detaljer», så skjemaet ikke blir tyngre) og i admin-redigering.
+- Knappene kobles på `TimeRegistration.tsx`, `TimeOversikt.tsx`, `Payroll.tsx` og `Ks2Timeregistrering.tsx`.
+- QA: generer PDF for en reell uke, konverter sidene til bilder og kontroller at ingen kolonner klippes eller overlapper før levering.
 
-Progresjonsbar øverst, "Fortsett der du slapp" ved neste innlogging.
-
-### 3. Automatisk start
-- Når modulen `IK_BYGG` aktiveres og det ikke finnes aktiveringsrad → rad opprettes.
-- Første innlogging etter aktivering: redirect til `/ks/aktivering` (kan avvises, da vises et banner på KS-dashbordet i stedet).
-- `Ks2WelcomeCard` blir konsistent med samme steg-modell i stedet for egen localStorage-logikk.
-
-### 4. Oppfølging for dere
-- Admin-visning (i `AdminLicenses`/`AdminMonitoring`-stil): hvilke KS-kunder har fullført aktivering, hvem står fast og hvor.
-- Edge function `ks-activation-nudge` (daglig cron): e-post til kunder som ikke har fullført innen 3 og 10 dager, med lenke rett til neste steg. Bruker eksisterende e-postoppsett og innloggingsblokk.
-
-## Teknisk oppsummering
-- Migrasjon: `ks_activation_progress` + GRANT + RLS + `updated_at`-trigger.
-- Ny side `src/pages/ks2/Ks2Aktivering.tsx` og steg-komponenter under `src/components/ks2/activation/`.
-- Ny hook `useKsActivation.ts` (status, gå til steg, marker fullført).
-- Ny hjelper `src/lib/applyKsBaseTemplates.ts` som kopierer admin-maler til `company_ks_*`-tabellene idempotent (kjører ikke på nytt hvis maler alt finnes).
-- Rute i `App.tsx` + lenke i sidebar, samt redirect-logikk ved aktiv modul.
-- Edge function `ks-activation-nudge` + cron.
-- Oversettelser for alle 5 språk (NO/EN/PL/LT/LV).
-
-## Avgrensninger
-- Ingen endring i eksisterende prosjekter eller maler kunden alt har laget – alt er idempotent og legger kun til det som mangler.
-- AI brukes kun til å foreslå utvalg av maler, ikke til å generere nytt innhold fra bunn.
-
-## Spørsmål før bygging
-1. Skal veiviseren være obligatorisk (redirect ved første innlogging) eller kun et banner kunden selv velger?
-2. Skal steg 2 opprette malsettet automatisk med ett klikk, eller skal kunden hake av manuelt hva den vil ha?
+## Rekkefølge
+1. Database-kolonner + backfill av prosjektnummer
+2. PDF-generator + QA på sider
+3. Excel-fane
+4. Nye felt i skjema og admin-redigering
+5. Knapper og periodevelger på de fire sidene
