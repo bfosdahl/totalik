@@ -248,6 +248,8 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
         notes: "",
       });
       setUseRange(false);
+      setProjectTab("project");
+
       setEndDate("");
       setCustomLocation(false);
       setCustomRole(false);
