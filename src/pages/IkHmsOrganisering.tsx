@@ -213,12 +213,14 @@ const IkHmsOrganisering = () => {
     setPersonDialogOpen(true);
   };
 
-  const handleSavePerson = async (personName: string) => {
+  const handleSavePerson = async (personNames: string[]) => {
     if (selectedNodeId) {
-      await addPerson.mutateAsync({
-        node_id: selectedNodeId,
-        person_name: personName,
-      });
+      for (const personName of personNames) {
+        await addPerson.mutateAsync({
+          node_id: selectedNodeId,
+          person_name: personName,
+        });
+      }
       setPersonDialogOpen(false);
       setSelectedNodeId(null);
     }
@@ -669,6 +671,8 @@ const IkHmsOrganisering = () => {
           onOpenChange={setPersonDialogOpen}
           onSave={handleSavePerson}
           nodeTitle={selectedNodeId ? getNodeById(selectedNodeId)?.role_title || '' : ''}
+          existingPersons={selectedNodeId ? getNodeById(selectedNodeId)?.persons || [] : []}
+          onRemovePerson={(personId) => removePerson.mutate(personId)}
           isLoading={addPerson.isPending}
         />
 
