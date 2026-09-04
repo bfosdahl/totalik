@@ -159,7 +159,9 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
         is_responsible: editShift.is_responsible || false,
         notes: editShift.notes || "",
       });
+      setProjectTab(editShift.project_id ? "project" : editShift.project_name ? "free" : "project");
       setCustomLocation(!!editShift.location && !LOCATIONS[editShift.location]);
+
       setCustomRole(!!editShift.shift_role && !ROLES[editShift.shift_role]);
       setUseRange(false);
     } else if (defaultDate) {
