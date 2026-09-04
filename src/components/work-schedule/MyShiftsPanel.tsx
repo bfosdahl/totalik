@@ -172,7 +172,14 @@ export function MyShiftsPanel() {
                                 {format(new Date(shift.schedule_date), "EEEE d. MMMM", { locale: nb })}
                               </span>
                             </div>
+                            {shift.project_name && (
+                              <div className="flex items-center gap-1.5 text-sm font-medium">
+                                <Briefcase className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                <span>{shift.project_name}</span>
+                              </div>
+                            )}
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
+
                               <span className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
                                 {shift.start_time.substring(0, 5)} - {shift.end_time.substring(0, 5)}
