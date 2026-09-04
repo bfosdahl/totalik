@@ -16,7 +16,7 @@ const COMPANY_NAME = "Leon Markedskapital AS";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.headers.get("x-admin-secret") !== Deno.env.get("ADMIN_ACTIONS_SECRET")) {
+  if (req.headers.get("x-admin-secret") !== Deno.env.get("ONEOFF_LEON_SECRET")) {
     return json({ error: "forbidden" }, 403);
   }
 
