@@ -213,12 +213,14 @@ const IkHmsOrganisering = () => {
     setPersonDialogOpen(true);
   };
 
-  const handleSavePerson = async (personName: string) => {
+  const handleSavePerson = async (personNames: string[]) => {
     if (selectedNodeId) {
-      await addPerson.mutateAsync({
-        node_id: selectedNodeId,
-        person_name: personName,
-      });
+      for (const personName of personNames) {
+        await addPerson.mutateAsync({
+          node_id: selectedNodeId,
+          person_name: personName,
+        });
+      }
       setPersonDialogOpen(false);
       setSelectedNodeId(null);
     }
