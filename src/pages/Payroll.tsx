@@ -164,7 +164,7 @@ export default function Payroll() {
     (async () => {
       let query = supabase
         .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, project_id, description, status, approved_by_name, approved_at, hour_type, overtime_segments")
+        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, project_id, description, status, approved_by_name, approved_at, hour_type, overtime_segments, customer_name, project_number, subproject, tags, total_break_minutes")
         .eq("company_id", profile.company_id)
         .gte("entry_date", fmt(period.start))
         .lte("entry_date", fmt(period.end));
