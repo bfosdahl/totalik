@@ -47,7 +47,6 @@ Deno.serve(async (req) => {
       company_id: COMPANY_ID,
       is_active: true,
       status: "active",
-      is_hms_responsible: true,
     },
     { onConflict: "user_id" },
   );
