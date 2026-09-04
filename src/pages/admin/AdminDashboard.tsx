@@ -39,10 +39,10 @@ export default function AdminDashboard() {
         { count: totalUsers },
         { count: activeUsers },
       ] = await Promise.all([
-        supabase.from("companies").select("*", { count: "exact", head: true }),
-        supabase.from("companies").select("*", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
-        supabase.from("profiles").select("*", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("companies").select("id", { count: "exact", head: true }),
+        supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "active"),
       ]);
 
       return {
