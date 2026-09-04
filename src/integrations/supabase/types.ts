@@ -16919,9 +16919,12 @@ export type Database = {
           overtime_segments: Json | null
           project_id: string | null
           project_name: string | null
+          project_number: string | null
           source: string | null
           start_time: string | null
           status: string
+          subproject: string | null
+          tags: string[] | null
           tripletex_synced: boolean | null
           tripletex_synced_at: string | null
           updated_at: string
@@ -16950,9 +16953,12 @@ export type Database = {
           overtime_segments?: Json | null
           project_id?: string | null
           project_name?: string | null
+          project_number?: string | null
           source?: string | null
           start_time?: string | null
           status?: string
+          subproject?: string | null
+          tags?: string[] | null
           tripletex_synced?: boolean | null
           tripletex_synced_at?: string | null
           updated_at?: string
@@ -16981,9 +16987,12 @@ export type Database = {
           overtime_segments?: Json | null
           project_id?: string | null
           project_name?: string | null
+          project_number?: string | null
           source?: string | null
           start_time?: string | null
           status?: string
+          subproject?: string | null
+          tags?: string[] | null
           tripletex_synced?: boolean | null
           tripletex_synced_at?: string | null
           updated_at?: string

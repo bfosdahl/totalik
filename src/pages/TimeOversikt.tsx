@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, subWeeks, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Clock, Download, Users, Filter, FileSpreadsheet } from "lucide-react";
+import { Clock, Download, Users, Filter, FileSpreadsheet, FileText } from "lucide-react";
+import { TimeReportDialog } from "@/components/timeregistration/TimeReportDialog";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ export default function TimeOversikt() {
   const [onlyApproved, setOnlyApproved] = useState(true);
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const { data, isLoading } = useAdminHoursSummary({ startDate: start, endDate: end, onlyApproved });
 
@@ -249,6 +251,10 @@ export default function TimeOversikt() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => navigate("/time-registration")}>{t("auto.til_timefoering")}</Button>
+            <Button variant="outline" onClick={() => setReportOpen(true)}>
+              <FileText className="h-4 w-4 mr-2" />
+              Timerapport
+            </Button>
             <Button variant="outline" onClick={exportCsv} disabled={!data || rows.length === 0}>
               <Download className="h-4 w-4 mr-2" />
               CSV
@@ -356,6 +362,8 @@ export default function TimeOversikt() {
           Periode: {format(new Date(start), "d. MMM yyyy", { locale: nb })} – {format(new Date(end), "d. MMM yyyy", { locale: nb })}
         </p>
       </div>
+
+      <TimeReportDialog open={reportOpen} onOpenChange={setReportOpen} />
     </AppLayout>
   );
 }

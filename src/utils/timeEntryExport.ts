@@ -21,6 +21,11 @@ export interface PayrollTimeEntry {
   hour_type?: string | null;
   is_overtime?: boolean | null;
   overtime_segments?: any;
+  customer_name?: string | null;
+  project_number?: string | null;
+  subproject?: string | null;
+  tags?: string[] | null;
+  total_break_minutes?: number | null;
 }
 
 export interface AllowanceDetailRow {
@@ -67,6 +72,110 @@ const fmtTime = (t?: string | null): string => {
   if (!t) return "";
   return String(t).substring(0, 5);
 };
+
+const isKmAllowance = (a: AllowanceDetailRow) =>
+  a.unit === "km" || /(^|\s)km(\s|$)/i.test(a.type_name);
+
+/** Bygger den lesbare «Timeliste»-fanen med samme kolonner som PDF-rapporten */
+function buildTimesheetSheet(
+  entries: PayrollTimeEntry[],
+  allowanceDetails: AllowanceDetailRow[]
+): XLSX.WorkSheet {
+  const byEntry = new Map<string, AllowanceDetailRow[]>();
+  allowanceDetails.forEach((a) => {
+    const list = byEntry.get(a.time_entry_id) ?? [];
+    list.push(a);
+    byEntry.set(a.time_entry_id, list);
+  });
+
+  let sumHours = 0;
+  let sumBreak = 0;
+  let sumKm = 0;
+  let sumCost = 0;
+
+  const rows = entries.map((e) => {
+    const list = byEntry.get(e.id) ?? [];
+    const kmList = list.filter(isKmAllowance);
+    const costList = list.filter((a) => !isKmAllowance(a) && a.unit === "fixed");
+    const matList = list.filter((a) => !isKmAllowance(a) && a.unit !== "fixed");
+    const km = kmList.reduce((s, a) => s + Number(a.quantity || 0), 0);
+    const cost = costList.reduce((s, a) => s + Number(a.amount || 0), 0);
+    const brk = timesheetBreakMinutes(e);
+
+    sumHours += Number(e.hours) || 0;
+    sumBreak += brk;
+    sumKm += km;
+    sumCost += cost;
+
+    const b = getHourBreakdown(e);
+    const overtime = [b.overtime_50 > 0 ? "50%" : "", b.overtime_100 > 0 ? "100%" : ""]
+      .filter(Boolean)
+      .join(" / ");
+
+    return {
+      Dato: format(new Date(e.entry_date), "dd.MM.yyyy", { locale: nb }),
+      Kunde: e.customer_name || "",
+      Prosjekt: e.project_name || "",
+      "Prosjektnr.": e.project_number || "",
+      Underprosjekt: e.subproject || "",
+      Bruker: e.user_name,
+      Fra: fmtTime(e.start_time),
+      Til: fmtTime(e.end_time),
+      Timer: Number((Number(e.hours) || 0).toFixed(2)),
+      "Pause (min)": brk || "",
+      Tagger: (e.tags ?? []).join(", "),
+      Overtid: overtime,
+      KM: km ? Number(km.toFixed(2)) : "",
+      "Kostnader (NOK)": cost ? Number(cost.toFixed(2)) : "",
+      Materialforbruk: [...kmList, ...matList]
+        .map((a) => `${Number(a.quantity).toFixed(2)} stk. ${a.type_name}`)
+        .join("; "),
+      Notat: e.description || "",
+    };
+  });
+
+  rows.push({
+    Dato: "",
+    Kunde: "",
+    Prosjekt: "",
+    "Prosjektnr.": "",
+    Underprosjekt: "",
+    Bruker: "TOTALT",
+    Fra: "",
+    Til: "",
+    Timer: Number(sumHours.toFixed(2)),
+    "Pause (min)": sumBreak || "",
+    Tagger: "",
+    Overtid: "",
+    KM: sumKm ? Number(sumKm.toFixed(2)) : "",
+    "Kostnader (NOK)": sumCost ? Number(sumCost.toFixed(2)) : "",
+    Materialforbruk: "",
+    Notat: "",
+  } as any);
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws["!cols"] = [
+    { wch: 11 }, { wch: 20 }, { wch: 22 }, { wch: 12 }, { wch: 16 }, { wch: 20 },
+    { wch: 7 }, { wch: 7 }, { wch: 7 }, { wch: 10 }, { wch: 16 }, { wch: 9 },
+    { wch: 8 }, { wch: 14 }, { wch: 26 }, { wch: 50 },
+  ];
+  ws["!freeze"] = { xSplit: 0, ySplit: 1 } as any;
+  return ws;
+}
+
+/** Pause: registrert verdi, ellers utledet av fra/til minus timer */
+function timesheetBreakMinutes(e: PayrollTimeEntry): number {
+  if (e.total_break_minutes != null) return Number(e.total_break_minutes) || 0;
+  const from = fmtTime(e.start_time);
+  const to = fmtTime(e.end_time);
+  if (!from || !to) return 0;
+  const [fh, fm] = from.split(":").map(Number);
+  const [th, tm] = to.split(":").map(Number);
+  let span = th * 60 + tm - (fh * 60 + fm);
+  if (span < 0) span += 24 * 60;
+  const diff = Math.round(span - (Number(e.hours) || 0) * 60);
+  return diff > 0 && diff <= 180 ? diff : 0;
+}
 
 function buildFilename(companyName: string, startDate?: Date, endDate?: Date, suffix = "") {
   const dateRange =
@@ -157,7 +266,11 @@ export function exportPayrollGeneric(
       : "-",
   }));
 
+  // Sheet 0: Timeliste — lesbar oversikt med samme kolonner som PDF-rapporten
+  const timesheetWs = buildTimesheetSheet(sorted, allowanceDetails);
+
   const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, timesheetWs, "Timeliste");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), "Sammendrag");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(projectRows), "Per prosjekt");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailRows), "Registreringer");

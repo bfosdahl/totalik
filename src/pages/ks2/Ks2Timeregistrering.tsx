@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, Users, User, Wallet } from "lucide-react";
+import { Plus, Download, FileText, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, Users, User, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +23,7 @@ import { TimeEntryList } from "@/components/timeregistration/TimeEntryList";
 import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
 import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
+import { TimeReportDialog } from "@/components/timeregistration/TimeReportDialog";
 import { t } from "@/i18n/t";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "payroll-21" | "custom" | "all";
@@ -43,6 +44,7 @@ export default function Ks2Timeregistrering() {
   } = useTimeEntries();
   
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-month");
   const [viewMode, setViewMode] = useState<"list" | "week">("list");
   const today = new Date();
@@ -177,6 +179,10 @@ export default function Ks2Timeregistrering() {
               </Link>
             </Button>
           )}
+          <Button variant="outline" onClick={() => setReportOpen(true)}>
+            <FileText className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Timerapport</span>
+          </Button>
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">{t("auto.eksporter")}</span>
@@ -469,6 +475,8 @@ export default function Ks2Timeregistrering() {
         projectId={projectId!}
         projectName={projectName}
       />
+
+      <TimeReportDialog open={reportOpen} onOpenChange={setReportOpen} ksProjectId={projectId} />
     </div>
   );
 }

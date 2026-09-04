@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Download, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode, CalendarCheck, Sun } from "lucide-react";
+import { Plus, Download, FileText, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode, CalendarCheck, Sun } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,7 @@ import { DailyTimeView } from "@/components/timeregistration/DailyTimeView";
 import { TimeClockQrDialog } from "@/components/timeregistration/TimeClockQrDialog";
 import { MyShiftsPanel } from "@/components/work-schedule/MyShiftsPanel";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
+import { TimeReportDialog } from "@/components/timeregistration/TimeReportDialog";
 import { t } from "@/i18n/t";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
@@ -41,6 +42,7 @@ export default function TimeRegistration() {
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
   const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">("day");
   const [employeeFilter, setEmployeeFilter] = useState<string>("all");
@@ -129,6 +131,10 @@ export default function TimeRegistration() {
                 <span className="hidden sm:inline">{t("auto.qr_stempling")}</span>
               </Button>
             )}
+            <Button variant="outline" size="sm" onClick={() => setReportOpen(true)} className="shrink-0">
+              <FileText className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Timerapport</span>
+            </Button>
             <Button variant="outline" size="sm" onClick={handleExport} className="shrink-0">
               <Download className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">{t("auto.eksporter")}</span>
@@ -370,6 +376,8 @@ export default function TimeRegistration() {
         open={qrDialogOpen}
         onOpenChange={setQrDialogOpen}
       />
+
+      <TimeReportDialog open={reportOpen} onOpenChange={setReportOpen} />
     </AppLayout>
   );
 }

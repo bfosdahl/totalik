@@ -82,6 +82,9 @@ export function NewTimeEntryDialog({
   const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || "");
   const [customProjectName, setCustomProjectName] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [projectNumber, setProjectNumber] = useState("");
+  const [subproject, setSubproject] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCustomProject, setUseCustomProject] = useState(false);
@@ -129,6 +132,9 @@ export function NewTimeEntryDialog({
     setUseCustomProject(false);
     setAllowanceRows([]);
     setOvertimeSegments([]);
+    setProjectNumber("");
+    setSubproject("");
+    setTagsInput("");
     setOnBehalfUserId("__self__");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -142,6 +148,11 @@ export function NewTimeEntryDialog({
     let projectName: string | undefined;
     let projectId: string | undefined;
     let ksProjectId: string | undefined;
+    let resolvedProjectNumber = projectNumber.trim();
+    const tagList = tagsInput
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean);
 
     if (hasKsBygg && selectedProjectId && selectedProjectId !== "custom" && selectedProjectId !== "none") {
       const selectedProject = projects.find((p) => p.id === selectedProjectId);
@@ -149,6 +160,7 @@ export function NewTimeEntryDialog({
         projectName = `${selectedProject.project_number} - ${selectedProject.project_name}`;
         projectId = selectedProject.id;
         ksProjectId = selectedProject.id;
+        if (!projectNumber) resolvedProjectNumber = selectedProject.project_number || "";
       }
     } else if (useCustomProject && customProjectName) {
       projectName = customProjectName;
@@ -230,6 +242,9 @@ export function NewTimeEntryDialog({
         project_id: projectId,
         ks_project_id: ksProjectId || null,
         customer_name: customerName || null,
+        project_number: resolvedProjectNumber || null,
+        subproject: subproject.trim() || null,
+        tags: tagList.length > 0 ? tagList : null,
         description: description || undefined,
         allowances,
         overtime_segments: persistSegments,
@@ -394,6 +409,36 @@ export function NewTimeEntryDialog({
               />
             </div>
           </div>
+
+          {/* Prosjektnummer, underprosjekt og tagger */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <Label>Prosjektnummer</Label>
+              <Input
+                placeholder="Hentes fra prosjektet"
+                value={projectNumber}
+                onChange={(e) => setProjectNumber(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Underprosjekt</Label>
+              <Input
+                placeholder="Valgfritt"
+                value={subproject}
+                onChange={(e) => setSubproject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tagger</Label>
+              <Input
+                placeholder="Skill med komma"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+              />
+            </div>
+          </div>
+
+
 
           {/* Dato */}
           <div className="space-y-2">

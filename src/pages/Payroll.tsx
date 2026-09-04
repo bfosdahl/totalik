@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { format, addMonths, subMonths, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Download, Settings as SettingsIcon, ChevronLeft, ChevronRight, Calendar as CalIcon } from "lucide-react";
+import { TimeReportDialog } from "@/components/timeregistration/TimeReportDialog";
+import { Download, FileText, Settings as SettingsIcon, ChevronLeft, ChevronRight, Calendar as CalIcon } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,6 +104,7 @@ export default function Payroll() {
   const [statusFilter, setStatusFilter] = useState<string>("approved");
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [ratesOpen, setRatesOpen] = useState(false);
   const [savedStartDay, setSavedStartDay] = useState<number>(1);
   const [editEntry, setEditEntry] = useState<AdminEditableEntry | null>(null);
@@ -395,6 +397,9 @@ export default function Payroll() {
             </Button>
             <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
               <SettingsIcon className="h-4 w-4 mr-1" /> {t("auto.loennsperiode")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setReportOpen(true)}>
+              <FileText className="h-4 w-4 mr-1" /> Timerapport
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -778,6 +783,8 @@ export default function Payroll() {
           setReloadTick((t) => t + 1);
         }}
       />
+
+      <TimeReportDialog open={reportOpen} onOpenChange={setReportOpen} />
     </AppLayout>
   );
 }
