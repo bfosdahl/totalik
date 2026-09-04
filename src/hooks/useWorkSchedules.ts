@@ -100,17 +100,31 @@ export function useWorkSchedules() {
           : "Arbeidstimer registrert"
       );
 
-      // Send notification if it's a planned schedule
-      if (scheduleData.schedule_type === "planned") {
-        await supabase.functions.invoke("notify-work-schedule", {
-          body: {
-            employeeName: scheduleData.employee_name,
-            scheduleDate: scheduleData.schedule_date,
-            startTime: scheduleData.start_time,
-            endTime: scheduleData.end_time,
-          },
-        });
+      // Send notification if it's a planned schedule (best effort)
+      if (scheduleData.schedule_type === "planned" && scheduleData.employee_id) {
+        try {
+          const { data: employee } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("id", scheduleData.employee_id)
+            .maybeSingle();
+
+          if (employee?.email) {
+            await supabase.functions.invoke("notify-work-schedule", {
+              body: {
+                employeeEmail: employee.email,
+                employeeName: scheduleData.employee_name,
+                scheduleDate: scheduleData.schedule_date,
+                startTime: scheduleData.start_time,
+                endTime: scheduleData.end_time,
+              },
+            });
+          }
+        } catch (notifyError) {
+          console.warn("Kunne ikke sende varsel om arbeidsplan:", notifyError);
+        }
       }
+
 
       await fetchSchedules();
       return true;
