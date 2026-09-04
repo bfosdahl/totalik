@@ -9,7 +9,7 @@ import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useStandardWorkSchedules } from "@/hooks/useStandardWorkSchedules";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { LOCATIONS } from "./ShiftCalendar";
+import { LOCATIONS, getLocationLabel } from "./shiftOptions";
 import { Trash2, Plus, Loader2, CalendarPlus, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns";
@@ -367,7 +367,7 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                           </span>
                           {schedule.location && (
                             <Badge variant="secondary" className="text-[10px] px-1 py-0">
-                              {LOCATIONS[schedule.location]?.label || schedule.location}
+                              {getLocationLabel(schedule.location)}
                             </Badge>
                           )}
                           <Button variant="ghost" size="icon" className="h-5 w-5 ml-1"

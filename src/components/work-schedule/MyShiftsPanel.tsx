@@ -21,7 +21,7 @@ import { useShiftRequests, ShiftRequest } from "@/hooks/useShiftRequests";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { ShiftRequestDialog } from "./ShiftRequestDialog";
-import { LOCATIONS, ROLES } from "./ShiftCalendar";
+import { getLocationOption, getRoleLabel } from "./shiftOptions";
 import { t } from "@/i18n/t";
 
 export function MyShiftsPanel() {
@@ -157,7 +157,7 @@ export function MyShiftsPanel() {
               ) : (
                 <div className="space-y-3">
                   {myShifts.map((shift) => {
-                    const location = shift.location ? LOCATIONS[shift.location] : null;
+                    const location = getLocationOption(shift.location);
                     
                     return (
                       <div 
@@ -185,7 +185,7 @@ export function MyShiftsPanel() {
                               )}
                               {shift.shift_role && (
                                 <Badge variant="outline" className="text-xs">
-                                  {ROLES[shift.shift_role] || shift.shift_role}
+                                  {getRoleLabel(shift.shift_role)}
                                 </Badge>
                               )}
                             </div>

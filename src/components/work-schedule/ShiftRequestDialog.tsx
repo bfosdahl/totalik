@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useShiftRequests, ShiftRequestType } from "@/hooks/useShiftRequests";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
-import { LOCATIONS, ROLES } from "./ShiftCalendar";
+import { LOCATIONS, ROLES, getLocationLabel } from "./shiftOptions";
 import { useAuth } from "@/contexts/AuthContext";
 import { t } from "@/i18n/t";
 
@@ -109,7 +109,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                 <div className="font-medium">{format(new Date(shift.schedule_date), "EEEE d. MMMM", { locale: nb })}</div>
                 <div className="text-muted-foreground">
                   {shift.start_time.substring(0, 5)} - {shift.end_time.substring(0, 5)}
-                  {shift.location && ` • ${LOCATIONS[shift.location]?.label || shift.location}`}
+                  {shift.location && ` • ${getLocationLabel(shift.location)}`}
                 </div>
               </div>
             )}
