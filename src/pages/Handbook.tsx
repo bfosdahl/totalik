@@ -1836,8 +1836,14 @@ const Handbook = () => {
             if (role.personName) {
               roleHeader += ` (${role.personName})`;
             }
-            doc.text(roleHeader, margin, yPos);
-            yPos += 6;
+            const headerLines: string[] = doc.splitTextToSize(roleHeader, contentWidth);
+            headerLines.forEach((line: string) => {
+              checkPageBreak(8);
+              doc.text(line, margin, yPos);
+              yPos += 5;
+            });
+            yPos += 1;
+
             
             // Description
             doc.setFont(PDF_FONT, "normal");
