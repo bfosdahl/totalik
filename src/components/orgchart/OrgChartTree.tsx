@@ -455,6 +455,15 @@ const MobileNode: React.FC<MobileNodeProps> = ({
                 {person.person_name}
               </span>
             ))}
+            {canEdit && (
+              <button
+                onClick={() => onAddPerson(node.id)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-dashed border-muted-foreground/30 text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+              >
+                <UserPlus className="h-3 w-3" />
+                Legg til flere
+              </button>
+            )}
           </div>
         )}
         
