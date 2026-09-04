@@ -350,6 +350,9 @@ export default function WorkSchedule() {
           shift_role: editingSchedule.shift_role,
           is_responsible: editingSchedule.is_responsible,
           notes: editingSchedule.notes,
+          project_id: editingSchedule.project_id,
+          project_name: editingSchedule.project_name,
+
         } : undefined}
       />
 

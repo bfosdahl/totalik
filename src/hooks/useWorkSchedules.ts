@@ -15,6 +15,8 @@ export interface WorkSchedule {
   notes: string | null;
   location: string | null;
   shift_role: string | null;
+  project_id: string | null;
+  project_name: string | null;
   is_responsible: boolean;
   created_by_id: string | null;
   created_by_name: string | null;
@@ -32,6 +34,8 @@ export interface CreateWorkSchedule {
   notes?: string;
   location?: string;
   shift_role?: string;
+  project_id?: string | null;
+  project_name?: string | null;
   is_responsible?: boolean;
 }
 
@@ -117,6 +121,36 @@ export function useWorkSchedules() {
     }
   };
 
+  const createSchedulesBulk = async (rows: CreateWorkSchedule[]): Promise<number> => {
+    if (!profile?.company_id) {
+      toast.error("Mangler brukerinformasjon");
+      return 0;
+    }
+    if (rows.length === 0) return 0;
+
+    try {
+      const createdByName =
+        `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent";
+      const payload = rows.map((row) => ({
+        company_id: profile.company_id,
+        created_by_id: profile.id,
+        created_by_name: createdByName,
+        ...row,
+      }));
+
+      const { error } = await supabase.from("work_schedules").insert(payload);
+      if (error) throw error;
+
+      toast.success(`${rows.length} vakter opprettet`);
+      await fetchSchedules();
+      return rows.length;
+    } catch (error) {
+      console.error("Error creating work schedules:", error);
+      toast.error("Kunne ikke opprette vaktene");
+      return 0;
+    }
+  };
+
   const updateSchedule = async (id: string, updates: Partial<CreateWorkSchedule>): Promise<boolean> => {
     try {
       const { error } = await supabase
@@ -169,6 +203,7 @@ export function useWorkSchedules() {
     schedules,
     isLoading,
     createSchedule,
+    createSchedulesBulk,
     updateSchedule,
     deleteSchedule,
     getSchedulesByWeek,

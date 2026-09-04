@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MapPin, Clock } from "lucide-react";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
-import { LOCATIONS, ROLES } from "./ShiftCalendar";
+import { getLocationOption } from "./shiftOptions";
 import { t } from "@/i18n/t";
 
 interface MonthCalendarProps {
@@ -81,7 +81,7 @@ export function MonthCalendar({ selectedMonth, schedules, onScheduleClick, onDay
 
               <div className="space-y-0.5 overflow-y-auto max-h-[60px] sm:max-h-[90px]">
                 {daySchedules.map((schedule) => {
-                  const location = schedule.location ? LOCATIONS[schedule.location] : null;
+                  const location = getLocationOption(schedule.location);
                   return (
                     <div
                       key={schedule.id}
@@ -98,6 +98,9 @@ export function MonthCalendar({ selectedMonth, schedules, onScheduleClick, onDay
                         <Clock className="w-2 h-2 shrink-0" />
                         {schedule.start_time.substring(0, 5)}-{schedule.end_time.substring(0, 5)}
                       </div>
+                      {schedule.project_name && (
+                        <div className="truncate text-muted-foreground">{schedule.project_name}</div>
+                      )}
                       {location && (
                         <div className="hidden sm:block">
                           <Badge variant="secondary" className={cn("text-[8px] px-0.5 py-0", location.color)}>

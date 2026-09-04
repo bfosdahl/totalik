@@ -10,11 +10,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useWorkSchedules } from "@/hooks/useWorkSchedules";
 import { useAuth } from "@/contexts/AuthContext";
-import { LOCATIONS, ROLES } from "./ShiftCalendar";
+import { LOCATIONS, ROLES } from "./shiftOptions";
+import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { AlertTriangle, Info } from "lucide-react";
 import { checkSundayConflictForEmployee, type SundayStatus } from "@/utils/sundayComplianceCheck";
 import { t } from "@/i18n/t";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateShiftDialogProps {
   open: boolean;
@@ -33,6 +36,8 @@ interface CreateShiftDialogProps {
     shift_role?: string | null;
     is_responsible?: boolean;
     notes?: string | null;
+    project_id?: string | null;
+    project_name?: string | null;
   };
 }
 
@@ -45,14 +50,35 @@ export interface ShiftFormData {
   schedule_type: "planned" | "actual";
   location?: string;
   shift_role?: string;
+  project_id?: string | null;
+  project_name?: string;
   is_responsible: boolean;
   notes: string;
 }
 
+const CUSTOM = "__custom__";
+const WEEKDAYS = [
+  { value: 1, label: "Man" },
+  { value: 2, label: "Tir" },
+  { value: 3, label: "Ons" },
+  { value: 4, label: "Tor" },
+  { value: 5, label: "Fre" },
+  { value: 6, label: "Lør" },
+  { value: 0, label: "Søn" },
+];
+
 export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, editShift }: CreateShiftDialogProps) {
   const { users } = useCompanyUsers();
-  const { createSchedule, updateSchedule } = useWorkSchedules();
+  const { createSchedule, createSchedulesBulk, updateSchedule } = useWorkSchedules();
   const { profile } = useAuth();
+  const { hasModule } = useCompanyModules();
+  const hasBygg = hasModule("IK_BYGG");
+  const [projects, setProjects] = useState<{ id: string; project_name: string; project_number: string | null }[]>([]);
+  const [customLocation, setCustomLocation] = useState(false);
+  const [customRole, setCustomRole] = useState(false);
+  const [useRange, setUseRange] = useState(false);
+  const [endDate, setEndDate] = useState("");
+  const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5]);
   
   const isEditMode = !!editShift;
   
@@ -65,11 +91,30 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
     schedule_type: "planned",
     location: undefined,
     shift_role: undefined,
+    project_id: null,
+    project_name: "",
     is_responsible: false,
     notes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sundayWarning, setSundayWarning] = useState<{ status: SundayStatus; message: string } | null>(null);
+
+  // Load KS Bygg projects when the module is active
+  useEffect(() => {
+    let cancelled = false;
+    if (!open || !hasBygg || !profile?.company_id) return;
+    supabase
+      .from("ks_module2_projects")
+      .select("id, project_name, project_number")
+      .eq("company_id", profile.company_id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (!cancelled) setProjects(data || []);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, hasBygg, profile?.company_id]);
 
   // AML §10-8 check whenever date + employee changes
   useEffect(() => {
@@ -106,9 +151,14 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
         schedule_type: editShift.schedule_type,
         location: editShift.location || undefined,
         shift_role: editShift.shift_role || undefined,
+        project_id: editShift.project_id || null,
+        project_name: editShift.project_name || "",
         is_responsible: editShift.is_responsible || false,
         notes: editShift.notes || "",
       });
+      setCustomLocation(!!editShift.location && !LOCATIONS[editShift.location]);
+      setCustomRole(!!editShift.shift_role && !ROLES[editShift.shift_role]);
+      setUseRange(false);
     } else if (defaultDate) {
       setFormData(prev => ({ ...prev, schedule_date: defaultDate }));
     }
@@ -125,29 +175,58 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
     }
   };
 
+  const buildDates = (): string[] => {
+    if (!useRange || !endDate || endDate < formData.schedule_date) return [formData.schedule_date];
+    const dates: string[] = [];
+    const cursor = new Date(`${formData.schedule_date}T12:00:00`);
+    const stop = new Date(`${endDate}T12:00:00`);
+    while (cursor <= stop) {
+      if (weekdays.includes(cursor.getDay())) {
+        const y = cursor.getFullYear();
+        const m = String(cursor.getMonth() + 1).padStart(2, "0");
+        const d = String(cursor.getDate()).padStart(2, "0");
+        dates.push(`${y}-${m}-${d}`);
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return dates;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    const scheduleData = {
+
+    const base = {
       employee_id: formData.employee_id,
       employee_name: formData.employee_name,
-      schedule_date: formData.schedule_date,
       start_time: formData.start_time,
       end_time: formData.end_time,
       schedule_type: formData.schedule_type,
-      location: formData.location,
-      shift_role: formData.shift_role,
+      location: formData.location || undefined,
+      shift_role: formData.shift_role || undefined,
+      project_id: formData.project_id || null,
+      project_name: formData.project_name?.trim() || null,
       is_responsible: formData.is_responsible,
       notes: formData.notes,
     };
 
-    const result = isEditMode
-      ? await updateSchedule(editShift!.id, scheduleData)
-      : await createSchedule(scheduleData);
-    
+    let result: boolean | number;
+    if (isEditMode) {
+      result = await updateSchedule(editShift!.id, { ...base, schedule_date: formData.schedule_date });
+    } else {
+      const dates = buildDates();
+      if (dates.length === 0) {
+        toast.error("Ingen dager i perioden. Velg minst én ukedag.");
+        setIsSubmitting(false);
+        return;
+      }
+      result =
+        dates.length === 1
+          ? await createSchedule({ ...base, schedule_date: dates[0] })
+          : await createSchedulesBulk(dates.map((d) => ({ ...base, schedule_date: d })));
+    }
+
     if (result) {
-      toast.success(isEditMode ? "Vakt oppdatert" : "Vakt opprettet");
       setFormData({
         employee_id: "",
         employee_name: "",
@@ -157,13 +236,19 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
         schedule_type: "planned",
         location: undefined,
         shift_role: undefined,
+        project_id: null,
+        project_name: "",
         is_responsible: false,
         notes: "",
       });
+      setUseRange(false);
+      setEndDate("");
+      setCustomLocation(false);
+      setCustomRole(false);
       onOpenChange(false);
       onSuccess?.();
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -174,7 +259,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
           <DialogHeader className="flex-shrink-0">
             <DialogTitle>{isEditMode ? "Endre vakt" : "Ny vakt"}</DialogTitle>
             <DialogDescription>
-              {isEditMode ? "Rediger vaktdetaljer" : "Opprett en ny vakt med sted og rolle"}
+              {isEditMode ? "Rediger vaktdetaljer" : "Opprett vakt med prosjekt, sted og rolle – for én dag eller en hel periode"}
             </DialogDescription>
           </DialogHeader>
 
@@ -232,6 +317,63 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                 />
               </div>
 
+              {/* Period / repeat */}
+              {!isEditMode && (
+                <div className="space-y-3 rounded-md border p-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="use_range"
+                      checked={useRange}
+                      onCheckedChange={(checked) => setUseRange(checked as boolean)}
+                    />
+                    <Label htmlFor="use_range" className="cursor-pointer">
+                      Planlegg for en periode (flere dager)
+                    </Label>
+                  </div>
+
+                  {useRange && (
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="end_date">Til og med dato</Label>
+                        <Input
+                          id="end_date"
+                          type="date"
+                          value={endDate}
+                          min={formData.schedule_date || undefined}
+                          onChange={(e) => setEndDate(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ukedager</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {WEEKDAYS.map((day) => {
+                            const active = weekdays.includes(day.value);
+                            return (
+                              <Button
+                                key={day.value}
+                                type="button"
+                                size="sm"
+                                variant={active ? "default" : "outline"}
+                                onClick={() =>
+                                  setWeekdays((prev) =>
+                                    active ? prev.filter((d) => d !== day.value) : [...prev, day.value]
+                                  )
+                                }
+                              >
+                                {day.label}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Samme arbeidstid brukes på alle valgte dager i perioden.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {sundayWarning && (
                 <div
                   className={`flex gap-2 rounded-md border p-3 text-sm ${
@@ -272,14 +414,92 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                 </div>
               </div>
 
+              {/* Project */}
+              <div className="space-y-2">
+                <Label>Prosjekt</Label>
+                {hasBygg && projects.length > 0 ? (
+                  <Tabs
+                    value={formData.project_id ? "project" : "free"}
+                    onValueChange={(v) =>
+                      setFormData({
+                        ...formData,
+                        project_id: null,
+                        project_name: v === "project" ? "" : formData.project_name,
+                      })
+                    }
+                  >
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="project">Velg prosjekt</TabsTrigger>
+                      <TabsTrigger value="free">Fritekst</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="project" className="pt-2">
+                      <Select
+                        value={formData.project_id || "__none__"}
+                        onValueChange={(value) => {
+                          if (value === "__none__") {
+                            setFormData({ ...formData, project_id: null, project_name: "" });
+                            return;
+                          }
+                          const proj = projects.find((pr) => pr.id === value);
+                          setFormData({
+                            ...formData,
+                            project_id: value,
+                            project_name: proj
+                              ? `${proj.project_number ? proj.project_number + " – " : ""}${proj.project_name}`
+                              : "",
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Velg prosjekt" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Ingen valgt</SelectItem>
+                          {projects.map((proj) => (
+                            <SelectItem key={proj.id} value={proj.id}>
+                              {proj.project_number ? `${proj.project_number} – ` : ""}
+                              {proj.project_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TabsContent>
+                    <TabsContent value="free" className="pt-2">
+                      <Input
+                        placeholder="F.eks. Service Nordvegen 12"
+                        value={formData.project_name || ""}
+                        onChange={(e) => setFormData({ ...formData, project_name: e.target.value, project_id: null })}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <>
+                    <Input
+                      placeholder="F.eks. Service Nordvegen 12 eller Oppdrag Kari Nordmann"
+                      value={formData.project_name || ""}
+                      onChange={(e) => setFormData({ ...formData, project_name: e.target.value, project_id: null })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Skriv inn prosjekt eller oppdrag som fritekst.
+                    </p>
+                  </>
+                )}
+              </div>
+
               {/* Location */}
               <div className="space-y-2">
                 <Label htmlFor="location">{t("auto.sted_omraade")}</Label>
                 <Select
-                  value={formData.location || "__none__"}
-                  onValueChange={(value) => 
-                    setFormData({ ...formData, location: value === "__none__" ? undefined : value })
-                  }
+                  value={customLocation ? CUSTOM : formData.location || "__none__"}
+                  onValueChange={(value) => {
+                    if (value === CUSTOM) {
+                      setCustomLocation(true);
+                      setFormData({ ...formData, location: "" });
+                      return;
+                    }
+                    setCustomLocation(false);
+                    setFormData({ ...formData, location: value === "__none__" ? undefined : value });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("auto.velg_sted")} />
@@ -291,18 +511,32 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                         {loc.label}
                       </SelectItem>
                     ))}
+                    <SelectItem value={CUSTOM}>Annet (skriv selv)</SelectItem>
                   </SelectContent>
                 </Select>
+                {customLocation && (
+                  <Input
+                    placeholder="Skriv sted/område"
+                    value={formData.location || ""}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                )}
               </div>
 
               {/* Role */}
               <div className="space-y-2">
                 <Label htmlFor="role">{t("auto.rolle")}</Label>
                 <Select
-                  value={formData.shift_role || "__none__"}
-                  onValueChange={(value) => 
-                    setFormData({ ...formData, shift_role: value === "__none__" ? undefined : value })
-                  }
+                  value={customRole ? CUSTOM : formData.shift_role || "__none__"}
+                  onValueChange={(value) => {
+                    if (value === CUSTOM) {
+                      setCustomRole(true);
+                      setFormData({ ...formData, shift_role: "" });
+                      return;
+                    }
+                    setCustomRole(false);
+                    setFormData({ ...formData, shift_role: value === "__none__" ? undefined : value });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("auto.velg_rolle")} />
@@ -314,8 +548,16 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                         {label}
                       </SelectItem>
                     ))}
+                    <SelectItem value={CUSTOM}>Annet (skriv selv)</SelectItem>
                   </SelectContent>
                 </Select>
+                {customRole && (
+                  <Input
+                    placeholder="Skriv rolle/funksjon"
+                    value={formData.shift_role || ""}
+                    onChange={(e) => setFormData({ ...formData, shift_role: e.target.value })}
+                  />
+                )}
               </div>
 
               {/* Responsible */}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
-import { LOCATIONS, ROLES } from "./ShiftCalendar";
+import { getLocationOption, getRoleLabel } from "./shiftOptions";
 import { 
   Clock, 
   MapPin, 
@@ -13,7 +13,8 @@ import {
   Star, 
   Calendar,
   Trash2,
-  Pencil
+  Pencil,
+  Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
@@ -37,7 +38,7 @@ export function ShiftDetailsDialog({
 }: ShiftDetailsDialogProps) {
   if (!schedule) return null;
 
-  const location = schedule.location ? LOCATIONS[schedule.location] : null;
+  const location = getLocationOption(schedule.location);
 
   return (
     <Dialog open={!!schedule} onOpenChange={(open) => !open && onClose()}>
@@ -78,7 +79,13 @@ export function ShiftDetailsDialog({
             )}
             {schedule.shift_role && (
               <Badge variant="outline">
-                {ROLES[schedule.shift_role] || schedule.shift_role}
+                {getRoleLabel(schedule.shift_role)}
+              </Badge>
+            )}
+            {schedule.project_name && (
+              <Badge variant="outline" className="gap-1">
+                <Briefcase className="w-3 h-3" />
+                {schedule.project_name}
               </Badge>
             )}
             {schedule.is_responsible && (

@@ -17804,6 +17804,8 @@ export type Database = {
           location: string | null
           notes: string | null
           overtime_reason: string | null
+          project_id: string | null
+          project_name: string | null
           schedule_date: string
           schedule_type: string
           shift_role: string | null
@@ -17825,6 +17827,8 @@ export type Database = {
           location?: string | null
           notes?: string | null
           overtime_reason?: string | null
+          project_id?: string | null
+          project_name?: string | null
           schedule_date: string
           schedule_type?: string
           shift_role?: string | null
@@ -17846,6 +17850,8 @@ export type Database = {
           location?: string | null
           notes?: string | null
           overtime_reason?: string | null
+          project_id?: string | null
+          project_name?: string | null
           schedule_date?: string
           schedule_type?: string
           shift_role?: string | null
@@ -17872,6 +17878,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_schedules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
             referencedColumns: ["id"]
           },
         ]
