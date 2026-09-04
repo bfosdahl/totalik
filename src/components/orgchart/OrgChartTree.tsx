@@ -298,6 +298,15 @@ const NodeCard: React.FC<NodeCardProps> = ({
                   <span className="text-sm font-medium truncate">{person.person_name}</span>
                 </div>
               ))}
+              {canEdit && (
+                <button
+                  onClick={() => onAddPerson(node.id)}
+                  className="w-full flex items-center justify-center gap-1.5 p-2 rounded-lg border border-dashed border-muted-foreground/30 text-xs text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-colors"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Legg til flere personer
+                </button>
+              )}
             </div>
           ) : (
             <button
