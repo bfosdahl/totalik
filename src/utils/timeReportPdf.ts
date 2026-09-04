@@ -264,10 +264,10 @@ export async function generateTimeReportPdf(opts: TimeReportOptions): Promise<st
     },
     columnStyles: {
       0: { cellWidth: 18 },
-      1: { cellWidth: 24 },
-      2: { cellWidth: 26 },
-      3: { cellWidth: 17 },
-      4: { cellWidth: 18 },
+      1: { cellWidth: 23 },
+      2: { cellWidth: 25 },
+      3: { cellWidth: 21 },
+      4: { cellWidth: 21 },
       5: { cellWidth: 24 },
       6: { cellWidth: 19, halign: "center" },
       7: { cellWidth: 11, halign: "center" },
@@ -275,7 +275,7 @@ export async function generateTimeReportPdf(opts: TimeReportOptions): Promise<st
       9: { cellWidth: 13, halign: "center" },
       10: { cellWidth: 12, halign: "right" },
       11: { cellWidth: 16, halign: "right" },
-      12: { cellWidth: 26 },
+      12: { cellWidth: 22 },
       13: { cellWidth: "auto" },
     },
     didDrawPage: () => {
