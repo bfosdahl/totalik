@@ -110,6 +110,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
       .from("ks_module2_projects")
       .select("id, project_name, project_number")
       .eq("company_id", profile.company_id)
+      .eq("is_deleted", false)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (!cancelled) setProjects(data || []);
