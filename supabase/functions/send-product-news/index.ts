@@ -71,6 +71,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const audience = (body as any)?.audience === "all_users" ? "all_users" : "company_admins";
     const testEmail = (body as any)?.testEmail ? String((body as any).testEmail).trim() : null;
     const dryRun = Boolean((body as any)?.dryRun);
+    const images: string[] = Array.isArray((body as any)?.images)
+      ? (body as any).images
+          .map((u: unknown) => String(u ?? "").trim())
+          .filter((u: string) => /^https:\/\//.test(u))
+          .slice(0, 10)
+      : [];
 
     if (!moduleType || !/^[A-Z_]{2,30}$/.test(moduleType)) {
       return new Response(JSON.stringify({ error: "Ugyldig modul" }), {
