@@ -216,6 +216,53 @@ export default function AdminNyheter() {
           </div>
 
           <div className="space-y-2">
+            <Label>Bilder (valgfritt)</Label>
+            <p className="text-xs text-muted-foreground">
+              Bildene vises nederst i e-posten, i den rekkefølgen du legger dem inn.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {images.map((url, i) => (
+                <div key={url} className="relative">
+                  <img
+                    src={url}
+                    alt={`Bilde ${i + 1} i nyhetsbrevet`}
+                    className="w-28 h-28 object-cover rounded-md border"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Fjern bilde"
+                    onClick={() => setImages((prev) => prev.filter((u) => u !== url))}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              <label className="w-28 h-28 border border-dashed rounded-md flex flex-col items-center justify-center gap-1 cursor-pointer text-muted-foreground hover:bg-muted/50">
+                {isUploading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <ImagePlus className="w-5 h-5" />
+                    <span className="text-xs">Legg til</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  disabled={isUploading}
+                  onChange={(e) => {
+                    handleImageUpload(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <Label>Test til deg selv</Label>
             <div className="flex flex-col sm:flex-row gap-2">
               <Input
