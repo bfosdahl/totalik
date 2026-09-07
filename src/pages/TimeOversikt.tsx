@@ -25,17 +25,21 @@ import {
 import { getHourBreakdown } from "@/utils/hourBreakdown";
 import { t } from "@/i18n/t";
 
-type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "last_3_months" | "custom";
+type Preset = "today" | "this_week" | "last_week" | "last_2_weeks" | "this_month" | "last_month" | "last_3_months" | "custom";
 
 function presetRange(p: Preset): { start: string; end: string } {
   const now = new Date();
   switch (p) {
+    case "today":
+      return { start: format(now, "yyyy-MM-dd"), end: format(now, "yyyy-MM-dd") };
     case "this_week":
       return { start: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"), end: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd") };
     case "last_week": {
       const lw = subWeeks(now, 1);
       return { start: format(startOfWeek(lw, { weekStartsOn: 1 }), "yyyy-MM-dd"), end: format(endOfWeek(lw, { weekStartsOn: 1 }), "yyyy-MM-dd") };
     }
+    case "last_2_weeks":
+      return { start: format(startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }), "yyyy-MM-dd"), end: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd") };
     case "last_month": {
       const lm = subMonths(now, 1);
       return { start: format(startOfMonth(lm), "yyyy-MM-dd"), end: format(endOfMonth(lm), "yyyy-MM-dd") };
@@ -47,6 +51,7 @@ function presetRange(p: Preset): { start: string; end: string } {
       return { start: format(startOfMonth(now), "yyyy-MM-dd"), end: format(endOfMonth(now), "yyyy-MM-dd") };
   }
 }
+
 
 
 export default function TimeOversikt() {
