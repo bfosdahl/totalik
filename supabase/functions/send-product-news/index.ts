@@ -29,7 +29,17 @@ function bodyToHtml(body: string): string {
     .join("");
 }
 
-function renderEmail(subject: string, body: string, r: Recipient): string {
+function imagesToHtml(images: string[]): string {
+  if (!images.length) return "";
+  return images
+    .map(
+      (url) =>
+        `<div style="margin:0 0 16px 0;text-align:center;"><img src="${esc(url)}" alt="" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;"></div>`,
+    )
+    .join("");
+}
+
+function renderEmail(subject: string, body: string, r: Recipient, images: string[]): string {
   return `
     <meta charset="utf-8">
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
