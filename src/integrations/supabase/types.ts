@@ -1766,6 +1766,68 @@ export type Database = {
           },
         ]
       }
+      company_customers: {
+        Row: {
+          address: string | null
+          company_id: string
+          contact_person: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string | null
+          id: string
+          is_deleted: boolean
+          name: string
+          notes: string | null
+          org_number: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          company_id: string
+          contact_person?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          is_deleted?: boolean
+          name: string
+          notes?: string | null
+          org_number?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          company_id?: string
+          contact_person?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          is_deleted?: boolean
+          name?: string
+          notes?: string | null
+          org_number?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_customers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_departments: {
         Row: {
           address: string | null
@@ -11499,6 +11561,7 @@ export type Database = {
           contractor_type: string | null
           created_at: string
           created_by: string | null
+          customer_id: string | null
           deleted_at: string | null
           deleted_by: string | null
           description: string | null
@@ -11537,6 +11600,7 @@ export type Database = {
           contractor_type?: string | null
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
@@ -11575,6 +11639,7 @@ export type Database = {
           contractor_type?: string | null
           created_at?: string
           created_by?: string | null
+          customer_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
@@ -11614,6 +11679,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ks_module2_projects_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "company_customers"
             referencedColumns: ["id"]
           },
           {

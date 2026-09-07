@@ -25,7 +25,7 @@ import {
 import { getHourBreakdown } from "@/utils/hourBreakdown";
 import { t } from "@/i18n/t";
 
-type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "custom";
+type Preset = "this_week" | "last_week" | "this_month" | "last_month" | "last_3_months" | "custom";
 
 function presetRange(p: Preset): { start: string; end: string } {
   const now = new Date();
@@ -40,11 +40,14 @@ function presetRange(p: Preset): { start: string; end: string } {
       const lm = subMonths(now, 1);
       return { start: format(startOfMonth(lm), "yyyy-MM-dd"), end: format(endOfMonth(lm), "yyyy-MM-dd") };
     }
+    case "last_3_months":
+      return { start: format(startOfMonth(subMonths(now, 2)), "yyyy-MM-dd"), end: format(endOfMonth(now), "yyyy-MM-dd") };
     case "this_month":
     default:
       return { start: format(startOfMonth(now), "yyyy-MM-dd"), end: format(endOfMonth(now), "yyyy-MM-dd") };
   }
 }
+
 
 export default function TimeOversikt() {
   const { isCompanyAdmin, isSystemAdmin, profile, company } = useAuth();
@@ -274,15 +277,15 @@ export default function TimeOversikt() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-              {(["this_week", "last_week", "this_month", "last_month", "custom"] as Preset[]).map((p) => (
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+              {(["this_week", "last_week", "this_month", "last_month", "last_3_months", "custom"] as Preset[]).map((p) => (
                 <Button
                   key={p}
                   variant={preset === p ? "default" : "outline"}
                   size="sm"
                   onClick={() => handlePreset(p)}
                 >
-                  {{ this_week: "Denne uken", last_week: "Forrige uke", this_month: "Denne måned", last_month: "Forrige måned", custom: "Egendefinert" }[p]}
+                  {{ this_week: "Denne uken", last_week: "Forrige uke", this_month: "Denne måned", last_month: "Forrige måned", last_3_months: "Siste 3 måneder", custom: "Egendefinert" }[p]}
                 </Button>
               ))}
             </div>

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, CreditCard, IdCard, UserPlus, Mail, Eye, EyeOff } from "lucide-react";
+import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, CreditCard, IdCard, UserPlus, Mail, Eye, EyeOff, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialog";
@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { t } from "@/i18n/t";
+import { BulkMessageDialog } from "@/components/hr/BulkMessageDialog";
 
 export default function Employees() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function Employees() {
   
   // Dialog states
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [bulkMessageOpen, setBulkMessageOpen] = useState(false);
   const [createDirectDialogOpen, setCreateDirectDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
@@ -187,6 +189,22 @@ export default function Employees() {
                 >
                   <Mail className="h-4 w-4" />
                   {t("auto.send_invitasjon")}
+                </Button>
+                <Button
+                  onClick={() => setBulkMessageOpen(true)}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  Send melding
+                </Button>
+                <Button
+                  onClick={() => navigate("/time-registration")}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Clock className="h-4 w-4" />
+                  Timeføring
                 </Button>
               </>
             )}
@@ -676,6 +694,7 @@ export default function Employees() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <BulkMessageDialog open={bulkMessageOpen} onOpenChange={setBulkMessageOpen} />
     </AppLayout>
   );
 }

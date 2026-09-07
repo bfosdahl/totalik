@@ -6692,5 +6692,7 @@
     "arbeidsulykke_registrert": "Arbeidsulykke registrert",
     "eksport_feilet": "Eksport feilet",
     "kunne_ikke_eksportere_brukere": "Kunne ikke eksportere brukere"
-  }
+  },
+  "auto.timefoering": "Timeføring",
+  "auto.timeoversikt": "Timeoversikt"
 }

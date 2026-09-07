@@ -6692,5 +6692,7 @@
     "arbeidsulykke_registrert": "Wypadek przy pracy zarejestrowany",
     "eksport_feilet": "Eksport nie powiódł się",
     "kunne_ikke_eksportere_brukere": "Nie można wyeksportować użytkowników"
-  }
+  },
+  "auto.timefoering": "Rejestracja godzin",
+  "auto.timeoversikt": "Przegląd godzin"
 }

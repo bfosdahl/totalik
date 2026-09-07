@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { FileDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -133,6 +133,24 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
               onClick={() => setRange(startOfMonth(new Date()), endOfMonth(new Date()))}
             >
               Denne måneden
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setRange(startOfMonth(subMonths(new Date(), 1)), endOfMonth(subMonths(new Date(), 1)))
+              }
+            >
+              Forrige måned
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setRange(startOfMonth(subMonths(new Date(), 2)), endOfMonth(new Date()))}
+            >
+              Siste 3 måneder
             </Button>
           </div>
 

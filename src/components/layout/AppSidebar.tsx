@@ -107,6 +107,7 @@ const ikKsGrunnlagItems: NavItem[] = [
 
 const ksByggItems: NavItem[] = [
   { labelKey: "auto.mine_prosjekter", path: "/ks" },
+  { labelKey: "auto.kunder", path: "/ks/kunder" },
   { labelKey: "auto.oppsett_hjelper", path: "/ks/oppsett" },
   { labelKey: "auto.utfylte_sjekklister", path: "/ks/utfylte-sjekklister" },
   { labelKey: "auto.befaring", path: "/ks/befaring" },
@@ -150,6 +151,8 @@ const personaladministrasjonItems = {
     { icon: Calendar, labelKey: "nav.workSchedule", path: "/work-schedule", color: "text-cyan-500" },
     { icon: CalendarDays, labelKey: "auto.soendagsrapport_aml_10_8", path: "/hr/sondagsrapport", color: "text-amber-600" },
     { icon: Clock, labelKey: "nav.approveHours", path: "/time-registration?view=admin", color: "text-indigo-500" },
+    { icon: Clock, labelKey: "auto.timefoering", path: "/time-registration", color: "text-indigo-400" },
+    { icon: BarChart3, labelKey: "auto.timeoversikt", path: "/timer/oversikt", color: "text-sky-500" },
     { icon: ShieldCheck, labelKey: "auto.personalliste_skatteetaten", path: "/personalliste", color: "text-teal-600" },
     { icon: ShieldAlert, labelKey: "nav.anonymousMessages", path: "/anonymous-messages", color: "text-amber-500" },
   ] as NavItem[],

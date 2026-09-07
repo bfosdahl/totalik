@@ -6692,5 +6692,7 @@
     "arbeidsulykke_registrert": "Work accident registered",
     "eksport_feilet": "Export failed",
     "kunne_ikke_eksportere_brukere": "Could not export users"
-  }
+  },
+  "auto.timefoering": "Time entry",
+  "auto.timeoversikt": "Hours overview"
 }
