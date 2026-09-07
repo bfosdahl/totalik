@@ -105,54 +105,43 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
 
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setRange(thisWeek.from, thisWeek.to)}
-            >
-              Denne uken
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setRange(
-                  startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
-                  endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 })
-                )
-              }
-            >
-              Forrige uke
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setRange(startOfMonth(new Date()), endOfMonth(new Date()))}
-            >
-              Denne måneden
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setRange(startOfMonth(subMonths(new Date(), 1)), endOfMonth(subMonths(new Date(), 1)))
-              }
-            >
-              Forrige måned
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setRange(startOfMonth(subMonths(new Date(), 2)), endOfMonth(new Date()))}
-            >
-              Siste 3 måneder
-            </Button>
+            {[
+              { label: "I dag", from: () => new Date(), to: () => new Date() },
+              { label: "Denne uken", from: () => thisWeek.from, to: () => thisWeek.to },
+              {
+                label: "Forrige uke",
+                from: () => startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
+                to: () => endOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
+              },
+              {
+                label: "Siste 2 uker",
+                from: () => startOfWeek(subWeeks(new Date(), 1), { weekStartsOn: 1 }),
+                to: () => endOfWeek(new Date(), { weekStartsOn: 1 }),
+              },
+              { label: "Denne måneden", from: () => startOfMonth(new Date()), to: () => endOfMonth(new Date()) },
+              {
+                label: "Forrige måned",
+                from: () => startOfMonth(subMonths(new Date(), 1)),
+                to: () => endOfMonth(subMonths(new Date(), 1)),
+              },
+              {
+                label: "Siste 3 måneder",
+                from: () => startOfMonth(subMonths(new Date(), 2)),
+                to: () => endOfMonth(new Date()),
+              },
+            ].map((p) => (
+              <Button
+                key={p.label}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setRange(p.from(), p.to())}
+              >
+                {p.label}
+              </Button>
+            ))}
           </div>
+
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
