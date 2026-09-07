@@ -163,6 +163,7 @@ const AdminCustomerImport = lazy(() => import("./pages/admin/AdminCustomerImport
 const AdminStoffkartotek = lazy(() => import("./pages/admin/AdminStoffkartotek"));
 const AdminRoutineMaker = lazy(() => import("./pages/admin/AdminRoutineMaker"));
 const AdminEmailLog = lazy(() => import("./pages/admin/AdminEmailLog"));
+const AdminNyheter = lazy(() => import("./pages/admin/AdminNyheter"));
 const AdminMonitoring = lazy(() => import("./pages/admin/AdminMonitoring"));
 const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
 const AdminLicenses = lazy(() => import("./pages/admin/AdminLicenses"));
@@ -363,6 +364,7 @@ const App = () => (
                   <Route path="/admin/customer-import" element={<ProtectedRoute requireSystemAdmin><AdminCustomerImport /></ProtectedRoute>} />
                   <Route path="/admin/stoffkartotek" element={<ProtectedRoute requireSystemAdmin><AdminStoffkartotek /></ProtectedRoute>} />
                   <Route path="/admin/routine-maker" element={<ProtectedRoute requireSystemAdmin><AdminRoutineMaker /></ProtectedRoute>} />
+                  <Route path="/admin/nyheter" element={<ProtectedRoute requireSystemAdmin><AdminNyheter /></ProtectedRoute>} />
                   <Route path="/admin/email-log" element={<ProtectedRoute requireSystemAdmin><AdminEmailLog /></ProtectedRoute>} />
                   <Route path="/admin/monitoring" element={<ProtectedRoute requireSystemAdmin><AdminMonitoring /></ProtectedRoute>} />
                   <Route path="/admin/sellers" element={<ProtectedRoute requireSystemAdmin><AdminSellers /></ProtectedRoute>} />
