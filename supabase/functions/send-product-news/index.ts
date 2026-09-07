@@ -48,6 +48,7 @@ function renderEmail(subject: string, body: string, r: Recipient, images: string
       </div>
       <p style="color:#333;font-size:16px;">Hei${r.firstName ? ` ${esc(r.firstName)}` : ""},</p>
       ${bodyToHtml(body)}
+      ${imagesToHtml(images)}
       <div style="text-align:center;margin:28px 0;">
         <a href="${LOGIN_URL}" style="background:linear-gradient(135deg,#0066cc 0%,#0052a3 100%);color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;font-size:16px;">Logg inn p&aring; Total-IK</a>
       </div>
