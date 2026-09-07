@@ -122,6 +122,7 @@ export default function AdminNyheter() {
           audience,
           subject: subject.trim(),
           body: body.trim(),
+          images,
           testEmail: asTest ? testEmail.trim() : null,
         },
       });
