@@ -31,6 +31,45 @@ export default function AdminNyheter() {
   const [counts, setCounts] = useState<{ companies: number; recipients: number } | null>(null);
   const [isCounting, setIsCounting] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setIsUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) {
+          toast.error(`${file.name} er ikke et bilde`);
+          continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} er større enn 10 MB`);
+          continue;
+        }
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const path = `news/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("email-assets")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (upErr) throw upErr;
+        const { data: signed, error: signErr } = await supabase.storage
+          .from("email-assets")
+          .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+        if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Kunne ikke lage bildelenke");
+        urls.push(signed.signedUrl);
+      }
+      if (urls.length) {
+        setImages((prev) => [...prev, ...urls]);
+        toast.success(urls.length === 1 ? "Bilde lagt til" : `${urls.length} bilder lagt til`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Kunne ikke laste opp bildet");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
