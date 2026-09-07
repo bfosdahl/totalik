@@ -282,18 +282,19 @@ export default function TimeOversikt() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-              {(["this_week", "last_week", "this_month", "last_month", "last_3_months", "custom"] as Preset[]).map((p) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {(["today", "this_week", "last_week", "last_2_weeks", "this_month", "last_month", "last_3_months", "custom"] as Preset[]).map((p) => (
                 <Button
                   key={p}
                   variant={preset === p ? "default" : "outline"}
                   size="sm"
                   onClick={() => handlePreset(p)}
                 >
-                  {{ this_week: "Denne uken", last_week: "Forrige uke", this_month: "Denne måned", last_month: "Forrige måned", last_3_months: "Siste 3 måneder", custom: "Egendefinert" }[p]}
+                  {{ today: "I dag", this_week: "Denne uken", last_week: "Forrige uke", last_2_weeks: "Siste 2 uker", this_month: "Denne måned", last_month: "Forrige måned", last_3_months: "Siste 3 måneder", custom: "Egendefinert" }[p]}
                 </Button>
               ))}
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs">{t("auto.fra")}</Label>
