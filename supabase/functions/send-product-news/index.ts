@@ -197,7 +197,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       from: "Total-IK <noreply@totalik.no>",
       to: [r.email],
       subject,
-      html: renderEmail(subject, message, r),
+      html: renderEmail(subject, message, r, images),
     }));
 
     let sent = 0;
