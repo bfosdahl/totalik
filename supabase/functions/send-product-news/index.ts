@@ -31,6 +31,7 @@ function bodyToHtml(body: string): string {
 
 function renderEmail(subject: string, body: string, r: Recipient): string {
   return `
+    <meta charset="utf-8">
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align:center;margin-bottom:24px;">
         <h1 style="color:#1a1a2e;margin:0;font-size:22px;">${esc(subject)}</h1>
