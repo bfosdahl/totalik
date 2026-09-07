@@ -165,7 +165,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     if (testEmail) {
       const sample = recipients[0];
-      recipients = [{ email: testEmail, firstName: sample?.firstName ?? null, companyName: sample?.companyName ?? null }];
+      recipients = [{ email: testEmail, firstName: null, companyName: sample?.companyName ?? null }];
     }
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
