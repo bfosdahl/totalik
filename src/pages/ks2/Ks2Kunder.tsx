@@ -57,8 +57,8 @@ interface ProjectRow {
   project_number: string | null;
   project_name: string;
   status: string | null;
-  start_date: string | null;
-  end_date: string | null;
+  planned_start_date: string | null;
+  planned_end_date: string | null;
   client_name: string | null;
   customer_id: string | null;
 }
@@ -109,7 +109,7 @@ export default function Ks2Kunder() {
       if (!companyId) return [] as ProjectRow[];
       const { data, error } = await supabase
         .from("ks_module2_projects")
-        .select("id, project_number, project_name, status, start_date, end_date, client_name, customer_id")
+        .select("id, project_number, project_name, status, planned_start_date, planned_end_date, client_name, customer_id")
         .eq("company_id", companyId)
         .eq("is_deleted", false)
         .order("created_at", { ascending: false });
@@ -440,7 +440,7 @@ export default function Ks2Kunder() {
                         {p.project_name}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {fmtDate(p.start_date)} – {fmtDate(p.end_date)}
+                        {fmtDate(p.planned_start_date)} – {fmtDate(p.planned_end_date)}
                       </span>
                     </span>
                     <Badge variant="outline">{p.status || "–"}</Badge>
