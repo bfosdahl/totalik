@@ -77,6 +77,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
   const [projectTab, setProjectTab] = useState<"project" | "free">("project");
 
   const [customLocation, setCustomLocation] = useState(false);
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
   const [customRole, setCustomRole] = useState(false);
   const [useRange, setUseRange] = useState(false);
   const [endDate, setEndDate] = useState("");
@@ -162,6 +163,7 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
       });
       setProjectTab(editShift.project_id ? "project" : editShift.project_name ? "free" : "project");
       setCustomLocation(!!editShift.location && !LOCATIONS[editShift.location]);
+      setSelectedEmployeeIds([editShift.employee_id]);
 
       setCustomRole(!!editShift.shift_role && !ROLES[editShift.shift_role]);
       setUseRange(false);
@@ -169,6 +171,28 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
       setFormData(prev => ({ ...prev, schedule_date: defaultDate }));
     }
   }, [defaultDate, editShift]);
+
+  // Hold søndagssjekken oppdatert mot første valgte ansatt
+  useEffect(() => {
+    if (isEditMode) return;
+    const first = selectedEmployeeIds[0];
+    if (!first) {
+      setFormData((prev) => (prev.employee_id ? { ...prev, employee_id: "", employee_name: "" } : prev));
+      return;
+    }
+    const user = users.find((u) => u.id === first);
+    setFormData((prev) =>
+      prev.employee_id === first
+        ? prev
+        : {
+            ...prev,
+            employee_id: first,
+            employee_name:
+              `${user?.first_name || ""} ${user?.last_name || ""}`.trim() || user?.email || "Ukjent",
+          }
+    );
+  }, [selectedEmployeeIds, users, isEditMode]);
+
 
   const handleEmployeeChange = (userId: string) => {
     const user = users.find(u => u.id === userId);
@@ -220,17 +244,31 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
     if (isEditMode) {
       result = await updateSchedule(editShift!.id, { ...base, schedule_date: formData.schedule_date });
     } else {
+      if (selectedEmployeeIds.length === 0) {
+        toast.error("Velg minst én ansatt.");
+        setIsSubmitting(false);
+        return;
+      }
       const dates = buildDates();
       if (dates.length === 0) {
         toast.error("Ingen dager i perioden. Velg minst én ukedag.");
         setIsSubmitting(false);
         return;
       }
-      result =
-        dates.length === 1
-          ? await createSchedule({ ...base, schedule_date: dates[0] })
-          : await createSchedulesBulk(dates.map((d) => ({ ...base, schedule_date: d })));
+      const rows = selectedEmployeeIds.flatMap((id) => {
+        const user = users.find((u) => u.id === id);
+        const name =
+          `${user?.first_name || ""} ${user?.last_name || ""}`.trim() || user?.email || "Ukjent";
+        return dates.map((d) => ({
+          ...base,
+          employee_id: id,
+          employee_name: name,
+          schedule_date: d,
+        }));
+      });
+      result = rows.length === 1 ? await createSchedule(rows[0]) : await createSchedulesBulk(rows);
     }
+
 
     if (result) {
       setFormData({
@@ -250,6 +288,8 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
       });
       setUseRange(false);
       setProjectTab("project");
+      setSelectedEmployeeIds([]);
+
 
       setEndDate("");
       setCustomLocation(false);
@@ -275,25 +315,71 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
           <ScrollArea className="flex-1 overflow-y-auto pr-4">
             <div className="space-y-4 py-4">
               {/* Employee */}
-              <div className="space-y-2">
-                <Label htmlFor="employee">{t("auto.ansatt_2")}</Label>
-                <Select
-                  value={formData.employee_id}
-                  onValueChange={handleEmployeeChange}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("auto.velg_ansatt")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.first_name} {user.last_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {isEditMode ? (
+                <div className="space-y-2">
+                  <Label htmlFor="employee">{t("auto.ansatt_2")}</Label>
+                  <Select value={formData.employee_id} onValueChange={handleEmployeeChange} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("auto.velg_ansatt")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.first_name} {user.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Ansatte ({selectedEmployeeIds.length} valgt)</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setSelectedEmployeeIds(
+                          selectedEmployeeIds.length === users.length ? [] : users.map((u) => u.id)
+                        )
+                      }
+                    >
+                      {selectedEmployeeIds.length === users.length ? "Fjern alle" : "Velg alle"}
+                    </Button>
+                  </div>
+                  <div className="max-h-44 overflow-y-auto rounded-md border divide-y">
+                    {users.map((user) => {
+                      const checked = selectedEmployeeIds.includes(user.id);
+                      return (
+                        <label
+                          key={user.id}
+                          className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() =>
+                              setSelectedEmployeeIds((prev) =>
+                                checked ? prev.filter((id) => id !== user.id) : [...prev, user.id]
+                              )
+                            }
+                          />
+                          <span>
+                            {`${user.first_name || ""} ${user.last_name || ""}`.trim() || user.email}
+                          </span>
+                        </label>
+                      );
+                    })}
+                    {users.length === 0 && (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">Ingen ansatte funnet</p>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Velg flere for å opprette samme vakt for alle på én gang.
+                  </p>
+                </div>
+              )}
+
 
               {/* Type */}
               <div className="space-y-2">

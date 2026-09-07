@@ -104,6 +104,7 @@ const Ks2ProjectDetail = lazy(() => import("./pages/ks2/Ks2ProjectDetail"));
 const Ks2Admin = lazy(() => import("./pages/ks2/Ks2Admin"));
 const Ks2Statistikk = lazy(() => import("./pages/ks2/Ks2Statistikk"));
 const Ks2Befaring = lazy(() => import("./pages/ks2/Ks2Befaring"));
+const Ks2Kunder = lazy(() => import("./pages/ks2/Ks2Kunder"));
 const KsKalkyler = lazy(() => import("./pages/ks2/KsKalkyler"));
 const IkKsRutiner = lazy(() => import("./pages/ks2/IkKsRutiner"));
 const IkKsMaal = lazy(() => import("./pages/ks2/IkKsMaal"));
@@ -322,6 +323,7 @@ const App = () => (
                   <Route path="/ks/dagsrapport-oversikt" element={<ProtectedRoute><Ks2DagsrapportOversikt /></ProtectedRoute>} />
                   <Route path="/ks/project/:projectId/*" element={<ProtectedRoute><Ks2ProjectDetail /></ProtectedRoute>} />
                   <Route path="/ks/admin" element={<ProtectedRoute><Ks2Admin /></ProtectedRoute>} />
+                  <Route path="/ks/kunder" element={<ProtectedRoute><Ks2Kunder /></ProtectedRoute>} />
                   <Route path="/ks/befaring" element={<ProtectedRoute><Ks2Befaring /></ProtectedRoute>} />
                   <Route path="/ks/kalkyler" element={<ProtectedRoute><KsKalkyler /></ProtectedRoute>} />
                   

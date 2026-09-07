@@ -6692,5 +6692,7 @@
     "arbeidsulykke_registrert": "Nelaimingas atsitikimas darbe užregistruotas",
     "eksport_feilet": "Eksportas nepavyko",
     "kunne_ikke_eksportere_brukere": "Nepavyko eksportuoti naudotojų"
-  }
+  },
+  "auto.timefoering": "Valandų registravimas",
+  "auto.timeoversikt": "Valandų apžvalga"
 }

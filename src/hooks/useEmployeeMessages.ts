@@ -104,6 +104,62 @@ export function useEmployeeMessages() {
     },
   });
 
+  const sendBulkMessage = useMutation({
+    mutationFn: async (data: {
+      recipients: { id: string; name: string }[];
+      subject?: string;
+      message: string;
+    }) => {
+      if (!profile || !company?.id) throw new Error("Mangler brukerdata");
+      if (data.recipients.length === 0) throw new Error("Ingen mottakere valgt");
+      const senderName =
+        `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Ukjent";
+
+      const { error } = await supabase.from("employee_messages").insert(
+        data.recipients.map((r) => ({
+          company_id: company.id,
+          sender_id: profile.id,
+          sender_name: senderName,
+          recipient_id: r.id,
+          recipient_name: r.name,
+          subject: data.subject || null,
+          message: data.message,
+        }))
+      );
+      if (error) throw error;
+
+      const { data: recipientProfiles } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .in("id", data.recipients.map((r) => r.id));
+
+      const notifications = (recipientProfiles || [])
+        .filter((p) => p.user_id)
+        .map((p) => ({
+          user_id: p.user_id as string,
+          company_id: company.id,
+          notification_type: "message",
+          title: `Ny melding fra ${senderName}`,
+          body: data.subject || data.message.substring(0, 100),
+          link: "/my/messages",
+          is_read: false,
+        }));
+      if (notifications.length > 0) {
+        await supabase.from("notification_log").insert(notifications);
+      }
+
+      return data.recipients.length;
+    },
+    onSuccess: (count) => {
+      toast.success(`Melding sendt til ${count} ansatte`);
+      queryClient.invalidateQueries({ queryKey: ["employee-messages-sent"] });
+    },
+    onError: (error: any) => {
+      console.error("Error sending bulk message:", error);
+      toast.error("Kunne ikke sende meldingen");
+    },
+  });
+
   const markAsRead = useMutation({
     mutationFn: async (messageId: string) => {
       const { error } = await supabase
@@ -141,6 +197,7 @@ export function useEmployeeMessages() {
     unreadCount,
     isLoading: isLoadingReceived || isLoadingSent,
     sendMessage,
+    sendBulkMessage,
     markAsRead,
     deleteMessage,
   };

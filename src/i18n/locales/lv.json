@@ -6692,5 +6692,7 @@
     "arbeidsulykke_registrert": "Darba negadījums reģistrēts",
     "eksport_feilet": "Eksports neizdevās",
     "kunne_ikke_eksportere_brukere": "Neizdevās eksportēt lietotājus"
-  }
+  },
+  "auto.timefoering": "Stundu reģistrēšana",
+  "auto.timeoversikt": "Stundu pārskats"
 }
