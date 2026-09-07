@@ -29,7 +29,17 @@ function bodyToHtml(body: string): string {
     .join("");
 }
 
-function renderEmail(subject: string, body: string, r: Recipient): string {
+function imagesToHtml(images: string[]): string {
+  if (!images.length) return "";
+  return images
+    .map(
+      (url) =>
+        `<div style="margin:0 0 16px 0;text-align:center;"><img src="${esc(url)}" alt="" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;"></div>`,
+    )
+    .join("");
+}
+
+function renderEmail(subject: string, body: string, r: Recipient, images: string[]): string {
   return `
     <meta charset="utf-8">
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -38,6 +48,7 @@ function renderEmail(subject: string, body: string, r: Recipient): string {
       </div>
       <p style="color:#333;font-size:16px;">Hei${r.firstName ? ` ${esc(r.firstName)}` : ""},</p>
       ${bodyToHtml(body)}
+      ${imagesToHtml(images)}
       <div style="text-align:center;margin:28px 0;">
         <a href="${LOGIN_URL}" style="background:linear-gradient(135deg,#0066cc 0%,#0052a3 100%);color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;font-size:16px;">Logg inn p&aring; Total-IK</a>
       </div>
@@ -60,6 +71,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const audience = (body as any)?.audience === "all_users" ? "all_users" : "company_admins";
     const testEmail = (body as any)?.testEmail ? String((body as any).testEmail).trim() : null;
     const dryRun = Boolean((body as any)?.dryRun);
+    const images: string[] = Array.isArray((body as any)?.images)
+      ? (body as any).images
+          .map((u: unknown) => String(u ?? "").trim())
+          .filter((u: string) => /^https:\/\//.test(u))
+          .slice(0, 10)
+      : [];
 
     if (!moduleType || !/^[A-Z_]{2,30}$/.test(moduleType)) {
       return new Response(JSON.stringify({ error: "Ugyldig modul" }), {
@@ -180,7 +197,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       from: "Total-IK <noreply@totalik.no>",
       to: [r.email],
       subject,
-      html: renderEmail(subject, message, r),
+      html: renderEmail(subject, message, r, images),
     }));
 
     let sent = 0;

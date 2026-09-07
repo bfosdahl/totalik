@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Mail, Megaphone, Send, Users } from "lucide-react";
+import { ImagePlus, Loader2, Mail, Megaphone, Send, Users, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -31,6 +31,45 @@ export default function AdminNyheter() {
   const [counts, setCounts] = useState<{ companies: number; recipients: number } | null>(null);
   const [isCounting, setIsCounting] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setIsUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) {
+          toast.error(`${file.name} er ikke et bilde`);
+          continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} er større enn 10 MB`);
+          continue;
+        }
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const path = `news/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("email-assets")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (upErr) throw upErr;
+        const { data: signed, error: signErr } = await supabase.storage
+          .from("email-assets")
+          .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+        if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Kunne ikke lage bildelenke");
+        urls.push(signed.signedUrl);
+      }
+      if (urls.length) {
+        setImages((prev) => [...prev, ...urls]);
+        toast.success(urls.length === 1 ? "Bilde lagt til" : `${urls.length} bilder lagt til`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Kunne ikke laste opp bildet");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -83,6 +122,7 @@ export default function AdminNyheter() {
           audience,
           subject: subject.trim(),
           body: body.trim(),
+          images,
           testEmail: asTest ? testEmail.trim() : null,
         },
       });
@@ -173,6 +213,53 @@ export default function AdminNyheter() {
               rows={12}
               placeholder={"Vi har gjort flere forbedringer i KS Bygg:\n\n- Kundekort som samler alle prosjekter på samme kunde\n- Arbeidsplan for flere ansatte samtidig\n- Siste 3 måneder i timerapporten"}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Bilder (valgfritt)</Label>
+            <p className="text-xs text-muted-foreground">
+              Bildene vises nederst i e-posten, i den rekkefølgen du legger dem inn.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {images.map((url, i) => (
+                <div key={url} className="relative">
+                  <img
+                    src={url}
+                    alt={`Bilde ${i + 1} i nyhetsbrevet`}
+                    className="w-28 h-28 object-cover rounded-md border"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Fjern bilde"
+                    onClick={() => setImages((prev) => prev.filter((u) => u !== url))}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              <label className="w-28 h-28 border border-dashed rounded-md flex flex-col items-center justify-center gap-1 cursor-pointer text-muted-foreground hover:bg-muted/50">
+                {isUploading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <ImagePlus className="w-5 h-5" />
+                    <span className="text-xs">Legg til</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  disabled={isUploading}
+                  onChange={(e) => {
+                    handleImageUpload(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
           </div>
 
           <div className="space-y-2">
