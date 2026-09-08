@@ -22,17 +22,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify the JWT cryptographically by calling auth.getUser with anon client
+    // Verify the JWT cryptographically by calling auth.getUser with the raw token
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
     const anonClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
+      { auth: { autoRefreshToken: false, persistSession: false } }
     );
-    const { data: authedUser, error: authedUserError } = await anonClient.auth.getUser();
+    const { data: authedUser, error: authedUserError } = await anonClient.auth.getUser(token);
     if (authedUserError || !authedUser?.user) {
       console.error("Auth verification error:", authedUserError);
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
+        JSON.stringify({ error: "Sesjonen er utløpt. Logg ut og inn igjen, og prøv på nytt." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
