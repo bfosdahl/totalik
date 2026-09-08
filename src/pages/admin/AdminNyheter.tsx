@@ -288,5 +288,6 @@ export default function AdminNyheter() {
         </CardContent>
       </Card>
     </div>
+    </AdminLayout>
   );
 }
