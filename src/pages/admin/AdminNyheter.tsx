@@ -10,6 +10,7 @@ import { ImagePlus, Loader2, Mail, Megaphone, Send, Users, X } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 
 const MODULES: { value: string; label: string }[] = [
   { value: "IK_BYGG", label: "KS Bygg" },
@@ -137,6 +138,7 @@ export default function AdminNyheter() {
   };
 
   return (
+    <AdminLayout>
     <div className="container max-w-3xl py-6 space-y-6">
       <div className="flex items-center gap-2 text-primary">
         <Megaphone className="w-6 h-6" />
@@ -287,5 +289,6 @@ export default function AdminNyheter() {
         </CardContent>
       </Card>
     </div>
+    </AdminLayout>
   );
 }
