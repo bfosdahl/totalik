@@ -418,7 +418,8 @@ export default function AdminRoutineMaker() {
       }
     } catch (e) {
       console.error("Checklist generation error:", e);
-      toast.error(t("auto.rutinen_ble_opprettet_men_sjekkliste_gen"));
+      toast.error(await readEdgeFunctionError(e, t("auto.rutinen_ble_opprettet_men_sjekkliste_gen")));
+
     }
   };
 
