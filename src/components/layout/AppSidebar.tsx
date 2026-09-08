@@ -451,6 +451,7 @@ const EmployeeSimpleNav = memo(function EmployeeSimpleNav({
     <>
       {items.map((item) => {
         const Icon = item.icon!;
+        const label = item.label || (item.labelKey ? t(item.labelKey) : "");
         const active = pathname === item.path || (item.path !== "/" && pathname.startsWith(item.path.split("?")[0]));
         const hasQuery = item.path.includes("?");
         return (
@@ -467,7 +468,7 @@ const EmployeeSimpleNav = memo(function EmployeeSimpleNav({
             )}
           >
             <Icon className={cn("w-5 h-5 flex-shrink-0", !active && item.color)} />
-            {!collapsed && <span className="font-medium text-sm">{item.label}</span>}
+            {!collapsed && <span className="font-medium text-sm">{label}</span>}
           </NavLink>
         );
       })}
