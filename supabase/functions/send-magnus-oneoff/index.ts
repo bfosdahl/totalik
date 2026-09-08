@@ -12,7 +12,9 @@ const json = (b: unknown, s = 200) =>
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.headers.get("x-admin-secret") !== Deno.env.get("ADMIN_ACTIONS_SECRET")) {
+  const secret = req.headers.get("x-admin-secret");
+  const allowed = [Deno.env.get("ADMIN_ACTIONS_SECRET"), Deno.env.get("ONEOFF_MAGNUS_SECRET")].filter(Boolean);
+  if (!secret || !allowed.includes(secret)) {
     return json({ error: "forbidden" }, 403);
   }
 
