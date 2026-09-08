@@ -9,6 +9,9 @@
 
 @layer base {
   :root {
+    /* Opt out of Android/Samsung forced dark mode (it blanks out text) */
+    color-scheme: light;
+
     /* Core palette - Scandinavian trust & safety */
     --background: 210 20% 98%;
     --foreground: 220 25% 10%;
@@ -79,6 +82,8 @@
   }
 
   .dark {
+    color-scheme: dark;
+
     --background: 220 25% 8%;
     --foreground: 210 20% 95%;
 
