@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -371,7 +372,8 @@ export default function AdminRoutineMaker() {
       }
     } catch (e) {
       console.error(e);
-      toast.error(t("auto.kunne_ikke_generere_rutine_med_ai"));
+      toast.error(await readEdgeFunctionError(e, t("auto.kunne_ikke_generere_rutine_med_ai")));
+
     } finally {
       setAiLoading(false);
     }
@@ -416,7 +418,8 @@ export default function AdminRoutineMaker() {
       }
     } catch (e) {
       console.error("Checklist generation error:", e);
-      toast.error(t("auto.rutinen_ble_opprettet_men_sjekkliste_gen"));
+      toast.error(await readEdgeFunctionError(e, t("auto.rutinen_ble_opprettet_men_sjekkliste_gen")));
+
     }
   };
 
