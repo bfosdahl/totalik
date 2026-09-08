@@ -6691,8 +6691,7 @@
     "registrer_det_foerste_avviket_for_aa_sta": "Zarejestruj pierwsze odchylenie, aby zacząć",
     "arbeidsulykke_registrert": "Wypadek przy pracy zarejestrowany",
     "eksport_feilet": "Eksport nie powiódł się",
-    "kunne_ikke_eksportere_brukere": "Nie można wyeksportować użytkowników"
-  },
-  "auto.timefoering": "Rejestracja godzin",
-  "auto.timeoversikt": "Przegląd godzin"
+    "kunne_ikke_eksportere_brukere": "Nie można wyeksportować użytkowników",
+    "timeoversikt": "Przegląd godzin"
+  }
 }

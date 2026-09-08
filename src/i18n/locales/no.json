@@ -6691,8 +6691,7 @@
     "registrer_det_foerste_avviket_for_aa_sta": "Registrer det første avviket for å starte",
     "arbeidsulykke_registrert": "Arbeidsulykke registrert",
     "eksport_feilet": "Eksport feilet",
-    "kunne_ikke_eksportere_brukere": "Kunne ikke eksportere brukere"
-  },
-  "auto.timefoering": "Timeføring",
-  "auto.timeoversikt": "Timeoversikt"
+    "kunne_ikke_eksportere_brukere": "Kunne ikke eksportere brukere",
+    "timeoversikt": "Timeoversikt"
+  }
 }

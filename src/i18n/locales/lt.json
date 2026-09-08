@@ -6691,8 +6691,7 @@
     "registrer_det_foerste_avviket_for_aa_sta": "Užregistruokite pirmąją neatitiktį, kad pradėtumėte",
     "arbeidsulykke_registrert": "Nelaimingas atsitikimas darbe užregistruotas",
     "eksport_feilet": "Eksportas nepavyko",
-    "kunne_ikke_eksportere_brukere": "Nepavyko eksportuoti naudotojų"
-  },
-  "auto.timefoering": "Valandų registravimas",
-  "auto.timeoversikt": "Valandų apžvalga"
+    "kunne_ikke_eksportere_brukere": "Nepavyko eksportuoti naudotojų",
+    "timeoversikt": "Valandų apžvalga"
+  }
 }
