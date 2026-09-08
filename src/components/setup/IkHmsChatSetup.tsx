@@ -575,6 +575,13 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
           setIsLoading(false);
           return;
         }
+
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: `Jeg klarte ikke å hente bedriftsinformasjon for organisasjonsnummer ${orgNumber}. Kontroller nummeret eller prøv igjen.`
+        }]);
+        setIsLoading(false);
+        return;
       }
 
       // Industry selection for departments
