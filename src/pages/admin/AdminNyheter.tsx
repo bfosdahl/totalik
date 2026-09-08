@@ -10,6 +10,7 @@ import { ImagePlus, Loader2, Mail, Megaphone, Send, Users, X } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 
 const MODULES: { value: string; label: string }[] = [
   { value: "IK_BYGG", label: "KS Bygg" },
