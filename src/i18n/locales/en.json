@@ -6691,8 +6691,7 @@
     "registrer_det_foerste_avviket_for_aa_sta": "Register the first deviation to get started",
     "arbeidsulykke_registrert": "Work accident registered",
     "eksport_feilet": "Export failed",
-    "kunne_ikke_eksportere_brukere": "Could not export users"
-  },
-  "auto.timefoering": "Time entry",
-  "auto.timeoversikt": "Hours overview"
+    "kunne_ikke_eksportere_brukere": "Could not export users",
+    "timeoversikt": "Hours overview"
+  }
 }
