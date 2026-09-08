@@ -134,14 +134,25 @@ Deno.serve(async (req) => {
 
     // If newPassword is provided, set it directly (admin password reset)
     if (newPassword) {
-      // SECURITY: Only system admins may set passwords directly.
-      // Company admins must use the reset-link path so the user receives it via email.
+      // SECURITY: System admins may set any password.
+      // Company admins may set passwords only for users in their own company,
+      // and never for a system admin account.
       if (!isSystemAdmin) {
-        return new Response(
-          JSON.stringify({ error: "Kun systemadministratorer kan sette passord direkte. Bruk tilbakestillingslenke i stedet." }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        const { data: targetSystemAdmin } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "system_admin")
+          .maybeSingle();
+
+        if (!isCompanyAdmin || !isSameCompany || targetSystemAdmin) {
+          return new Response(
+            JSON.stringify({ error: "Du har ikke tilgang til å sette passord for denne brukeren" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
+
       // Validate password length
       if (newPassword.length < 6) {
         return new Response(
