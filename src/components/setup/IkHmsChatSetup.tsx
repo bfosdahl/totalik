@@ -76,6 +76,17 @@ interface BrregInfo {
   organizationForm: string;
 }
 
+function extractOrgNumber(value: string): string | null {
+  const compactValue = value.replace(/[\s.]/g, '');
+  if (/^\d{9}$/.test(compactValue)) return compactValue;
+
+  const match = value.match(/(?:^|\D)(\d(?:[\s.]?\d){8})(?:\D|$)/);
+  if (!match) return null;
+
+  const digits = match[1].replace(/\D/g, '');
+  return digits.length === 9 ? digits : null;
+}
+
 const CHAT_STATE_KEY = 'ik-hms-chat-setup-v2';
 
 function getStorageKey(companyId: string, departmentId?: string): string {
@@ -248,17 +259,26 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   // Brreg lookup
   const lookupBrreg = async (orgNumber: string): Promise<BrregInfo | null> => {
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-        body: JSON.stringify({ lookupOrgNumber: orgNumber }),
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) {
+        toast.error("Innloggingen din er utløpt. Logg inn på nytt og prøv igjen.");
+        return null;
+      }
+
+      const { data: result, error } = await supabase.functions.invoke("ik-hms-chat", {
+        body: { lookupOrgNumber: orgNumber },
       });
-      if (!response.ok) return null;
-      const result = await response.json();
+      if (error) {
+        console.error("Brreg lookup failed:", error);
+        toast.error("Kunne ikke hente bedriftsinformasjon akkurat nå. Prøv igjen.");
+        return null;
+      }
       return result.success ? result.data as BrregInfo : null;
-    } catch { return null; }
+    } catch (error) {
+      console.error("Brreg lookup failed:", error);
+      toast.error("Kunne ikke hente bedriftsinformasjon akkurat nå. Prøv igjen.");
+      return null;
+    }
   };
   lookupBrregRef.current = lookupBrreg;
 
@@ -546,15 +566,22 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       }
 
       // Org number entered
-      const orgMatch = userInput.replace(/[\s.]/g, '').match(/^\d{9}$/);
-      if (orgMatch) {
-        const brregInfo = await lookupBrreg(userInput);
+      const orgNumber = extractOrgNumber(userInput);
+      if (orgNumber) {
+        const brregInfo = await lookupBrreg(orgNumber);
         if (brregInfo) {
           setPendingBrregInfo(brregInfo);
           setMessages(prev => [...prev, { role: "assistant", content: `Jeg fant:\n\n📋 **Firmanavn:** ${brregInfo.name}\n📍 **Adresse:** ${brregInfo.address}\n🏭 **Bransje:** ${brregInfo.industry}\n👥 **Ansatte:** ${brregInfo.employees}\n\nStemmer dette? (Ja/Nei)` }]);
           setIsLoading(false);
           return;
         }
+
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: `Jeg klarte ikke å hente bedriftsinformasjon for organisasjonsnummer ${orgNumber}. Kontroller nummeret eller prøv igjen.`
+        }]);
+        setIsLoading(false);
+        return;
       }
 
       // Industry selection for departments
