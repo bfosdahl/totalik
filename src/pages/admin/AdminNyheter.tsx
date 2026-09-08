@@ -137,6 +137,7 @@ export default function AdminNyheter() {
   };
 
   return (
+    <AdminLayout>
     <div className="container max-w-3xl py-6 space-y-6">
       <div className="flex items-center gap-2 text-primary">
         <Megaphone className="w-6 h-6" />
