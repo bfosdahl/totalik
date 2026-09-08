@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
       toast.success(t("auto.sjekkliste_generert"));
     } catch (err: any) {
       console.error("AI generation error:", err);
-      toast.error(err.message || "Kunne ikke generere sjekkliste");
+      toast.error(await readEdgeFunctionError(err, "Kunne ikke generere sjekkliste"));
     } finally {
       setIsGenerating(false);
     }

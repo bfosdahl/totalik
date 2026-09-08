@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -131,7 +132,7 @@ export default function Ks2Admin() {
       toast.success(t("auto.sjekkliste_generert"));
     } catch (err: any) {
       console.error("AI generation error:", err);
-      toast.error(err.message || "Kunne ikke generere sjekkliste");
+      toast.error(await readEdgeFunctionError(err, "Kunne ikke generere sjekkliste"));
     } finally {
       setAiIsGenerating(false);
     }
