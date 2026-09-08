@@ -372,7 +372,8 @@ export default function AdminRoutineMaker() {
       }
     } catch (e) {
       console.error(e);
-      toast.error(t("auto.kunne_ikke_generere_rutine_med_ai"));
+      toast.error(await readEdgeFunctionError(e, t("auto.kunne_ikke_generere_rutine_med_ai")));
+
     } finally {
       setAiLoading(false);
     }
