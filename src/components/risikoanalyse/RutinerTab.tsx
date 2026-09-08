@@ -623,8 +623,9 @@ export const RutinerTab = () => {
         </Card>
       ) : (
         <div className="space-y-3">
-          {filteredRoutines.map((routine) => (
-            <Card key={routine.id}>
+          {filteredRoutines.map((routine, routineIdx) => (
+            <Card key={`${routine.id}-${routineIdx}`}>
+
               <Collapsible 
                 open={expandedRoutines.has(routine.id)}
                 onOpenChange={() => toggleExpanded(routine.id)}

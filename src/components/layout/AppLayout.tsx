@@ -16,7 +16,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isCompanyAdmin, isSystemAdmin } = useAuth();
   const { hasAcceptedTerms, isLoading: termsLoading, acceptTerms, isAccepting } = useTermsAcceptance(user?.id);
   const isMobile = useIsMobile();
 
@@ -28,7 +28,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     setSidebarOpen((prev) => !prev);
   }, []);
 
-  const showTermsDialog = user && !termsLoading && !hasAcceptedTerms;
+  // Only company/system admins can accept commercial terms on behalf of the company
+  const showTermsDialog = user && (isCompanyAdmin || isSystemAdmin) && !termsLoading && !hasAcceptedTerms;
+
 
   return (
     <div className="min-h-screen bg-background">
