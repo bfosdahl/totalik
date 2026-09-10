@@ -680,10 +680,12 @@ export function RisikovurderingOgHandlingsplan() {
       priority: level.level === "Tiltak påkrevd" ? "høy" : level.requiresAction ? "medium" : "lav",
     };
 
-    setActions(prev => [...prev, newAction]);
+    const updatedActions = [...actions, newAction];
+    setActions(updatedActions);
     setShowAddActionDialog(false);
     setSelectedEventForAction(null);
     setNewActionDescription("");
+    await persistData(risks, updatedActions);
     toast.success(t("auto.tiltak_lagt_til"));
   };
 
