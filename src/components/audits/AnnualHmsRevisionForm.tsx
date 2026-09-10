@@ -189,7 +189,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
   const updateChecklistAnswer = (
     section: SectionKey,
     itemId: string,
-    field: 'answer' | 'comment',
+    field: 'answer' | 'comment' | 'deviation',
     value: string
   ) => {
     setFormData(prev => ({

@@ -28,7 +28,7 @@ export function useChecklistSectionsState<
     (
       sectionId: string,
       questionId: string,
-      field: "answer" | "comment",
+      field: "answer" | "comment" | "deviation",
       value: string,
     ) => {
       setFormData((prev) => ({
