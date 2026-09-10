@@ -459,14 +459,18 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
       autoTable(doc, {
         startY: y + 3,
         head: [[section.title, "Svar", "Kommentar"]],
-        body: section.rows.map((r) => [r.label || "-", answerLabel(r.answer), r.comment || "-"]),
+        body: section.rows.map((r) => [
+          r.label || "-",
+          isDeviation(r) ? `${answerLabel(r.answer)} - avvik` : answerLabel(r.answer),
+          r.comment || "-",
+        ]),
         theme: "striped",
         rowPageBreak: "avoid",
         styles: { font: PDF_FONT, fontSize: 8.5, cellPadding: 2, valign: "top", lineColor: [226, 232, 240] },
         headStyles: { fillColor: [241, 245, 249], textColor: [23, 42, 69], font: PDF_FONT, fontStyle: "bold" },
         columnStyles: {
           0: { cellWidth: (pageWidth - margin * 2) * 0.48 },
-          1: { cellWidth: 24, halign: "center" },
+          1: { cellWidth: 30, halign: "center" },
           2: { cellWidth: "auto" },
         },
         margin: { left: margin, right: margin },
