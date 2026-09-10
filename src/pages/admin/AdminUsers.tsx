@@ -355,8 +355,7 @@ export default function AdminUsers() {
         body: { userId, newEmail },
       });
       if (error) {
-        const detail = (error as any).context?.error || error.message;
-        throw new Error(detail);
+        throw new Error(await readEdgeFunctionError(error, "Kunne ikke endre e-post."));
       }
       if (data?.error) throw new Error(data.error);
       return data;
