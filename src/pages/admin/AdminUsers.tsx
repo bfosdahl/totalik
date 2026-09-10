@@ -55,6 +55,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 import { t } from "@/i18n/t";
+import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 
 type AppRole = "system_admin" | "company_admin" | "user";
 
@@ -355,8 +356,7 @@ export default function AdminUsers() {
         body: { userId, newEmail },
       });
       if (error) {
-        const detail = (error as any).context?.error || error.message;
-        throw new Error(detail);
+        throw new Error(await readEdgeFunctionError(error, "Kunne ikke endre e-post."));
       }
       if (data?.error) throw new Error(data.error);
       return data;
