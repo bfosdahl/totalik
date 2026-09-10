@@ -449,11 +449,125 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
     y = lastY();
   }
 
-  // === 2. Detaljert gjennomgang ===
+  // === Systemstatus fra IK/HMS-modulen ===
   let sectionNo = 2;
+  const sys = input.systemStatus;
+  if (sys) {
+    y = sectionHeading(`${sectionNo}. Virksomhetens internkontrollsystem i Totalik`, y + 12);
+    sectionNo++;
+    const parts: string[] = [];
+    parts.push(
+      sys.goals.length > 0
+        ? `Virksomheten har utarbeidet ${sys.goals.length} HMS-målsetting(er).`
+        : "Virksomheten har ikke registrert HMS-målsettinger i systemet."
+    );
+    parts.push(
+      sys.orgRoles.length > 0
+        ? `HMS-organiseringen er dokumentert med organisasjonskart bestående av ${sys.orgRoles.length} roller.`
+        : "Det er ikke registrert organisasjonskart / ansvarsfordeling i systemet."
+    );
+    parts.push(
+      sys.risks.length > 0
+        ? `Det er gjennomført risikovurdering med ${sys.risks.length} kartlagte risikoforhold.`
+        : "Det er ikke registrert risikovurdering i systemet."
+    );
+    parts.push(
+      sys.routines.length > 0
+        ? `Virksomheten har ${sys.routines.length} HMS-rutiner i systemet.`
+        : "Det er ikke registrert HMS-rutiner i systemet."
+    );
+    parts.push(
+      sys.deviations.total > 0
+        ? `Det er registrert ${sys.deviations.total} avvik, hvorav ${sys.deviations.open + sys.deviations.inProgress} er under behandling og ${sys.deviations.resolved + sys.deviations.closed} er lukket.`
+        : "Det er ikke registrert avvik i systemet."
+    );
+    if (sys.laws > 0) parts.push(`Lov- og forskriftsoversikten inneholder ${sys.laws} referanser.`);
+    doc.setFontSize(9.5);
+    const sysLines = doc.splitTextToSize(parts.join(" "), pageWidth - margin * 2);
+    doc.text(sysLines, margin, y + 4);
+    y = y + 4 + sysLines.length * 4.6;
+
+    const statusRow = (label: string, count: number, note: string) => [
+      label,
+      count > 0 ? "Etablert" : "Mangler",
+      String(count),
+      note,
+    ];
+    autoTable(doc, {
+      startY: y + 3,
+      head: [["Element i internkontrollen", "Status", "Antall", "Innhold"]],
+      body: [
+        statusRow("Målsetting for HMS", sys.goals.length, sys.goals.slice(0, 5).join("; ") || "-"),
+        statusRow(
+          "Organisering og ansvar",
+          sys.orgRoles.length,
+          sys.orgRoles
+            .slice(0, 8)
+            .map((r) => (r.persons.length ? `${r.role} (${r.persons.join(", ")})` : r.role))
+            .join("; ") || "-"
+        ),
+        statusRow(
+          "Risikovurdering",
+          sys.risks.length,
+          sys.risks
+            .slice(0, 8)
+            .map((r) => (r.level ? `${r.name} - ${r.level}` : r.name))
+            .filter(Boolean)
+            .join("; ") || "-"
+        ),
+        statusRow("Rutiner og prosedyrer", sys.routines.length, sys.routines.slice(0, 8).join("; ") || "-"),
+        statusRow(
+          "Registrerte avvik",
+          sys.deviations.total,
+          `Åpne: ${sys.deviations.open}, under arbeid: ${sys.deviations.inProgress}, løst: ${sys.deviations.resolved}, lukket: ${sys.deviations.closed}`
+        ),
+        statusRow("Lover og forskrifter", sys.laws, sys.laws > 0 ? "Oversikt tilgjengelig i systemet" : "-"),
+      ],
+      theme: "grid",
+      rowPageBreak: "avoid",
+      styles: { font: PDF_FONT, fontSize: 8.5, cellPadding: 2, valign: "top", lineColor: [226, 232, 240] },
+      headStyles: { fillColor: [23, 42, 69], textColor: 255, font: PDF_FONT, fontStyle: "bold" },
+      columnStyles: {
+        0: { cellWidth: 46, fontStyle: "bold" },
+        1: { cellWidth: 22, halign: "center" },
+        2: { cellWidth: 16, halign: "center" },
+        3: { cellWidth: "auto" },
+      },
+      didParseCell: (hook) => {
+        if (hook.section === "body" && hook.column.index === 1 && hook.cell.raw === "Mangler") {
+          hook.cell.styles.textColor = [190, 30, 45];
+          hook.cell.styles.fontStyle = "bold";
+        }
+      },
+      margin: { left: margin, right: margin },
+    });
+    y = lastY();
+
+    if (sys.deviations.recent.length > 0) {
+      autoTable(doc, {
+        startY: y + 5,
+        head: [["Siste registrerte avvik", "Status", "Registrert"]],
+        body: sys.deviations.recent.map((d) => [
+          `${d.number ? d.number + " - " : ""}${d.title}`,
+          deviationStatusLabel(d.status),
+          fmt(d.date),
+        ]),
+        theme: "striped",
+        rowPageBreak: "avoid",
+        styles: { font: PDF_FONT, fontSize: 8.5, cellPadding: 2, valign: "top", lineColor: [226, 232, 240] },
+        headStyles: { fillColor: [241, 245, 249], textColor: [23, 42, 69], font: PDF_FONT, fontStyle: "bold" },
+        columnStyles: { 1: { cellWidth: 30, halign: "center" }, 2: { cellWidth: 26, halign: "center" } },
+        margin: { left: margin, right: margin },
+      });
+      y = lastY();
+    }
+  }
+
+  // === Detaljert gjennomgang ===
   if (report.sections.length > 0) {
     y = sectionHeading(`${sectionNo}. Detaljert gjennomgang`, y + 12);
     sectionNo++;
+
     for (const section of report.sections) {
       if (section.rows.length === 0) continue;
       autoTable(doc, {
