@@ -326,10 +326,44 @@ export function RisikovurderingOgHandlingsplan() {
     loadData();
   }, [company?.id, refreshKey, filterDepartmentId]);
 
+  // Persist given data (used by autosave)
+  const persistData = async (nextRisks: RiskItem[], nextActions: ActionItem[]) => {
+    if (!company?.id) return;
+    setIsSaving(true);
+    try {
+      const nowIso = new Date().toISOString();
+      const { error: riskError } = await supabase
+        .from("company_risk_assessments")
+        .upsert([{
+          company_id: company.id,
+          department_id: filterDepartmentId,
+          risks: nextRisks as unknown as Json,
+          updated_at: nowIso,
+        }], { onConflict: "company_id,department_id" });
+      if (riskError) throw riskError;
+
+      const { error: actionError } = await supabase
+        .from("company_action_plans")
+        .upsert([{
+          company_id: company.id,
+          department_id: filterDepartmentId,
+          actions: nextActions as unknown as Json,
+          updated_at: nowIso,
+        }], { onConflict: "company_id,department_id" });
+      if (actionError) throw actionError;
+    } catch (error) {
+      console.error("Autosave error:", error);
+      toast.error(t("auto.kunne_ikke_lagre_2"));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Save all data
   const handleSave = async () => {
     if (!company?.id) return;
     setIsSaving(true);
+
 
     try {
       const { error: riskError } = await supabase
@@ -364,7 +398,7 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Add new risk with events
-  const addRisk = () => {
+  const addRisk = async () => {
     const validEvents = newRisk.events.filter(e => e.description.trim());
     if (!newRisk.hazard_source || validEvents.length === 0) {
       toast.error(t("auto.velg_farekilde_og_legg_til_minst_n_uoens"));
@@ -393,7 +427,8 @@ export function RisikovurderingOgHandlingsplan() {
       created_by: currentUserName,
     };
 
-    setRisks([...risks, risk]);
+    const updatedRisks = [...risks, risk];
+    setRisks(updatedRisks);
 
     // Auto-create actions for events that require it (yellow/red)
     const newActions: ActionItem[] = [];
@@ -415,9 +450,10 @@ export function RisikovurderingOgHandlingsplan() {
         });
       }
     });
-    
+
+    const updatedActions = newActions.length > 0 ? [...actions, ...newActions] : actions;
     if (newActions.length > 0) {
-      setActions(prev => [...prev, ...newActions]);
+      setActions(updatedActions);
     }
 
     // Reset form
@@ -428,7 +464,8 @@ export function RisikovurderingOgHandlingsplan() {
     });
 
     setShowAddDialog(false);
-    toast.success(`Farekilde lagt til med ${risk.events.length} hendelse(r)${newActions.length > 0 ? ` - ${newActions.length} tiltak opprettet` : ""}`);
+    await persistData(updatedRisks, updatedActions);
+    toast.success(`Farekilde lagret med ${risk.events.length} hendelse(r)${newActions.length > 0 ? ` - ${newActions.length} tiltak opprettet` : ""}`);
   };
 
   // Add event to form
@@ -601,8 +638,10 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Delete action
-  const deleteAction = (id: string) => {
-    setActions(actions.filter(a => a.id !== id));
+  const deleteAction = async (id: string) => {
+    const updatedActions = actions.filter(a => a.id !== id);
+    setActions(updatedActions);
+    await persistData(risks, updatedActions);
     toast.success(t("auto.tiltak_slettet"));
   };
 
@@ -614,7 +653,7 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Save new action from dialog
-  const saveNewAction = () => {
+  const saveNewAction = async () => {
     if (!selectedEventForAction || !newActionDescription.trim()) {
       toast.error(t("auto.fyll_inn_beskrivelse_av_tiltaket"));
       return;
@@ -641,10 +680,12 @@ export function RisikovurderingOgHandlingsplan() {
       priority: level.level === "Tiltak påkrevd" ? "høy" : level.requiresAction ? "medium" : "lav",
     };
 
-    setActions(prev => [...prev, newAction]);
+    const updatedActions = [...actions, newAction];
+    setActions(updatedActions);
     setShowAddActionDialog(false);
     setSelectedEventForAction(null);
     setNewActionDescription("");
+    await persistData(risks, updatedActions);
     toast.success(t("auto.tiltak_lagt_til"));
   };
 
@@ -672,7 +713,7 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Save edited risk
-  const saveEditedRisk = () => {
+  const saveEditedRisk = async () => {
     if (!editingRisk) return;
 
     const hazardLabel = newRisk.hazard_source === "annet" 
@@ -711,7 +752,8 @@ export function RisikovurderingOgHandlingsplan() {
       })),
     };
 
-    setRisks(risks.map(r => r.id === editingRisk.id ? updatedRisk : r));
+    const updatedRisks = risks.map(r => r.id === editingRisk.id ? updatedRisk : r);
+    setRisks(updatedRisks);
 
     // Update related actions
     const updatedActions = actions.map(a => {
@@ -740,6 +782,7 @@ export function RisikovurderingOgHandlingsplan() {
     });
     setEditingRisk(null);
     setShowAddDialog(false);
+    await persistData(updatedRisks, updatedActions);
     toast.success(t("auto.farekilde_oppdatert"));
   };
 
