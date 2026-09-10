@@ -245,6 +245,8 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const [hiddenDefaults, setHiddenDefaults] = useState<string[]>([]);
   const [monthOverrides, setMonthOverrides] = useState<Record<string, number[]>>({});
   const [editMonth, setEditMonth] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
