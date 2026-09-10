@@ -42,7 +42,10 @@ export interface AuditReportInput {
     email?: string | null;
     industry?: string | null;
   };
+  /** Faktisk innhold i IK/HMS-modulen (mål, organisering, risiko, rutiner, avvik). */
+  systemStatus?: HmsSystemStatus | null;
 }
+
 
 const FORM_LABELS: Record<string, string> = {
   annual_hms: "Årlig HMS-revisjon",
