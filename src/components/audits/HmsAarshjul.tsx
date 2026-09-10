@@ -629,18 +629,31 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Calendar className="w-6 h-6 text-primary" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Calendar className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>{t("auto.hms_aarshjul")}</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("auto.planlagte_hms_aktiviteter_gjennom_aaret")}
+                  </p>
+                </div>
               </div>
-              <div>
-                <CardTitle>{t("auto.hms_aarshjul")}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t("auto.planlagte_hms_aktiviteter_gjennom_aaret")}
-                </p>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto shrink-0"
+                onClick={handleDownloadAarshjul}
+                disabled={isDownloading}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {isDownloading ? "Lager PDF..." : "Last ned årshjul"}
+              </Button>
             </div>
           </CardHeader>
+
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Circular Wheel */}
