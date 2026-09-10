@@ -19,6 +19,8 @@ import { FilePlus, FileText, Trash2, Edit, CheckCircle2, Clock, Download, Loader
 import type { AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateHmsAuditReportPdf } from "@/utils/hmsAuditReportPdf";
+import { fetchHmsSystemStatus } from "@/utils/hmsSystemStatus";
+
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
 
