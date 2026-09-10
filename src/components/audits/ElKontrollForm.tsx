@@ -153,7 +153,7 @@ const ElKontrollForm: React.FC = () => {
   const handleAnswerChange = (
     sectionKey: keyof FormData["sections"],
     questionId: string,
-    field: "answer" | "comment",
+    field: "answer" | "comment" | "deviation",
     value: string
   ) => {
     setFormData((prev) => ({

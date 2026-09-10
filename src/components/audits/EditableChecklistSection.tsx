@@ -11,7 +11,8 @@ import {
   Pencil, 
   Check, 
   X,
-  GripVertical
+  GripVertical,
+  AlertTriangle
 } from 'lucide-react';
 
 type YesNoNa = 'yes' | 'no' | 'na' | '';
@@ -24,6 +25,8 @@ export interface ChecklistQuestion {
 export interface ChecklistAnswer {
   answer: YesNoNa;
   comment: string;
+  /** Manuelt merket som avvik av den som fyller ut ("true" naar avvik). */
+  deviation?: string;
 }
 
 interface EditableChecklistSectionProps {
@@ -33,7 +36,7 @@ interface EditableChecklistSectionProps {
   icon: React.ElementType;
   questions: ChecklistQuestion[];
   answers: { [questionId: string]: ChecklistAnswer };
-  onAnswerChange: (questionId: string, field: 'answer' | 'comment', value: string) => void;
+  onAnswerChange: (questionId: string, field: 'answer' | 'comment' | 'deviation', value: string) => void;
   onAddQuestion: (question: string) => void;
   onEditQuestion: (questionId: string, newQuestion: string) => void;
   onDeleteQuestion: (questionId: string) => void;
@@ -297,6 +300,22 @@ const EditableChecklistSection: React.FC<EditableChecklistSectionProps> = ({
                   <Label htmlFor={`${sectionId}-${q.id}-na`} className="text-sm">{t("auto.ikke_aktuelt")}</Label>
                 </div>
               </RadioGroup>
+              <Button
+                type="button"
+                size="sm"
+                variant={answers[q.id]?.deviation === 'true' ? 'destructive' : 'outline'}
+                className="gap-1 shrink-0"
+                onClick={() =>
+                  onAnswerChange(
+                    q.id,
+                    'deviation',
+                    answers[q.id]?.deviation === 'true' ? '' : 'true',
+                  )
+                }
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Avvik
+              </Button>
               <Input
                 placeholder={t("auto.kommentar_2")}
                 value={answers[q.id]?.comment || ''}
