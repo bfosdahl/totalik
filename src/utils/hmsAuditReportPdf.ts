@@ -442,7 +442,7 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
 
   // === Systemstatus fra IK/HMS-modulen ===
   let sectionNo = 2;
-  const sys = input.systemStatus;
+  const sys = input.formType === "annual_hms" ? input.systemStatus : null;
   if (sys) {
     y = sectionHeading(`${sectionNo}. Virksomhetens internkontrollsystem i Totalik`, y + 12);
     sectionNo++;
