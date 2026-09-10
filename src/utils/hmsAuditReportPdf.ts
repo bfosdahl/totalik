@@ -116,6 +116,30 @@ interface ReportRow {
   answer: "yes" | "no" | "na" | "";
   comment: string;
 }
+
+/**
+ * Enkelte eldre kontrollpunkter er negativt formulert, slik at "Nei" er det
+ * positive svaret (og "Ja" betyr avvik). Disse må ikke telles som avvik.
+ */
+const INVERTED_QUESTIONS = [
+  "høy belastning er ikke koblet via skjøteledninger",
+  "ingen kabler løst, over varme eller fukt uten vern",
+  "high loads are not connected via extension cords",
+  "no loose cables, or cables exposed to heat or moisture without protection",
+];
+
+const isInvertedQuestion = (label: string) => {
+  const l = label.trim().toLowerCase().replace(/\s+/g, " ");
+  return INVERTED_QUESTIONS.some((q) => l.startsWith(q) || q.startsWith(l));
+};
+
+/** Er raden et avvik, hensyntatt negativt formulerte spørsmål? */
+const isDeviation = (row: ReportRow) =>
+  isInvertedQuestion(row.label) ? row.answer === "yes" : row.answer === "no";
+
+/** Er raden vurdert som i orden? */
+const isOk = (row: ReportRow) =>
+  isInvertedQuestion(row.label) ? row.answer === "no" : row.answer === "yes";
 interface ReportSection {
   title: string;
   rows: ReportRow[];
@@ -372,8 +396,8 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
 
   const summaryRows = report.sections.map((s) => {
     const total = s.rows.length;
-    const ok = s.rows.filter((r) => r.answer === "yes").length;
-    const deviations = s.rows.filter((r) => r.answer === "no").length;
+    const ok = s.rows.filter(isOk).length;
+    const deviations = s.rows.filter(isDeviation).length;
     const na = s.rows.filter((r) => r.answer === "na").length;
     const unanswered = total - ok - deviations - na;
     const verdict =
@@ -427,7 +451,8 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
         },
         margin: { left: margin, right: margin },
         didParseCell: (hook) => {
-          if (hook.section === "body" && hook.column.index === 1 && hook.cell.raw === "Nei") {
+          const row = section.rows[hook.row.index];
+          if (hook.section === "body" && hook.column.index === 1 && row && isDeviation(row)) {
             hook.cell.styles.textColor = [190, 30, 45];
             hook.cell.styles.fontStyle = "bold";
           }
@@ -439,7 +464,7 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
 
   // === Funn og avvik ===
   const findings = report.sections.flatMap((s) =>
-    s.rows.filter((r) => r.answer === "no").map((r) => [s.title, r.label, r.comment || "Tiltak ikke beskrevet"])
+    s.rows.filter(isDeviation).map((r) => [s.title, r.label, r.comment || "Tiltak ikke beskrevet"])
   );
   y = sectionHeading(`${sectionNo}. Funn og avvik`, y + 10);
   sectionNo++;
