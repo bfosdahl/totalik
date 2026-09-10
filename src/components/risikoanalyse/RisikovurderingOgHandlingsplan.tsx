@@ -638,8 +638,10 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Delete action
-  const deleteAction = (id: string) => {
-    setActions(actions.filter(a => a.id !== id));
+  const deleteAction = async (id: string) => {
+    const updatedActions = actions.filter(a => a.id !== id);
+    setActions(updatedActions);
+    await persistData(risks, updatedActions);
     toast.success(t("auto.tiltak_slettet"));
   };
 
