@@ -396,8 +396,8 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
 
   const summaryRows = report.sections.map((s) => {
     const total = s.rows.length;
-    const ok = s.rows.filter((r) => r.answer === "yes").length;
-    const deviations = s.rows.filter((r) => r.answer === "no").length;
+    const ok = s.rows.filter(isOk).length;
+    const deviations = s.rows.filter(isDeviation).length;
     const na = s.rows.filter((r) => r.answer === "na").length;
     const unanswered = total - ok - deviations - na;
     const verdict =
