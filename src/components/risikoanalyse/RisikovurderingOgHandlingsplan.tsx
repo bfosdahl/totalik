@@ -398,7 +398,7 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Add new risk with events
-  const addRisk = () => {
+  const addRisk = async () => {
     const validEvents = newRisk.events.filter(e => e.description.trim());
     if (!newRisk.hazard_source || validEvents.length === 0) {
       toast.error(t("auto.velg_farekilde_og_legg_til_minst_n_uoens"));
