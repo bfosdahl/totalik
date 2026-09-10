@@ -439,6 +439,39 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
 
   const currentMonthActivities = activitiesByMonth[currentMonth] || [];
 
+  const handleDownloadAarshjul = async () => {
+    setIsDownloading(true);
+    try {
+      const rows: AarshjulRow[] = [];
+      months.forEach((m) => {
+        (activitiesByMonth[m.id] || []).forEach((a) => {
+          rows.push({
+            month: m.id,
+            monthName: m.fullName,
+            name: a.name,
+            description: a.description,
+            frequency: a.frequency,
+            responsible: a.responsible || "-",
+            completedDate: getCompletionDate(a.id),
+          });
+        });
+      });
+      const { downloadAarshjulPdf } = await import("@/utils/hmsAarshjulPdf");
+      await downloadAarshjulPdf(rows, {
+        companyName: company?.name || "",
+        orgNumber: (company as any)?.org_number ?? null,
+        year: currentYear,
+      });
+      toast.success("Årshjulet er lastet ned");
+    } catch (e) {
+      console.error("Error generating årshjul PDF:", e);
+      toast.error("Kunne ikke lage PDF av årshjulet");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+
   // In compact mode, return null if no activities this month
   if (compact && currentMonthActivities.length === 0) {
     return null;
