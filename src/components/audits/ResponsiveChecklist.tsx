@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileChecklistItem from "./MobileChecklistItem";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, AlertTriangle } from "lucide-react";
 import { t } from "@/i18n/t";
 
 type YesNoNa = "yes" | "no" | "na" | "";
@@ -20,6 +20,8 @@ interface ChecklistAnswers {
   [key: string]: {
     answer: YesNoNa;
     comment: string;
+    deviation?: string;
+
   };
 }
 
@@ -30,6 +32,8 @@ interface ResponsiveChecklistProps {
   sectionKey: string;
   onAnswerChange: (itemId: string, value: YesNoNa) => void;
   onCommentChange: (itemId: string, value: string) => void;
+  /** Manuell merking av kontrollpunktet som avvik */
+  onDeviationChange?: (itemId: string, value: boolean) => void;
   // Optional editing props
   onAddItem?: (label: string) => void;
   onEditItem?: (itemId: string, newLabel: string) => void;
@@ -43,9 +47,11 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
   sectionKey,
   onAnswerChange,
   onCommentChange,
+  onDeviationChange,
   onAddItem,
   onEditItem,
   onDeleteItem,
+
 }) => {
   const isMobile = useIsMobile();
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -153,10 +159,15 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                       label={`${index + 1}. ${item.label}`}
                       answer={answers[item.id]?.answer || ""}
                       comment={answers[item.id]?.comment || ""}
+                      deviation={answers[item.id]?.deviation === "true"}
                       onAnswerChange={(value) => onAnswerChange(item.id, value)}
                       onCommentChange={(value) => onCommentChange(item.id, value)}
+                      onDeviationChange={
+                        onDeviationChange ? (value) => onDeviationChange(item.id, value) : undefined
+                      }
                       name={`${sectionKey}-${item.id}`}
                     />
+
                   </div>
                 )}
               </div>
@@ -220,6 +231,11 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                   <th className="text-center py-2 px-2 text-sm font-medium text-muted-foreground w-14">
                     N/A
                   </th>
+                  {onDeviationChange && (
+                    <th className="text-center py-2 px-2 text-sm font-medium text-muted-foreground w-24">
+                      {t("auto.avvik")}
+                    </th>
+                  )}
                   <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground w-48">
                     {t("auto.kommentar_2")}
                   </th>
@@ -284,6 +300,22 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                         className="w-4 h-4 text-primary border-border focus:ring-primary"
                       />
                     </td>
+                    {onDeviationChange && (
+                      <td className="text-center py-3 px-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={answers[item.id]?.deviation === "true" ? "destructive" : "outline"}
+                          className="gap-1 h-8"
+                          onClick={() =>
+                            onDeviationChange(item.id, answers[item.id]?.deviation !== "true")
+                          }
+                        >
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          {t("auto.avvik")}
+                        </Button>
+                      </td>
+                    )}
                     <td className="py-3 px-3">
                       <Input
                         value={answers[item.id]?.comment || ""}
@@ -325,7 +357,7 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                 {/* Add new item row */}
                 {isAddingNew && (
                   <tr className="border-t border-dashed border-border">
-                    <td colSpan={isEditable ? 6 : 5} className="py-3 px-3">
+                    <td colSpan={(isEditable ? 6 : 5) + (onDeviationChange ? 1 : 0)} className="py-3 px-3">
                       <div className="flex items-center gap-2">
                         <Input
                           value={newItemLabel}

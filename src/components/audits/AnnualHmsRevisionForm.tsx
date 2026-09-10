@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, FileText, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+import { createAuditDeviations } from "@/utils/createAuditDeviations";
 import { getLocalDateString } from "@/lib/dateUtils";
 import ResponsiveChecklist, { type ChecklistRow } from "./ResponsiveChecklist";
 import ResponsiveActionTable from "./ResponsiveActionTable";
@@ -21,6 +23,8 @@ interface ChecklistAnswers {
   [key: string]: {
     answer: YesNoNa;
     comment: string;
+    /** "true" naar punktet er manuelt merket som avvik */
+    deviation?: string;
   };
 }
 
@@ -286,6 +290,43 @@ const AnnualHmsRevisionForm: React.FC = () => {
     );
   };
 
+  const sectionTitles: Record<SectionKey, string> = {
+    goalsSection: t("auto.1_maal_og_planer_for_hms_arbeidet"),
+    organizationSection: t("auto.2_organisering_og_ansvar"),
+    riskSection: t("auto.3_risikovurdering"),
+    routinesSection: t("auto.4_rutiner_og_prosedyrer"),
+    trainingSection: t("auto.5_opplaering_og_kompetanse"),
+    deviationsSection: t("auto.6_avviksbehandling_og_hendelser"),
+    inspectionsSection: t("auto.7_vernerunder_inspeksjoner"),
+    workEnvSection: t("auto.8_arbeidsmiljoe_og_trivsel"),
+  };
+
+  const registerDeviations = async () => {
+    const items = (Object.keys(sectionTitles) as SectionKey[]).flatMap((key) =>
+      (formData.sectionItems[key] || [])
+        .filter((item) => formData[key][item.id]?.deviation === "true")
+        .map((item) => ({
+          label: item.label,
+          comment: formData[key][item.id]?.comment || "",
+          sectionTitle: sectionTitles[key],
+        }))
+    );
+    if (items.length === 0) return;
+    try {
+      const created = await createAuditDeviations({
+        companyId: company?.id || "",
+        formLabel: "Årlig HMS-revisjon",
+        items,
+        reporterName: formData.auditor || null,
+        date: formData.revisionDate,
+      });
+      if (created > 0) toast.success(`${created} avvik registrert i avviksmodulen`);
+    } catch (error) {
+      console.error("[AnnualHmsRevisionForm] deviation error:", error);
+      toast.error("Kunne ikke registrere avvik i avviksmodulen");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await saveFormResponse(
@@ -303,6 +344,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
     if (result) {
       setExistingId(result.id);
     }
+    await registerDeviations();
   };
 
   const handleChecklistAnswerChange = (section: SectionKey, itemId: string, value: string) => {
@@ -311,6 +353,10 @@ const AnnualHmsRevisionForm: React.FC = () => {
 
   const handleChecklistCommentChange = (section: SectionKey, itemId: string, value: string) => {
     updateChecklistAnswer(section, itemId, 'comment', value);
+  };
+
+  const handleChecklistDeviationChange = (section: SectionKey, itemId: string, value: boolean) => {
+    updateChecklistAnswer(section, itemId, 'deviation', value ? 'true' : '');
   };
 
   if (!showForm) {
@@ -400,6 +446,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="goalsSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("goalsSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("goalsSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("goalsSection", id, val)}
         onAddItem={(label) => handleAddItem("goalsSection", label)}
         onEditItem={(id, label) => handleEditItem("goalsSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("goalsSection", id)}
@@ -411,6 +458,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="organizationSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("organizationSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("organizationSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("organizationSection", id, val)}
         onAddItem={(label) => handleAddItem("organizationSection", label)}
         onEditItem={(id, label) => handleEditItem("organizationSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("organizationSection", id)}
@@ -422,6 +470,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="riskSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("riskSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("riskSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("riskSection", id, val)}
         onAddItem={(label) => handleAddItem("riskSection", label)}
         onEditItem={(id, label) => handleEditItem("riskSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("riskSection", id)}
@@ -433,6 +482,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="routinesSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("routinesSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("routinesSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("routinesSection", id, val)}
         onAddItem={(label) => handleAddItem("routinesSection", label)}
         onEditItem={(id, label) => handleEditItem("routinesSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("routinesSection", id)}
@@ -444,6 +494,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="trainingSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("trainingSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("trainingSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("trainingSection", id, val)}
         onAddItem={(label) => handleAddItem("trainingSection", label)}
         onEditItem={(id, label) => handleEditItem("trainingSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("trainingSection", id)}
@@ -455,6 +506,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="deviationsSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("deviationsSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("deviationsSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("deviationsSection", id, val)}
         onAddItem={(label) => handleAddItem("deviationsSection", label)}
         onEditItem={(id, label) => handleEditItem("deviationsSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("deviationsSection", id)}
@@ -466,6 +518,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="inspectionsSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("inspectionsSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("inspectionsSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("inspectionsSection", id, val)}
         onAddItem={(label) => handleAddItem("inspectionsSection", label)}
         onEditItem={(id, label) => handleEditItem("inspectionsSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("inspectionsSection", id)}
@@ -477,6 +530,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
         sectionKey="workEnvSection"
         onAnswerChange={(id, val) => handleChecklistAnswerChange("workEnvSection", id, val)}
         onCommentChange={(id, val) => handleChecklistCommentChange("workEnvSection", id, val)}
+        onDeviationChange={(id, val) => handleChecklistDeviationChange("workEnvSection", id, val)}
         onAddItem={(label) => handleAddItem("workEnvSection", label)}
         onEditItem={(id, label) => handleEditItem("workEnvSection", id, label)}
         onDeleteItem={(id) => handleDeleteItem("workEnvSection", id)}
