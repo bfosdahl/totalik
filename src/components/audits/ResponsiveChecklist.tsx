@@ -20,6 +20,8 @@ interface ChecklistAnswers {
   [key: string]: {
     answer: YesNoNa;
     comment: string;
+    deviation?: string;
+
   };
 }
 
