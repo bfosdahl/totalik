@@ -326,10 +326,44 @@ export function RisikovurderingOgHandlingsplan() {
     loadData();
   }, [company?.id, refreshKey, filterDepartmentId]);
 
+  // Persist given data (used by autosave)
+  const persistData = async (nextRisks: RiskItem[], nextActions: ActionItem[]) => {
+    if (!company?.id) return;
+    setIsSaving(true);
+    try {
+      const nowIso = new Date().toISOString();
+      const { error: riskError } = await supabase
+        .from("company_risk_assessments")
+        .upsert([{
+          company_id: company.id,
+          department_id: filterDepartmentId,
+          risks: nextRisks as unknown as Json,
+          updated_at: nowIso,
+        }], { onConflict: "company_id,department_id" });
+      if (riskError) throw riskError;
+
+      const { error: actionError } = await supabase
+        .from("company_action_plans")
+        .upsert([{
+          company_id: company.id,
+          department_id: filterDepartmentId,
+          actions: nextActions as unknown as Json,
+          updated_at: nowIso,
+        }], { onConflict: "company_id,department_id" });
+      if (actionError) throw actionError;
+    } catch (error) {
+      console.error("Autosave error:", error);
+      toast.error(t("auto.kunne_ikke_lagre_2"));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Save all data
   const handleSave = async () => {
     if (!company?.id) return;
     setIsSaving(true);
+
 
     try {
       const { error: riskError } = await supabase
