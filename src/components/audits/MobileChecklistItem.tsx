@@ -1,7 +1,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Check, X, Minus, MessageSquare } from "lucide-react";
+import { Check, X, Minus, MessageSquare, AlertTriangle } from "lucide-react";
 import { t } from "@/i18n/t";
 
 type YesNoNa = "yes" | "no" | "na" | "";
@@ -10,8 +10,10 @@ interface MobileChecklistItemProps {
   label: string;
   answer: YesNoNa;
   comment: string;
+  deviation?: boolean;
   onAnswerChange: (value: YesNoNa) => void;
   onCommentChange: (value: string) => void;
+  onDeviationChange?: (value: boolean) => void;
   name: string;
 }
 
@@ -19,8 +21,10 @@ const MobileChecklistItem: React.FC<MobileChecklistItemProps> = ({
   label,
   answer,
   comment,
+  deviation = false,
   onAnswerChange,
   onCommentChange,
+  onDeviationChange,
   name,
 }) => {
   const [showComment, setShowComment] = React.useState(!!comment);
@@ -73,6 +77,25 @@ const MobileChecklistItem: React.FC<MobileChecklistItemProps> = ({
           <span className="text-sm font-medium">N/A</span>
         </button>
       </div>
+
+      {/* Manual deviation flag */}
+      {onDeviationChange && (
+        <button
+          type="button"
+          onClick={() => onDeviationChange(!deviation)}
+          className={cn(
+            "w-full flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 transition-all duration-200 active:scale-95",
+            deviation
+              ? "bg-destructive border-destructive text-destructive-foreground"
+              : "bg-background border-border text-muted-foreground hover:border-destructive/40"
+          )}
+        >
+          <AlertTriangle className="h-5 w-5" />
+          <span className="text-sm font-medium">
+            {deviation ? t("auto.merket_som_avvik") : t("auto.marker_som_avvik")}
+          </span>
+        </button>
+      )}
 
       {/* Comment toggle and input */}
       {!showComment ? (
