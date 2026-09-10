@@ -780,8 +780,8 @@ export function RisikovurderingOgHandlingsplan() {
       hazard_source_custom: "",
       events: [{ description: "", consequence: 3, probability: 3, measures: "", responsible: currentUserName, deadline: "" }]
     });
-    setEditingRisk(null);
     setShowAddDialog(false);
+    await persistData(updatedRisks, updatedActions);
     toast.success(t("auto.farekilde_oppdatert"));
   };
 
