@@ -653,7 +653,7 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Save new action from dialog
-  const saveNewAction = () => {
+  const saveNewAction = async () => {
     if (!selectedEventForAction || !newActionDescription.trim()) {
       toast.error(t("auto.fyll_inn_beskrivelse_av_tiltaket"));
       return;
