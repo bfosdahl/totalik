@@ -752,7 +752,8 @@ export function RisikovurderingOgHandlingsplan() {
       })),
     };
 
-    setRisks(risks.map(r => r.id === editingRisk.id ? updatedRisk : r));
+    const updatedRisks = risks.map(r => r.id === editingRisk.id ? updatedRisk : r);
+    setRisks(updatedRisks);
 
     // Update related actions
     const updatedActions = actions.map(a => {
