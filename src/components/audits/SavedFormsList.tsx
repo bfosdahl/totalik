@@ -15,8 +15,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { FilePlus, FileText, Trash2, Edit, CheckCircle2, Clock } from "lucide-react";
+import { FilePlus, FileText, Trash2, Edit, CheckCircle2, Clock, Download, Loader2 } from "lucide-react";
 import type { AuditFormResponse } from "@/hooks/useAuditFormResponses";
+import { useAuth } from "@/contexts/AuthContext";
+import { generateHmsAuditReportPdf } from "@/utils/hmsAuditReportPdf";
+import { toast } from "sonner";
 import { t } from "@/i18n/t";
 
 interface SavedFormsListProps {
@@ -36,6 +39,58 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
   isDeleting,
   title = "Lagrede skjemaer",
 }) => {
+  const { company } = useAuth();
+  const [downloadingId, setDownloadingId] = React.useState<string | null>(null);
+
+  const handleDownload = async (response: AuditFormResponse) => {
+    try {
+      setDownloadingId(response.id);
+      await generateHmsAuditReportPdf({
+        formType: response.form_type,
+        formData: response.form_data,
+        revisionDate: response.revision_date,
+        completedAt: response.completed_at,
+        createdAt: response.created_at,
+        status: response.status,
+        auditorName: response.auditor_name || response.completed_by_name,
+        managerName: response.manager_name,
+        participants: response.participants,
+        company: {
+          name: company?.name,
+          org_number: (company as { org_number?: string } | null)?.org_number,
+          address: (company as { address?: string } | null)?.address,
+          postal_code: (company as { postal_code?: string } | null)?.postal_code,
+          city: (company as { city?: string } | null)?.city,
+          phone: (company as { phone?: string } | null)?.phone,
+          email: (company as { email?: string } | null)?.email,
+        },
+      });
+      toast.success("Rapport lastet ned");
+    } catch (error) {
+      console.error("[SavedFormsList] PDF error:", error);
+      toast.error("Kunne ikke lage rapport");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const DownloadButton = ({ response }: { response: AuditFormResponse }) => (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => handleDownload(response)}
+      disabled={downloadingId === response.id}
+      className="gap-1"
+    >
+      {downloadingId === response.id ? (
+        <Loader2 className="w-3 h-3 animate-spin" />
+      ) : (
+        <Download className="w-3 h-3" />
+      )}
+      <span className="hidden sm:inline">Last ned rapport</span>
+    </Button>
+  );
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
     try {
@@ -94,7 +149,8 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex flex-wrap items-center justify-end gap-2 ml-4">
+                        <DownloadButton response={response} />
                         <Button
                           size="sm"
                           variant="outline"
@@ -171,7 +227,8 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex flex-wrap items-center justify-end gap-2 ml-4">
+                        <DownloadButton response={response} />
                         <Button
                           size="sm"
                           variant="outline"
