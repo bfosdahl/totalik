@@ -1,4 +1,6 @@
 import { useCallback } from 'react';
+import { createAuditDeviations } from '@/utils/createAuditDeviations';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -353,7 +355,7 @@ const sections = [
 ];
 
 const FysiskeArbeidsforholdForm = () => {
-  const { company } = useAuth();
+  const { company, profile } = useAuth();
 
   const getInitialFormData = useCallback((): FormData => {
     const { sectionQuestions, checklistAnswers } = initChecklistState(sections);
