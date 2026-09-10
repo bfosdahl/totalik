@@ -47,9 +47,7 @@ export async function fetchHmsSystemStatus(companyId: string): Promise<HmsSystem
       supabase
         .from("company_routines")
         .select("routines")
-        .eq("company_id", companyId)
-        .eq("is_deleted", false)
-        .maybeSingle(),
+        .eq("company_id", companyId),
       supabase
         .from("company_laws_regulations")
         .select("id", { count: "exact", head: true })
@@ -84,11 +82,16 @@ export async function fetchHmsSystemStatus(companyId: string): Promise<HmsSystem
     })),
     orgDescription: orgRes.data?.custom_content ? str(orgRes.data.custom_content) : null,
     risks: asArray(riskRes.data?.risks).map((r) => ({
-      name: str(r.name || r.title || r.risk || r.activity),
+      name: str(r.hazard_source_custom || r.hazard_source || r.name || r.title || r.risk || r.activity),
       level: str(r.riskLevel || r.level || r.risk_level) || undefined,
     })),
-    routines: asArray(routineRes.data?.routines)
-      .map((r) => str(r.title || r.name))
+    routines: (routineRes.data || [])
+      .flatMap((row) => asArray(row.routines))
+      .map((r) => {
+        const name = str(r.routine_name || r.title || r.name);
+        const num = str(r.routine_number);
+        return name ? (num ? `${num} ${name}` : name) : "";
+      })
       .filter(Boolean),
     laws: lawRes.count || 0,
     deviations: {
