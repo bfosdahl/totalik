@@ -451,7 +451,8 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
         },
         margin: { left: margin, right: margin },
         didParseCell: (hook) => {
-          if (hook.section === "body" && hook.column.index === 1 && hook.cell.raw === "Nei") {
+          const row = section.rows[hook.row.index];
+          if (hook.section === "body" && hook.column.index === 1 && row && isDeviation(row)) {
             hook.cell.styles.textColor = [190, 30, 45];
             hook.cell.styles.fontStyle = "bold";
           }
@@ -463,7 +464,7 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
 
   // === Funn og avvik ===
   const findings = report.sections.flatMap((s) =>
-    s.rows.filter((r) => r.answer === "no").map((r) => [s.title, r.label, r.comment || "Tiltak ikke beskrevet"])
+    s.rows.filter(isDeviation).map((r) => [s.title, r.label, r.comment || "Tiltak ikke beskrevet"])
   );
   y = sectionHeading(`${sectionNo}. Funn og avvik`, y + 10);
   sectionNo++;
