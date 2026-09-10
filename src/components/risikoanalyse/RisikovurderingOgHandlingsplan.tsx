@@ -427,7 +427,8 @@ export function RisikovurderingOgHandlingsplan() {
       created_by: currentUserName,
     };
 
-    setRisks([...risks, risk]);
+    const updatedRisks = [...risks, risk];
+    setRisks(updatedRisks);
 
     // Auto-create actions for events that require it (yellow/red)
     const newActions: ActionItem[] = [];
@@ -449,9 +450,10 @@ export function RisikovurderingOgHandlingsplan() {
         });
       }
     });
-    
+
+    const updatedActions = newActions.length > 0 ? [...actions, ...newActions] : actions;
     if (newActions.length > 0) {
-      setActions(prev => [...prev, ...newActions]);
+      setActions(updatedActions);
     }
 
     // Reset form
@@ -462,7 +464,8 @@ export function RisikovurderingOgHandlingsplan() {
     });
 
     setShowAddDialog(false);
-    toast.success(`Farekilde lagt til med ${risk.events.length} hendelse(r)${newActions.length > 0 ? ` - ${newActions.length} tiltak opprettet` : ""}`);
+    await persistData(updatedRisks, updatedActions);
+    toast.success(`Farekilde lagret med ${risk.events.length} hendelse(r)${newActions.length > 0 ? ` - ${newActions.length} tiltak opprettet` : ""}`);
   };
 
   // Add event to form
