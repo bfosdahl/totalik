@@ -213,9 +213,37 @@ const DagligDriftForm = () => {
   const { updateAnswer, addQuestion, editQuestion, deleteQuestion } =
     useChecklistSectionsState<FormData>(setFormData);
 
+  const registerDeviations = async () => {
+    const items = Object.entries(formData.sectionQuestions).flatMap(([sectionId, questions]) =>
+      (questions || [])
+        .filter((q) => formData.checklistAnswers[sectionId]?.[q.id]?.deviation === 'true')
+        .map((q) => ({
+          label: q.question,
+          comment: formData.checklistAnswers[sectionId]?.[q.id]?.comment || '',
+          sectionTitle: sections.find((s) => s.id === sectionId)?.title,
+        }))
+    );
+    if (items.length === 0) return;
+    try {
+      const created = await createAuditDeviations({
+        companyId: company?.id || '',
+        formLabel: 'Daglig drift',
+        items,
+        reporterId: profile?.id || null,
+        reporterName: formData.auditor || null,
+        date: formData.date,
+      });
+      if (created > 0) toast.success(`${created} avvik registrert i avvikssystemet`);
+    } catch (error) {
+      console.error('[DagligDriftForm] deviation error:', error);
+      toast.error('Kunne ikke registrere avvik i avviksmodulen');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await handleSaveCompleted();
+    await registerDeviations();
   };
 
   if (!showForm) {
