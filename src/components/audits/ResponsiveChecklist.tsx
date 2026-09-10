@@ -32,6 +32,8 @@ interface ResponsiveChecklistProps {
   sectionKey: string;
   onAnswerChange: (itemId: string, value: YesNoNa) => void;
   onCommentChange: (itemId: string, value: string) => void;
+  /** Manuell merking av kontrollpunktet som avvik */
+  onDeviationChange?: (itemId: string, value: boolean) => void;
   // Optional editing props
   onAddItem?: (label: string) => void;
   onEditItem?: (itemId: string, newLabel: string) => void;
@@ -45,9 +47,11 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
   sectionKey,
   onAnswerChange,
   onCommentChange,
+  onDeviationChange,
   onAddItem,
   onEditItem,
   onDeleteItem,
+
 }) => {
   const isMobile = useIsMobile();
   const [isAddingNew, setIsAddingNew] = useState(false);
