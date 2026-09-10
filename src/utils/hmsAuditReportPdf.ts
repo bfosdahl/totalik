@@ -115,6 +115,8 @@ interface ReportRow {
   label: string;
   answer: "yes" | "no" | "na" | "";
   comment: string;
+  /** Manuelt merket som avvik av den som fylte ut skjemaet. */
+  flagged?: boolean;
 }
 
 /**
@@ -133,13 +135,23 @@ const isInvertedQuestion = (label: string) => {
   return INVERTED_QUESTIONS.some((q) => l.startsWith(q) || q.startsWith(l));
 };
 
-/** Er raden et avvik, hensyntatt negativt formulerte spørsmål? */
-const isDeviation = (row: ReportRow) =>
-  isInvertedQuestion(row.label) ? row.answer === "yes" : row.answer === "no";
-
-/** Er raden vurdert som i orden? */
-const isOk = (row: ReportRow) =>
-  isInvertedQuestion(row.label) ? row.answer === "no" : row.answer === "yes";
+/**
+ * Avvik bestemmes primaert av avviksknappen i skjemaet. Eldre skjemaer uten
+ * avviksmerking faller tilbake til gammel logikk ("Nei" = avvik), justert for
+ * negativt formulerte spoersmaal.
+ */
+const makeStatus = (sections: ReportSection[]) => {
+  const usesFlags = sections.some((s) => s.rows.some((r) => r.flagged));
+  const isDeviation = (row: ReportRow) =>
+    usesFlags
+      ? row.flagged === true
+      : isInvertedQuestion(row.label)
+        ? row.answer === "yes"
+        : row.answer === "no";
+  const isOk = (row: ReportRow) =>
+    !isDeviation(row) && (row.answer === "yes" || row.answer === "no");
+  return { isDeviation, isOk };
+};
 interface ReportSection {
   title: string;
   rows: ReportRow[];
@@ -158,6 +170,10 @@ const asRecord = (v: unknown): Record<string, unknown> =>
 const answerOf = (v: unknown): ReportRow["answer"] => {
   const a = asRecord(v).answer;
   return a === "yes" || a === "no" || a === "na" ? a : "";
+};
+const flaggedOf = (v: unknown): boolean => {
+  const d = asRecord(v).deviation;
+  return d === true || d === "true";
 };
 const commentOf = (v: unknown): string => {
   const c = asRecord(v).comment;
@@ -198,6 +214,7 @@ function normalize(formType: string, raw: unknown): NormalizedReport {
             label: String(it.label ?? it.question ?? ""),
             answer: answerOf(answers[id]),
             comment: commentOf(answers[id]),
+            flagged: flaggedOf(answers[id]),
           };
         }),
       });
@@ -220,6 +237,7 @@ function normalize(formType: string, raw: unknown): NormalizedReport {
             label: String(it.question ?? it.label ?? ""),
             answer: answerOf(answers[id]),
             comment: commentOf(answers[id]),
+            flagged: flaggedOf(answers[id]),
           };
         }),
       });
@@ -241,6 +259,7 @@ function normalize(formType: string, raw: unknown): NormalizedReport {
           label: String(it.question ?? it.label ?? ""),
           answer: answerOf(answers[id]),
           comment: commentOf(answers[id]),
+          flagged: flaggedOf(answers[id]),
         };
       }),
     });
@@ -319,6 +338,7 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
 
   const formLabel = FORM_LABELS[input.formType] || "HMS-aktivitet";
   const report = normalize(input.formType, input.formData);
+  const { isDeviation, isOk } = makeStatus(report.sections);
   const companyName = input.company.name || "Virksomhet";
 
   // === Header bar ===
