@@ -713,7 +713,7 @@ export function RisikovurderingOgHandlingsplan() {
   };
 
   // Save edited risk
-  const saveEditedRisk = () => {
+  const saveEditedRisk = async () => {
     if (!editingRisk) return;
 
     const hazardLabel = newRisk.hazard_source === "annet" 
