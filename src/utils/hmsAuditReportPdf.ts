@@ -149,18 +149,11 @@ const isInvertedQuestion = (label: string) => {
 };
 
 /**
- * Avvik bestemmes primaert av avviksknappen i skjemaet. Eldre skjemaer uten
- * avviksmerking faller tilbake til gammel logikk ("Nei" = avvik), justert for
- * negativt formulerte spoersmaal.
+ * Avvik bestemmes utelukkende av avviksknappen i skjemaet. "Nei" alene er
+ * ikke et avvik.
  */
-const makeStatus = (sections: ReportSection[]) => {
-  const usesFlags = sections.some((s) => s.rows.some((r) => r.flagged));
-  const isDeviation = (row: ReportRow) =>
-    usesFlags
-      ? row.flagged === true
-      : isInvertedQuestion(row.label)
-        ? row.answer === "yes"
-        : row.answer === "no";
+const makeStatus = (_sections: ReportSection[]) => {
+  const isDeviation = (row: ReportRow) => row.flagged === true;
   const isOk = (row: ReportRow) =>
     !isDeviation(row) && (row.answer === "yes" || row.answer === "no");
   return { isDeviation, isOk };
