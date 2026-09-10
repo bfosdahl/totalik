@@ -1,4 +1,6 @@
 import { useCallback } from 'react';
+import { createAuditDeviations } from '@/utils/createAuditDeviations';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -353,7 +355,7 @@ const sections = [
 ];
 
 const FysiskeArbeidsforholdForm = () => {
-  const { company } = useAuth();
+  const { company, profile } = useAuth();
 
   const getInitialFormData = useCallback((): FormData => {
     const { sectionQuestions, checklistAnswers } = initChecklistState(sections);
@@ -401,9 +403,37 @@ const FysiskeArbeidsforholdForm = () => {
   const { updateAnswer, addQuestion, editQuestion, deleteQuestion } =
     useChecklistSectionsState<FormData>(setFormData);
 
+  const registerDeviations = async () => {
+    const items = Object.entries(formData.sectionQuestions).flatMap(([sectionId, questions]) =>
+      (questions || [])
+        .filter((q) => formData.checklistAnswers[sectionId]?.[q.id]?.deviation === 'true')
+        .map((q) => ({
+          label: q.question,
+          comment: formData.checklistAnswers[sectionId]?.[q.id]?.comment || '',
+          sectionTitle: sections.find((s) => s.id === sectionId)?.title,
+        }))
+    );
+    if (items.length === 0) return;
+    try {
+      const created = await createAuditDeviations({
+        companyId: company?.id || '',
+        formLabel: 'Fysiske arbeidsforhold',
+        items,
+        reporterId: profile?.id || null,
+        reporterName: formData.auditor || null,
+        date: formData.date,
+      });
+      if (created > 0) toast.success(`${created} avvik registrert i avvikssystemet`);
+    } catch (error) {
+      console.error('[FysiskeArbeidsforholdForm] deviation error:', error);
+      toast.error('Kunne ikke registrere avvik i avviksmodulen');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await handleSaveCompleted();
+    await registerDeviations();
   };
 
 

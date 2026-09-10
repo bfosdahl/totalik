@@ -132,35 +132,13 @@ interface ReportRow {
   flagged?: boolean;
 }
 
-/**
- * Enkelte eldre kontrollpunkter er negativt formulert, slik at "Nei" er det
- * positive svaret (og "Ja" betyr avvik). Disse må ikke telles som avvik.
- */
-const INVERTED_QUESTIONS = [
-  "høy belastning er ikke koblet via skjøteledninger",
-  "ingen kabler løst, over varme eller fukt uten vern",
-  "high loads are not connected via extension cords",
-  "no loose cables, or cables exposed to heat or moisture without protection",
-];
-
-const isInvertedQuestion = (label: string) => {
-  const l = label.trim().toLowerCase().replace(/\s+/g, " ");
-  return INVERTED_QUESTIONS.some((q) => l.startsWith(q) || q.startsWith(l));
-};
 
 /**
- * Avvik bestemmes primaert av avviksknappen i skjemaet. Eldre skjemaer uten
- * avviksmerking faller tilbake til gammel logikk ("Nei" = avvik), justert for
- * negativt formulerte spoersmaal.
+ * Avvik bestemmes utelukkende av avviksknappen i skjemaet. "Nei" alene er
+ * ikke et avvik.
  */
-const makeStatus = (sections: ReportSection[]) => {
-  const usesFlags = sections.some((s) => s.rows.some((r) => r.flagged));
-  const isDeviation = (row: ReportRow) =>
-    usesFlags
-      ? row.flagged === true
-      : isInvertedQuestion(row.label)
-        ? row.answer === "yes"
-        : row.answer === "no";
+const makeStatus = (_sections: ReportSection[]) => {
+  const isDeviation = (row: ReportRow) => row.flagged === true;
   const isOk = (row: ReportRow) =>
     !isDeviation(row) && (row.answer === "yes" || row.answer === "no");
   return { isDeviation, isOk };
