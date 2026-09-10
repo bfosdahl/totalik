@@ -48,6 +48,9 @@ export async function createAuditDeviations({
 
   const existingTitles = new Set((existing || []).map((d) => d.title));
   const incidentDate = date || getLocalDateString();
+  const dueDateObj = new Date();
+  dueDateObj.setDate(dueDateObj.getDate() + 14);
+  const dueDate = `${dueDateObj.getFullYear()}-${String(dueDateObj.getMonth() + 1).padStart(2, "0")}-${String(dueDateObj.getDate()).padStart(2, "0")}`;
 
   const rows = items
     .map((item, index) => ({ item, title: titles[index] }))
@@ -72,6 +75,7 @@ export async function createAuditDeviations({
       reporter_id: reporterId || null,
       reporter_name: reporterName || null,
       incident_date: incidentDate,
+      due_date: dueDate,
     }));
 
   if (rows.length === 0) return 0;
