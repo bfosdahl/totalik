@@ -657,8 +657,12 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
   const totalPoints = report.sections.reduce((sum, s) => sum + s.rows.length, 0);
   const conclusion =
     findings.length === 0
-      ? `Gjennomgangen omfatter ${totalPoints} kontrollpunkter fordelt på ${report.sections.length} områder. Det er ikke avdekket avvik. Virksomheten dokumenterer med dette systematisk HMS-arbeid i tråd med internkontrollforskriften § 5. Neste gjennomgang bør gjennomføres innen ett år.`
-      : `Gjennomgangen omfatter ${totalPoints} kontrollpunkter fordelt på ${report.sections.length} områder. Det er avdekket ${findings.length} avvik som skal følges opp med tiltak, ansvarlig og frist. Avvikene bør registreres i avvikssystemet og lukkes innen avtalt frist. Neste gjennomgang bør gjennomføres innen ett år.`;
+      ? input.formType === "annual_hms"
+        ? `Gjennomgangen omfatter ${totalPoints} kontrollpunkter fordelt på ${report.sections.length} områder. Det er ikke avdekket avvik. Virksomheten dokumenterer med dette systematisk HMS-arbeid i tråd med internkontrollforskriften § 5. Neste gjennomgang bør gjennomføres innen ett år.`
+        : `Kontrollen omfatter ${totalPoints} kontrollpunkter fordelt på ${report.sections.length} områder. Det er ikke merket avvik i denne kontrollen.`
+      : input.formType === "annual_hms"
+        ? `Gjennomgangen omfatter ${totalPoints} kontrollpunkter fordelt på ${report.sections.length} områder. Det er avdekket ${findings.length} avvik som skal følges opp med tiltak, ansvarlig og frist. Avvikene bør registreres i avvikssystemet og lukkes innen avtalt frist. Neste gjennomgang bør gjennomføres innen ett år.`
+        : `Kontrollen omfatter ${totalPoints} kontrollpunkter fordelt på ${report.sections.length} områder. Det er merket ${findings.length} avvik som følges opp i avvikssystemet.`;
   doc.setFontSize(9.5);
   const conclusionLines = doc.splitTextToSize(conclusion, pageWidth - margin * 2);
   doc.text(conclusionLines, margin, y + 5);
