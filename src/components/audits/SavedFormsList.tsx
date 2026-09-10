@@ -47,7 +47,11 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
   const handleDownload = async (response: AuditFormResponse) => {
     try {
       setDownloadingId(response.id);
-      const systemStatus = company?.id ? await fetchHmsSystemStatus(company.id).catch(() => null) : null;
+      // Kun den årlige HMS-revisjonen er en helhetlig systemgjennomgang.
+      const systemStatus =
+        company?.id && response.form_type === "annual_hms"
+          ? await fetchHmsSystemStatus(company.id).catch(() => null)
+          : null;
       await generateHmsAuditReportPdf({
         systemStatus,
 
