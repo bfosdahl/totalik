@@ -26,7 +26,10 @@ import {
   Eye,
   Trash2,
   Plus,
+  Download,
 } from "lucide-react";
+import type { AarshjulRow } from "@/utils/hmsAarshjulData";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -245,6 +248,8 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
   const [hiddenDefaults, setHiddenDefaults] = useState<string[]>([]);
   const [monthOverrides, setMonthOverrides] = useState<Record<string, number[]>>({});
   const [editMonth, setEditMonth] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
@@ -439,6 +444,39 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
 
   const currentMonthActivities = activitiesByMonth[currentMonth] || [];
 
+  const handleDownloadAarshjul = async () => {
+    setIsDownloading(true);
+    try {
+      const rows: AarshjulRow[] = [];
+      months.forEach((m) => {
+        (activitiesByMonth[m.id] || []).forEach((a) => {
+          rows.push({
+            month: m.id,
+            monthName: m.fullName,
+            name: a.name,
+            description: a.description,
+            frequency: a.frequency,
+            responsible: a.responsible || "-",
+            completedDate: getCompletionDate(a.id),
+          });
+        });
+      });
+      const { downloadAarshjulPdf } = await import("@/utils/hmsAarshjulPdf");
+      await downloadAarshjulPdf(rows, {
+        companyName: company?.name || "",
+        orgNumber: (company as any)?.org_number ?? null,
+        year: currentYear,
+      });
+      toast.success("Årshjulet er lastet ned");
+    } catch (e) {
+      console.error("Error generating årshjul PDF:", e);
+      toast.error("Kunne ikke lage PDF av årshjulet");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+
   // In compact mode, return null if no activities this month
   if (compact && currentMonthActivities.length === 0) {
     return null;
@@ -629,18 +667,31 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Calendar className="w-6 h-6 text-primary" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Calendar className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>{t("auto.hms_aarshjul")}</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("auto.planlagte_hms_aktiviteter_gjennom_aaret")}
+                  </p>
+                </div>
               </div>
-              <div>
-                <CardTitle>{t("auto.hms_aarshjul")}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t("auto.planlagte_hms_aktiviteter_gjennom_aaret")}
-                </p>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto shrink-0"
+                onClick={handleDownloadAarshjul}
+                disabled={isDownloading}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {isDownloading ? "Lager PDF..." : "Last ned årshjul"}
+              </Button>
             </div>
           </CardHeader>
+
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Circular Wheel */}

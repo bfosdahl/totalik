@@ -2113,7 +2113,37 @@ const Handbook = () => {
         yPos += 10;
       }
 
+      // SECTION: HMS ÅRSHJUL (planned activities through the year)
+      if (companyId) {
+        try {
+          const [{ fetchAarshjulRows }, { drawAarshjulTable }] = await Promise.all([
+            import("@/utils/hmsAarshjulData"),
+            import("@/utils/hmsAarshjulPdf"),
+          ]);
+          const aarshjulYear = new Date().getFullYear();
+          const aarshjulRows = await fetchAarshjulRows(companyId, null, aarshjulYear);
+
+          doc.addPage();
+          sectionNumber++;
+          addTocEntry(`${sectionNumber}. HMS-årshjul`);
+          yPos = margin;
+          addSectionHeader(`${sectionNumber}. HMS-årshjul`);
+          doc.setFontSize(11);
+          doc.setFont(PDF_FONT, "normal");
+          doc.text(
+            `Planlagte HMS-aktiviteter gjennom året ${aarshjulYear}, med ansvarlig og status.`,
+            margin,
+            yPos
+          );
+          yPos += 10;
+          yPos = drawAarshjulTable(doc, aarshjulRows, { startY: yPos, margin, year: aarshjulYear });
+        } catch (e) {
+          console.warn("Kunne ikke legge til årshjul i håndboken:", e);
+        }
+      }
+
       // OPTIONAL SECTION: DEVIATIONS
+
       if (includeDeviationsInPdf && deviations.length > 0) {
         doc.addPage();
         sectionNumber++;
