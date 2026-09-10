@@ -116,6 +116,30 @@ interface ReportRow {
   answer: "yes" | "no" | "na" | "";
   comment: string;
 }
+
+/**
+ * Enkelte eldre kontrollpunkter er negativt formulert, slik at "Nei" er det
+ * positive svaret (og "Ja" betyr avvik). Disse må ikke telles som avvik.
+ */
+const INVERTED_QUESTIONS = [
+  "høy belastning er ikke koblet via skjøteledninger",
+  "ingen kabler løst, over varme eller fukt uten vern",
+  "high loads are not connected via extension cords",
+  "no loose cables, or cables exposed to heat or moisture without protection",
+];
+
+const isInvertedQuestion = (label: string) => {
+  const l = label.trim().toLowerCase().replace(/\s+/g, " ");
+  return INVERTED_QUESTIONS.some((q) => l.startsWith(q) || q.startsWith(l));
+};
+
+/** Er raden et avvik, hensyntatt negativt formulerte spørsmål? */
+const isDeviation = (row: ReportRow) =>
+  isInvertedQuestion(row.label) ? row.answer === "yes" : row.answer === "no";
+
+/** Er raden vurdert som i orden? */
+const isOk = (row: ReportRow) =>
+  isInvertedQuestion(row.label) ? row.answer === "no" : row.answer === "yes";
 interface ReportSection {
   title: string;
   rows: ReportRow[];
