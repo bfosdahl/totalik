@@ -323,7 +323,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
       if (created > 0) toast.success(`${created} avvik registrert i avviksmodulen`);
     } catch (error) {
       console.error("[AnnualHmsRevisionForm] deviation error:", error);
-      toast.error("Kunne ikke registrere avvik i avviksmodulen");
+      toast.error(`Kunne ikke registrere avvik: ${error instanceof Error ? error.message : "ukjent feil"}`);
     }
   };
 
