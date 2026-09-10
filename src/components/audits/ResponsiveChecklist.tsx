@@ -159,10 +159,15 @@ const ResponsiveChecklist: React.FC<ResponsiveChecklistProps> = ({
                       label={`${index + 1}. ${item.label}`}
                       answer={answers[item.id]?.answer || ""}
                       comment={answers[item.id]?.comment || ""}
+                      deviation={answers[item.id]?.deviation === "true"}
                       onAnswerChange={(value) => onAnswerChange(item.id, value)}
                       onCommentChange={(value) => onCommentChange(item.id, value)}
+                      onDeviationChange={
+                        onDeviationChange ? (value) => onDeviationChange(item.id, value) : undefined
+                      }
                       name={`${sectionKey}-${item.id}`}
                     />
+
                   </div>
                 )}
               </div>
