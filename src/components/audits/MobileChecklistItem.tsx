@@ -92,7 +92,7 @@ const MobileChecklistItem: React.FC<MobileChecklistItemProps> = ({
         >
           <AlertTriangle className="h-5 w-5" />
           <span className="text-sm font-medium">
-            {deviation ? t("auto.merket_som_avvik") : t("auto.marker_som_avvik")}
+            {t("auto.avvik")}
           </span>
         </button>
       )}
