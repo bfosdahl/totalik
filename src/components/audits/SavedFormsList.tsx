@@ -149,7 +149,8 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex flex-wrap items-center justify-end gap-2 ml-4">
+                        <DownloadButton response={response} />
                         <Button
                           size="sm"
                           variant="outline"
@@ -226,7 +227,8 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex flex-wrap items-center justify-end gap-2 ml-4">
+                        <DownloadButton response={response} />
                         <Button
                           size="sm"
                           variant="outline"
