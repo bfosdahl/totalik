@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Save, FileText, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+import { createAuditDeviations } from "@/utils/createAuditDeviations";
 import { getLocalDateString } from "@/lib/dateUtils";
 import ResponsiveChecklist, { type ChecklistRow } from "./ResponsiveChecklist";
 import ResponsiveActionTable from "./ResponsiveActionTable";
@@ -288,6 +290,43 @@ const AnnualHmsRevisionForm: React.FC = () => {
     );
   };
 
+  const sectionTitles: Record<SectionKey, string> = {
+    goalsSection: t("auto.1_maal_og_planer_for_hms_arbeidet"),
+    organizationSection: t("auto.2_organisering_og_ansvar"),
+    riskSection: t("auto.3_risikovurdering"),
+    routinesSection: t("auto.4_rutiner_og_prosedyrer"),
+    trainingSection: t("auto.5_opplaering_og_kompetanse"),
+    deviationsSection: t("auto.6_avviksbehandling_og_hendelser"),
+    inspectionsSection: t("auto.7_vernerunder_inspeksjoner"),
+    workEnvSection: t("auto.8_arbeidsmiljoe_og_trivsel"),
+  };
+
+  const registerDeviations = async () => {
+    const items = (Object.keys(sectionTitles) as SectionKey[]).flatMap((key) =>
+      (formData.sectionItems[key] || [])
+        .filter((item) => formData[key][item.id]?.deviation === "true")
+        .map((item) => ({
+          label: item.label,
+          comment: formData[key][item.id]?.comment || "",
+          sectionTitle: sectionTitles[key],
+        }))
+    );
+    if (items.length === 0) return;
+    try {
+      const created = await createAuditDeviations({
+        companyId: company?.id || "",
+        formLabel: "Årlig HMS-revisjon",
+        items,
+        reporterName: formData.auditor || null,
+        date: formData.revisionDate,
+      });
+      if (created > 0) toast.success(`${created} avvik registrert i avviksmodulen`);
+    } catch (error) {
+      console.error("[AnnualHmsRevisionForm] deviation error:", error);
+      toast.error("Kunne ikke registrere avvik i avviksmodulen");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await saveFormResponse(
@@ -305,6 +344,7 @@ const AnnualHmsRevisionForm: React.FC = () => {
     if (result) {
       setExistingId(result.id);
     }
+    await registerDeviations();
   };
 
   const handleChecklistAnswerChange = (section: SectionKey, itemId: string, value: string) => {

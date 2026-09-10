@@ -10,6 +10,8 @@ import SavedFormsList from "./SavedFormsList";
 import EditableChecklistSection, { ChecklistQuestion, ChecklistAnswer } from "./EditableChecklistSection";
 import { useAuditFormResponses, type AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import type { Json } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+import { createAuditDeviations } from "@/utils/createAuditDeviations";
 import { getLocalDateString } from "@/lib/dateUtils";
 import { t } from "@/i18n/t";
 
@@ -251,6 +253,33 @@ const ElKontrollForm: React.FC = () => {
     );
   };
 
+  const registerDeviations = async () => {
+    const items = Object.values(formData.sections).flatMap((section) =>
+      section.questions
+        .filter((q) => section.answers[q.id]?.deviation === "true")
+        .map((q) => ({
+          label: q.question,
+          comment: section.answers[q.id]?.comment || "",
+          sectionTitle: section.title,
+        }))
+    );
+    if (items.length === 0) return;
+    try {
+      const created = await createAuditDeviations({
+        companyId: company?.id || "",
+        formLabel: "El-kontroll",
+        items,
+        reporterId: profile?.id || null,
+        reporterName: formData.controlledBy || null,
+        date: formData.controlDate,
+      });
+      if (created > 0) toast.success(`${created} avvik registrert i avviksmodulen`);
+    } catch (error) {
+      console.error("[ElKontrollForm] deviation error:", error);
+      toast.error("Kunne ikke registrere avvik i avviksmodulen");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await saveFormResponse(
@@ -266,6 +295,7 @@ const ElKontrollForm: React.FC = () => {
     if (result) {
       setExistingId(result.id);
     }
+    await registerDeviations();
   };
 
   const sectionIcons = {
