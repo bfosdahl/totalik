@@ -3,6 +3,16 @@ import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { registerPdfFont, PDF_FONT } from "./pdfFont";
+import type { HmsSystemStatus } from "./hmsSystemStatus";
+
+const DEVIATION_STATUS_LABELS: Record<string, string> = {
+  open: "Åpen",
+  "in-progress": "Under arbeid",
+  resolved: "Løst",
+  closed: "Lukket",
+};
+const deviationStatusLabel = (s: string) => DEVIATION_STATUS_LABELS[s] || s || "-";
+
 
 export type AuditReportFormType =
   | "annual_hms"
