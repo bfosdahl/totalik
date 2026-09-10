@@ -26,7 +26,10 @@ import {
   Eye,
   Trash2,
   Plus,
+  Download,
 } from "lucide-react";
+import type { AarshjulRow } from "@/utils/hmsAarshjulData";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { useIsMobile } from "@/hooks/use-mobile";
