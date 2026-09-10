@@ -55,6 +55,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 import { t } from "@/i18n/t";
+import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 
 type AppRole = "system_admin" | "company_admin" | "user";
 

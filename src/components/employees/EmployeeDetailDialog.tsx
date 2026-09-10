@@ -100,7 +100,7 @@ export function EmployeeDetailDialog({
         body: { userId: employee.user_id, newEmail: newLoginEmail },
       });
       if (error) {
-        toast.error((error as any).context?.error || error.message || "Kunne ikke endre e-post");
+        toast.error(await readEdgeFunctionError(error, "Kunne ikke endre e-post"));
         return;
       }
       if (data?.error) {
