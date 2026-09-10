@@ -342,7 +342,12 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
     margin: { left: margin, right: margin },
   });
 
-  const sectionHeading = (title: string, y: number) => {
+  const sectionHeading = (title: string, yIn: number) => {
+    let y = yIn;
+    if (y > pageHeight - 45) {
+      doc.addPage();
+      y = 22;
+    }
     doc.setFont(PDF_FONT, "bold");
     doc.setFontSize(12);
     doc.setTextColor(23, 42, 69);
@@ -412,6 +417,7 @@ export async function generateHmsAuditReportPdf(input: AuditReportInput): Promis
         head: [[section.title, "Svar", "Kommentar"]],
         body: section.rows.map((r) => [r.label || "-", answerLabel(r.answer), r.comment || "-"]),
         theme: "striped",
+        rowPageBreak: "avoid",
         styles: { font: PDF_FONT, fontSize: 8.5, cellPadding: 2, valign: "top", lineColor: [226, 232, 240] },
         headStyles: { fillColor: [241, 245, 249], textColor: [23, 42, 69], font: PDF_FONT, fontStyle: "bold" },
         columnStyles: {
