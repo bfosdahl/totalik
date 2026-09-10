@@ -71,9 +71,9 @@ export async function createAuditDeviations({
       category: "safety",
       priority: "medium",
       status: "open",
-      type: "deviation",
+      type: "avvik",
       reporter_id: reporterId || null,
-      reporter_name: reporterName || null,
+      reporter_name: reporterName || "Ukjent",
       incident_date: incidentDate,
       due_date: dueDate,
     }));
