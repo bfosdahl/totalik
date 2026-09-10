@@ -19,6 +19,8 @@ import { FilePlus, FileText, Trash2, Edit, CheckCircle2, Clock, Download, Loader
 import type { AuditFormResponse } from "@/hooks/useAuditFormResponses";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateHmsAuditReportPdf } from "@/utils/hmsAuditReportPdf";
+import { fetchHmsSystemStatus } from "@/utils/hmsSystemStatus";
+
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
 
@@ -45,7 +47,10 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
   const handleDownload = async (response: AuditFormResponse) => {
     try {
       setDownloadingId(response.id);
+      const systemStatus = company?.id ? await fetchHmsSystemStatus(company.id).catch(() => null) : null;
       await generateHmsAuditReportPdf({
+        systemStatus,
+
         formType: response.form_type,
         formData: response.form_data,
         revisionDate: response.revision_date,
