@@ -11,6 +11,8 @@ interface NotificationSettings {
   notify_deadlines: boolean;
   notify_assignments: boolean;
   notify_status_changes: boolean;
+  notify_shifts_push: boolean;
+  notify_shifts_email: boolean;
   notify_days_before: number[];
   created_at: string;
   updated_at: string;

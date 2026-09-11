@@ -35,6 +35,9 @@
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function (registrations) {
           registrations.forEach(function (registration) {
+            var sw = registration.active || registration.waiting || registration.installing;
+            var script = sw ? sw.scriptURL : '';
+            if (script.indexOf('push-sw.js') !== -1) return;
             registration.unregister();
           });
         });

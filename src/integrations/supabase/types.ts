@@ -2606,6 +2606,10 @@ export type Database = {
           sensor_alarm_email: boolean
           sensor_alarm_email_recipients: string[] | null
           sensor_alarm_sms: boolean
+          shift_reminder_enabled: boolean
+          shift_reminder_evening_enabled: boolean
+          shift_reminder_evening_time: string
+          shift_reminder_time: string
           updated_at: string
         }
         Insert: {
@@ -2625,6 +2629,10 @@ export type Database = {
           sensor_alarm_email?: boolean
           sensor_alarm_email_recipients?: string[] | null
           sensor_alarm_sms?: boolean
+          shift_reminder_enabled?: boolean
+          shift_reminder_evening_enabled?: boolean
+          shift_reminder_evening_time?: string
+          shift_reminder_time?: string
           updated_at?: string
         }
         Update: {
@@ -2644,6 +2652,10 @@ export type Database = {
           sensor_alarm_email?: boolean
           sensor_alarm_email_recipients?: string[] | null
           sensor_alarm_sms?: boolean
+          shift_reminder_enabled?: boolean
+          shift_reminder_evening_enabled?: boolean
+          shift_reminder_evening_time?: string
+          shift_reminder_time?: string
           updated_at?: string
         }
         Relationships: [
@@ -15509,6 +15521,7 @@ export type Database = {
           body: string
           company_id: string
           created_at: string
+          dedupe_key: string | null
           id: string
           is_read: boolean
           link: string | null
@@ -15521,6 +15534,7 @@ export type Database = {
           body: string
           company_id: string
           created_at?: string
+          dedupe_key?: string | null
           id?: string
           is_read?: boolean
           link?: string | null
@@ -15533,6 +15547,7 @@ export type Database = {
           body?: string
           company_id?: string
           created_at?: string
+          dedupe_key?: string | null
           id?: string
           is_read?: boolean
           link?: string | null
@@ -17554,6 +17569,8 @@ export type Database = {
           notify_assignments: boolean
           notify_days_before: number[]
           notify_deadlines: boolean
+          notify_shifts_email: boolean
+          notify_shifts_push: boolean
           notify_status_changes: boolean
           push_enabled: boolean
           updated_at: string
@@ -17566,6 +17583,8 @@ export type Database = {
           notify_assignments?: boolean
           notify_days_before?: number[]
           notify_deadlines?: boolean
+          notify_shifts_email?: boolean
+          notify_shifts_push?: boolean
           notify_status_changes?: boolean
           push_enabled?: boolean
           updated_at?: string
@@ -17578,6 +17597,8 @@ export type Database = {
           notify_assignments?: boolean
           notify_days_before?: number[]
           notify_deadlines?: boolean
+          notify_shifts_email?: boolean
+          notify_shifts_push?: boolean
           notify_status_changes?: boolean
           push_enabled?: boolean
           updated_at?: string

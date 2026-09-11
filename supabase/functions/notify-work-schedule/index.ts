@@ -95,6 +95,34 @@ serve(async (req) => {
     }
 
     const employeeName = `${recipient.first_name || ''} ${recipient.last_name || ''}`.trim();
+
+    // Push notification to the employee's phone (best effort)
+    let pushSent = 0;
+    try {
+      const cronSecretValue = Deno.env.get('CRON_SECRET');
+      const { data: recipientProfile } = await admin
+        .from('profiles')
+        .select('user_id')
+        .eq('email', employeeEmail.toLowerCase().trim())
+        .maybeSingle();
+      if (cronSecretValue && recipientProfile?.user_id) {
+        const pushRes = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-cron-secret': cronSecretValue },
+          body: JSON.stringify({
+            user_id: recipientProfile.user_id,
+            title: 'Ny vakt i arbeidsplanen',
+            body: `${scheduleDate} ${String(startTime ?? '').slice(0, 5)}-${String(endTime ?? '').slice(0, 5)}`,
+            notification_type: 'assignment',
+            link: '/work-schedule',
+          }),
+        });
+        const pushJson = await pushRes.json().catch(() => ({}));
+        pushSent = pushJson?.sent || 0;
+      }
+    } catch (err) {
+      console.error('push failed', (err as Error).message);
+    }
     const companyName = (recipient.companies as any)?.name || 'din bedrift';
 
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
@@ -148,7 +176,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, emailSent }),
+      JSON.stringify({ success: true, emailSent, pushSent }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
