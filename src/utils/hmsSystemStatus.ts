@@ -92,8 +92,8 @@ export async function fetchHmsSystemStatus(companyId: string): Promise<HmsSystem
       role: n.role_title,
       persons: personsByNode.get(n.id) || [],
     })),
-    orgDescription: orgRes.data?.custom_content ? str(orgRes.data.custom_content) : null,
-    risks: asArray(riskRes.data?.risks).map((r) => ({
+    orgDescription,
+    risks: allRisks.map((r) => ({
       name: str(r.hazard_source_custom || r.hazard_source || r.name || r.title || r.risk || r.activity),
       level: str(r.riskLevel || r.level || r.risk_level) || undefined,
     })),
