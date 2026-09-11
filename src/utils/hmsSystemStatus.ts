@@ -40,10 +40,12 @@ export async function fetchHmsSystemStatus(companyId: string): Promise<HmsSystem
       supabase.from("org_chart_node_persons").select("node_id, person_name"),
       supabase
         .from("company_organization")
-        .select("custom_content")
-        .eq("company_id", companyId)
-        .maybeSingle(),
-      supabase.from("company_risk_assessments").select("risks").eq("company_id", companyId).maybeSingle(),
+        .select("custom_content, department_id")
+        .eq("company_id", companyId),
+      supabase
+        .from("company_risk_assessments")
+        .select("risks, department_id")
+        .eq("company_id", companyId),
       supabase
         .from("company_routines")
         .select("routines")
