@@ -88,10 +88,23 @@ const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
   window.location.hostname.includes("lovableproject.com");
 
+const isPushServiceWorker = (registration: ServiceWorkerRegistration) => {
+  const script =
+    registration.active?.scriptURL ||
+    registration.waiting?.scriptURL ||
+    registration.installing?.scriptURL ||
+    "";
+  return script.includes("push-sw.js");
+};
+
 const unregisterServiceWorkers = () => {
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => registration.unregister());
+    registrations.forEach((registration) => {
+      // Keep the push worker — it has no caching and powers shift reminders.
+      if (isPushServiceWorker(registration)) return;
+      registration.unregister();
+    });
   });
 };
 

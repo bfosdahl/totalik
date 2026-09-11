@@ -1,4 +1,4 @@
-import { Bell, BellOff, Clock, UserPlus, RefreshCw } from "lucide-react";
+import { Bell, BellOff, Clock, UserPlus, RefreshCw, CalendarClock, Mail, Smartphone } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -156,6 +156,42 @@ export function NotificationSettingsCard() {
                   disabled={isUpdating}
                 />
               </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="notify-shift-push">Påminnelse om arbeidsdag (varsel)</Label>
+                </div>
+                <Switch
+                  id="notify-shift-push"
+                  checked={settings.notify_shifts_push !== false}
+                  onCheckedChange={(checked) => handleToggleSetting("notify_shifts_push", checked)}
+                  disabled={isUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="notify-shift-email">Påminnelse om arbeidsdag (e-post)</Label>
+                </div>
+                <Switch
+                  id="notify-shift-email"
+                  checked={settings.notify_shifts_email !== false}
+                  onCheckedChange={(checked) => handleToggleSetting("notify_shifts_email", checked)}
+                  disabled={isUpdating}
+                />
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <p className="text-xs text-muted-foreground flex items-start gap-2">
+                <Smartphone className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>
+                  På iPhone må Total-IK legges til på hjemskjermen (Del &rarr; Legg til på Hjem-skjerm)
+                  før varsler kan sendes til telefonen. På Android fungerer varsler direkte i nettleseren.
+                </span>
+              </p>
             </div>
 
             {/* Deadline reminder timing */}

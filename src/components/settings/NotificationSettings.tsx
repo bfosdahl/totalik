@@ -26,6 +26,10 @@ interface NotificationSettings {
   notify_company_admin: boolean;
   notify_hms_responsible: boolean;
   notify_employee: boolean;
+  shift_reminder_enabled: boolean;
+  shift_reminder_time: string;
+  shift_reminder_evening_enabled: boolean;
+  shift_reminder_evening_time: string;
 }
 
 const DEVIATION_DEADLINE_OPTIONS = [
@@ -62,6 +66,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
     notify_company_admin: true,
     notify_hms_responsible: true,
     notify_employee: true,
+    shift_reminder_enabled: true,
+    shift_reminder_time: "06:00",
+    shift_reminder_evening_enabled: false,
+    shift_reminder_evening_time: "19:00",
   });
 
   useEffect(() => {
@@ -98,6 +106,10 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
           notify_company_admin: data.notify_company_admin,
           notify_hms_responsible: data.notify_hms_responsible,
           notify_employee: data.notify_employee,
+          shift_reminder_enabled: data.shift_reminder_enabled ?? true,
+          shift_reminder_time: String(data.shift_reminder_time ?? "06:00").slice(0, 5),
+          shift_reminder_evening_enabled: data.shift_reminder_evening_enabled ?? false,
+          shift_reminder_evening_time: String(data.shift_reminder_evening_time ?? "19:00").slice(0, 5),
         });
       }
     } catch (error: any) {
@@ -243,6 +255,86 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
         transition={{ delay: 0.1 }}
       >
         <NotificationSettingsCard />
+      </motion.div>
+
+      {/* Shift reminders */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+      >
+        <div className="bg-card rounded-xl border border-border shadow-card p-6">
+          <h3 className="text-lg font-semibold mb-4">Påminnelser om arbeidsplan</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <Label>Påminnelse samme morgen</Label>
+                <p className="text-sm text-muted-foreground">
+                  Ansatte med vakt får varsel på telefonen og e-post med tid, sted og prosjekt.
+                </p>
+              </div>
+              <Switch
+                checked={settings.shift_reminder_enabled}
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({ ...prev, shift_reminder_enabled: checked }))
+                }
+              />
+            </div>
+
+            {settings.shift_reminder_enabled && (
+              <div className="ml-0 sm:ml-6 space-y-2">
+                <Label className="text-sm">Sendes klokken</Label>
+                <select
+                  className="w-full sm:w-40 h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={settings.shift_reminder_time}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, shift_reminder_time: e.target.value }))
+                  }
+                >
+                  {["04:00", "05:00", "06:00", "07:00", "08:00"].map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-border">
+              <div className="space-y-0.5">
+                <Label>Påminnelse kvelden før</Label>
+                <p className="text-sm text-muted-foreground">
+                  Ekstra varsel dagen før, slik at ansatte kan planlegge morgendagen.
+                </p>
+              </div>
+              <Switch
+                checked={settings.shift_reminder_evening_enabled}
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({ ...prev, shift_reminder_evening_enabled: checked }))
+                }
+              />
+            </div>
+
+            {settings.shift_reminder_evening_enabled && (
+              <div className="ml-0 sm:ml-6 space-y-2">
+                <Label className="text-sm">Sendes klokken</Label>
+                <select
+                  className="w-full sm:w-40 h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={settings.shift_reminder_evening_time}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, shift_reminder_evening_time: e.target.value }))
+                  }
+                >
+                  {["17:00", "18:00", "19:00", "20:00", "21:00"].map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
       </motion.div>
 
       {/* Email Settings Form */}

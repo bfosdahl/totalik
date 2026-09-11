@@ -8,6 +8,15 @@ interface PushSubscriptionKeys {
   auth: string;
 }
 
+const PUSH_SW_URL = "/push-sw.js";
+
+/** Registers (or reuses) the dedicated push service worker. */
+async function getPushRegistration(): Promise<ServiceWorkerRegistration> {
+  const existing = await navigator.serviceWorker.getRegistration(PUSH_SW_URL);
+  if (existing) return existing;
+  return navigator.serviceWorker.register(PUSH_SW_URL, { scope: "/" });
+}
+
 export function usePushNotifications() {
   const { user, company } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
@@ -34,7 +43,7 @@ export function usePushNotifications() {
     }
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getPushRegistration();
       const subscription = await (registration as any).pushManager.getSubscription();
       
       if (subscription) {
@@ -80,7 +89,7 @@ export function usePushNotifications() {
         return false;
       }
 
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getPushRegistration();
       
       // Get VAPID public key from edge function
       const { data: vapidData, error: vapidError } = await supabase.functions.invoke("push-vapid-key");
@@ -146,7 +155,7 @@ export function usePushNotifications() {
 
     setIsLoading(true);
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getPushRegistration();
       const subscription = await (registration as any).pushManager.getSubscription();
       
       if (subscription) {

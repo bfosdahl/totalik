@@ -1,29 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
 interface PushPayload {
   user_id: string;
   title: string;
   body: string;
-  notification_type: "deadline" | "assignment" | "status_change";
+  notification_type: "deadline" | "assignment" | "status_change" | "shift_reminder";
   project_id?: string;
   link?: string;
+  dedupe_key?: string;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Authenticate caller: either via CRON_SECRET (internal/cron callers)
-    // or via valid JWT for the user the notification targets.
     const cronSecret = Deno.env.get("CRON_SECRET");
     const providedSecret = req.headers.get("x-cron-secret");
     const authHeader = req.headers.get("Authorization");
@@ -42,7 +41,6 @@ serve(async (req) => {
       const { data: { user } } = await supabaseAuth.auth.getUser(
         authHeader.replace("Bearer ", "")
       );
-      // Users may only send notifications targeting themselves.
       if (user && user.id === payload.user_id) {
         authorized = true;
       }
@@ -55,9 +53,6 @@ serve(async (req) => {
       });
     }
 
-    console.log("Sending push notification:", payload);
-
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
@@ -67,69 +62,50 @@ serve(async (req) => {
       console.error("VAPID keys not configured");
       return new Response(
         JSON.stringify({ error: "Push notifications not configured" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check user notification settings
+    // Respect the user's notification preferences
     const { data: settings } = await supabase
       .from("user_notification_settings")
       .select("*")
       .eq("user_id", payload.user_id)
       .maybeSingle();
 
-    // Check if this notification type is enabled
     if (settings) {
-      if (payload.notification_type === "deadline" && !settings.notify_deadlines) {
-        console.log("Deadline notifications disabled for user");
-        return new Response(JSON.stringify({ skipped: true, reason: "disabled" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (payload.notification_type === "assignment" && !settings.notify_assignments) {
-        console.log("Assignment notifications disabled for user");
-        return new Response(JSON.stringify({ skipped: true, reason: "disabled" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (payload.notification_type === "status_change" && !settings.notify_status_changes) {
-        console.log("Status change notifications disabled for user");
+      const disabledMap: Record<string, boolean> = {
+        deadline: settings.notify_deadlines === false,
+        assignment: settings.notify_assignments === false,
+        status_change: settings.notify_status_changes === false,
+        shift_reminder: settings.notify_shifts_push === false,
+      };
+      if (settings.push_enabled === false || disabledMap[payload.notification_type]) {
         return new Response(JSON.stringify({ skipped: true, reason: "disabled" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
 
-    // Get user's push subscriptions
     const { data: subscriptions, error: subError } = await supabase
       .from("push_subscriptions")
       .select("*")
       .eq("user_id", payload.user_id);
 
-    if (subError) {
-      console.error("Error fetching subscriptions:", subError);
-      throw subError;
-    }
+    if (subError) throw subError;
 
     if (!subscriptions || subscriptions.length === 0) {
-      console.log("No push subscriptions found for user");
       return new Response(
         JSON.stringify({ sent: 0, message: "No subscriptions" }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get company_id from first subscription
     const companyId = subscriptions[0].company_id;
 
-    // Log notification
+    // Log first (dedupe_key has a unique index — a conflict means already sent)
     const { error: logError } = await supabase
       .from("notification_log")
       .insert({
@@ -140,37 +116,70 @@ serve(async (req) => {
         title: payload.title,
         body: payload.body,
         link: payload.link || null,
+        dedupe_key: payload.dedupe_key || null,
       });
 
     if (logError) {
-      console.error("Error logging notification:", logError);
+      if (payload.dedupe_key && (logError as any).code === "23505") {
+        return new Response(JSON.stringify({ skipped: true, reason: "duplicate" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.error("Error logging notification:", logError.message);
     }
 
-    // Send push notifications using web-push
-    // Note: For production, you would use the web-push library here
-    // For now, we just log and save to notification_log
-    console.log(`Would send push to ${subscriptions.length} subscription(s)`);
-    console.log("Notification saved to log");
+    webpush.setVapidDetails(
+      "mailto:noreply@totalik.no",
+      vapidPublicKey,
+      vapidPrivateKey,
+    );
+
+    const notificationBody = JSON.stringify({
+      title: payload.title,
+      body: payload.body,
+      link: payload.link || "/",
+      tag: payload.dedupe_key || payload.notification_type,
+    });
+
+    let sent = 0;
+    const stale: string[] = [];
+
+    await Promise.all(subscriptions.map(async (sub: any) => {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth },
+          },
+          notificationBody,
+        );
+        sent++;
+      } catch (err: any) {
+        const status = err?.statusCode;
+        if (status === 404 || status === 410) {
+          stale.push(sub.endpoint);
+        } else {
+          console.error("Push send failed:", status, err?.body || err?.message);
+        }
+      }
+    }));
+
+    if (stale.length > 0) {
+      await supabase
+        .from("push_subscriptions")
+        .delete()
+        .in("endpoint", stale);
+    }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        sent: subscriptions.length,
-        logged: true,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ success: true, sent, removed: stale.length, logged: true }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error in send-push-notification:", error);
     return new Response(
       JSON.stringify({ error: "An unexpected error occurred" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
