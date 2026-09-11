@@ -21,8 +21,8 @@ self.addEventListener("push", (event) => {
   const title = payload.title || "Total-IK";
   const options = {
     body: payload.body || "",
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
+    icon: "/pwa-192x192.png",
+    badge: "/pwa-192x192.png",
     tag: payload.tag || undefined,
     renotify: !!payload.tag,
     data: { link: payload.link || "/" },
