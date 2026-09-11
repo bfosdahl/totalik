@@ -76,6 +76,16 @@ export async function fetchHmsSystemStatus(companyId: string): Promise<HmsSystem
   const statuses = (devRes.data || []).map((d) => d.status);
   const countBy = (s: string) => statuses.filter((x) => x === s).length;
 
+  // Rader kan finnes per avdeling – slå sammen alle, med firmanivå (department_id null) først.
+  const byCompanyFirst = <T extends { department_id?: string | null }>(rows: T[] | null) =>
+    [...(rows || [])].sort((a, b) => (a.department_id ? 1 : 0) - (b.department_id ? 1 : 0));
+
+  const orgRows = byCompanyFirst(orgRes.data);
+  const orgDescription =
+    orgRows.map((r) => str(r.custom_content)).find((c) => c.trim().length > 0) || null;
+
+  const allRisks = byCompanyFirst(riskRes.data).flatMap((row) => asArray(row.risks));
+
   return {
     goals: (goalsRes.data || []).map((g) => g.goal_text).filter(Boolean),
     orgRoles: (nodesRes.data || []).map((n) => ({
