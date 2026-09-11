@@ -40,10 +40,12 @@ export async function fetchHmsSystemStatus(companyId: string): Promise<HmsSystem
       supabase.from("org_chart_node_persons").select("node_id, person_name"),
       supabase
         .from("company_organization")
-        .select("custom_content")
-        .eq("company_id", companyId)
-        .maybeSingle(),
-      supabase.from("company_risk_assessments").select("risks").eq("company_id", companyId).maybeSingle(),
+        .select("custom_content, department_id")
+        .eq("company_id", companyId),
+      supabase
+        .from("company_risk_assessments")
+        .select("risks, department_id")
+        .eq("company_id", companyId),
       supabase
         .from("company_routines")
         .select("routines")
@@ -74,14 +76,24 @@ export async function fetchHmsSystemStatus(companyId: string): Promise<HmsSystem
   const statuses = (devRes.data || []).map((d) => d.status);
   const countBy = (s: string) => statuses.filter((x) => x === s).length;
 
+  // Rader kan finnes per avdeling – slå sammen alle, med firmanivå (department_id null) først.
+  const byCompanyFirst = <T extends { department_id?: string | null }>(rows: T[] | null) =>
+    [...(rows || [])].sort((a, b) => (a.department_id ? 1 : 0) - (b.department_id ? 1 : 0));
+
+  const orgRows = byCompanyFirst(orgRes.data);
+  const orgDescription =
+    orgRows.map((r) => str(r.custom_content)).find((c) => c.trim().length > 0) || null;
+
+  const allRisks = byCompanyFirst(riskRes.data).flatMap((row) => asArray(row.risks));
+
   return {
     goals: (goalsRes.data || []).map((g) => g.goal_text).filter(Boolean),
     orgRoles: (nodesRes.data || []).map((n) => ({
       role: n.role_title,
       persons: personsByNode.get(n.id) || [],
     })),
-    orgDescription: orgRes.data?.custom_content ? str(orgRes.data.custom_content) : null,
-    risks: asArray(riskRes.data?.risks).map((r) => ({
+    orgDescription,
+    risks: allRisks.map((r) => ({
       name: str(r.hazard_source_custom || r.hazard_source || r.name || r.title || r.risk || r.activity),
       level: str(r.riskLevel || r.level || r.risk_level) || undefined,
     })),
