@@ -322,7 +322,7 @@ const Deviations = () => {
   // Update deviation fields (title, description, priority etc.)
   const handleUpdateDeviation = async (
     id: string,
-    updates: { title?: string; description?: string; category?: string; priority?: string; due_date?: string }
+    updates: { title?: string; description?: string; category?: string; priority?: string; due_date?: string; incident_time?: string | null; incident_location?: string | null }
   ): Promise<boolean> => {
     const success = await updateDeviation(id, updates as any);
     if (success) {
@@ -331,6 +331,8 @@ const Deviations = () => {
         ...(updates.title && { title: updates.title }),
         ...(updates.description !== undefined && { description: updates.description }),
         ...(updates.priority && { priority: updates.priority as any }),
+        ...(updates.incident_time !== undefined && { incident_time: updates.incident_time }),
+        ...(updates.incident_location !== undefined && { incident_location: updates.incident_location }),
       } : null);
     }
     return success;

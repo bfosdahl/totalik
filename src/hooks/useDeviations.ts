@@ -284,7 +284,8 @@ export function useDeviations() {
     updates: Partial<Pick<Deviation, 
       "status" | "assignee_id" | "assignee_name" | "priority" | 
       "immediate_actions" | "root_cause_analysis" | "preventive_measures" |
-      "title" | "description" | "category" | "due_date"
+      "title" | "description" | "category" | "due_date" |
+      "incident_time" | "incident_location"
     >>,
     options?: { sendNotification?: boolean; assigneeEmail?: string }
   ): Promise<boolean> => {
