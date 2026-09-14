@@ -134,6 +134,8 @@ interface DeviationDetailDialogProps {
     category?: string; 
     priority?: string;
     due_date?: string;
+    incident_time?: string | null;
+    incident_location?: string | null;
   }) => Promise<boolean>;
 }
 
@@ -182,6 +184,8 @@ export function DeviationDetailDialog({
   const [editPriority, setEditPriority] = useState<Deviation["priority"]>("medium");
   const [editCategory, setEditCategory] = useState<DeviationCategory>("other");
   const [editDueDate, setEditDueDate] = useState("");
+  const [editIncidentTime, setEditIncidentTime] = useState("");
+  const [editIncidentLocation, setEditIncidentLocation] = useState("");
   
   // Local state for follow-up fields
   const [immediateActions, setImmediateActions] = useState("");
@@ -210,6 +214,8 @@ export function DeviationDetailDialog({
       // dueDate comes as ISO or YYYY-MM-DD, normalize to YYYY-MM-DD for date input
       const d = deviation.dueDate ? new Date(deviation.dueDate) : null;
       setEditDueDate(d && !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : "");
+      setEditIncidentTime(deviation.incident_time ? String(deviation.incident_time).slice(0, 5) : "");
+      setEditIncidentLocation(deviation.incident_location || "");
       setIsEditing(false);
     }
   }, [deviation]);
@@ -257,6 +263,8 @@ export function DeviationDetailDialog({
         priority: editPriority,
         category: editCategory,
         due_date: editDueDate || undefined,
+        incident_time: editIncidentTime ? `${editIncidentTime}:00` : null,
+        incident_location: editIncidentLocation.trim() || null,
       });
       if (success) {
         setIsEditing(false);
@@ -577,6 +585,30 @@ export function DeviationDetailDialog({
                   type="date"
                   value={editDueDate}
                   onChange={(e) => setEditDueDate(e.target.value)}
+                  className="w-[180px]"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Tidspunkt for hendelse</span>
+                </div>
+                <Input
+                  type="time"
+                  value={editIncidentTime}
+                  onChange={(e) => setEditIncidentTime(e.target.value)}
+                  className="w-[180px]"
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Hendelsessted</span>
+                </div>
+                <Input
+                  value={editIncidentLocation}
+                  onChange={(e) => setEditIncidentLocation(e.target.value)}
+                  placeholder="Adresse / prosjekt"
                   className="w-[180px]"
                 />
               </div>

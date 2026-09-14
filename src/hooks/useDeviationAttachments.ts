@@ -61,7 +61,8 @@ export function useDeviationAttachments(deviationId: string | null) {
     try {
       // Create unique file path
       const fileExt = file.name.split(".").pop();
-      const fileName = `${deviationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      // Storage RLS krever at første mappe er company_id
+      const fileName = `${profile.company_id}/${deviationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
