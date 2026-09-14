@@ -214,6 +214,8 @@ export function DeviationDetailDialog({
       // dueDate comes as ISO or YYYY-MM-DD, normalize to YYYY-MM-DD for date input
       const d = deviation.dueDate ? new Date(deviation.dueDate) : null;
       setEditDueDate(d && !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : "");
+      setEditIncidentTime(deviation.incident_time ? String(deviation.incident_time).slice(0, 5) : "");
+      setEditIncidentLocation(deviation.incident_location || "");
       setIsEditing(false);
     }
   }, [deviation]);
@@ -261,6 +263,8 @@ export function DeviationDetailDialog({
         priority: editPriority,
         category: editCategory,
         due_date: editDueDate || undefined,
+        incident_time: editIncidentTime ? `${editIncidentTime}:00` : null,
+        incident_location: editIncidentLocation.trim() || null,
       });
       if (success) {
         setIsEditing(false);
