@@ -588,6 +588,30 @@ export function DeviationDetailDialog({
                   className="w-[180px]"
                 />
               </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Tidspunkt for hendelse</span>
+                </div>
+                <Input
+                  type="time"
+                  value={editIncidentTime}
+                  onChange={(e) => setEditIncidentTime(e.target.value)}
+                  className="w-[180px]"
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Hendelsessted</span>
+                </div>
+                <Input
+                  value={editIncidentLocation}
+                  onChange={(e) => setEditIncidentLocation(e.target.value)}
+                  placeholder="Adresse / prosjekt"
+                  className="w-[180px]"
+                />
+              </div>
             </div>
           )}
 
