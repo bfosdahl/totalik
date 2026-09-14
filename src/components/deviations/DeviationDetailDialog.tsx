@@ -134,6 +134,8 @@ interface DeviationDetailDialogProps {
     category?: string; 
     priority?: string;
     due_date?: string;
+    incident_time?: string | null;
+    incident_location?: string | null;
   }) => Promise<boolean>;
 }
 
@@ -182,6 +184,8 @@ export function DeviationDetailDialog({
   const [editPriority, setEditPriority] = useState<Deviation["priority"]>("medium");
   const [editCategory, setEditCategory] = useState<DeviationCategory>("other");
   const [editDueDate, setEditDueDate] = useState("");
+  const [editIncidentTime, setEditIncidentTime] = useState("");
+  const [editIncidentLocation, setEditIncidentLocation] = useState("");
   
   // Local state for follow-up fields
   const [immediateActions, setImmediateActions] = useState("");
