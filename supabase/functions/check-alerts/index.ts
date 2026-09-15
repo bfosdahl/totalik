@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
             for (const alert of alertsToNotify) {
               for (const email of adminEmails) {
                 emailBatchPayload.push({
-                  from: "Total IK Alerts <alerts@notify.totalik.no>",
+                  from: "Total IK Alerts <noreply@totalik.no>",
                   to: [email],
                   subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
                   html: `
