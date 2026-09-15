@@ -17,6 +17,7 @@ import { ExpiryAlerts } from "@/components/dashboard/ExpiryAlerts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { AdminHoursWidget } from "@/components/dashboard/AdminHoursWidget";
 import { SensorOfflineAlerts } from "@/components/dashboard/SensorOfflineAlerts";
+import { AnnouncementsBoard } from "@/components/dashboard/AnnouncementsBoard";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useNavigate } from "react-router-dom";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
@@ -122,6 +123,9 @@ const Index = () => {
             {t("dashboard.overview")}
           </p>
         </motion.div>
+
+        {/* Oppslagstavle */}
+        <AnnouncementsBoard />
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

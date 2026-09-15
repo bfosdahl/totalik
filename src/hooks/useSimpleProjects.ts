@@ -40,6 +40,7 @@ export interface NewSimpleProjectInput {
   client_contact_person?: string;
   client_phone?: string;
   client_email?: string;
+  customer_id?: string | null;
   contractor_type?: "total" | "hoved" | "under";
   project_leader_id?: string;
   project_leader_name?: string;
@@ -117,6 +118,7 @@ export function useSimpleProjects() {
           client_contact_person: input.client_contact_person || null,
           client_phone: input.client_phone || null,
           client_email: input.client_email || null,
+          customer_id: input.customer_id || null,
           contractor_type: input.contractor_type || null,
           project_leader_id: input.project_leader_id || null,
           project_leader_name: input.project_leader_name || null,
