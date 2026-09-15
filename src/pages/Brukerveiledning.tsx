@@ -688,8 +688,8 @@ const Brukerveiledning = () => {
             </ScrollArea>
           </TabsContent>
 
-          {/* IK/MAT Module - Placeholder */}
-          <TabsContent value="ik-mat">
+          {/* IK/MAT Module */}
+          <TabsContent value="ik-mat" className="space-y-6">
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -697,24 +697,271 @@ const Brukerveiledning = () => {
                     <ChefHat className="h-6 w-6 text-orange-500" />
                   </div>
                   <div>
-                    <CardTitle>{t("auto.ik_mat_internkontroll_for_mattrygghet")}</CardTitle>
+                    <CardTitle>IK/MAT – Internkontroll for mattrygghet</CardTitle>
                     <CardDescription>
-                      {t("auto.dokumentasjon_kommer_snart")}
+                      Komplett system for HACCP, temperaturkontroll, renhold og sporbarhet
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <ChefHat className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>{t("auto.brukerveiledning_for_ik_mat_modulen_er_u")}</p>
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="flex gap-3">
+                    <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">Hva er IK-Mat?</p>
+                      <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
+                        Alle virksomheter som håndterer mat må ha et internkontrollsystem basert på HACCP-prinsippene.
+                        Modulen dekker Mattilsynets krav til rutiner, temperaturlogg, renhold, sporbarhet og avvik.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            <ScrollArea className="h-[600px] pr-4">
+              <Accordion type="multiple" defaultValue={["mat-oppsett"]} className="space-y-4">
+                <AccordionItem value="mat-oppsett" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-orange-500/10">
+                        <ClipboardCheck className="h-5 w-5 text-orange-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Oppsett</p>
+                        <p className="text-sm text-muted-foreground font-normal">Kom i gang med IK-Mat</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Under IK MAT &gt; Oppsett beskriver du virksomheten (kafé, restaurant, kantine, butikk),
+                        antall ansatte og hvilket utstyr dere har. AI-oppsettet lager forslag til mål, HACCP-plan,
+                        renholdsplan og rutiner som passer driften. Alt kan redigeres etterpå.
+                      </p>
+                      <div className="space-y-3">
+                        <p className="font-medium">Slik gjør du det</p>
+                        <ol className="list-decimal list-inside space-y-2 text-sm">
+                          <li>Fyll ut virksomhetstype og antall ansatte</li>
+                          <li>Registrer utstyr: kjøleskap, kjølerom, frysere, oppvaskmaskiner</li>
+                          <li>Kjør oppsett-hjelperen og se gjennom forslagene</li>
+                          <li>Juster rutiner, sjekklister og ansvarlige</li>
+                          <li>Skru på eller av påminnelser for daglige oppgaver</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="mat-temperatur" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-sky-500/10">
+                        <Target className="h-5 w-5 text-sky-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Temperaturlogg</p>
+                        <p className="text-sm text-muted-foreground font-normal">Daglig kontroll av kjøl, frys og varmebehandling</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Hvert apparat får egen ID og inngår automatisk i temperaturloggen. Ansatte registrerer
+                        temperatur på mobil, og systemet varsler dersom verdien er utenfor grenseverdiene.
+                      </p>
+                      <div className="grid gap-3">
+                        <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Kjøl under 4 °C, frys under -18 °C</p>
+                            <p className="text-sm text-muted-foreground">Anbefalt daglig logging av alle enheter</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Varmebehandling, nedkjøling og oppvarming</p>
+                            <p className="text-sm text-muted-foreground">Kjernetemperatur dokumenteres som egne kontroller</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium">Sensorer</p>
+                            <p className="text-sm text-muted-foreground">Tredjeparts temperatursensorer kan sende målinger automatisk inn i loggen</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <div className="flex gap-3">
+                          <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-red-900 dark:text-red-100">Automatisk avvik</p>
+                            <p className="text-sm text-red-800 dark:text-red-200 mt-1">
+                              Registreres en temperatur utenfor grenseverdiene, opprettes det automatisk et avvik
+                              med forslag til tiltak. Det samme skjer om en påkrevd kontroll ikke blir utført.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="mat-renhold" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-teal-500/10">
+                        <ClipboardCheck className="h-5 w-5 text-teal-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Renholdsplan og sjekklister</p>
+                        <p className="text-sm text-muted-foreground font-normal">Daglige, ukentlige og månedlige oppgaver</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Renholdsplanen viser hva som skal gjøres daglig, ukentlig, månedlig og årlig – for eksempel
+                        gulv og benker daglig, avtrekkshette og kjølerom ukentlig, og vinduer månedlig.
+                        Ansatte huker av på mobilen, legger ved kommentar eller bilde og signerer.
+                      </p>
+                      <div className="space-y-3">
+                        <p className="font-medium">Godt å vite</p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                          <li>Du kan lage egne oppgaver og bestemme hyppighet og ansvarlig</li>
+                          <li>Oppgaver som ikke utføres gir avvik automatisk</li>
+                          <li>Renholdsplanen kan skrives ut som PDF og henges opp på kjøkkenet</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="mat-haccp" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-red-500/10">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">HACCP og risikovurdering</p>
+                        <p className="text-sm text-muted-foreground font-normal">Kritiske styringspunkter i produksjonen</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        HACCP-planen kartlegger farer i hvert ledd fra mottak til servering, setter grenseverdier
+                        for de kritiske punktene og beskriver hva som skal gjøres når en grense brytes.
+                      </p>
+                      <ol className="list-decimal list-inside space-y-2 text-sm">
+                        <li>Kartlegg farene (biologiske, kjemiske, fysiske og allergener)</li>
+                        <li>Finn de kritiske styringspunktene (mottak, kjøling, varmebehandling)</li>
+                        <li>Sett grenseverdier og hvordan de overvåkes</li>
+                        <li>Beskriv korrigerende tiltak ved avvik</li>
+                        <li>Dokumenter kontrollene i temperaturlogg og sjekklister</li>
+                      </ol>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="mat-sporbarhet" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-indigo-500/10">
+                        <FileText className="h-5 w-5 text-indigo-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Sporbarhet og leverandører</p>
+                        <p className="text-sm text-muted-foreground font-normal">Mottakskontroll, batch og etiketter</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Under Sporbarhet registrerer du varemottak med leverandør, batchnummer og mottaksdato,
+                        slik at du kan følge en råvare fra leverandør til servert rett. Du kan også skrive ut
+                        etiketter med holdbarhet og åpningsdato.
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                        <li>Mottakskontroll med temperatur og tilstand på varen</li>
+                        <li>Faste leverandøravtaler samlet ett sted</li>
+                        <li>Allergener merkes på produktene</li>
+                      </ul>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="mat-kjokkenplan" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-amber-500/10">
+                        <Building2 className="h-5 w-5 text-amber-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Kjøkkenplan</p>
+                        <p className="text-sm text-muted-foreground font-normal">Tegn soner og plasser utstyr</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Kjøkkenplanen er et visuelt verktøy der du tegner lokalet og plasserer soner
+                        (ren/uren, varm/kald) og utstyr. Planen dokumenterer hygienesoner og vareflyt
+                        overfor Mattilsynet, og kan lastes ned som PDF.
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="mat-dokumentasjon" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-cyan-500/10">
+                        <BookOpen className="h-5 w-5 text-cyan-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Dokumentasjon og tilsyn</p>
+                        <p className="text-sm text-muted-foreground font-normal">Alt Mattilsynet ber om i én PDF</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        I Dokumentasjonssenteret klikker du Generer rapport og får en samlet PDF med mål,
+                        HACCP-plan, rutiner, renholdsplan, sjekklister, temperaturlogg og avvik.
+                      </p>
+                      <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <div className="flex gap-3">
+                          <Lightbulb className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-green-900 dark:text-green-100">Tips</p>
+                            <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                              Spør MAT Proffen (chat-knappen nede til høyre) om HACCP, allergener eller hygiene –
+                              assistenten kjenner både regelverket og ditt oppsett.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </ScrollArea>
           </TabsContent>
 
-          {/* KS Bygg Module - Placeholder */}
-          <TabsContent value="ks-bygg">
+          {/* KS Bygg Module */}
+          <TabsContent value="ks-bygg" className="space-y-6">
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -722,21 +969,298 @@ const Brukerveiledning = () => {
                     <HardHat className="h-6 w-6 text-blue-500" />
                   </div>
                   <div>
-                    <CardTitle>{t("auto.ks_bygg_kvalitetssikring_for_byggeprosje")}</CardTitle>
+                    <CardTitle>KS BYGG – Kvalitetssikring for byggeprosjekter</CardTitle>
                     <CardDescription>
-                      {t("auto.dokumentasjon_kommer_snart")}
+                      Prosjektstyring, sjekklister, SJA, SHA-plan, byggesak og sluttdokumentasjon
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <HardHat className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>{t("auto.brukerveiledning_for_ks_bygg_modulen_er_")}</p>
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="flex gap-3">
+                    <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">Hva er KS BYGG?</p>
+                      <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
+                        Et kvalitetssikringssystem tilpasset plan- og bygningsloven med SAK10. Alt arbeid
+                        dokumenteres per prosjekt, slik at du enkelt kan vise kontroll overfor byggherre og kommune.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            <ScrollArea className="h-[600px] pr-4">
+              <Accordion type="multiple" defaultValue={["ks-prosjekt"]} className="space-y-4">
+                <AccordionItem value="ks-prosjekt" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-500/10">
+                        <Building2 className="h-5 w-5 text-blue-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Opprett prosjekt</p>
+                        <p className="text-sm text-muted-foreground font-normal">Velg prosjekttype og kunde</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Gå til KS BYGG &gt; Prosjekter &gt; Nytt prosjekt. Velg kunde fra kundelisten, eller skriv inn
+                        organisasjonsnummeret – navn og adresse hentes automatisk fra Brønnøysundregistrene.
+                      </p>
+                      <div className="grid gap-3">
+                        <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <Badge variant="outline" className="shrink-0">Standard</Badge>
+                          <div>
+                            <p className="font-medium">Fullskala prosjekt</p>
+                            <p className="text-sm text-muted-foreground">Alle moduler: byggesak, SHA, underleverandører, økonomi</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <Badge variant="outline" className="shrink-0">Lite</Badge>
+                          <div>
+                            <p className="font-medium">Forenklet prosjekt</p>
+                            <p className="text-sm text-muted-foreground">For mindre jobber – færre moduler i menyen</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <Badge variant="outline" className="shrink-0">Mini</Badge>
+                          <div>
+                            <p className="font-medium">Småoppdrag</p>
+                            <p className="text-sm text-muted-foreground">Kun det aller nødvendigste: sjekkliste, bilder, rapport</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ks-sjekklister" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-emerald-500/10">
+                        <ClipboardCheck className="h-5 w-5 text-emerald-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Sjekklister</p>
+                        <p className="text-sm text-muted-foreground font-normal">Utfylling på byggeplass med bilder og signatur</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Åpne prosjektet på mobilen, velg Sjekklister og start fra en mal. Du huker av punktene,
+                        tar bilder direkte i skjemaet, skriver kommentarer og signerer på skjermen.
+                      </p>
+                      <div className="space-y-3">
+                        <p className="font-medium">Statuser</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline">Planlagt</Badge>
+                          <ArrowRight className="h-4 w-4" />
+                          <Badge variant="outline" className="bg-yellow-100">Under arbeid</Badge>
+                          <ArrowRight className="h-4 w-4" />
+                          <Badge variant="outline" className="bg-green-100">Fullført</Badge>
+                        </div>
+                      </div>
+                      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                        <div className="flex gap-3">
+                          <Sparkles className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-amber-900 dark:text-amber-100">Hurtigutfylling</p>
+                            <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
+                              Bruk hurtigutfylling for å godkjenne alle punkter samtidig, og korriger kun de som avviker.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ks-sja" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-red-500/10">
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">SJA og vernerunder</p>
+                        <p className="text-sm text-muted-foreground font-normal">Sikker jobbanalyse før risikofylt arbeid</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        SJA er en kort risikovurdering som gjøres rett før arbeid med høy risiko – arbeid i høyden,
+                        varme arbeider, gravearbeid eller arbeid med strøm. Alle involverte signerer før oppstart.
+                      </p>
+                      <ol className="list-decimal list-inside space-y-2 text-sm">
+                        <li>Beskriv arbeidsoperasjonen</li>
+                        <li>List farene som kan oppstå</li>
+                        <li>Beskriv tiltak for hver fare</li>
+                        <li>Send mobilen rundt – alle signerer på samme enhet</li>
+                      </ol>
+                      <p className="text-sm text-muted-foreground">
+                        Vernerunder på byggeplass registreres på samme måte, med funn som kan gjøres om til avvik.
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ks-avvik" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-orange-500/10">
+                        <AlertTriangle className="h-5 w-5 text-orange-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Avvik og endringsmeldinger</p>
+                        <p className="text-sm text-muted-foreground font-normal">Følg opp feil og merkostnader</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Avvik meldes fra mobilen under prosjektet, får eget løpenummer og varsler ansvarlig.
+                        Avviket lukkes med årsak og tiltak, og følger med i sluttrapporten.
+                      </p>
+                      <p>
+                        Endringsmeldinger (EM-XXXX) brukes når arbeidet endres underveis, slik at merkostnader
+                        og tilleggsarbeid er dokumentert overfor byggherre.
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ks-byggesak" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-indigo-500/10">
+                        <FileText className="h-5 w-5 text-indigo-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Byggesak og SHA-plan</p>
+                        <p className="text-sm text-muted-foreground font-normal">SAK10-blanketter og byggherrens koordinator</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <div className="space-y-3">
+                        <p className="font-medium">Byggesak</p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                          <li>Blankett 5174 – søknad om tillatelse til tiltak</li>
+                          <li>Blankett 5181 – erklæring om ansvarsrett</li>
+                          <li>Blankett 5167 – gjennomføringsplan</li>
+                        </ul>
+                        <p className="text-sm text-muted-foreground">
+                          Skjemaene fylles ut i appen og lastes ned som PDF klar til innsending.
+                        </p>
+                      </div>
+                      <div className="space-y-3">
+                        <p className="font-medium">SHA-plan</p>
+                        <p className="text-sm text-muted-foreground">
+                          Koordinator for prosjektering (KP) og utførelse (KU) kobles til konkrete brukere og
+                          signerer digitalt. Ekstern SHA-plan fra byggherre kan lastes opp som PDF.
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ks-ue" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-500/10">
+                        <Users className="h-5 w-5 text-purple-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Underleverandører</p>
+                        <p className="text-sm text-muted-foreground font-normal">Egenerklæring og dokumentasjon</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Registrer underleverandørene i prosjektet og last opp egenerklæring og KS-håndbok.
+                        Har dere ingen underleverandører, kan modulen skjules slik at menyen blir enklere.
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ks-dagsrapport" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-rose-500/10">
+                        <Clock className="h-5 w-5 text-rose-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Daglige rapporter og økonomi</p>
+                        <p className="text-sm text-muted-foreground font-normal">Fremdrift, bemanning og kostnader</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        I daglig rapport registrerer du vær, bemanning, utført arbeid, hendelser og bilder.
+                        Rapportene nummereres automatisk og samles i prosjektrapporten.
+                      </p>
+                      <p>
+                        Under Økonomi laster du opp fakturaer og kvitteringer, og følger med på budsjett mot
+                        påløpte kostnader i prosjektet.
+                      </p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ks-sluttrapport" className="border rounded-lg px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-cyan-500/10">
+                        <BookOpen className="h-5 w-5 text-cyan-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold">Sluttdokumentasjon</p>
+                        <p className="text-sm text-muted-foreground font-normal">Én samlet PDF ved overlevering</p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 pb-6">
+                    <div className="space-y-4">
+                      <p>
+                        Gå til Prosjekt &gt; Dokumentasjon &gt; Generer rapport. Velg hvilke elementer som skal
+                        være med, og last ned en samlet PDF med sjekklister, bilder, avvik, SJA, vernerunder
+                        og signaturer.
+                      </p>
+                      <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                        <div className="flex gap-3">
+                          <Lightbulb className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-green-900 dark:text-green-100">Tips</p>
+                            <p className="text-sm text-green-800 dark:text-green-200 mt-1">
+                              Prosjekt-hjelperen kjenner prosjektet ditt og kan foreslå hvilke rutiner,
+                              sjekklister og SAK10-krav som mangler før overlevering.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </ScrollArea>
           </TabsContent>
+
 
           {/* General - Placeholder */}
           <TabsContent value="generelt">
