@@ -17,6 +17,8 @@ import { useCompanyProjectTemplates } from "@/hooks/useCompanyProjectTemplates";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
+import { CustomerPicker, PickedCustomer } from "./CustomerPicker";
+import { lookupBrregCompany, isValidOrgNumber } from "@/lib/brregLookup";
 
 const getProjectTypeOptions = (): { id: ProjectType; name: string; description: string; icon: typeof Building2; features: string[] }[] => [
   {
@@ -169,6 +171,7 @@ const getEmptyFormData = (): NewKsModule2ProjectInput => ({
   client_contact_person: "",
   client_phone: "",
   client_email: "",
+  customer_id: null,
   contractor_type: undefined,
   project_leader_id: "",
   project_leader_name: "",
@@ -190,6 +193,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
   const [activeTab, setActiveTab] = useState<string>("manual");
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
+  const [orgLookupLoading, setOrgLookupLoading] = useState(false);
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -247,6 +251,37 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
       project_leader_id: userId,
       project_leader_name: user ? `${user.first_name || ""} ${user.last_name || ""}`.trim() : "",
     }));
+  };
+
+  const handleCustomerSelect = (customer: PickedCustomer | null) => {
+    if (!customer) {
+      setFormData((prev) => ({ ...prev, customer_id: null }));
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      customer_id: customer.id,
+      client_name: customer.name || prev.client_name,
+      client_org_number: customer.org_number || prev.client_org_number,
+      client_contact_person: customer.contact_person || prev.client_contact_person,
+      client_phone: customer.phone || prev.client_phone,
+      client_email: customer.email || prev.client_email,
+    }));
+  };
+
+  const handleOrgNumberChange = async (value: string) => {
+    setFormData((prev) => ({ ...prev, client_org_number: value }));
+    if (!isValidOrgNumber(value)) return;
+    setOrgLookupLoading(true);
+    const info = await lookupBrregCompany(value);
+    setOrgLookupLoading(false);
+    if (info) {
+      setFormData((prev) => ({
+        ...prev,
+        client_name: prev.client_name?.trim() ? prev.client_name : info.name,
+      }));
+      toast.success(`Fant ${info.name} i Brønnøysundregistrene`);
+    }
   };
 
   const saveAiRecommendations = async (
@@ -622,6 +657,15 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 {t("auto.byggherre")}
               </h3>
 
+              <div className="space-y-2">
+                <Label>Velg kunde</Label>
+                <CustomerPicker
+                  value={formData.customer_id}
+                  currentName={formData.client_name}
+                  onSelect={handleCustomerSelect}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="client_name">{t("auto.navn_2")}</Label>
@@ -634,11 +678,16 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="client_org_number">{t("auto.org_nr")}</Label>
+                  <Label htmlFor="client_org_number">
+                    {t("auto.org_nr")}
+                    {orgLookupLoading && (
+                      <span className="ml-2 text-xs text-muted-foreground">henter info...</span>
+                    )}
+                  </Label>
                   <Input
                     id="client_org_number"
                     value={formData.client_org_number}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, client_org_number: e.target.value }))}
+                    onChange={(e) => handleOrgNumberChange(e.target.value)}
                     placeholder="123456789"
                   />
                 </div>

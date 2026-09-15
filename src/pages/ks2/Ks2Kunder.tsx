@@ -40,6 +40,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { lookupBrregCompany, isValidOrgNumber } from "@/lib/brregLookup";
 
 interface Customer {
   id: string;
@@ -86,6 +87,23 @@ export default function Ks2Kunder() {
   const [form, setForm] = useState({ ...emptyForm });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mergeTarget, setMergeTarget] = useState("");
+  const [orgLookupLoading, setOrgLookupLoading] = useState(false);
+
+  const handleOrgNumberChange = async (value: string) => {
+    setForm((prev) => ({ ...prev, org_number: value }));
+    if (!isValidOrgNumber(value)) return;
+    setOrgLookupLoading(true);
+    const info = await lookupBrregCompany(value);
+    setOrgLookupLoading(false);
+    if (info) {
+      setForm((prev) => ({
+        ...prev,
+        name: prev.name.trim() ? prev.name : info.name,
+        address: prev.address.trim() ? prev.address : info.address,
+      }));
+      toast.success(`Fant ${info.name} i Brønnøysundregistrene`);
+    }
+  };
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["company-customers", companyId],
@@ -395,11 +413,17 @@ export default function Ks2Kunder() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="c-org">Organisasjonsnummer</Label>
+              <Label htmlFor="c-org">
+                Organisasjonsnummer
+                {orgLookupLoading && (
+                  <span className="ml-2 text-xs text-muted-foreground">henter info...</span>
+                )}
+              </Label>
               <Input
                 id="c-org"
                 value={form.org_number}
-                onChange={(e) => setForm({ ...form, org_number: e.target.value })}
+                onChange={(e) => handleOrgNumberChange(e.target.value)}
+                placeholder="123456789"
               />
             </div>
             <div className="space-y-2 sm:col-span-2">

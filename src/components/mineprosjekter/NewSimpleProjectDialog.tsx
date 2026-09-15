@@ -10,6 +10,9 @@ import { Loader2 } from "lucide-react";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewSimpleProjectInput } from "@/hooks/useSimpleProjects";
 import { t } from "@/i18n/t";
+import { CustomerPicker, PickedCustomer } from "@/components/ks2/CustomerPicker";
+import { lookupBrregCompany, isValidOrgNumber } from "@/lib/brregLookup";
+import { toast } from "sonner";
 
 interface NewSimpleProjectDialogProps {
   open: boolean;
@@ -28,6 +31,7 @@ const getEmptyFormData = (): NewSimpleProjectInput => ({
   client_contact_person: "",
   client_phone: "",
   client_email: "",
+  customer_id: null,
   contractor_type: undefined,
   project_leader_id: "",
   project_leader_name: "",
@@ -40,6 +44,39 @@ const getEmptyFormData = (): NewSimpleProjectInput => ({
 export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving }: NewSimpleProjectDialogProps) {
   const { users } = useCompanyUsers();
   const [formData, setFormData] = useState<NewSimpleProjectInput>(getEmptyFormData());
+  const [orgLookupLoading, setOrgLookupLoading] = useState(false);
+
+  const handleCustomerSelect = (customer: PickedCustomer | null) => {
+    if (!customer) {
+      setFormData((prev) => ({ ...prev, customer_id: null }));
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      customer_id: customer.id,
+      client_name: customer.name || prev.client_name,
+      client_org_number: customer.org_number || prev.client_org_number,
+      client_contact_person: customer.contact_person || prev.client_contact_person,
+      client_phone: customer.phone || prev.client_phone,
+      client_email: customer.email || prev.client_email,
+      address: prev.address?.trim() ? prev.address : customer.address || "",
+    }));
+  };
+
+  const handleOrgNumberChange = async (value: string) => {
+    setFormData((prev) => ({ ...prev, client_org_number: value }));
+    if (!isValidOrgNumber(value)) return;
+    setOrgLookupLoading(true);
+    const info = await lookupBrregCompany(value);
+    setOrgLookupLoading(false);
+    if (info) {
+      setFormData((prev) => ({
+        ...prev,
+        client_name: prev.client_name?.trim() ? prev.client_name : info.name,
+      }));
+      toast.success(`Fant ${info.name} i Brønnøysundregistrene`);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +128,16 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
                 />
               </div>
 
+              {/* Customer picker */}
+              <div className="space-y-2">
+                <Label>Velg kunde</Label>
+                <CustomerPicker
+                  value={formData.customer_id}
+                  currentName={formData.client_name}
+                  onSelect={handleCustomerSelect}
+                />
+              </div>
+
               {/* Client name */}
               <div className="space-y-2">
                 <Label htmlFor="client_name">{t("auto.kunde_byggherre")}</Label>
@@ -99,6 +146,22 @@ export function NewSimpleProjectDialog({ open, onOpenChange, onSubmit, isSaving 
                   value={formData.client_name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, client_name: e.target.value }))}
                   placeholder={t("auto.kundens_navn")}
+                />
+              </div>
+
+              {/* Org number */}
+              <div className="space-y-2">
+                <Label htmlFor="client_org_number">
+                  {t("auto.org_nr")}
+                  {orgLookupLoading && (
+                    <span className="ml-2 text-xs text-muted-foreground">henter info...</span>
+                  )}
+                </Label>
+                <Input
+                  id="client_org_number"
+                  value={formData.client_org_number}
+                  onChange={(e) => handleOrgNumberChange(e.target.value)}
+                  placeholder="123456789"
                 />
               </div>
 

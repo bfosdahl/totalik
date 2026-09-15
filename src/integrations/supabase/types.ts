@@ -1695,6 +1695,94 @@ export type Database = {
           },
         ]
       }
+      company_announcement_reads: {
+        Row: {
+          announcement_id: string
+          id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "company_announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_announcements: {
+        Row: {
+          body: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          expires_at: string | null
+          id: string
+          is_deleted: boolean
+          is_pinned: boolean
+          publish_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          is_pinned?: boolean
+          publish_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          is_pinned?: boolean
+          publish_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_announcements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_chemical_entries: {
         Row: {
           company_id: string
