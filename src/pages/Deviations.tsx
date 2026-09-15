@@ -127,7 +127,8 @@ const Deviations = () => {
 
   // Helper function to upload files for a deviation
   const uploadFilesForDeviation = async (deviationId: string, files: File[]) => {
-    if (!profile?.company_id || files.length === 0) return;
+    if (!profile?.company_id || files.length === 0) return 0;
+    let uploaded = 0;
     
     const uploaderName = profile.first_name && profile.last_name
       ? `${profile.first_name} ${profile.last_name}`
@@ -163,10 +164,12 @@ const Deviations = () => {
             uploaded_by: profile.id,
             uploaded_by_name: uploaderName,
           });
+        uploaded += 1;
       } catch (error) {
         console.error("Error uploading file:", error);
       }
     }
+    return uploaded;
   };
 
   const filteredDeviations = deviations.filter((dev) => {
@@ -219,10 +222,12 @@ const Deviations = () => {
     
     // Upload pending files if any
     if (createdDeviation && input.pendingFiles && input.pendingFiles.length > 0) {
-      await uploadFilesForDeviation(createdDeviation.id, input.pendingFiles);
+      const uploadedCount = await uploadFilesForDeviation(createdDeviation.id, input.pendingFiles);
       toast({
         title: t("auto.vedlegg_lastet_opp"),
-        description: `${input.pendingFiles.length} fil(er) ble lastet opp`,
+        description: uploadedCount === input.pendingFiles.length
+          ? `${uploadedCount} fil(er) ble lastet opp`
+          : `${uploadedCount} av ${input.pendingFiles.length} fil(er) ble lastet opp`,
       });
     }
   };
