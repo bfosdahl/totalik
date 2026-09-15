@@ -158,7 +158,8 @@ const IkMatAvvik = () => {
     for (const file of files) {
       try {
         const fileExt = file.name.split(".").pop();
-        const fileName = `${deviationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        // Storage RLS krever at første mappe er company_id
+        const fileName = `${profile.company_id}/${deviationId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from("deviation-attachments")
