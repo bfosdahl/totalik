@@ -155,7 +155,10 @@ export function NewTimeEntryDialog({
     e.preventDefault();
 
     const hoursNum = parseFloat(hours);
-    if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) return;
+    if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) {
+      toast.error("Fyll inn antall timer (mellom 0 og 24) før du registrerer.");
+      return;
+    }
 
     let projectName: string | undefined;
     let projectId: string | undefined;
