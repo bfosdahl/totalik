@@ -95,22 +95,35 @@ export function AnnouncementsBoard() {
       animate={{ opacity: 1, y: 0 }}
       className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card"
     >
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2 md:gap-3">
+      <div className={cn("flex items-center justify-between gap-3", collapsed ? "" : "mb-4")}>
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
           <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
             <Megaphone className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           </div>
-          <h3 className="text-base md:text-lg font-semibold">Oppslagstavle</h3>
+          <h3 className="text-base md:text-lg font-semibold truncate">Oppslagstavle</h3>
+          {visible.length > 0 && (
+            <Badge variant="secondary" className="shrink-0">{visible.length}</Badge>
+          )}
         </div>
-        {isAdmin && (
-          <Button size="sm" onClick={openNew} className="gap-2">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Ny melding</span>
+        <div className="flex items-center gap-2 shrink-0">
+          {isAdmin && (
+            <Button size="sm" onClick={openNew} className="gap-2">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Ny melding</span>
+            </Button>
+          )}
+          <Button
+            size="icon"
+            variant="ghost"
+            title={collapsed ? "Vis oppslagstavle" : "Skjul oppslagstavle"}
+            onClick={() => setCollapsed((v) => !v)}
+          >
+            {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </Button>
-        )}
+        </div>
       </div>
 
-      {isLoading ? (
+      {collapsed ? null : isLoading ? (
         <p className="text-sm text-muted-foreground">Laster meldinger...</p>
       ) : visible.length === 0 ? (
         <p className="text-sm text-muted-foreground">
