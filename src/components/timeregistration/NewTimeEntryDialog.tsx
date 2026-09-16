@@ -31,9 +31,10 @@ import { toast } from "sonner";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAllowanceTypes, ALLOWANCE_UNIT_LABELS } from "@/hooks/useAllowanceTypes";
+import { useMaterialTypes, MATERIAL_UNITS, MATERIAL_UNIT_LABELS, MaterialUnit } from "@/hooks/useMaterialTypes";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreateTimeEntry, HourType, TimeEntryAllowanceInput } from "@/hooks/useTimeEntries";
+import { CreateTimeEntry, HourType, TimeEntryAllowanceInput, TimeEntryMaterialInput } from "@/hooks/useTimeEntries";
 import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 import { t } from "@/i18n/t";
 
@@ -97,6 +98,7 @@ export function NewTimeEntryDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCustomProject, setUseCustomProject] = useState(false);
   const [allowanceRows, setAllowanceRows] = useState<AllowanceRow[]>([]);
+  const [materialRows, setMaterialRows] = useState<MaterialRow[]>([]);
   const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
   const [onBehalfUserId, setOnBehalfUserId] = useState<string>("__self__");
 
@@ -108,6 +110,7 @@ export function NewTimeEntryDialog({
   const { hasModule } = useCompanyModules();
   const hasKsBygg = hasModule("IK_BYGG");
   const { types: allowanceTypes } = useAllowanceTypes({ onlyActive: true });
+  const { types: materialTypes } = useMaterialTypes({ onlyActive: true });
 
   const activeProjects = useMemo(
     () => projects.filter((p) => p.status !== "completed" && p.status !== "handover"),
@@ -200,6 +203,23 @@ export function NewTimeEntryDialog({
       })
       .filter((x): x is TimeEntryAllowanceInput => x !== null);
 
+    // Build materialforbruk
+    const materials: TimeEntryMaterialInput[] = materialRows
+      .map<TimeEntryMaterialInput | null>((r) => {
+        const mt = materialTypes.find((x) => x.id === r.typeId);
+        const name = (mt?.name ?? r.name).trim();
+        const qty = parseFloat(r.quantity);
+        if (!name || isNaN(qty) || qty <= 0) return null;
+        return {
+          material_type_id: mt?.id ?? null,
+          name,
+          unit: r.unit || mt?.unit || "stk",
+          quantity: qty,
+          unit_price: Number(mt?.unit_price ?? 0),
+        };
+      })
+      .filter((x): x is TimeEntryMaterialInput => x !== null);
+
     setIsSubmitting(true);
 
     // Admin: on behalf of another user?
@@ -255,6 +275,7 @@ export function NewTimeEntryDialog({
         tags: tagList.length > 0 ? tagList : null,
         description: description || undefined,
         allowances,
+        materials,
         overtime_segments: persistSegments,
         on_behalf_user_id: onBehalfId,
         on_behalf_user_name: onBehalfName,
@@ -277,12 +298,27 @@ export function NewTimeEntryDialog({
       customer_name: customerName || null,
       description: description || undefined,
       allowances,
+      materials,
       on_behalf_user_id: onBehalfId,
       on_behalf_user_name: onBehalfName,
     });
 
     if (success) onOpenChange(false);
     setIsSubmitting(false);
+  };
+
+  const addMaterial = () => {
+    const first = materialTypes[0];
+    setMaterialRows((rows) => [
+      ...rows,
+      {
+        id: crypto.randomUUID(),
+        typeId: first?.id ?? "",
+        name: "",
+        unit: first?.unit ?? "stk",
+        quantity: "1",
+      },
+    ]);
   };
 
   const addAllowance = () => {
