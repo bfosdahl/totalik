@@ -31,7 +31,7 @@ import { CompanyTrashBinSettings } from "@/components/settings/CompanyTrashBinSe
 import { DataExportSettings } from "@/components/settings/DataExportSettings";
 import { t } from "@/i18n/t";
 
-type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances" | "trash";
+type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances" | "materials" | "trash";
 
 interface SettingsSectionConfig {
   id: SettingsSection;
