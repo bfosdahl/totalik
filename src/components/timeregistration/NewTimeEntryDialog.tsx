@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap, Save } from "lucide-react";
+import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap, Save, Package } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -142,6 +142,7 @@ export function NewTimeEntryDialog({
     setDescription("");
     setUseCustomProject(false);
     setAllowanceRows([]);
+    setMaterialRows([]);
     setOvertimeSegments([]);
     setProjectNumber("");
     setSubproject("");
@@ -693,6 +694,104 @@ export function NewTimeEntryDialog({
                 </Badge>
               </div>
             )}
+          </div>
+
+          {/* Materialforbruk */}
+          <div className="space-y-2 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2">
+                <Package className="h-4 w-4" /> Materialforbruk
+              </Label>
+              <Button type="button" variant="outline" size="sm" onClick={addMaterial} className="gap-1">
+                <Plus className="h-3 w-3" /> Legg til
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Valgfritt. Registrer materialer brukt denne dagen, f.eks. sveisetråd, kappeskiver, skruer eller gass.
+            </p>
+
+            {materialRows.map((row) => (
+              <div key={row.id} className="grid grid-cols-[1fr_90px_auto] gap-2 items-start bg-muted/30 p-2 rounded-md">
+                {materialTypes.length > 0 ? (
+                  <Select
+                    value={row.typeId || "__custom__"}
+                    onValueChange={(v) =>
+                      setMaterialRows((rows) =>
+                        rows.map((r) => {
+                          if (r.id !== row.id) return r;
+                          if (v === "__custom__") return { ...r, typeId: "", name: "" };
+                          const mt = materialTypes.find((x) => x.id === v);
+                          return { ...r, typeId: v, name: mt?.name ?? "", unit: mt?.unit ?? r.unit };
+                        })
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-9"><SelectValue placeholder="Velg material" /></SelectTrigger>
+                    <SelectContent>
+                      {materialTypes.map((mt) => (
+                        <SelectItem key={mt.id} value={mt.id}>{mt.name}</SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">Annet (skriv selv)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    className="h-9"
+                    placeholder="F.eks. sveisetråd"
+                    value={row.name}
+                    onChange={(e) =>
+                      setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
+                    }
+                  />
+                )}
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="h-9"
+                  value={row.quantity}
+                  onChange={(e) =>
+                    setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, quantity: e.target.value } : r)))
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setMaterialRows((rows) => rows.filter((r) => r.id !== row.id))}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+
+                {materialTypes.length > 0 && !row.typeId && (
+                  <Input
+                    className="h-9 col-span-3"
+                    placeholder="Navn på material"
+                    value={row.name}
+                    onChange={(e) =>
+                      setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
+                    }
+                  />
+                )}
+
+                <div className="col-span-3">
+                  <Select
+                    value={row.unit}
+                    onValueChange={(v) =>
+                      setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, unit: v } : r)))
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {MATERIAL_UNITS.map((u) => (
+                        <SelectItem key={u} value={u}>{MATERIAL_UNIT_LABELS[u as MaterialUnit]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex gap-2 pt-2">
