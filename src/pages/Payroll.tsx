@@ -197,7 +197,20 @@ export default function Payroll() {
           map.set(a.time_entry_id, cur + (Number(a.amount) || 0));
         });
         setAllowanceMap(map);
-        setAllowanceDetailsList((allowData as AllowanceRow[] | null) || []);
+        const { data: matData } = await supabase
+          .from("time_entry_materials")
+          .select("time_entry_id, name, unit, quantity, unit_price, amount, notes")
+          .in("time_entry_id", ids);
+        const matRows: AllowanceRow[] = ((matData as any[]) || []).map((m) => ({
+          time_entry_id: m.time_entry_id,
+          amount: Number(m.amount) || 0,
+          type_name: m.name || "(uten navn)",
+          unit: m.unit || "stk",
+          quantity: Number(m.quantity) || 0,
+          rate_snapshot: Number(m.unit_price) || 0,
+          notes: m.notes ?? null,
+        })) as AllowanceRow[];
+        setAllowanceDetailsList([...(((allowData as AllowanceRow[] | null) || [])), ...matRows]);
       } else {
         setAllowanceMap(new Map());
         setAllowanceDetailsList([]);
