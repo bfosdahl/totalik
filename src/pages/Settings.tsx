@@ -187,6 +187,16 @@ const Settings = () => {
     );
   }
 
+  if (activeSection === "materials") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <MaterialTypesSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (activeSection === "allowances") {
     return (
       <AppLayout>
