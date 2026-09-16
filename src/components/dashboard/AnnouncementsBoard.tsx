@@ -130,8 +130,8 @@ export function AnnouncementsBoard() {
           Ingen meldinger akkurat nå. Skriv en melding som alle ansatte ser på forsiden.
         </p>
       ) : (
-        <div className="space-y-3">
-          {visible.map((a) => (
+        <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+          {shown.map((a) => (
             <div
               key={a.id}
               className={cn(
