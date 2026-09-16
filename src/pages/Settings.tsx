@@ -66,6 +66,12 @@ const settingsSections: SettingsSectionConfig[] = [
     description: t("auto.definer_satser_for_diett_kilometer_reise"),
   },
   {
+    id: "materials",
+    icon: Package,
+    title: "Materialliste",
+    description: "Materialer ansatte kan føre på timelisten (sveisetråd, skruer, gass m.m.)",
+  },
+  {
     id: "notifications",
     icon: Bell,
     title: t("auto.varsler"),
