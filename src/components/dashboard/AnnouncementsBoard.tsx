@@ -45,8 +45,13 @@ export function AnnouncementsBoard() {
   const [body, setBody] = useState("");
   const [pinned, setPinned] = useState(false);
   const [expiresAt, setExpiresAt] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
   const visible = announcements.filter((a) => a.is_pinned || !readIds.includes(a.id));
+  const shown = showAll ? visible : visible.slice(0, 3);
+  const hiddenCount = visible.length - shown.length;
 
   if (!isLoading && visible.length === 0 && !isAdmin) return null;
 
