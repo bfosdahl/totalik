@@ -211,6 +211,24 @@ export function AnnouncementsBoard() {
               )}
             </div>
           ))}
+          {(hiddenCount > 0 || showAll) && visible.length > 3 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => setShowAll((v) => !v)}
+            >
+              {showAll ? (
+                <>
+                  <ChevronUp className="w-4 h-4" /> Vis færre
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" /> Vis alle ({hiddenCount} til)
+                </>
+              )}
+            </Button>
+          )}
         </div>
       )}
 
