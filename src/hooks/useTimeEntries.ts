@@ -16,6 +16,15 @@ export interface TimeEntryAllowanceInput {
   notes?: string | null;
 }
 
+export interface TimeEntryMaterialInput {
+  material_type_id?: string | null;
+  name: string;
+  unit: string;
+  quantity: number;
+  unit_price?: number;
+  notes?: string | null;
+}
+
 export interface TimeEntry {
   id: string;
   company_id: string;
