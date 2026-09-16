@@ -52,6 +52,14 @@ interface AllowanceRow {
   notes: string;
 }
 
+interface MaterialRow {
+  id: string;
+  typeId: string; // "" = fritekst
+  name: string;
+  unit: string;
+  quantity: string;
+}
+
 const HOUR_TYPE_OPTIONS: { value: HourType; label: string; hint: string }[] = [
   { value: "normal", label: t("auto.normal"), hint: "Vanlige timer" },
   { value: "overtime_50", label: "50%", hint: "Overtid 50%" },
