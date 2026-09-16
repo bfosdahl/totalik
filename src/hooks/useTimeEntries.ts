@@ -86,6 +86,7 @@ export interface CreateTimeEntry {
   description?: string;
   status?: "draft" | "submitted";
   allowances?: TimeEntryAllowanceInput[];
+  materials?: TimeEntryMaterialInput[];
   overtime_segments?: OvertimeSegmentPersist[];
   /** Admin only: register hours on behalf of another employee (profile.user_id) */
   on_behalf_user_id?: string | null;
