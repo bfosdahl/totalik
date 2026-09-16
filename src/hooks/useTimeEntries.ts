@@ -25,6 +25,12 @@ export interface TimeEntryMaterialInput {
   notes?: string | null;
 }
 
+export interface TimeEntryMaterial extends TimeEntryMaterialInput {
+  id: string;
+  time_entry_id: string;
+  amount: number;
+}
+
 export interface TimeEntry {
   id: string;
   company_id: string;
@@ -61,6 +67,7 @@ export interface TimeEntry {
   // For work_schedule entries - extra display info
   schedule_location?: string | null;
   schedule_role?: string | null;
+  materials?: TimeEntryMaterial[];
 }
 
 export interface OvertimeSegmentPersist {
@@ -120,6 +127,26 @@ export function useTimeEntries() {
 
       const { data: timeData, error: timeError } = await timeQuery;
       if (timeError) throw timeError;
+
+      const timeEntryIds = (timeData || []).map((entry) => entry.id);
+      const materialsByEntry = new Map<string, TimeEntryMaterial[]>();
+      if (timeEntryIds.length > 0) {
+        const { data: materialData, error: materialError } = await supabase
+          .from("time_entry_materials")
+          .select("id, time_entry_id, material_type_id, name, unit, quantity, unit_price, amount, notes")
+          .in("time_entry_id", timeEntryIds);
+        if (materialError) throw materialError;
+        (materialData || []).forEach((material) => {
+          const list = materialsByEntry.get(material.time_entry_id) || [];
+          list.push({
+            ...material,
+            quantity: Number(material.quantity),
+            unit_price: Number(material.unit_price),
+            amount: Number(material.amount),
+          });
+          materialsByEntry.set(material.time_entry_id, list);
+        });
+      }
 
       // Fetch QR clock entries (completed ones with hours)
       // CRITICAL: Always filter by company_id first for tenant isolation
@@ -191,6 +218,7 @@ export function useTimeEntries() {
         ...entry,
         status: entry.status as "draft" | "submitted" | "approved" | "rejected",
         source: entry.source || "manual" as const,
+        materials: materialsByEntry.get(entry.id) || [],
       }));
 
       // Fetch planned work schedules for current user that are not yet confirmed
