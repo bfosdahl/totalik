@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil } from "lucide-react";
+import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil, Package } from "lucide-react";
 import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
 import { getHourBreakdown } from "@/utils/hourBreakdown";
 
@@ -46,6 +46,7 @@ interface TimeEntry {
   schedule_role?: string | null;
   hour_type?: string | null;
   overtime_segments?: any;
+  materials?: Array<{ id: string; name: string; unit: string; quantity: number }>;
 }
 
 
@@ -105,6 +106,7 @@ export function TimeEntryList({
             <TableHead className="text-right">{t("auto.timer")}</TableHead>
             <TableHead>{t("auto.prosjekt")}</TableHead>
             <TableHead className="hidden md:table-cell">{t("auto.beskrivelse")}</TableHead>
+            <TableHead>Materialforbruk</TableHead>
             <TableHead>{t("auto.status_2")}</TableHead>
             <TableHead className="w-[80px]"></TableHead>
           </TableRow>
@@ -187,6 +189,20 @@ export function TimeEntryList({
                 <TableCell>{entry.project_name || "-"}</TableCell>
                 <TableCell className="hidden md:table-cell max-w-[200px] truncate">
                   {entry.description || "-"}
+                </TableCell>
+                <TableCell className="min-w-[150px]">
+                  {entry.materials && entry.materials.length > 0 ? (
+                    <div className="space-y-1">
+                      {entry.materials.map((material) => (
+                        <div key={material.id} className="flex items-center gap-1.5 text-xs whitespace-nowrap">
+                          <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>{Number(material.quantity).toLocaleString("nb-NO")} {material.unit} {material.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">–</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Badge variant={config.variant} className={config.className}>

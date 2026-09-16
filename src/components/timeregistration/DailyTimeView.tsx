@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, addDays, isSameDay, startOfWeek } from "date-fns";
 import { nb } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ interface TimeEntry {
   clock_in?: string | null;
   clock_out?: string | null;
   total_break_minutes?: number | null;
+  materials?: Array<{ id: string; name: string; unit: string; quantity: number }>;
 }
 
 interface DailyTimeViewProps {
@@ -344,6 +345,16 @@ export function DailyTimeView({
                         </div>
                         {entry.description && (
                           <p className="text-xs text-muted-foreground truncate">{entry.description}</p>
+                        )}
+                        {entry.materials && entry.materials.length > 0 && (
+                          <div className="mt-1 space-y-0.5">
+                            {entry.materials.map((material) => (
+                              <p key={material.id} className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Package className="h-3 w-3" />
+                                {Number(material.quantity).toLocaleString("nb-NO")} {material.unit} {material.name}
+                              </p>
+                            ))}
+                          </div>
                         )}
                         {entry.source === "qr_clock" && entry.clock_in && entry.clock_out && (
                           <p className="text-xs text-muted-foreground">

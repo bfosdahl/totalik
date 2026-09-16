@@ -26,6 +26,14 @@ export interface PayrollTimeEntry {
   subproject?: string | null;
   tags?: string[] | null;
   total_break_minutes?: number | null;
+  materials?: Array<{
+    name: string;
+    unit: string;
+    quantity: number;
+    unit_price?: number;
+    amount?: number;
+    notes?: string | null;
+  }>;
 }
 
 export interface AllowanceDetailRow {
@@ -381,5 +389,18 @@ export function exportTimeEntriesToExcel(
     s.overtime_50_hours = (s.overtime_50_hours || 0) + b.overtime_50;
     s.overtime_100_hours = (s.overtime_100_hours || 0) + b.overtime_100;
   });
-  exportPayrollGeneric(entries, Array.from(map.values()), companyName, startDate, endDate);
+  const materialDetails: AllowanceDetailRow[] = entries.flatMap((entry) =>
+    (entry.materials || []).map((material) => ({
+      time_entry_id: entry.id,
+      user_name: entry.user_name,
+      entry_date: entry.entry_date,
+      type_name: material.name,
+      unit: material.unit || "stk",
+      quantity: Number(material.quantity) || 0,
+      rate_snapshot: Number(material.unit_price) || 0,
+      amount: Number(material.amount) || 0,
+      notes: material.notes || null,
+    }))
+  );
+  exportPayrollGeneric(entries, Array.from(map.values()), companyName, startDate, endDate, materialDetails);
 }
