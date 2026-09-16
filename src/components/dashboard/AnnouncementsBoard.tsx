@@ -150,7 +150,27 @@ export function AnnouncementsBoard() {
                     )}
                     <h4 className="font-semibold text-sm md:text-base truncate">{a.title}</h4>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{a.body}</p>
+                  <p
+                    className={cn(
+                      "text-sm text-muted-foreground mt-1 whitespace-pre-wrap",
+                      expandedIds.includes(a.id) ? "" : "line-clamp-3"
+                    )}
+                  >
+                    {a.body}
+                  </p>
+                  {a.body.length > 160 && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary mt-1 hover:underline"
+                      onClick={() =>
+                        setExpandedIds((ids) =>
+                          ids.includes(a.id) ? ids.filter((x) => x !== a.id) : [...ids, a.id]
+                        )
+                      }
+                    >
+                      {expandedIds.includes(a.id) ? "Vis mindre" : "Vis mer"}
+                    </button>
+                  )}
                   <p className="text-xs text-muted-foreground mt-2">
                     {a.created_by_name || "Ledelsen"} · {formatDate(a.publish_at)}
                     {a.expires_at ? ` · gjelder til ${formatDate(a.expires_at)}` : ""}
