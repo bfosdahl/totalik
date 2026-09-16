@@ -13,6 +13,7 @@ import {
   Smartphone,
   Layers,
   Wallet,
+  Package,
   Trash2
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
