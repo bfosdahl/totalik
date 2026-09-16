@@ -110,6 +110,23 @@ export async function fetchTimeReportAllowances(
       })
     );
   }
+  // Materialforbruk vises i samme kolonne som materialtillegg
+  for (let i = 0; i < entryIds.length; i += 200) {
+    const { data, error } = await supabase
+      .from("time_entry_materials")
+      .select("time_entry_id, name, unit, quantity, amount")
+      .in("time_entry_id", entryIds.slice(i, i + 200));
+    if (error) throw error;
+    (data ?? []).forEach((r: any) =>
+      out.push({
+        time_entry_id: r.time_entry_id,
+        type_name: r.name,
+        unit: r.unit,
+        quantity: Number(r.quantity) || 0,
+        amount: Number(r.amount) || 0,
+      })
+    );
+  }
   return out;
 }
 

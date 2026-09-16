@@ -13,6 +13,7 @@ import {
   Smartphone,
   Layers,
   Wallet,
+  Package,
   Trash2
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -26,11 +27,12 @@ import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { DepartmentSettings } from "@/components/settings/DepartmentSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 import { AllowanceTypesSettings } from "@/components/settings/AllowanceTypesSettings";
+import { MaterialTypesSettings } from "@/components/settings/MaterialTypesSettings";
 import { CompanyTrashBinSettings } from "@/components/settings/CompanyTrashBinSettings";
 import { DataExportSettings } from "@/components/settings/DataExportSettings";
 import { t } from "@/i18n/t";
 
-type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances" | "trash";
+type SettingsSection = "main" | "company" | "users" | "departments" | "notifications" | "security" | "customization" | "data" | "allowances" | "materials" | "trash";
 
 interface SettingsSectionConfig {
   id: SettingsSection;
@@ -63,6 +65,12 @@ const settingsSections: SettingsSectionConfig[] = [
     icon: Wallet,
     title: t("auto.loenn_tilleggssatser"),
     description: t("auto.definer_satser_for_diett_kilometer_reise"),
+  },
+  {
+    id: "materials",
+    icon: Package,
+    title: "Materialliste",
+    description: "Materialer ansatte kan føre på timelisten (sveisetråd, skruer, gass m.m.)",
   },
   {
     id: "notifications",
@@ -174,6 +182,16 @@ const Settings = () => {
       <AppLayout>
         <div className="max-w-3xl mx-auto">
           <DepartmentSettings onBack={goBack} />
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (activeSection === "materials") {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto">
+          <MaterialTypesSettings onBack={goBack} />
         </div>
       </AppLayout>
     );

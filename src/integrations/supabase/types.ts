@@ -2557,6 +2557,50 @@ export type Database = {
           },
         ]
       }
+      company_material_types: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          unit: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          unit?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_material_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_module_documents: {
         Row: {
           company_id: string
@@ -17246,6 +17290,60 @@ export type Database = {
           },
           {
             foreignKeyName: "time_entry_allowances_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      time_entry_materials: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          material_type_id: string | null
+          name: string
+          notes: string | null
+          quantity: number
+          time_entry_id: string
+          unit: string
+          unit_price: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          material_type_id?: string | null
+          name: string
+          notes?: string | null
+          quantity?: number
+          time_entry_id: string
+          unit?: string
+          unit_price?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          material_type_id?: string | null
+          name?: string
+          notes?: string | null
+          quantity?: number
+          time_entry_id?: string
+          unit?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_entry_materials_material_type_id_fkey"
+            columns: ["material_type_id"]
+            isOneToOne: false
+            referencedRelation: "company_material_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entry_materials_time_entry_id_fkey"
             columns: ["time_entry_id"]
             isOneToOne: false
             referencedRelation: "time_entries"

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap, Save } from "lucide-react";
+import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap, Save, Package } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -31,9 +31,10 @@ import { toast } from "sonner";
 import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useAllowanceTypes, ALLOWANCE_UNIT_LABELS } from "@/hooks/useAllowanceTypes";
+import { useMaterialTypes, MATERIAL_UNITS, MATERIAL_UNIT_LABELS, MaterialUnit } from "@/hooks/useMaterialTypes";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreateTimeEntry, HourType, TimeEntryAllowanceInput } from "@/hooks/useTimeEntries";
+import { CreateTimeEntry, HourType, TimeEntryAllowanceInput, TimeEntryMaterialInput } from "@/hooks/useTimeEntries";
 import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 import { t } from "@/i18n/t";
 
@@ -50,6 +51,14 @@ interface AllowanceRow {
   typeId: string;
   quantity: string;
   notes: string;
+}
+
+interface MaterialRow {
+  id: string;
+  typeId: string; // "" = fritekst
+  name: string;
+  unit: string;
+  quantity: string;
 }
 
 const HOUR_TYPE_OPTIONS: { value: HourType; label: string; hint: string }[] = [
@@ -89,6 +98,7 @@ export function NewTimeEntryDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCustomProject, setUseCustomProject] = useState(false);
   const [allowanceRows, setAllowanceRows] = useState<AllowanceRow[]>([]);
+  const [materialRows, setMaterialRows] = useState<MaterialRow[]>([]);
   const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
   const [onBehalfUserId, setOnBehalfUserId] = useState<string>("__self__");
 
@@ -100,6 +110,7 @@ export function NewTimeEntryDialog({
   const { hasModule } = useCompanyModules();
   const hasKsBygg = hasModule("IK_BYGG");
   const { types: allowanceTypes } = useAllowanceTypes({ onlyActive: true });
+  const { types: materialTypes } = useMaterialTypes({ onlyActive: true });
 
   const activeProjects = useMemo(
     () => projects.filter((p) => p.status !== "completed" && p.status !== "handover"),
@@ -131,6 +142,7 @@ export function NewTimeEntryDialog({
     setDescription("");
     setUseCustomProject(false);
     setAllowanceRows([]);
+    setMaterialRows([]);
     setOvertimeSegments([]);
     setProjectNumber("");
     setSubproject("");
@@ -192,6 +204,23 @@ export function NewTimeEntryDialog({
       })
       .filter((x): x is TimeEntryAllowanceInput => x !== null);
 
+    // Build materialforbruk
+    const materials: TimeEntryMaterialInput[] = materialRows
+      .map<TimeEntryMaterialInput | null>((r) => {
+        const mt = materialTypes.find((x) => x.id === r.typeId);
+        const name = (mt?.name ?? r.name).trim();
+        const qty = parseFloat(r.quantity);
+        if (!name || isNaN(qty) || qty <= 0) return null;
+        return {
+          material_type_id: mt?.id ?? null,
+          name,
+          unit: r.unit || mt?.unit || "stk",
+          quantity: qty,
+          unit_price: Number(mt?.unit_price ?? 0),
+        };
+      })
+      .filter((x): x is TimeEntryMaterialInput => x !== null);
+
     setIsSubmitting(true);
 
     // Admin: on behalf of another user?
@@ -247,6 +276,7 @@ export function NewTimeEntryDialog({
         tags: tagList.length > 0 ? tagList : null,
         description: description || undefined,
         allowances,
+        materials,
         overtime_segments: persistSegments,
         on_behalf_user_id: onBehalfId,
         on_behalf_user_name: onBehalfName,
@@ -269,12 +299,27 @@ export function NewTimeEntryDialog({
       customer_name: customerName || null,
       description: description || undefined,
       allowances,
+      materials,
       on_behalf_user_id: onBehalfId,
       on_behalf_user_name: onBehalfName,
     });
 
     if (success) onOpenChange(false);
     setIsSubmitting(false);
+  };
+
+  const addMaterial = () => {
+    const first = materialTypes[0];
+    setMaterialRows((rows) => [
+      ...rows,
+      {
+        id: crypto.randomUUID(),
+        typeId: first?.id ?? "",
+        name: "",
+        unit: first?.unit ?? "stk",
+        quantity: "1",
+      },
+    ]);
   };
 
   const addAllowance = () => {
@@ -649,6 +694,104 @@ export function NewTimeEntryDialog({
                 </Badge>
               </div>
             )}
+          </div>
+
+          {/* Materialforbruk */}
+          <div className="space-y-2 border-t pt-4">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2">
+                <Package className="h-4 w-4" /> Materialforbruk
+              </Label>
+              <Button type="button" variant="outline" size="sm" onClick={addMaterial} className="gap-1">
+                <Plus className="h-3 w-3" /> Legg til
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Valgfritt. Registrer materialer brukt denne dagen, f.eks. sveisetråd, kappeskiver, skruer eller gass.
+            </p>
+
+            {materialRows.map((row) => (
+              <div key={row.id} className="grid grid-cols-[1fr_90px_auto] gap-2 items-start bg-muted/30 p-2 rounded-md">
+                {materialTypes.length > 0 ? (
+                  <Select
+                    value={row.typeId || "__custom__"}
+                    onValueChange={(v) =>
+                      setMaterialRows((rows) =>
+                        rows.map((r) => {
+                          if (r.id !== row.id) return r;
+                          if (v === "__custom__") return { ...r, typeId: "", name: "" };
+                          const mt = materialTypes.find((x) => x.id === v);
+                          return { ...r, typeId: v, name: mt?.name ?? "", unit: mt?.unit ?? r.unit };
+                        })
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-9"><SelectValue placeholder="Velg material" /></SelectTrigger>
+                    <SelectContent>
+                      {materialTypes.map((mt) => (
+                        <SelectItem key={mt.id} value={mt.id}>{mt.name}</SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">Annet (skriv selv)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    className="h-9"
+                    placeholder="F.eks. sveisetråd"
+                    value={row.name}
+                    onChange={(e) =>
+                      setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
+                    }
+                  />
+                )}
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="h-9"
+                  value={row.quantity}
+                  onChange={(e) =>
+                    setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, quantity: e.target.value } : r)))
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setMaterialRows((rows) => rows.filter((r) => r.id !== row.id))}
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+
+                {materialTypes.length > 0 && !row.typeId && (
+                  <Input
+                    className="h-9 col-span-3"
+                    placeholder="Navn på material"
+                    value={row.name}
+                    onChange={(e) =>
+                      setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, name: e.target.value } : r)))
+                    }
+                  />
+                )}
+
+                <div className="col-span-3">
+                  <Select
+                    value={row.unit}
+                    onValueChange={(v) =>
+                      setMaterialRows((rows) => rows.map((r) => (r.id === row.id ? { ...r, unit: v } : r)))
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {MATERIAL_UNITS.map((u) => (
+                        <SelectItem key={u} value={u}>{MATERIAL_UNIT_LABELS[u as MaterialUnit]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="flex gap-2 pt-2">

@@ -16,6 +16,15 @@ export interface TimeEntryAllowanceInput {
   notes?: string | null;
 }
 
+export interface TimeEntryMaterialInput {
+  material_type_id?: string | null;
+  name: string;
+  unit: string;
+  quantity: number;
+  unit_price?: number;
+  notes?: string | null;
+}
+
 export interface TimeEntry {
   id: string;
   company_id: string;
@@ -77,6 +86,7 @@ export interface CreateTimeEntry {
   description?: string;
   status?: "draft" | "submitted";
   allowances?: TimeEntryAllowanceInput[];
+  materials?: TimeEntryMaterialInput[];
   overtime_segments?: OvertimeSegmentPersist[];
   /** Admin only: register hours on behalf of another employee (profile.user_id) */
   on_behalf_user_id?: string | null;
@@ -317,6 +327,26 @@ export function useTimeEntries() {
         if (rows.length > 0) {
           const { error: aErr } = await supabase.from("time_entry_allowances").insert(rows);
           if (aErr) console.error("Allowance insert error", aErr);
+        }
+      }
+
+      // Persist materialforbruk
+      if (inserted && entry.materials && entry.materials.length > 0) {
+        const mrows = entry.materials
+          .filter((m) => m.name?.trim() && m.quantity > 0)
+          .map((m) => ({
+            time_entry_id: inserted.id,
+            material_type_id: m.material_type_id || null,
+            name: m.name.trim(),
+            unit: m.unit || "stk",
+            quantity: m.quantity,
+            unit_price: m.unit_price ?? 0,
+            amount: Number(((m.unit_price ?? 0) * m.quantity).toFixed(2)),
+            notes: m.notes || null,
+          }));
+        if (mrows.length > 0) {
+          const { error: mErr } = await supabase.from("time_entry_materials").insert(mrows);
+          if (mErr) console.error("Material insert error", mErr);
         }
       }
 
