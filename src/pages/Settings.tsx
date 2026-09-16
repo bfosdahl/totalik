@@ -26,6 +26,7 @@ import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { DepartmentSettings } from "@/components/settings/DepartmentSettings";
 import { SettingsPlaceholder } from "@/components/settings/SettingsPlaceholder";
 import { AllowanceTypesSettings } from "@/components/settings/AllowanceTypesSettings";
+import { MaterialTypesSettings } from "@/components/settings/MaterialTypesSettings";
 import { CompanyTrashBinSettings } from "@/components/settings/CompanyTrashBinSettings";
 import { DataExportSettings } from "@/components/settings/DataExportSettings";
 import { t } from "@/i18n/t";
