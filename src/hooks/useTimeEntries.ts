@@ -330,6 +330,26 @@ export function useTimeEntries() {
         }
       }
 
+      // Persist materialforbruk
+      if (inserted && entry.materials && entry.materials.length > 0) {
+        const mrows = entry.materials
+          .filter((m) => m.name?.trim() && m.quantity > 0)
+          .map((m) => ({
+            time_entry_id: inserted.id,
+            material_type_id: m.material_type_id || null,
+            name: m.name.trim(),
+            unit: m.unit || "stk",
+            quantity: m.quantity,
+            unit_price: m.unit_price ?? 0,
+            amount: Number(((m.unit_price ?? 0) * m.quantity).toFixed(2)),
+            notes: m.notes || null,
+          }));
+        if (mrows.length > 0) {
+          const { error: mErr } = await supabase.from("time_entry_materials").insert(mrows);
+          if (mErr) console.error("Material insert error", mErr);
+        }
+      }
+
       toast.success("Timer registrert");
       await fetchEntries();
       return true;
