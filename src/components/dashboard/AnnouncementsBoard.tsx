@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Megaphone, Pin, PinOff, Plus, Trash2, Pencil, Check } from "lucide-react";
+import { Megaphone, Pin, PinOff, Plus, Trash2, Pencil, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,8 +45,13 @@ export function AnnouncementsBoard() {
   const [body, setBody] = useState("");
   const [pinned, setPinned] = useState(false);
   const [expiresAt, setExpiresAt] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
   const visible = announcements.filter((a) => a.is_pinned || !readIds.includes(a.id));
+  const shown = showAll ? visible : visible.slice(0, 3);
+  const hiddenCount = visible.length - shown.length;
 
   if (!isLoading && visible.length === 0 && !isAdmin) return null;
 
@@ -90,30 +95,43 @@ export function AnnouncementsBoard() {
       animate={{ opacity: 1, y: 0 }}
       className="bg-card rounded-xl border border-border p-4 md:p-6 shadow-card"
     >
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-2 md:gap-3">
+      <div className={cn("flex items-center justify-between gap-3", collapsed ? "" : "mb-4")}>
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
           <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
             <Megaphone className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           </div>
-          <h3 className="text-base md:text-lg font-semibold">Oppslagstavle</h3>
+          <h3 className="text-base md:text-lg font-semibold truncate">Oppslagstavle</h3>
+          {visible.length > 0 && (
+            <Badge variant="secondary" className="shrink-0">{visible.length}</Badge>
+          )}
         </div>
-        {isAdmin && (
-          <Button size="sm" onClick={openNew} className="gap-2">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Ny melding</span>
+        <div className="flex items-center gap-2 shrink-0">
+          {isAdmin && (
+            <Button size="sm" onClick={openNew} className="gap-2">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Ny melding</span>
+            </Button>
+          )}
+          <Button
+            size="icon"
+            variant="ghost"
+            title={collapsed ? "Vis oppslagstavle" : "Skjul oppslagstavle"}
+            onClick={() => setCollapsed((v) => !v)}
+          >
+            {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </Button>
-        )}
+        </div>
       </div>
 
-      {isLoading ? (
+      {collapsed ? null : isLoading ? (
         <p className="text-sm text-muted-foreground">Laster meldinger...</p>
       ) : visible.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Ingen meldinger akkurat nå. Skriv en melding som alle ansatte ser på forsiden.
         </p>
       ) : (
-        <div className="space-y-3">
-          {visible.map((a) => (
+        <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+          {shown.map((a) => (
             <div
               key={a.id}
               className={cn(
@@ -132,7 +150,27 @@ export function AnnouncementsBoard() {
                     )}
                     <h4 className="font-semibold text-sm md:text-base truncate">{a.title}</h4>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{a.body}</p>
+                  <p
+                    className={cn(
+                      "text-sm text-muted-foreground mt-1 whitespace-pre-wrap",
+                      expandedIds.includes(a.id) ? "" : "line-clamp-3"
+                    )}
+                  >
+                    {a.body}
+                  </p>
+                  {a.body.length > 160 && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary mt-1 hover:underline"
+                      onClick={() =>
+                        setExpandedIds((ids) =>
+                          ids.includes(a.id) ? ids.filter((x) => x !== a.id) : [...ids, a.id]
+                        )
+                      }
+                    >
+                      {expandedIds.includes(a.id) ? "Vis mindre" : "Vis mer"}
+                    </button>
+                  )}
                   <p className="text-xs text-muted-foreground mt-2">
                     {a.created_by_name || "Ledelsen"} · {formatDate(a.publish_at)}
                     {a.expires_at ? ` · gjelder til ${formatDate(a.expires_at)}` : ""}
@@ -173,6 +211,24 @@ export function AnnouncementsBoard() {
               )}
             </div>
           ))}
+          {(hiddenCount > 0 || showAll) && visible.length > 3 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => setShowAll((v) => !v)}
+            >
+              {showAll ? (
+                <>
+                  <ChevronUp className="w-4 h-4" /> Vis færre
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" /> Vis alle ({hiddenCount} til)
+                </>
+              )}
+            </Button>
+          )}
         </div>
       )}
 
