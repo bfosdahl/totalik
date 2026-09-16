@@ -128,7 +128,7 @@ function buildTimesheetSheet(
       KM: km ? Number(km.toFixed(2)) : "",
       "Kostnader (NOK)": cost ? Number(cost.toFixed(2)) : "",
       Materialforbruk: [...kmList, ...matList]
-        .map((a) => `${Number(a.quantity).toFixed(2)} stk. ${a.type_name}`)
+        .map((a) => `${Number(a.quantity).toFixed(2)} ${a.unit || "stk"}. ${a.type_name}`)
         .join("; "),
       Notat: e.description || "",
     };

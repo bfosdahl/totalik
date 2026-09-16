@@ -145,6 +145,27 @@ export default function TimeOversikt() {
             notes: a.notes,
           });
         });
+
+        // Materialforbruk (vises i egen kolonne i eksporten)
+        const { data: matData } = await supabase
+          .from("time_entry_materials")
+          .select("time_entry_id, name, unit, quantity, unit_price, amount, notes")
+          .in("time_entry_id", ids);
+        (matData || []).forEach((m: any) => {
+          const r = filtered.find((x) => x.id === m.time_entry_id);
+          if (!r) return;
+          allowances.push({
+            time_entry_id: m.time_entry_id,
+            user_name: r.user_name,
+            entry_date: r.entry_date,
+            type_name: m.name || "(uten navn)",
+            unit: m.unit || "stk",
+            quantity: Number(m.quantity) || 0,
+            rate_snapshot: Number(m.unit_price) || 0,
+            amount: Number(m.amount) || 0,
+            notes: m.notes,
+          });
+        });
       }
 
       // Hent timesatser + ansattnummer
