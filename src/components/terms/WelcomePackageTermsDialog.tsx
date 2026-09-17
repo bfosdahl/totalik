@@ -59,9 +59,13 @@ export const WelcomePackageTermsDialog = ({
         <ScrollArea className="h-[360px] border rounded-md p-4">
           <div className="pr-4 space-y-4 text-sm leading-relaxed">
             <p>
-              <strong>Gratisperiode:</strong> Dere har full tilgang til Total-IK helt gratis i
-              6 måneder (180 dager) fra systemet ble opprettet. Ingen betalingsinformasjon kreves,
-              og det faktureres ikke i gratisperioden.
+              <strong>Velkomstpakke:</strong> Nybygg - HMS System (IK/HMS) 12 mnd lisens inkl.
+              oppsett/etablering og kundesupport.
+            </p>
+            <p>
+              <strong>Gratisperiode:</strong> Gratisperioden er 6 måneder. Sies abonnementet ikke
+              opp innen utløpet, fortsetter det automatisk til kr 6 990,- per år, fritatt mva.
+              Ingen betalingsinformasjon kreves, og det faktureres ikke i gratisperioden.
             </p>
             <p>
               <strong>Frist for oppsigelse:</strong> Dersom dere ikke ønsker å fortsette, må dere si

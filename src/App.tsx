@@ -167,6 +167,7 @@ const AdminNyheter = lazy(() => import("./pages/admin/AdminNyheter"));
 const AdminMonitoring = lazy(() => import("./pages/admin/AdminMonitoring"));
 const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
 const AdminLicenses = lazy(() => import("./pages/admin/AdminLicenses"));
+const AdminWelcomePackages = lazy(() => import("./pages/admin/AdminWelcomePackages"));
 const AdminTrashBin = lazy(() => import("./pages/admin/AdminTrashBin"));
 const SetupSystemAdmin = lazy(() => import("./pages/admin/SetupSystemAdmin"));
 
@@ -369,6 +370,7 @@ const App = () => (
                   <Route path="/admin/monitoring" element={<ProtectedRoute requireSystemAdmin><AdminMonitoring /></ProtectedRoute>} />
                   <Route path="/admin/sellers" element={<ProtectedRoute requireSystemAdmin><AdminSellers /></ProtectedRoute>} />
                   <Route path="/admin/licenses" element={<ProtectedRoute requireSystemAdmin><AdminLicenses /></ProtectedRoute>} />
+                  <Route path="/admin/velkomstpakker" element={<ProtectedRoute requireSystemAdmin><AdminWelcomePackages /></ProtectedRoute>} />
                   <Route path="/admin/trash" element={<ProtectedRoute requireSystemAdmin><AdminTrashBin /></ProtectedRoute>} />
                   
                   {/* 404 */}
