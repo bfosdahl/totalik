@@ -294,6 +294,8 @@ Deno.serve(async (req) => {
           modules,
           seller_name: order.sellerName || "NextCom Import",
           is_renewal: isRenewal,
+          welcome_package: welcomePackage.isWelcome,
+          welcome_package_type: welcomePackage.type,
         };
 
         console.log(`[TotalIK NextCom Sync] Order ${order.id}: ${isRenewal ? 'RENEWAL' : 'NEW'} - ${crmPayload.company_name} with modules [${modules.join(', ')}]`);
