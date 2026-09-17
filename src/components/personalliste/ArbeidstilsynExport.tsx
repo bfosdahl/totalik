@@ -71,11 +71,11 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       // 2) Arbeidsplan
       const { data: schedules = [] } = await supabase
         .from("work_schedules")
-        .select("user_name, work_date, start_time, end_time, hours_planned, notes")
+        .select("employee_name, schedule_date, start_time, end_time, break_minutes, notes")
         .eq("company_id", companyId)
-        .gte("work_date", startDate)
-        .lte("work_date", endDate)
-        .order("work_date");
+        .gte("schedule_date", startDate)
+        .lte("schedule_date", endDate)
+        .order("schedule_date");
 
       // 3) Ansatte
       const { data: profilesSafe = [] } = await supabase
