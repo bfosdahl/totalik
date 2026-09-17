@@ -39,7 +39,8 @@ export const useWelcomePackageTerms = (
         .eq("id", companyId)
         .maybeSingle();
 
-      if (error || !company || !(company as Record<string, unknown>).welcome_package) return empty;
+      const c = (company ?? {}) as unknown as Record<string, unknown>;
+      if (error || !company || !c.welcome_package) return empty;
 
       const { data: accepted } = await supabase
         .from("user_terms_acceptance")
@@ -48,7 +49,6 @@ export const useWelcomePackageTerms = (
         .eq("terms_version", WELCOME_TERMS_VERSION)
         .maybeSingle();
 
-      const c = company as Record<string, unknown>;
       return {
         isWelcomePackage: true,
         trialEndsOn: (c.trial_ends_on as string) ?? null,
