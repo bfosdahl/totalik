@@ -44,7 +44,28 @@ const PRODUCT_TO_MODULE: Record<string, string> = {
 const PRODUCT_BUNDLES: Record<string, string[]> = {
   'byggepakke': ['IK_HMS', 'IK_BYGG'],
   'byggepakken': ['IK_HMS', 'IK_BYGG'],
+  // Velkomstpakker for nyregistrerte bedrifter (6 mnd gratis)
+  'velkomstpakke bygg': ['IK_HMS', 'IK_BYGG', 'PERSONALHANDBOK'],
+  'velkomstpakke renhold': ['IK_HMS', 'PERSONALHANDBOK'],
+  'velkomstpakke frisør': ['IK_HMS', 'PERSONALHANDBOK'],
+  'velkomstpakke frisor': ['IK_HMS', 'PERSONALHANDBOK'],
+  'velkomstpakke servering': ['IK_HMS', 'IK_MAT', 'PERSONALHANDBOK'],
+  'velkomstpakke': ['IK_HMS', 'PERSONALHANDBOK'],
 };
+
+/** Kjenner igjen velkomstpakke-ordre og hvilken bransje den gjelder. */
+function detectWelcomePackage(productNames: string[]): { isWelcome: boolean; type: string | null } {
+  for (const product of productNames) {
+    const lower = product.toLowerCase().trim();
+    if (!lower.includes('velkomstpakke')) continue;
+    if (lower.includes('bygg')) return { isWelcome: true, type: 'bygg' };
+    if (lower.includes('renhold')) return { isWelcome: true, type: 'renhold' };
+    if (lower.includes('frisør') || lower.includes('frisor')) return { isWelcome: true, type: 'frisor' };
+    if (lower.includes('servering') || lower.includes('mat')) return { isWelcome: true, type: 'servering' };
+    return { isWelcome: true, type: 'generell' };
+  }
+  return { isWelcome: false, type: null };
+}
 
 // Course-related keywords that should NOT be processed by TotalIK
 const COURSE_KEYWORDS = [
