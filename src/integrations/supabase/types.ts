@@ -1361,7 +1361,11 @@ export type Database = {
           termination_requested_at: string | null
           termination_source: string | null
           termination_warning_sent_at: string | null
+          trial_ends_on: string | null
           updated_at: string
+          welcome_package: boolean
+          welcome_package_started_on: string | null
+          welcome_package_type: string | null
         }
         Insert: {
           accent_color?: string | null
@@ -1404,7 +1408,11 @@ export type Database = {
           termination_requested_at?: string | null
           termination_source?: string | null
           termination_warning_sent_at?: string | null
+          trial_ends_on?: string | null
           updated_at?: string
+          welcome_package?: boolean
+          welcome_package_started_on?: string | null
+          welcome_package_type?: string | null
         }
         Update: {
           accent_color?: string | null
@@ -1447,7 +1455,11 @@ export type Database = {
           termination_requested_at?: string | null
           termination_source?: string | null
           termination_warning_sent_at?: string | null
+          trial_ends_on?: string | null
           updated_at?: string
+          welcome_package?: boolean
+          welcome_package_started_on?: string | null
+          welcome_package_type?: string | null
         }
         Relationships: [
           {
