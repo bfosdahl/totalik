@@ -44,6 +44,7 @@ const adminNavItems = [
   { icon: Activity, label: t("auto.monitoring"), path: "/admin/monitoring", color: "text-warning" },
   { icon: UserCheck, label: t("auto.selgere"), path: "/admin/sellers", color: "text-accent" },
   { icon: CalendarClock, label: "Lisenser", path: "/admin/licenses", color: "text-warning" },
+  { icon: ShieldCheck, label: "Velkomstpakker", path: "/admin/velkomstpakker", color: "text-accent" },
   { icon: Trash2, label: t("auto.papirkurv"), path: "/admin/trash", color: "text-destructive" },
 ];
 
