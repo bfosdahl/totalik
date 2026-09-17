@@ -151,12 +151,25 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
         Beskrivelse: r.description || "",
       }));
 
+      const plannedHours = (start?: string, end?: string, breakMin?: number) => {
+        if (!start || !end) return "";
+        const toMin = (t: string) => {
+          const [h, m] = t.split(":").map(Number);
+          return (h || 0) * 60 + (m || 0);
+        };
+        let diff = toMin(end) - toMin(start);
+        if (diff < 0) diff += 24 * 60;
+        diff -= breakMin || 0;
+        return diff > 0 ? Math.round((diff / 60) * 100) / 100 : "";
+      };
+
       const arbeidsplanRows = (schedules || []).map((s: any) => ({
-        Dato: s.work_date,
-        Navn: s.user_name,
+        Dato: s.schedule_date,
+        Navn: s.employee_name,
         Fra: s.start_time || "",
         Til: s.end_time || "",
-        "Planlagte timer": s.hours_planned ?? "",
+        "Pause min": s.break_minutes ?? 0,
+        "Planlagte timer": plannedHours(s.start_time, s.end_time, s.break_minutes),
         Notat: s.notes || "",
       }));
 
