@@ -61,6 +61,20 @@ export function AppLayout({ children }: AppLayoutProps) {
         isAccepting={isAccepting}
       />
 
+      {/* Vilkår for velkomstpakken (6 mnd gratis) */}
+      <WelcomePackageTermsDialog
+        open={
+          !!user &&
+          (isCompanyAdmin || isSystemAdmin) &&
+          !showTermsDialog &&
+          hasAcceptedTerms &&
+          welcome.needsAcceptance
+        }
+        trialEndsOn={welcome.info?.trialEndsOn ?? null}
+        onAccept={welcome.acceptTerms}
+        isAccepting={welcome.isAccepting}
+      />
+
       {/* Årlig HMS-revisjon påminnelse */}
       {user && hasAcceptedTerms && <AnnualAuditDueDialog />}
     </div>

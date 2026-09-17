@@ -64,9 +64,9 @@ const lawPoints = [
 const priceTerms = [
   "0 kr i 6 måneder – ingen betalingsinformasjon kreves ved aktivering",
   "Ingen fakturering i gratisperioden",
-  "Etter 6 måneder: kr 6 990,- per år (fritatt mva) hvis dere ønsker å fortsette",
+  "Dere må si opp skriftlig på e-post til post@athenahms.no innen 180 dager etter at systemet ble opprettet dersom dere ikke ønsker å fortsette",
+  "Uten oppsigelse innen fristen fortsetter avtalen automatisk med 12 måneders binding til kr 6 990,- per år (fritatt mva). Ordinær pris for IK/HMS er kr 9 990,- per år",
   "Nettsiden er gratis så lenge abonnementet løper. Ønsker dere kun nettsiden etter oppsigelse: kr 2 990,-",
-  "Dere må selv si opp abonnementet før gratisperioden utløper hvis dere ikke ønsker å fortsette",
   "Systemet er klart innen 48 timer etter aktivering",
 ];
 
