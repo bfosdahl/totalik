@@ -23,6 +23,26 @@ interface CrmRequest {
   seller_name?: string;
   password?: string;
   is_renewal?: boolean;
+  welcome_package?: boolean;
+  welcome_package_type?: string | null;
+}
+
+/** Dagens dato som lokal YYYY-MM-DD. */
+function todayDate(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/** Legger til dager på en YYYY-MM-DD-dato. */
+function addDays(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const base = new Date(Date.UTC(y, m - 1, d));
+  base.setUTCDate(base.getUTCDate() + days);
+  const mm = String(base.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(base.getUTCDate()).padStart(2, '0');
+  return `${base.getUTCFullYear()}-${mm}-${dd}`;
 }
 
 const VALID_MODULES = ["IK_HMS", "IK_MAT", "IK_BYGG", "IK_ALKOHOL", "IK_FDV", "PERSONALHANDBOK", "GDPR", "APENHETSLOVEN", "AVDELINGER", "KS", "HR", "TIMEREGISTRERING"];
@@ -150,6 +170,12 @@ serve(async (req) => {
         employee_count: employeeCount,
         brreg_employee_count: brregEmployeeCount,
         brreg_synced_at: brregEmployeeCount !== null ? new Date().toISOString() : null,
+        welcome_package: body.welcome_package === true,
+        welcome_package_type: body.welcome_package === true ? (body.welcome_package_type || 'generell') : null,
+        welcome_package_started_on: body.welcome_package === true ? todayDate() : null,
+        trial_ends_on: body.welcome_package === true ? addDays(todayDate(), 180) : null,
+        license_start_date: body.welcome_package === true ? todayDate() : null,
+        license_months: body.welcome_package === true ? 18 : null,
       })
       .select('id, name')
       .single();
