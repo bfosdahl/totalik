@@ -71,11 +71,11 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       // 2) Arbeidsplan
       const { data: schedules = [] } = await supabase
         .from("work_schedules")
-        .select("user_name, work_date, start_time, end_time, hours_planned, notes")
+        .select("employee_name, schedule_date, start_time, end_time, break_minutes, notes")
         .eq("company_id", companyId)
-        .gte("work_date", startDate)
-        .lte("work_date", endDate)
-        .order("work_date");
+        .gte("schedule_date", startDate)
+        .lte("schedule_date", endDate)
+        .order("schedule_date");
 
       // 3) Ansatte
       const { data: profilesSafe = [] } = await supabase
@@ -99,8 +99,11 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       // 4) Kontrakter (referanse)
       const { data: contracts = [] } = await supabase
         .from("employment_contracts")
-        .select("user_name, contract_type, start_date, end_date, position_title, weekly_hours, hourly_rate, monthly_salary, status")
+        .select("employee_id, contract_type, start_date, end_date, position, working_hours_per_week, salary_amount, salary_type, employment_percentage, status")
         .eq("company_id", companyId);
+      const nameMap = new Map(
+        (profiles || []).map((p: any) => [p.id, `${p.first_name || ""} ${p.last_name || ""}`.trim() || p.email || ""])
+      );
 
       // 5) Bedriftsinnstillinger (pauserutine)
       const { data: company } = await supabase
@@ -148,12 +151,25 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
         Beskrivelse: r.description || "",
       }));
 
+      const plannedHours = (start?: string, end?: string, breakMin?: number) => {
+        if (!start || !end) return "";
+        const toMin = (t: string) => {
+          const [h, m] = t.split(":").map(Number);
+          return (h || 0) * 60 + (m || 0);
+        };
+        let diff = toMin(end) - toMin(start);
+        if (diff < 0) diff += 24 * 60;
+        diff -= breakMin || 0;
+        return diff > 0 ? Math.round((diff / 60) * 100) / 100 : "";
+      };
+
       const arbeidsplanRows = (schedules || []).map((s: any) => ({
-        Dato: s.work_date,
-        Navn: s.user_name,
+        Dato: s.schedule_date,
+        Navn: s.employee_name,
         Fra: s.start_time || "",
         Til: s.end_time || "",
-        "Planlagte timer": s.hours_planned ?? "",
+        "Pause min": s.break_minutes ?? 0,
+        "Planlagte timer": plannedHours(s.start_time, s.end_time, s.break_minutes),
         Notat: s.notes || "",
       }));
 
@@ -168,12 +184,13 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       }));
 
       const kontraktRows = (contracts || []).map((c: any) => ({
-        Ansatt: c.user_name,
+        Ansatt: nameMap.get(c.employee_id) || "",
         "Type kontrakt": c.contract_type,
-        Stilling: c.position_title || "",
-        "Ukentlige timer": c.weekly_hours ?? "",
-        Timesats: c.hourly_rate ?? "",
-        Månedslønn: c.monthly_salary ?? "",
+        Stilling: c.position || "",
+        "Stillingsprosent": c.employment_percentage ?? "",
+        "Ukentlige timer": c.working_hours_per_week ?? "",
+        Lønn: c.salary_amount ?? "",
+        "Lønnstype": c.salary_type || "",
         Startdato: c.start_date || "",
         Sluttdato: c.end_date || "",
         Status: c.status,
