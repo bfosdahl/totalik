@@ -99,8 +99,11 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       // 4) Kontrakter (referanse)
       const { data: contracts = [] } = await supabase
         .from("employment_contracts")
-        .select("user_name, contract_type, start_date, end_date, position_title, weekly_hours, hourly_rate, monthly_salary, status")
+        .select("employee_id, contract_type, start_date, end_date, position, working_hours_per_week, salary_amount, salary_type, employment_percentage, status")
         .eq("company_id", companyId);
+      const nameMap = new Map(
+        (profiles || []).map((p: any) => [p.id, `${p.first_name || ""} ${p.last_name || ""}`.trim() || p.email || ""])
+      );
 
       // 5) Bedriftsinnstillinger (pauserutine)
       const { data: company } = await supabase
