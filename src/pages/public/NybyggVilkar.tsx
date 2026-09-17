@@ -11,21 +11,29 @@ const NybyggVilkar = () => (
       <h1 className="text-3xl font-bold text-foreground">Vilkår for velkomstpakken</h1>
 
       <section className="space-y-2">
+        <h2 className="text-xl font-semibold">Hva avtalen gjelder</h2>
+        <p className="text-muted-foreground">
+          Velkomstpakke: Nybygg - HMS System (IK/HMS) 12 mnd lisens inkl. oppsett/etablering og
+          kundesupport.
+        </p>
+      </section>
+
+      <section className="space-y-2">
         <h2 className="text-xl font-semibold">Gratisperiode</h2>
         <p className="text-muted-foreground">
-          Total-IK med IK-BYGG og tilhørende nettside er gratis i 6 måneder fra aktivering.
-          Det kreves ingen betalingsinformasjon ved aktivering, og det faktureres ikke i
-          gratisperioden.
+          Gratisperioden er 6 måneder. Sies abonnementet ikke opp innen utløpet, fortsetter det
+          automatisk til kr 6 990,- per år, fritatt mva. Det kreves ingen betalingsinformasjon
+          ved aktivering, og det faktureres ikke i gratisperioden.
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">Etter gratisperioden</h2>
         <p className="text-muted-foreground">
-          Sier dere ikke opp innen fristen, fortsetter avtalen automatisk med 12 måneders
-          binding til rabattert pris kr 6 990,- per år (fritatt mva). Ordinær pris for IK/HMS
-          er kr 9 990,- per år. Nettsiden er inkludert så lenge abonnementet løper. Ønsker dere
-          kun å beholde nettsiden etter oppsigelse, koster den kr 2 990,-.
+          Abonnementet fortsetter automatisk med 12 måneders binding til kr 6 990,- per år
+          (fritatt mva). Ordinær pris for IK/HMS er kr 9 990,- per år. Nettsiden er inkludert så
+          lenge abonnementet løper. Ønsker dere kun å beholde nettsiden etter oppsigelse, koster
+          den kr 2 990,-.
         </p>
       </section>
 
