@@ -42,7 +42,7 @@ function matchesTermination(
 const SYSTEM_KEYWORDS = [
   "hms", "ik/mat", "ik mat", "mattrygghet", "ik/hms", "internkontroll",
   "bygg", "alkohol", "gdpr", "personalhåndbok", "personalhandbok",
-  "åpenhetsloven", "apenhetsloven", "fdv", "total-ik", "totalik", "byggepakke",
+  "åpenhetsloven", "apenhetsloven", "fdv", "total-ik", "totalik", "byggepakke", "velkomstpakke",
 ];
 const COURSE_KEYWORDS = ["kurs", "course", "hms-kort", "bht", "sertifisering"];
 

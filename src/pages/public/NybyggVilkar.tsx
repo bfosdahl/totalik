@@ -22,18 +22,20 @@ const NybyggVilkar = () => (
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">Etter gratisperioden</h2>
         <p className="text-muted-foreground">
-          Ønsker dere å fortsette, koster abonnementet kr 6 990,- per år (fritatt mva).
-          Nettsiden er inkludert så lenge abonnementet løper. Ønsker dere kun å beholde
-          nettsiden etter oppsigelse, koster den kr 2 990,-.
+          Sier dere ikke opp innen fristen, fortsetter avtalen automatisk med 12 måneders
+          binding til rabattert pris kr 6 990,- per år (fritatt mva). Ordinær pris for IK/HMS
+          er kr 9 990,- per år. Nettsiden er inkludert så lenge abonnementet løper. Ønsker dere
+          kun å beholde nettsiden etter oppsigelse, koster den kr 2 990,-.
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="text-xl font-semibold">Oppsigelse</h2>
         <p className="text-muted-foreground">
-          Dere må selv si opp abonnementet skriftlig til post@athenahms.no før gratisperioden
-          utløper dersom dere ikke ønsker å fortsette. Uten oppsigelse løper abonnementet videre
-          til ordinær pris.
+          Dersom dere ikke ønsker å fortsette, må dere si opp skriftlig på e-post til
+          post@athenahms.no innen 180 dager etter at systemet ble opprettet. Uten skriftlig
+          oppsigelse innen fristen binder dere dere til minimum 12 måneder til kr 6 990,- per år.
+          Vilkårene må også godkjennes av bedriftens administrator ved innlogging i Total-IK.
         </p>
       </section>
 
