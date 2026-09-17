@@ -184,12 +184,13 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       }));
 
       const kontraktRows = (contracts || []).map((c: any) => ({
-        Ansatt: c.user_name,
+        Ansatt: nameMap.get(c.employee_id) || "",
         "Type kontrakt": c.contract_type,
-        Stilling: c.position_title || "",
-        "Ukentlige timer": c.weekly_hours ?? "",
-        Timesats: c.hourly_rate ?? "",
-        Månedslønn: c.monthly_salary ?? "",
+        Stilling: c.position || "",
+        "Stillingsprosent": c.employment_percentage ?? "",
+        "Ukentlige timer": c.working_hours_per_week ?? "",
+        Lønn: c.salary_amount ?? "",
+        "Lønnstype": c.salary_type || "",
         Startdato: c.start_date || "",
         Sluttdato: c.end_date || "",
         Status: c.status,
