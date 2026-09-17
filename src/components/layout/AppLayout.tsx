@@ -5,6 +5,8 @@ import { MascotChatHelper } from "@/components/help/MascotChatHelper";
 import { VersionChecker } from "@/components/VersionChecker";
 import { TermsAcceptanceDialog } from "@/components/terms/TermsAcceptanceDialog";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
+import { WelcomePackageTermsDialog } from "@/components/terms/WelcomePackageTermsDialog";
+import { useWelcomePackageTerms } from "@/hooks/useWelcomePackageTerms";
 import { AnnualAuditDueDialog } from "@/components/audits/AnnualAuditDueDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { MobileNav } from "@/components/mobile/MobileNav";
@@ -16,8 +18,9 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const { user, profile, isCompanyAdmin, isSystemAdmin } = useAuth();
   const { hasAcceptedTerms, isLoading: termsLoading, acceptTerms, isAccepting } = useTermsAcceptance(user?.id);
+  const welcome = useWelcomePackageTerms(user?.id, profile?.company_id);
   const isMobile = useIsMobile();
 
   const handleCloseSidebar = useCallback(() => {
