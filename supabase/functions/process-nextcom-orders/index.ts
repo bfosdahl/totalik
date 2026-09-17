@@ -233,6 +233,7 @@ Deno.serve(async (req) => {
           : [];
 
         const modules = detectModules(productNames);
+        const welcomePackage = detectWelcomePackage(productNames);
         const isCourseOnly = modules.length === 0 && productNames.some(p =>
           COURSE_KEYWORDS.some(kw => p.toLowerCase().includes(kw))
         );
