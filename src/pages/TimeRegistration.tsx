@@ -352,6 +352,7 @@ export default function TimeRegistration() {
                   <TimeEntryList
                     entries={myEntries}
                     onDelete={deleteEntry}
+                    onEdit={updateEntry}
                   />
                 </CardContent>
               </Card>
@@ -363,7 +364,7 @@ export default function TimeRegistration() {
               <CardTitle>{t("auto.mine_timeregistreringer")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <TimeEntryList entries={filteredEntries} onDelete={deleteEntry} />
+              <TimeEntryList entries={filteredEntries} onDelete={deleteEntry} onEdit={updateEntry} />
             </CardContent>
           </Card>
         )}
