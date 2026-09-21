@@ -463,6 +463,9 @@ export function NewTimeEntryDialog({
                         </span>
                         {project.project_name}
                         {project.client_name ? ` — ${project.client_name}` : ""}
+                        {usageCount(project.id) > 0 && (
+                          <span className="ml-2 text-[10px] text-muted-foreground">★ ofte brukt</span>
+                        )}
                       </SelectItem>
                     ))}
                     <SelectItem value="custom">{t("auto.annet_fritekst")}</SelectItem>
