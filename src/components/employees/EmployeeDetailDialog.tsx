@@ -155,12 +155,20 @@ export function EmployeeDetailDialog({
 
     setIsResettingPassword(true);
     try {
+      const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+      const accessToken = refreshed.session?.access_token;
+      if (refreshError || !accessToken) {
+        toast.error("Innloggingen kunne ikke fornyes. Logg ut og inn igjen.");
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke("reset-user-password", {
         body: {
           userId: employee.user_id,
           newPassword,
           sendEmail: sendPasswordEmail,
         },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       if (error) {
