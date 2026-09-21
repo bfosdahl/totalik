@@ -82,3 +82,13 @@ Svaret inneholder `billable_total` (sum av ikke-BHT-linjer) og `needs_review`.
 | 3 | Internkontroll-Kvalitetssystem (IK/KHMS) 24 mnd lisens … | 6 990,01 | remainder | false |
 
 Roboten fakturerer da 6 990,01 (linje 3) og hopper over BHT-linjen.
+
+## BHT og restbeløp (oppdatert)
+
+- Restbeløpet (`price_source = remainder`) tildeles ALDRI en BHT-linje så lenge ordren også har en ikke-BHT-linje.
+- BHT-linjer prises fra navnet eller prisboken (`nextcom_product_prices`). IK-linjen tar restbeløpet: `order_sum - kjente linjer`.
+- Mangler BHT-prisen i prisboken, legges den inn manuelt i `nextcom_product_prices` (normalisert navn, `is_bht = true`).
+- Er én linje uløst, flagges hele ordren `needs_review = true`.
+- Eksempel ordre 35925 (sum 20 980): BHT 21-30 ansatte 13 990 (catalog) + HMS System IK/HMS 24 mnd 6 990 (remainder). Fakturerbart = 6 990.
+
+Å sette ordren grønn inne i NextCom krever fortsatt nettlesersesjon – API-nøkkelen vår kan ikke gjøre det.
