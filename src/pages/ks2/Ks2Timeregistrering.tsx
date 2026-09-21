@@ -38,6 +38,7 @@ export default function Ks2Timeregistrering() {
     entries,
     isLoading,
     createEntry,
+    updateEntry,
     approveEntry,
     rejectEntry,
     deleteEntry,
@@ -410,6 +411,7 @@ export default function Ks2Timeregistrering() {
                     onApprove={approveEntry}
                     onReject={rejectEntry}
                     onDelete={deleteEntry}
+                    onEdit={updateEntry}
                     showEmployee
                   />
                 )}
@@ -426,6 +428,8 @@ export default function Ks2Timeregistrering() {
                   entries={filteredEntries.filter((e) => e.status === "submitted")}
                   onApprove={approveEntry}
                   onReject={rejectEntry}
+                  onEdit={updateEntry}
+                  onDelete={deleteEntry}
                   showEmployee
                 />
               </CardContent>
@@ -437,7 +441,7 @@ export default function Ks2Timeregistrering() {
                 <CardTitle>{t("auto.mine_timeregistreringer")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <TimeEntryList entries={myEntries} onDelete={deleteEntry} />
+                <TimeEntryList entries={myEntries} onDelete={deleteEntry} onEdit={updateEntry} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -462,7 +466,7 @@ export default function Ks2Timeregistrering() {
                 </Button>
               </div>
             ) : (
-              <TimeEntryList entries={myEntries} onDelete={deleteEntry} />
+              <TimeEntryList entries={myEntries} onDelete={deleteEntry} onEdit={updateEntry} />
             )}
           </CardContent>
         </Card>
