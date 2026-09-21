@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
@@ -511,13 +512,9 @@ export function NewTimeEntryDialog({
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
               <Label>{t("auto.fra")}</Label>
-              <Input
-                type="time"
-                lang="nb-NO"
-                step={60}
+              <TimeInput24
                 value={startTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setStartTime(v);
                   if (v && endTime) {
                     const diff = calcHoursBetween(v, endTime);
@@ -528,13 +525,9 @@ export function NewTimeEntryDialog({
             </div>
             <div className="space-y-2">
               <Label>{t("auto.til")}</Label>
-              <Input
-                type="time"
-                lang="nb-NO"
-                step={60}
+              <TimeInput24
                 value={endTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setEndTime(v);
                   if (startTime && v) {
                     const diff = calcHoursBetween(startTime, v);

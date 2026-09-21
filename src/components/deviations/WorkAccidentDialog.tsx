@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -174,11 +175,10 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
           </div>
           <div>
             <Label htmlFor="incidentTime">{t("auto.tidspunkt_2")}</Label>
-            <Input
+            <TimeInput24
               id="incidentTime"
-              type="time"
               value={incidentTime}
-              onChange={(e) => setIncidentTime(e.target.value)}
+              onChange={(v) => setIncidentTime(v)}
               className="mt-1"
             />
           </div>

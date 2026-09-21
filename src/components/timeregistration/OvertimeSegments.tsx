@@ -1,6 +1,7 @@
 import { Plus, Trash2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { t } from "@/i18n/t";
@@ -80,11 +81,11 @@ export function OvertimeSegmentsEditor({ segments, onChange, mainStart, mainEnd 
               <div key={s.id} className="grid grid-cols-[1fr_1fr_110px_auto] gap-2 items-end bg-muted/30 p-2 rounded-md">
                 <div>
                   <Label className="text-[10px] uppercase text-muted-foreground">{t("auto.fra")}</Label>
-                  <Input type="time" step={60} value={s.start} onChange={(e) => update(s.id, { start: e.target.value })} className="h-9" />
+                  <TimeInput24 value={s.start} onChange={(v) => update(s.id, { start: v })} className="h-9" />
                 </div>
                 <div>
                   <Label className="text-[10px] uppercase text-muted-foreground">{t("auto.til")}</Label>
-                  <Input type="time" step={60} value={s.end} onChange={(e) => update(s.id, { end: e.target.value })} className="h-9" />
+                  <TimeInput24 value={s.end} onChange={(v) => update(s.id, { end: v })} className="h-9" />
                 </div>
                 <div>
                   <Label className="text-[10px] uppercase text-muted-foreground">{t("auto.sats")}</Label>

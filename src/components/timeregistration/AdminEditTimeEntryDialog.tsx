@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -149,11 +150,9 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label>{t("auto.fra")}</Label>
-              <Input
-                type="time"
+              <TimeInput24
                 value={startTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setStartTime(v);
                   if (v && endTime) {
                     const d = calcHoursBetween(v, endTime);
@@ -164,11 +163,9 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
             </div>
             <div className="space-y-1">
               <Label>{t("auto.til")}</Label>
-              <Input
-                type="time"
+              <TimeInput24
                 value={endTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setEndTime(v);
                   if (startTime && v) {
                     const d = calcHoursBetween(startTime, v);

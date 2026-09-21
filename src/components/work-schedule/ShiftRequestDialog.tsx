@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -153,18 +154,16 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>{t("auto.ny_starttid")}</Label>
-                  <Input
-                    type="time"
+                  <TimeInput24
                     value={proposedStartTime}
-                    onChange={(e) => setProposedStartTime(e.target.value)}
+                    onChange={(v) => setProposedStartTime(v)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>{t("auto.ny_sluttid")}</Label>
-                  <Input
-                    type="time"
+                  <TimeInput24
                     value={proposedEndTime}
-                    onChange={(e) => setProposedEndTime(e.target.value)}
+                    onChange={(v) => setProposedEndTime(v)}
                   />
                 </div>
               </div>
@@ -185,18 +184,16 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>{t("auto.fra")}</Label>
-                    <Input
-                      type="time"
+                    <TimeInput24
                       value={proposedStartTime}
-                      onChange={(e) => setProposedStartTime(e.target.value)}
+                      onChange={(v) => setProposedStartTime(v)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("auto.til")}</Label>
-                    <Input
-                      type="time"
+                    <TimeInput24
                       value={proposedEndTime}
-                      onChange={(e) => setProposedEndTime(e.target.value)}
+                      onChange={(v) => setProposedEndTime(v)}
                     />
                   </div>
                 </div>

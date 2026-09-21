@@ -25,6 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import {
   Select,
   SelectContent,
@@ -593,10 +594,9 @@ export function DeviationDetailDialog({
                   <Clock className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Tidspunkt for hendelse</span>
                 </div>
-                <Input
-                  type="time"
+                <TimeInput24
                   value={editIncidentTime}
-                  onChange={(e) => setEditIncidentTime(e.target.value)}
+                  onChange={(v) => setEditIncidentTime(v)}
                   className="w-[180px]"
                 />
               </div>

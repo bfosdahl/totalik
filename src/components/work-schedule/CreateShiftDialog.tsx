@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -489,22 +490,20 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="start_time">{t("auto.fra_2")}</Label>
-                  <Input
+                  <TimeInput24
                     id="start_time"
-                    type="time"
                     required
                     value={formData.start_time}
-                    onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                    onChange={(v) => setFormData({ ...formData, start_time: v })}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="end_time">{t("auto.til_2")}</Label>
-                  <Input
+                  <TimeInput24
                     id="end_time"
-                    type="time"
                     required
                     value={formData.end_time}
-                    onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                    onChange={(v) => setFormData({ ...formData, end_time: v })}
                   />
                 </div>
               </div>
