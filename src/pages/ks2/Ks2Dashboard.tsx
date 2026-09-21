@@ -25,6 +25,41 @@ export default function Ks2Dashboard() {
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
   const [copyProject, setCopyProject] = useState<KsModule2Project | null>(null);
   const [projectDeviationCounts, setProjectDeviationCounts] = useState<Record<string, number>>({});
+  const [projectChecklistProgress, setProjectChecklistProgress] = useState<
+    Record<string, { completed: number; total: number; percent: number }>
+  >({});
+
+  // Fremdrift per prosjekt basert på egenkontroller/sjekklister (samme tall som inne i prosjektet)
+  useEffect(() => {
+    const fetchChecklistProgress = async () => {
+      if (!profile?.company_id || projects.length === 0) return;
+
+      const projectIds = projects.map((p) => p.id);
+      const { data, error } = await supabase
+        .from("ks_module2_checklists")
+        .select("project_id, status")
+        .in("project_id", projectIds);
+
+      if (error) {
+        console.error("Error fetching checklist progress:", error);
+        return;
+      }
+
+      const acc: Record<string, { completed: number; total: number; percent: number }> = {};
+      (data || []).forEach((row: any) => {
+        const cur = acc[row.project_id] || { completed: 0, total: 0, percent: 0 };
+        cur.total += 1;
+        if (row.status === "completed") cur.completed += 1;
+        acc[row.project_id] = cur;
+      });
+      Object.values(acc).forEach((v) => {
+        v.percent = v.total > 0 ? Math.round((v.completed / v.total) * 100) : 0;
+      });
+      setProjectChecklistProgress(acc);
+    };
+
+    fetchChecklistProgress();
+  }, [projects, profile?.company_id]);
 
   const archivedCount = useMemo(
     () => projects.filter((p) => p.status === "completed").length,
@@ -209,6 +244,7 @@ export default function Ks2Dashboard() {
                 onCopy={(p) => setCopyProject(p)}
                 onDelete={deleteProject}
                 openDeviationsCount={projectDeviationCounts[project.id] || 0}
+                checklistProgress={projectChecklistProgress[project.id]}
               />
             ))}
           </div>
