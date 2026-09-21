@@ -11,7 +11,7 @@ import {
   parseOrderLines,
   statusFacts,
   syncOrderLines,
-} from "../_shared/nextcomOrderLines.ts";
+} from "../_shared/nextcom-order-lines.ts";
 
 
 
