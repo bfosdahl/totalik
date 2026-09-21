@@ -150,15 +150,21 @@ export function parseOrderLines(
     }
   };
 
+  const hasNonBht = lines.some((l) => !l.is_bht);
+
+  // Restbeløpet skal ALDRI havne på en BHT-linje så lenge ordren også har en
+  // vanlig (ikke-BHT) linje. BHT-prisene er faste og hentes fra navn/prisbok,
+  // mens IK-lisensen varierer – det er den som skal ta restbeløpet.
   const applyRemainder = () => {
     const unknown = lines.filter((l) => l.price_source === "unknown");
     if (unknown.length !== 1 || sum === null) return;
+    const l = unknown[0];
+    if (l.is_bht && hasNonBht) return;
     const knownTotal = lines
-      .filter((l) => l.price_source !== "unknown")
-      .reduce((acc, l) => acc + (l.unit_price ?? 0) * l.quantity, 0);
+      .filter((x) => x.price_source !== "unknown")
+      .reduce((acc, x) => acc + (x.unit_price ?? 0) * x.quantity, 0);
     const rest = Math.round((sum - knownTotal) * 100) / 100;
     if (rest <= 0) return;
-    const l = unknown[0];
     l.unit_price = l.quantity > 0 ? Math.round((rest / l.quantity) * 100) / 100 : rest;
     l.price_source = "remainder";
   };
@@ -166,11 +172,12 @@ export function parseOrderLines(
   // 3) prisbok for BHT/kurs først – de prisene er faste og pålitelige,
   //    mens IK-lisenser varierer med lisenslengde og rabatt.
   applyCatalog((l) => l.is_bht || l.is_course);
-  // 4) rest: kun hvis nøyaktig én linje er ukjent
+  // 4) rest til den ene ukjente (aldri BHT når ordren har andre linjer)
   applyRemainder();
   // 5) prisbok for resten, deretter ev. en ny restberegning
   applyCatalog();
   applyRemainder();
+
 
 
   const usedCatalog = lines.some((l) => l.price_source === "catalog");
