@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, addDays, isSameDay, startOfWeek } from "date-fns";
 import { nb } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock, Package } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock, Package, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
