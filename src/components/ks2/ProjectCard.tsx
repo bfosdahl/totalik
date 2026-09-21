@@ -37,8 +37,13 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   completed: { label: t("auto.avsluttet"), className: "bg-secondary text-secondary-foreground" },
 };
 
-export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDelete, openDeviationsCount = 0 }: ProjectCardProps) {
+export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDelete, openDeviationsCount = 0, checklistProgress }: ProjectCardProps) {
   const status = statusConfig[project.status] || statusConfig.planned;
+  // Vis høyeste av manuelt satt fremdrift og fremdrift fra egenkontroller
+  const progressPercent = Math.max(
+    Number(project.progress_percent) || 0,
+    checklistProgress?.percent || 0
+  );
 
   return (
     <Card
@@ -162,14 +167,19 @@ export function ProjectCard({ project, onClick, onToggleFavorite, onCopy, onDele
               <TrendingUp className="h-3 w-3" />
               Fremdrift
             </span>
-            <span className="text-sm font-semibold">{project.progress_percent}%</span>
+            <span className="text-sm font-semibold">{progressPercent}%</span>
           </div>
           <div className="h-2 bg-secondary rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-500 rounded-full"
-              style={{ width: `${project.progress_percent}%` }}
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
+          {checklistProgress && checklistProgress.total > 0 && (
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {checklistProgress.completed}/{checklistProgress.total} egenkontroller fullført
+            </p>
+          )}
         </div>
 
         {/* Footer */}
