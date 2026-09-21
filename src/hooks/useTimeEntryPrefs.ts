@@ -46,6 +46,9 @@ function read(key: string): TimeEntryPrefs {
       ...EMPTY,
       ...parsed,
       projectCounts: parsed?.projectCounts ?? {},
+      materialCounts: parsed?.materialCounts ?? {},
+      allowanceCounts: parsed?.allowanceCounts ?? {},
+      customers: parsed?.customers ?? [],
       descriptions: parsed?.descriptions ?? {},
     };
   } catch {
