@@ -22,14 +22,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify the JWT cryptographically by calling auth.getUser with the raw token
+    // Verify the JWT by passing the incoming Authorization header to the auth client
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
     const anonClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { auth: { autoRefreshToken: false, persistSession: false } }
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      }
     );
-    const { data: authedUser, error: authedUserError } = await anonClient.auth.getUser(token);
+    const { data: authedUser, error: authedUserError } = await anonClient.auth.getUser();
     if (authedUserError || !authedUser?.user) {
       console.error("Auth verification error:", authedUserError);
       return new Response(
