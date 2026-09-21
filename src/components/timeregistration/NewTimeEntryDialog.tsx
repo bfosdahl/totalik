@@ -315,7 +315,10 @@ export function NewTimeEntryDialog({
         on_behalf_user_name: onBehalfName,
       });
 
-      if (ok) onOpenChange(false);
+      if (ok) {
+        rememberChoices();
+        onOpenChange(false);
+      }
       setIsSubmitting(false);
       return;
     }
@@ -337,8 +340,25 @@ export function NewTimeEntryDialog({
       on_behalf_user_name: onBehalfName,
     });
 
-    if (success) onOpenChange(false);
+    if (success) {
+      rememberChoices();
+      onOpenChange(false);
+    }
     setIsSubmitting(false);
+  };
+
+  const rememberChoices = () => {
+    const isKsProject =
+      !!selectedProjectId && selectedProjectId !== "custom" && selectedProjectId !== "none";
+    remember({
+      projectId: isKsProject ? selectedProjectId : undefined,
+      customProjectName: isKsProject ? undefined : customProjectName.trim() || undefined,
+      customerName: customerName.trim() || undefined,
+      startTime: startTime || undefined,
+      endTime: endTime || undefined,
+      hours: hours || undefined,
+      description: description.trim() || undefined,
+    });
   };
 
   const addMaterial = () => {
