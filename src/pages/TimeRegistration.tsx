@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Plus, Download, FileText, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode, CalendarCheck, Sun } from "lucide-react";
@@ -44,7 +45,9 @@ export default function TimeRegistration() {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
-  const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">("day");
+  const [searchParams] = useSearchParams();
+  const adminView = searchParams.get("view") === "admin";
+  const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">(adminView ? "list" : "day");
   const [employeeFilter, setEmployeeFilter] = useState<string>("all");
 
 
@@ -304,7 +307,7 @@ export default function TimeRegistration() {
             </CardContent>
           </Card>
         ) : isCompanyAdmin ? (
-          <Tabs defaultValue="all" className="space-y-4">
+          <Tabs defaultValue={adminView ? "pending" : "all"} className="space-y-4">
             <TabsList>
               <TabsTrigger value="all">{t("auto.alle_ansatte")}</TabsTrigger>
               <TabsTrigger value="pending">Til godkjenning ({pendingCount})</TabsTrigger>
