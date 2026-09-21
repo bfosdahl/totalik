@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -283,11 +284,11 @@ function DailyReportForm({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">{t("auto.tid_fra")}</Label>
-                <Input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} placeholder="08:00" />
+                <TimeInput24 value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} placeholder="08:00" />
               </div>
               <div>
                 <Label className="text-xs">{t("auto.tid_til")}</Label>
-                <Input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} placeholder="16:00" />
+                <TimeInput24 value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} placeholder="16:00" />
               </div>
             </div>
             {calculateWorkDuration(workStartTime, workEndTime) && (

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
@@ -297,12 +298,12 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                 <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.fra")}</Label>
-                    <Input type="time" value={quickPlan.start_time}
+                    <TimeInput24 value={quickPlan.start_time}
                       onChange={(e) => setQuickPlan(p => ({ ...p, start_time: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.til")}</Label>
-                    <Input type="time" value={quickPlan.end_time}
+                    <TimeInput24 value={quickPlan.end_time}
                       onChange={(e) => setQuickPlan(p => ({ ...p, end_time: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
@@ -413,12 +414,12 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                 <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.fra")}</Label>
-                    <Input type="time" value={newSchedule.start_time}
+                    <TimeInput24 value={newSchedule.start_time}
                       onChange={(e) => setNewSchedule({ ...newSchedule, start_time: e.target.value })} />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.til")}</Label>
-                    <Input type="time" value={newSchedule.end_time}
+                    <TimeInput24 value={newSchedule.end_time}
                       onChange={(e) => setNewSchedule({ ...newSchedule, end_time: e.target.value })} />
                   </div>
                   <div className="space-y-1">

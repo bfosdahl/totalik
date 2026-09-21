@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -175,8 +176,7 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
             </div>
             <div className="space-y-2">
               <Label>{t("auto.klokkeslett")}</Label>
-              <Input
-                type="time"
+              <TimeInput24
                 value={scheduledTime}
                 onChange={(e) => setScheduledTime(e.target.value)}
               />
