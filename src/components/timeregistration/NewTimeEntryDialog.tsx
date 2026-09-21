@@ -36,6 +36,7 @@ import { useMaterialTypes, MATERIAL_UNITS, MATERIAL_UNIT_LABELS, MaterialUnit } 
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreateTimeEntry, HourType, TimeEntryAllowanceInput, TimeEntryMaterialInput } from "@/hooks/useTimeEntries";
+import { useTimeEntryPrefs } from "@/hooks/useTimeEntryPrefs";
 import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 import { t } from "@/i18n/t";
 
@@ -113,10 +114,29 @@ export function NewTimeEntryDialog({
   const { types: allowanceTypes } = useAllowanceTypes({ onlyActive: true });
   const { types: materialTypes } = useMaterialTypes({ onlyActive: true });
 
+  const { prefs, remember, sortByUsage, usageCount, suggestionsFor } = useTimeEntryPrefs();
+
   const activeProjects = useMemo(
-    () => projects.filter((p) => p.status !== "completed" && p.status !== "handover"),
-    [projects]
+    () => sortByUsage(projects.filter((p) => p.status !== "completed" && p.status !== "handover")),
+    [projects, sortByUsage]
   );
+
+  const descriptionSuggestions = useMemo(
+    () =>
+      suggestionsFor(
+        selectedProjectId && selectedProjectId !== "custom" && selectedProjectId !== "none"
+          ? selectedProjectId
+          : customProjectName
+      ),
+    [suggestionsFor, selectedProjectId, customProjectName]
+  );
+
+  const applyTimes = (from: string, to: string) => {
+    setStartTime(from);
+    setEndTime(to);
+    const diff = calcHoursBetween(from, to);
+    if (diff > 0) setHours(diff.toFixed(2));
+  };
 
   // Auto-fill customer when project changes
   useEffect(() => {
