@@ -338,6 +338,7 @@ export default function TimeRegistration() {
                     onApprove={approveEntry}
                     onReject={rejectEntry}
                     onEdit={updateEntry}
+                    onDelete={deleteEntry}
                     showEmployee
                   />
                 </CardContent>
