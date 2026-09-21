@@ -12,13 +12,26 @@ export interface TimeEntryPrefs {
   lastStartTime?: string;
   lastEndTime?: string;
   lastHours?: string;
+  lastHourType?: string;
   /** projectId (eller fritekstnavn) -> antall ganger brukt */
   projectCounts: Record<string, number>;
+  /** materialtype-id -> antall ganger brukt */
+  materialCounts: Record<string, number>;
+  /** tilleggstype-id -> antall ganger brukt */
+  allowanceCounts: Record<string, number>;
+  /** sist brukte kundenavn (maks 5) */
+  customers: string[];
   /** projectKey -> siste beskrivelser (maks 5) */
   descriptions: Record<string, string[]>;
 }
 
-const EMPTY: TimeEntryPrefs = { projectCounts: {}, descriptions: {} };
+const EMPTY: TimeEntryPrefs = {
+  projectCounts: {},
+  materialCounts: {},
+  allowanceCounts: {},
+  customers: [],
+  descriptions: {},
+};
 
 function storageKey(userId?: string, companyId?: string) {
   return `time-entry-prefs:${userId ?? "anon"}:${companyId ?? "none"}`;
@@ -33,6 +46,9 @@ function read(key: string): TimeEntryPrefs {
       ...EMPTY,
       ...parsed,
       projectCounts: parsed?.projectCounts ?? {},
+      materialCounts: parsed?.materialCounts ?? {},
+      allowanceCounts: parsed?.allowanceCounts ?? {},
+      customers: parsed?.customers ?? [],
       descriptions: parsed?.descriptions ?? {},
     };
   } catch {
@@ -70,7 +86,10 @@ export function useTimeEntryPrefs() {
       startTime?: string;
       endTime?: string;
       hours?: string;
+      hourType?: string;
       description?: string;
+      materialTypeIds?: string[];
+      allowanceTypeIds?: string[];
     }) => {
       const current = read(key);
       const projectKey = input.projectId || input.customProjectName || "";
@@ -84,14 +103,32 @@ export function useTimeEntryPrefs() {
         descriptions[projectKey] = list;
       }
 
+      const materialCounts = { ...current.materialCounts };
+      (input.materialTypeIds ?? []).forEach((id) => {
+        if (id) materialCounts[id] = (materialCounts[id] ?? 0) + 1;
+      });
+      const allowanceCounts = { ...current.allowanceCounts };
+      (input.allowanceTypeIds ?? []).forEach((id) => {
+        if (id) allowanceCounts[id] = (allowanceCounts[id] ?? 0) + 1;
+      });
+
+      const customerName = input.customerName?.trim();
+      const customers = customerName
+        ? [customerName, ...current.customers.filter((c) => c !== customerName)].slice(0, 5)
+        : current.customers;
+
       save({
         lastProjectId: input.projectId || current.lastProjectId,
         lastCustomProjectName: input.customProjectName || current.lastCustomProjectName,
-        lastCustomerName: input.customerName || current.lastCustomerName,
+        lastCustomerName: customerName || current.lastCustomerName,
         lastStartTime: input.startTime || current.lastStartTime,
         lastEndTime: input.endTime || current.lastEndTime,
         lastHours: input.hours || current.lastHours,
+        lastHourType: input.hourType || current.lastHourType,
         projectCounts: counts,
+        materialCounts,
+        allowanceCounts,
+        customers,
         descriptions,
       });
     },
@@ -115,5 +152,27 @@ export function useTimeEntryPrefs() {
     [prefs.descriptions]
   );
 
-  return { prefs, remember, sortByUsage, usageCount, suggestionsFor };
+  /** Sorterer materialtyper slik at mest brukte kommer først. */
+  const sortMaterialsByUsage = useCallback(
+    <T extends { id: string }>(items: T[]): T[] =>
+      [...items].sort((a, b) => (prefs.materialCounts[b.id] ?? 0) - (prefs.materialCounts[a.id] ?? 0)),
+    [prefs.materialCounts]
+  );
+
+  /** Sorterer tilleggstyper slik at mest brukte kommer først. */
+  const sortAllowancesByUsage = useCallback(
+    <T extends { id: string }>(items: T[]): T[] =>
+      [...items].sort((a, b) => (prefs.allowanceCounts[b.id] ?? 0) - (prefs.allowanceCounts[a.id] ?? 0)),
+    [prefs.allowanceCounts]
+  );
+
+  return {
+    prefs,
+    remember,
+    sortByUsage,
+    usageCount,
+    suggestionsFor,
+    sortMaterialsByUsage,
+    sortAllowancesByUsage,
+  };
 }

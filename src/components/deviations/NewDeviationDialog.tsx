@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLastUsed } from "@/hooks/useLastUsed";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import {
@@ -91,6 +92,10 @@ export function NewDeviationDialog({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<DeviationCategory>("safety");
+  const { lastUsed, remember: rememberDeviationChoices } = useLastUsed("avvik", {
+    category: "",
+    responsibleForClosingId: "",
+  });
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
   const [assigneeId, setAssigneeId] = useState<string>("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -137,6 +142,16 @@ export function NewDeviationDialog({
     setPendingFiles([]);
   };
 
+  // Forhåndsvelg sist brukte kategori og ansvarlig når dialogen åpnes
+  useEffect(() => {
+    if (!open) return;
+    if (lastUsed.category) setCategory(lastUsed.category as DeviationCategory);
+    if (lastUsed.responsibleForClosingId && users.some((u) => u.id === lastUsed.responsibleForClosingId)) {
+      setResponsibleForClosingId(lastUsed.responsibleForClosingId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, lastUsed.category, lastUsed.responsibleForClosingId, users.length]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -171,6 +186,7 @@ export function NewDeviationDialog({
         pendingFiles: pendingFiles.map(pf => pf.file),
       });
       
+      rememberDeviationChoices({ category, responsibleForClosingId });
       resetForm();
       onOpenChange(false);
     } finally {

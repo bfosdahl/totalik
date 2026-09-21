@@ -34,6 +34,7 @@ import {
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
+import { useLastUsed } from "@/hooks/useLastUsed";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -83,6 +84,10 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   const [isPaper, setIsPaper] = useState(false);
   const [executeNow, setExecuteNow] = useState(true);
   const [items, setItems] = useState<ChecklistItem[]>([]);
+  const { lastUsed, remember: rememberResponsible } = useLastUsed("ks-sjekkliste", {
+    responsibleUserId: "",
+    responsibleUserName: "",
+  });
   const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [inspectorSignature, setInspectorSignature] = useState<string>("");
@@ -170,16 +175,19 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
     }
   }, [existingChecklist]);
 
-  // Auto-select logged-in user as responsible
+  // Auto-select last used responsible, otherwise the logged-in user
   useEffect(() => {
     if (!existingChecklist && profile && users.length > 0 && !responsibleUserId) {
-      const currentUser = users.find(u => u.id === profile.id);
+      const remembered = lastUsed.responsibleUserId
+        ? users.find((u) => u.id === lastUsed.responsibleUserId)
+        : undefined;
+      const currentUser = remembered || users.find(u => u.id === profile.id);
       if (currentUser) {
         setResponsibleUserId(currentUser.id);
         setResponsibleUserName(`${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim());
       }
     }
-  }, [profile, users, existingChecklist, responsibleUserId]);
+  }, [profile, users, existingChecklist, responsibleUserId, lastUsed.responsibleUserId]);
 
   // Initialize with pre-selected template if provided
   useEffect(() => {
@@ -305,8 +313,17 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
     setResponsibleUserId(userId);
     const user = users.find((u) => u.id === userId);
     if (user) {
-      setResponsibleUserName(`${user.first_name || ""} ${user.last_name || ""}`.trim());
+      const name = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+      setResponsibleUserName(name);
+      rememberResponsible({ responsibleUserId: userId, responsibleUserName: name });
     }
+  };
+
+  /** Setter alle ja/nei-punkter til Ja på ett trykk. */
+  const markAllOk = () => {
+    setItems((prev) =>
+      prev.map((item) => (item.type === "yes_no" && (item.value === null || item.value === undefined) ? { ...item, value: true } : item))
+    );
   };
 
   const updateItemValue = (itemId: string, value: any) => {
@@ -797,7 +814,12 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
               <p className="text-sm text-muted-foreground">
                 {t("auto.fyll_ut_kontrollpunktene_nedenfor")}
               </p>
-              <Badge>{calculateProgress()}% utfylt</Badge>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={markAllOk}>
+                  Fyll alle OK
+                </Button>
+                <Badge>{calculateProgress()}% utfylt</Badge>
+              </div>
             </div>
 
             <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">

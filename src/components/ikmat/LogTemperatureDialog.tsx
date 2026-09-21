@@ -30,6 +30,7 @@ import {
 } from "@/lib/temperatureGuidelines";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
+import { useLastUsed } from "@/hooks/useLastUsed";
 
 interface LogTemperatureDialogProps {
   open: boolean;
@@ -63,6 +64,12 @@ export function LogTemperatureDialog({
   const [completedCount, setCompletedCount] = useState(0);
 
   const isEditMode = !!editLog;
+
+  // Husk forrige temperatur per utstyr (lokalt) og tilby den som forslag
+  const { lastUsed, remember: rememberTemp } = useLastUsed("ikmat-temperatur", {
+    temps: {} as Record<string, string>,
+  });
+  const previousTemp = selectedEquipmentId ? lastUsed.temps[selectedEquipmentId] : undefined;
 
   // Snapshot initial pending count when dialog opens (for progress display)
   const [initialPending, setInitialPending] = useState(0);
@@ -129,6 +136,8 @@ export function LogTemperatureDialog({
         onOpenChange(false);
         return;
       }
+
+      rememberTemp({ temps: { ...lastUsed.temps, [selectedEquipmentId]: temperature } });
 
       await logTemperature.mutateAsync({
         equipment_id: selectedEquipmentId,
@@ -273,6 +282,17 @@ export function LogTemperatureDialog({
 
           <div className="space-y-2">
             <Label htmlFor="temperature">{t("auto.maalt_temperatur_c")}</Label>
+            {!isEditMode && previousTemp && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="h-7"
+                onClick={() => setTemperature(previousTemp)}
+              >
+                Forrige måling: {previousTemp} °C
+              </Button>
+            )}
             <div className="flex gap-2">
               <Button
                 type="button"

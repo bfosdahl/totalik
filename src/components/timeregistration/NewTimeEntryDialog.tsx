@@ -114,7 +114,23 @@ export function NewTimeEntryDialog({
   const { types: allowanceTypes } = useAllowanceTypes({ onlyActive: true });
   const { types: materialTypes } = useMaterialTypes({ onlyActive: true });
 
-  const { prefs, remember, sortByUsage, usageCount, suggestionsFor } = useTimeEntryPrefs();
+  const {
+    prefs,
+    remember,
+    sortByUsage,
+    usageCount,
+    suggestionsFor,
+    sortMaterialsByUsage,
+    sortAllowancesByUsage,
+  } = useTimeEntryPrefs();
+  const sortedAllowanceTypes = useMemo(
+    () => sortAllowancesByUsage(allowanceTypes),
+    [allowanceTypes, sortAllowancesByUsage]
+  );
+  const sortedMaterialTypes = useMemo(
+    () => sortMaterialsByUsage(materialTypes),
+    [materialTypes, sortMaterialsByUsage]
+  );
 
   const activeProjects = useMemo(
     () => sortByUsage(projects.filter((p) => p.status !== "completed" && p.status !== "handover")),
@@ -161,7 +177,7 @@ export function NewTimeEntryDialog({
         ? (calcHoursBetween(prefs.lastStartTime, prefs.lastEndTime) || 0).toFixed(2)
         : ""
     );
-    setHourType("normal");
+    setHourType(((prefs.lastHourType as HourType) || "normal") as HourType);
     const remembered =
       prefs.lastProjectId && projects.some((p) => p.id === prefs.lastProjectId)
         ? prefs.lastProjectId
@@ -357,12 +373,15 @@ export function NewTimeEntryDialog({
       startTime: startTime || undefined,
       endTime: endTime || undefined,
       hours: hours || undefined,
+      hourType,
       description: description.trim() || undefined,
+      materialTypeIds: materialRows.map((r) => r.typeId).filter(Boolean),
+      allowanceTypeIds: allowanceRows.map((r) => r.typeId).filter(Boolean),
     });
   };
 
   const addMaterial = () => {
-    const first = materialTypes[0];
+    const first = sortedMaterialTypes[0];
     setMaterialRows((rows) => [
       ...rows,
       {
@@ -379,7 +398,7 @@ export function NewTimeEntryDialog({
     if (allowanceTypes.length === 0) return;
     setAllowanceRows((rows) => [
       ...rows,
-      { id: crypto.randomUUID(), typeId: allowanceTypes[0].id, quantity: "1", notes: "" },
+      { id: crypto.randomUUID(), typeId: sortedAllowanceTypes[0].id, quantity: "1", notes: "" },
     ]);
   };
 
@@ -509,6 +528,20 @@ export function NewTimeEntryDialog({
                 className="pl-10"
               />
             </div>
+            {prefs.customers.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {prefs.customers.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCustomerName(c)}
+                    className="text-xs rounded-full border px-2 py-1 hover:bg-muted"
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Prosjektnummer, underprosjekt og tagger */}
@@ -586,6 +619,29 @@ export function NewTimeEntryDialog({
               }}
             >
               8 timer
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                applyTimes("07:00", "15:00");
+                setHourType("normal");
+                if (!description.trim()) setDescription("Reisedag");
+              }}
+            >
+              Reisedag
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                applyTimes("16:00", "20:00");
+                setHourType("overtime_50" as HourType);
+              }}
+            >
+              Overtid kveld
             </Button>
           </div>
 
@@ -742,7 +798,7 @@ export function NewTimeEntryDialog({
                   >
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {allowanceTypes.map((tt) => (
+                      {sortedAllowanceTypes.map((tt) => (
                         <SelectItem key={tt.id} value={tt.id}>
                           {tt.name} ({Number(tt.rate).toLocaleString("nb-NO")} kr/{ALLOWANCE_UNIT_LABELS[tt.unit]})
                         </SelectItem>
@@ -819,7 +875,7 @@ export function NewTimeEntryDialog({
                   >
                     <SelectTrigger className="h-9"><SelectValue placeholder="Velg material" /></SelectTrigger>
                     <SelectContent>
-                      {materialTypes.map((mt) => (
+                      {sortedMaterialTypes.map((mt) => (
                         <SelectItem key={mt.id} value={mt.id}>{mt.name}</SelectItem>
                       ))}
                       <SelectItem value="__custom__">Annet (skriv selv)</SelectItem>
