@@ -798,7 +798,7 @@ export function NewTimeEntryDialog({
                   >
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {allowanceTypes.map((tt) => (
+                      {sortedAllowanceTypes.map((tt) => (
                         <SelectItem key={tt.id} value={tt.id}>
                           {tt.name} ({Number(tt.rate).toLocaleString("nb-NO")} kr/{ALLOWANCE_UNIT_LABELS[tt.unit]})
                         </SelectItem>
@@ -875,7 +875,7 @@ export function NewTimeEntryDialog({
                   >
                     <SelectTrigger className="h-9"><SelectValue placeholder="Velg material" /></SelectTrigger>
                     <SelectContent>
-                      {materialTypes.map((mt) => (
+                      {sortedMaterialTypes.map((mt) => (
                         <SelectItem key={mt.id} value={mt.id}>{mt.name}</SelectItem>
                       ))}
                       <SelectItem value="__custom__">Annet (skriv selv)</SelectItem>
