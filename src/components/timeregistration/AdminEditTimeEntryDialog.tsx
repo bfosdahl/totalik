@@ -152,8 +152,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
               <Label>{t("auto.fra")}</Label>
               <TimeInput24
                 value={startTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setStartTime(v);
                   if (v && endTime) {
                     const d = calcHoursBetween(v, endTime);
@@ -166,8 +165,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
               <Label>{t("auto.til")}</Label>
               <TimeInput24
                 value={endTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setEndTime(v);
                   if (startTime && v) {
                     const d = calcHoursBetween(startTime, v);

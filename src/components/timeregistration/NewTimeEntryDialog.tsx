@@ -514,8 +514,7 @@ export function NewTimeEntryDialog({
               <Label>{t("auto.fra")}</Label>
               <TimeInput24
                 value={startTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setStartTime(v);
                   if (v && endTime) {
                     const diff = calcHoursBetween(v, endTime);
@@ -528,8 +527,7 @@ export function NewTimeEntryDialog({
               <Label>{t("auto.til")}</Label>
               <TimeInput24
                 value={endTime}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onChange={(v) => {
                   setEndTime(v);
                   if (startTime && v) {
                     const diff = calcHoursBetween(startTime, v);
