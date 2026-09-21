@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
+import { setAdminUserPassword } from "@/lib/setAdminUserPassword";
 import {
   Dialog,
   DialogContent,
@@ -155,27 +156,11 @@ export function EmployeeDetailDialog({
 
     setIsResettingPassword(true);
     try {
-      const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-      const accessToken = refreshed.session?.access_token;
-      if (refreshError || !accessToken) {
-        toast.error("Innloggingen kunne ikke fornyes. Logg ut og inn igjen.");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("reset-user-password", {
-        body: {
-          userId: employee.user_id,
-          newPassword,
-          sendEmail: sendPasswordEmail,
-        },
-        headers: { Authorization: `Bearer ${accessToken}` },
+      const data = await setAdminUserPassword({
+        userId: employee.user_id,
+        newPassword,
+        sendEmail: sendPasswordEmail,
       });
-
-      if (error) {
-        const errorMessage = error.context?.error || error.message || "Kunne ikke endre passord";
-        toast.error(errorMessage);
-        return;
-      }
 
       toast.success(data.emailSent 
         ? "Passord oppdatert og sendt på e-post" 
@@ -184,7 +169,7 @@ export function EmployeeDetailDialog({
       setNewPassword("");
     } catch (err) {
       console.error("Password reset error:", err);
-      toast.error(t("auto.en_feil_oppstod_ved_endring_av_passord"));
+      toast.error(err instanceof Error ? err.message : t("auto.en_feil_oppstod_ved_endring_av_passord"));
     } finally {
       setIsResettingPassword(false);
     }
