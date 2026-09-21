@@ -178,7 +178,7 @@ export function ScheduleMeetingDialog({ onCreated, trigger }: ScheduleMeetingDia
               <Label>{t("auto.klokkeslett")}</Label>
               <TimeInput24
                 value={scheduledTime}
-                onChange={(e) => setScheduledTime(e.target.value)}
+                onChange={(v) => setScheduledTime(v)}
               />
             </div>
           </div>

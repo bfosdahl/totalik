@@ -285,7 +285,7 @@ export default function IkAlkoholHendelser() {
                   <Label>{t("auto.klokkeslett")}</Label>
                   <TimeInput24
                     value={editingIncident.incident_time || ""}
-                    onChange={(e) => setEditingIncident({ ...editingIncident, incident_time: e.target.value })}
+                    onChange={(v) => setEditingIncident({ ...editingIncident, incident_time: v })}
                   />
                 </div>
               </div>

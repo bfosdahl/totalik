@@ -596,7 +596,7 @@ export function DeviationDetailDialog({
                 </div>
                 <TimeInput24
                   value={editIncidentTime}
-                  onChange={(e) => setEditIncidentTime(e.target.value)}
+                  onChange={(v) => setEditIncidentTime(v)}
                   className="w-[180px]"
                 />
               </div>

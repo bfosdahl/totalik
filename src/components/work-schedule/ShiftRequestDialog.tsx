@@ -156,14 +156,14 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                   <Label>{t("auto.ny_starttid")}</Label>
                   <TimeInput24
                     value={proposedStartTime}
-                    onChange={(e) => setProposedStartTime(e.target.value)}
+                    onChange={(v) => setProposedStartTime(v)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>{t("auto.ny_sluttid")}</Label>
                   <TimeInput24
                     value={proposedEndTime}
-                    onChange={(e) => setProposedEndTime(e.target.value)}
+                    onChange={(v) => setProposedEndTime(v)}
                   />
                 </div>
               </div>
@@ -186,14 +186,14 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
                     <Label>{t("auto.fra")}</Label>
                     <TimeInput24
                       value={proposedStartTime}
-                      onChange={(e) => setProposedStartTime(e.target.value)}
+                      onChange={(v) => setProposedStartTime(v)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>{t("auto.til")}</Label>
                     <TimeInput24
                       value={proposedEndTime}
-                      onChange={(e) => setProposedEndTime(e.target.value)}
+                      onChange={(v) => setProposedEndTime(v)}
                     />
                   </div>
                 </div>

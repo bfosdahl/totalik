@@ -299,12 +299,12 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.fra")}</Label>
                     <TimeInput24 value={quickPlan.start_time}
-                      onChange={(e) => setQuickPlan(p => ({ ...p, start_time: e.target.value }))} />
+                      onChange={(v) => setQuickPlan(p => ({ ...p, start_time: v }))} />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.til")}</Label>
                     <TimeInput24 value={quickPlan.end_time}
-                      onChange={(e) => setQuickPlan(p => ({ ...p, end_time: e.target.value }))} />
+                      onChange={(v) => setQuickPlan(p => ({ ...p, end_time: v }))} />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.sted")}</Label>
@@ -415,12 +415,12 @@ export function StandardScheduleDialog({ open, onOpenChange, selectedWeek, onSch
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.fra")}</Label>
                     <TimeInput24 value={newSchedule.start_time}
-                      onChange={(e) => setNewSchedule({ ...newSchedule, start_time: e.target.value })} />
+                      onChange={(v) => setNewSchedule({ ...newSchedule, start_time: v })} />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.til")}</Label>
                     <TimeInput24 value={newSchedule.end_time}
-                      onChange={(e) => setNewSchedule({ ...newSchedule, end_time: e.target.value })} />
+                      onChange={(v) => setNewSchedule({ ...newSchedule, end_time: v })} />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">{t("auto.sted")}</Label>
