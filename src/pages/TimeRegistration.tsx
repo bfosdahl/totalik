@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Plus, Download, FileText, Clock, CheckCircle, AlertCircle, Calendar, CalendarDays, List, QrCode, CalendarCheck, Sun } from "lucide-react";
