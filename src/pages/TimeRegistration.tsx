@@ -45,7 +45,9 @@ export default function TimeRegistration() {
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilter>("this-week");
-  const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">("day");
+  const [searchParams] = useSearchParams();
+  const adminView = searchParams.get("view") === "admin";
+  const [viewMode, setViewMode] = useState<"list" | "week" | "shifts" | "day">(adminView ? "list" : "day");
   const [employeeFilter, setEmployeeFilter] = useState<string>("all");
 
 
