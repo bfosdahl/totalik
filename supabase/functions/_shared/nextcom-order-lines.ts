@@ -182,14 +182,17 @@ export function parseOrderLines(
 
   const usedCatalog = lines.some((l) => l.price_source === "catalog");
   const usedRemainder = lines.some((l) => l.price_source === "remainder");
+  const anyUnknown = lines.some((l) => l.price_source === "unknown");
   for (const line of lines) {
     line.line_total = line.unit_price === null
       ? null
       : Math.round(line.unit_price * line.quantity * 100) / 100;
     // Restberegning som bygger på katalogpriser kan bomme hvis katalogprisen
     // gjelder en annen lisenslengde – hele fordelingen flagges da for kontroll.
-    line.needs_review = line.unit_price === null || (usedCatalog && usedRemainder);
+    // Er én linje uløst, er heller ikke de andre prisene til å stole på.
+    line.needs_review = line.unit_price === null || anyUnknown || (usedCatalog && usedRemainder);
   }
+
 
 
   // Sikkerhetsnett: summen av linjene må stemme med ordresummen, ellers er
