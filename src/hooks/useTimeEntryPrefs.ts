@@ -152,5 +152,27 @@ export function useTimeEntryPrefs() {
     [prefs.descriptions]
   );
 
-  return { prefs, remember, sortByUsage, usageCount, suggestionsFor };
+  /** Sorterer materialtyper slik at mest brukte kommer først. */
+  const sortMaterialsByUsage = useCallback(
+    <T extends { id: string }>(items: T[]): T[] =>
+      [...items].sort((a, b) => (prefs.materialCounts[b.id] ?? 0) - (prefs.materialCounts[a.id] ?? 0)),
+    [prefs.materialCounts]
+  );
+
+  /** Sorterer tilleggstyper slik at mest brukte kommer først. */
+  const sortAllowancesByUsage = useCallback(
+    <T extends { id: string }>(items: T[]): T[] =>
+      [...items].sort((a, b) => (prefs.allowanceCounts[b.id] ?? 0) - (prefs.allowanceCounts[a.id] ?? 0)),
+    [prefs.allowanceCounts]
+  );
+
+  return {
+    prefs,
+    remember,
+    sortByUsage,
+    usageCount,
+    suggestionsFor,
+    sortMaterialsByUsage,
+    sortAllowancesByUsage,
+  };
 }
