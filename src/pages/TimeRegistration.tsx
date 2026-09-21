@@ -284,6 +284,7 @@ export default function TimeRegistration() {
                 entries={entries}
                 onCreateEntry={createEntry}
                 onDeleteEntry={deleteEntry}
+                onEditEntry={updateEntry}
                 userId={user?.id || ""}
               />
             </CardContent>

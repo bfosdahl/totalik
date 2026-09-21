@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, addDays, isSameDay, startOfWeek } from "date-fns";
 import { nb } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock, Package } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, QrCode, Calendar, CheckCircle, Clock, Package, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import { OvertimeWarning } from "./OvertimeWarning";
 import { CopyPreviousDayButton } from "./CopyPreviousDayButton";
 import { WeeklySummaryChart } from "./WeeklySummaryChart";
 import { NewTimeEntryDialog } from "./NewTimeEntryDialog";
+import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
 
@@ -38,6 +39,7 @@ interface DailyTimeViewProps {
   entries: TimeEntry[];
   onCreateEntry: (entry: CreateTimeEntry) => Promise<boolean>;
   onDeleteEntry: (id: string) => Promise<boolean>;
+  onEditEntry?: (id: string, updates: { hours: number; description?: string }) => Promise<boolean>;
   userId: string;
 }
 
@@ -61,11 +63,13 @@ export function DailyTimeView({
   entries,
   onCreateEntry,
   onDeleteEntry,
+  onEditEntry,
   userId,
 }: DailyTimeViewProps) {
   const { profile, isCompanyAdmin } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
   const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
 
   const { schedules } = useWorkSchedules();
@@ -371,14 +375,26 @@ export function DailyTimeView({
                       {entry.source !== "qr_clock" && (isCompanyAdmin || entry.status === "draft" ||
                         entry.status === "submitted" ||
                         entry.status === "rejected") && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => onDeleteEntry(entry.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <>
+                          {onEditEntry && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setEditEntry(entry)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => onDeleteEntry(entry.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -395,6 +411,15 @@ export function DailyTimeView({
         onOpenChange={setDialogOpen}
         onSubmit={onCreateEntry}
       />
+
+      {onEditEntry && (
+        <EditTimeEntryDialog
+          open={!!editEntry}
+          onOpenChange={(o) => !o && setEditEntry(null)}
+          entry={editEntry ? { ...editEntry, user_name: "" } : null}
+          onSave={onEditEntry}
+        />
+      )}
 
       {/* Weekly Summary Chart */}
       <WeeklySummaryChart
