@@ -62,11 +62,13 @@ export function DailyTimeView({
   entries,
   onCreateEntry,
   onDeleteEntry,
+  onEditEntry,
   userId,
 }: DailyTimeViewProps) {
   const { profile, isCompanyAdmin } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
   const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
 
   const { schedules } = useWorkSchedules();
