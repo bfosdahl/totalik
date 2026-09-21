@@ -26,6 +26,7 @@ interface ProjectCardProps {
   onCopy?: (project: KsModule2Project) => void;
   onDelete?: (id: string) => void;
   openDeviationsCount?: number;
+  checklistProgress?: { completed: number; total: number; percent: number };
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
