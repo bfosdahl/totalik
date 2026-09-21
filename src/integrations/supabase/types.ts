@@ -15570,6 +15570,57 @@ export type Database = {
         }
         Relationships: []
       }
+      nextcom_order_lines: {
+        Row: {
+          created_at: string
+          id: string
+          is_bht: boolean
+          is_course: boolean
+          is_ik_module: boolean
+          line_no: number
+          line_total: number | null
+          needs_review: boolean
+          order_id: string
+          price_source: string
+          product_name: string
+          quantity: number
+          unit_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_bht?: boolean
+          is_course?: boolean
+          is_ik_module?: boolean
+          line_no: number
+          line_total?: number | null
+          needs_review?: boolean
+          order_id: string
+          price_source?: string
+          product_name: string
+          quantity?: number
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_bht?: boolean
+          is_course?: boolean
+          is_ik_module?: boolean
+          line_no?: number
+          line_total?: number | null
+          needs_review?: boolean
+          order_id?: string
+          price_source?: string
+          product_name?: string
+          quantity?: number
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nextcom_processed_orders: {
         Row: {
           company_name: string | null
@@ -15577,9 +15628,16 @@ export type Database = {
           customer_email: string | null
           error_message: string | null
           id: string
+          invoice_state: string
+          invoiced_at: string | null
+          lines_synced_at: string | null
+          nextcom_status_date: string | null
+          nextcom_status_id: number | null
+          nextcom_status_label: string | null
           order_comments: string | null
           order_date: string | null
           order_id: string
+          order_notat: string | null
           order_sum: number | null
           org_number: string | null
           processed_at: string | null
@@ -15594,9 +15652,16 @@ export type Database = {
           customer_email?: string | null
           error_message?: string | null
           id?: string
+          invoice_state?: string
+          invoiced_at?: string | null
+          lines_synced_at?: string | null
+          nextcom_status_date?: string | null
+          nextcom_status_id?: number | null
+          nextcom_status_label?: string | null
           order_comments?: string | null
           order_date?: string | null
           order_id: string
+          order_notat?: string | null
           order_sum?: number | null
           org_number?: string | null
           processed_at?: string | null
@@ -15611,9 +15676,16 @@ export type Database = {
           customer_email?: string | null
           error_message?: string | null
           id?: string
+          invoice_state?: string
+          invoiced_at?: string | null
+          lines_synced_at?: string | null
+          nextcom_status_date?: string | null
+          nextcom_status_id?: number | null
+          nextcom_status_label?: string | null
           order_comments?: string | null
           order_date?: string | null
           order_id?: string
+          order_notat?: string | null
           order_sum?: number | null
           org_number?: string | null
           processed_at?: string | null
@@ -15621,6 +15693,45 @@ export type Database = {
           result?: Json | null
           seller_user_id?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      nextcom_product_prices: {
+        Row: {
+          created_at: string
+          id: string
+          is_bht: boolean
+          last_seen_at: string
+          last_seen_order_id: string | null
+          normalized_name: string
+          product_name: string
+          sample_count: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_bht?: boolean
+          last_seen_at?: string
+          last_seen_order_id?: string | null
+          normalized_name: string
+          product_name: string
+          sample_count?: number
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_bht?: boolean
+          last_seen_at?: string
+          last_seen_order_id?: string | null
+          normalized_name?: string
+          product_name?: string
+          sample_count?: number
+          unit_price?: number
+          updated_at?: string
         }
         Relationships: []
       }

@@ -4,6 +4,17 @@ import {
   detectServiceTemplates,
   type ServiceTemplateKey,
 } from "../_shared/service-email-templates/index.ts";
+import {
+  cleanText,
+  loadPriceBook,
+  normalizeProductName,
+  parseOrderLines,
+  statusFacts,
+  syncOrderLines,
+} from "../_shared/nextcom-order-lines.ts";
+
+
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -100,22 +111,31 @@ interface NextcomOrder {
   customerPostalArea?: string | null;
   customerHouseNumber?: string | null;
   orderRef?: string | null;
+  statusMessage?: string | null;
+  statusDate?: string | null;
 }
+
+/** Prisbok for ordrelinjer – lastes én gang per kjøring. */
+let priceBook = new Map<string, number>();
 
 /** Felter fra NextCom-ordren som alltid lagres, uansett utfall. */
 function orderFacts(order: NextcomOrder) {
   const orgNumber = (order.customerOrgNoOrSsn || "").replace(/\D/g, "");
   return {
-    order_comments: (order.comments || "").trim() || null,
+    order_comments: cleanText(order.comments),
     org_number: orgNumber.length === 9 ? orgNumber : null,
-    company_name: order.customerCompany || null,
-    customer_email: (order.customerEmail || "").trim().toLowerCase() || null,
-    products: order.allProducts || null,
+    company_name: cleanText(order.customerCompany),
+    customer_email: cleanText(order.customerEmail)?.toLowerCase() ?? null,
+    products: cleanText(order.allProducts),
     order_date: order.insertedDate || order.sendDate || null,
     order_sum: typeof order.sumValue === "number" ? order.sumValue : null,
     seller_user_id: order.userId != null ? String(order.userId) : null,
+    ...statusFacts(order),
   };
 }
+
+
+
 
 
 Deno.serve(async (req) => {
@@ -158,11 +178,15 @@ Deno.serve(async (req) => {
     // Check mode
     let dryRun = false;
     let markHistorical = false;
+    let backfillLines = false;
+    let backfillPages = 10;
     let reprocessOrderIds: string[] = [];
     try {
       const body = await req.json();
       dryRun = body?.dry_run === true;
       markHistorical = body?.mark_historical === true;
+      backfillLines = body?.backfill_lines === true;
+      if (Number.isFinite(Number(body?.pages))) backfillPages = Math.min(30, Math.max(1, Number(body.pages)));
       if (Array.isArray(body?.reprocess_order_ids)) {
         reprocessOrderIds = body.reprocess_order_ids.map(String);
       }
@@ -170,7 +194,103 @@ Deno.serve(async (req) => {
       // Normal cron invocation - no body
     }
 
+    priceBook = await loadPriceBook(supabase);
+
+    // Backfill-modus: fyller ordrelinjer/status for eksisterende ordre uten å
+    // opprette bedrifter eller sende e-post. Alt skrives i bulk for å holde
+    // kjøringen innenfor ressursgrensene.
+    if (backfillLines) {
+      const all = await fetchNextcomOrders(basicAuthEncoded, null, true, backfillPages, false);
+
+      // Runde 1: lær priser fra enlinjeordre (ordresum = linjepris).
+      // Vi teller hvor ofte hver pris forekommer og bruker den vanligste –
+      // enkeltrabatterte ordre skal ikke ødelegge prisboken.
+      type Learned = { product_name: string; is_bht: boolean; order_id: string; counts: Map<number, number> };
+      const learned = new Map<string, Learned>();
+      for (const order of all) {
+        const lines = parseOrderLines(order.allProducts, order.sumValue, priceBook);
+        for (const l of lines) {
+          if ((l.price_source === "single" || l.price_source === "name") && l.unit_price !== null && l.unit_price > 0) {
+            const key = normalizeProductName(l.product_name);
+            const entry = learned.get(key) ??
+              { product_name: l.product_name, is_bht: l.is_bht, order_id: String(order.id), counts: new Map<number, number>() };
+            entry.counts.set(l.unit_price, (entry.counts.get(l.unit_price) ?? 0) + 1);
+            entry.order_id = String(order.id);
+            learned.set(key, entry);
+          }
+        }
+      }
+      const priceRows = Array.from(learned.entries()).map(([key, v]) => {
+        const [price, samples] = Array.from(v.counts.entries()).sort((a, b) => b[1] - a[1] || b[0] - a[0])[0];
+        priceBook.set(key, price);
+        return {
+          normalized_name: key,
+          product_name: v.product_name,
+          unit_price: price,
+          sample_count: samples,
+          is_bht: v.is_bht,
+          last_seen_order_id: v.order_id,
+          last_seen_at: new Date().toISOString(),
+        };
+      });
+
+      for (let i = 0; i < priceRows.length; i += 200) {
+        const { error } = await supabase
+          .from("nextcom_product_prices")
+          .upsert(priceRows.slice(i, i + 200), { onConflict: "normalized_name" });
+        if (error) console.error("[backfill] prisbok:", error.message);
+      }
+
+      // Runde 2: løs alle ordre med oppdatert prisbok
+      const lineRows: Record<string, unknown>[] = [];
+      for (const order of all) {
+        const lines = parseOrderLines(order.allProducts, order.sumValue, priceBook);
+        for (const l of lines) lineRows.push({ order_id: String(order.id), ...l });
+      }
+      for (let i = 0; i < lineRows.length; i += 500) {
+        const { error } = await supabase
+          .from("nextcom_order_lines")
+          .upsert(lineRows.slice(i, i + 500), { onConflict: "order_id,line_no" });
+        if (error) console.error("[backfill] linjer:", error.message);
+      }
+
+      // Ordrerader: behold eksisterende behandlingsstatus, legg til nye som
+      // "not_processed" slik at roboten finner kommentar/status/linjer.
+      const ids = all.map((o) => String(o.id));
+      const existing = new Map<string, string>();
+      for (let i = 0; i < ids.length; i += 300) {
+        const { data } = await supabase
+          .from("nextcom_processed_orders")
+          .select("order_id, status")
+          .in("order_id", ids.slice(i, i + 300));
+        for (const r of data || []) existing.set(String(r.order_id), r.status);
+      }
+      const orderRows = all.map((o) => ({
+        order_id: String(o.id),
+        status: existing.get(String(o.id)) ?? "not_processed",
+        ...orderFacts(o),
+      }));
+      for (let i = 0; i < orderRows.length; i += 300) {
+        const { error } = await supabase
+          .from("nextcom_processed_orders")
+          .upsert(orderRows.slice(i, i + 300), { onConflict: "order_id" });
+        if (error) console.error("[backfill] ordre:", error.message);
+      }
+
+      return respond({
+        success: true,
+        mode: "backfill_lines",
+        orders: all.length,
+        lines: lineRows.length,
+        prices_learned: priceRows.length,
+        needs_review: lineRows.filter((l) => l.needs_review).length,
+      });
+    }
+
+
+
     console.log(`[TotalIK NextCom Sync] Starting${dryRun ? ' (DRY RUN)' : ''}${reprocessOrderIds.length ? ` (REPROCESS ${reprocessOrderIds.length})` : ''}...`);
+
 
     // Step 1: Get the latest processed order timestamp to only fetch recent orders
     const { data: latestProcessed } = await supabase
@@ -539,11 +659,18 @@ async function nextcomFetch(url: string, basicAuth: string, attempts = 3): Promi
   throw new NextcomUpstreamError(last?.status ?? 0, `NextCom API error ${last?.status ?? 0}: ${last?.text ?? "unknown"}`);
 }
 
-async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | null, deepFetch = false): Promise<NextcomOrder[]> {
+async function fetchNextcomOrders(
+  basicAuth: string,
+  lastProcessedAt: string | null,
+  deepFetch = false,
+  pages?: number,
+  onlyConfirmed = true,
+): Promise<NextcomOrder[]> {
   const allOrders: NextcomOrder[] = [];
   const limit = 100;
   // Normal: last 2 pages (200 orders). Deep fetch (reprocess): last 5 pages (500 orders).
-  const maxPages = deepFetch ? 5 : 2;
+  const maxPages = pages ?? (deepFetch ? 5 : 2);
+
 
   // Get total count with a single lightweight call
   const countUrl = `${NEXTCOM_BASE_URL}/crm-system/orders?offset=0&limit=1&locale=eng`;
@@ -567,9 +694,12 @@ async function fetchNextcomOrders(basicAuth: string, lastProcessedAt: string | n
 
     if (items.length === 0) break;
 
-    // Accept statusId 2, 10, 29 as "confirmed"
-    const confirmedOrders = items.filter((o: NextcomOrder) => o.statusId === 2 || o.statusId === 10 || o.statusId === 29);
+    // Accept statusId 2, 10, 29 as "confirmed" (backfill henter alle)
+    const confirmedOrders = onlyConfirmed
+      ? items.filter((o: NextcomOrder) => o.statusId === 2 || o.statusId === 10 || o.statusId === 29)
+      : items;
     allOrders.push(...confirmedOrders);
+
 
     if (offset === 0) break;
   }
@@ -608,6 +738,11 @@ async function markOrderProcessed(
   if (error) {
     console.error(`Failed to mark order ${orderId}:`, error);
   }
+
+  // Ordrelinjer med pris per produkt (faktureringsroboten leser disse)
+  await syncOrderLines(supabase, order, priceBook);
+
+
 
   // Speil kundekommentaren på bedriften slik at den er lett synlig for admin
   if (facts.order_comments && facts.org_number) {
