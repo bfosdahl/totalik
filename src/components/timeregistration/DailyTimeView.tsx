@@ -38,6 +38,7 @@ interface DailyTimeViewProps {
   entries: TimeEntry[];
   onCreateEntry: (entry: CreateTimeEntry) => Promise<boolean>;
   onDeleteEntry: (id: string) => Promise<boolean>;
+  onEditEntry?: (id: string, updates: { hours: number; description?: string }) => Promise<boolean>;
   userId: string;
 }
 
