@@ -103,14 +103,32 @@ export function useTimeEntryPrefs() {
         descriptions[projectKey] = list;
       }
 
+      const materialCounts = { ...current.materialCounts };
+      (input.materialTypeIds ?? []).forEach((id) => {
+        if (id) materialCounts[id] = (materialCounts[id] ?? 0) + 1;
+      });
+      const allowanceCounts = { ...current.allowanceCounts };
+      (input.allowanceTypeIds ?? []).forEach((id) => {
+        if (id) allowanceCounts[id] = (allowanceCounts[id] ?? 0) + 1;
+      });
+
+      const customerName = input.customerName?.trim();
+      const customers = customerName
+        ? [customerName, ...current.customers.filter((c) => c !== customerName)].slice(0, 5)
+        : current.customers;
+
       save({
         lastProjectId: input.projectId || current.lastProjectId,
         lastCustomProjectName: input.customProjectName || current.lastCustomProjectName,
-        lastCustomerName: input.customerName || current.lastCustomerName,
+        lastCustomerName: customerName || current.lastCustomerName,
         lastStartTime: input.startTime || current.lastStartTime,
         lastEndTime: input.endTime || current.lastEndTime,
         lastHours: input.hours || current.lastHours,
+        lastHourType: input.hourType || current.lastHourType,
         projectCounts: counts,
+        materialCounts,
+        allowanceCounts,
+        customers,
         descriptions,
       });
     },
