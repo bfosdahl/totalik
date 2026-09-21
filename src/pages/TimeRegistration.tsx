@@ -307,7 +307,7 @@ export default function TimeRegistration() {
             </CardContent>
           </Card>
         ) : isCompanyAdmin ? (
-          <Tabs defaultValue="all" className="space-y-4">
+          <Tabs defaultValue={adminView ? "pending" : "all"} className="space-y-4">
             <TabsList>
               <TabsTrigger value="all">{t("auto.alle_ansatte")}</TabsTrigger>
               <TabsTrigger value="pending">Til godkjenning ({pendingCount})</TabsTrigger>
