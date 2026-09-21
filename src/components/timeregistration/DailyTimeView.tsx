@@ -411,6 +411,15 @@ export function DailyTimeView({
         onSubmit={onCreateEntry}
       />
 
+      {onEditEntry && (
+        <EditTimeEntryDialog
+          open={!!editEntry}
+          onOpenChange={(o) => !o && setEditEntry(null)}
+          entry={editEntry ? { ...editEntry, user_name: "" } : null}
+          onSave={onEditEntry}
+        />
+      )}
+
       {/* Weekly Summary Chart */}
       <WeeklySummaryChart
         entries={entries}
