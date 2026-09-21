@@ -36,6 +36,7 @@ import { useMaterialTypes, MATERIAL_UNITS, MATERIAL_UNIT_LABELS, MaterialUnit } 
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreateTimeEntry, HourType, TimeEntryAllowanceInput, TimeEntryMaterialInput } from "@/hooks/useTimeEntries";
+import { useTimeEntryPrefs } from "@/hooks/useTimeEntryPrefs";
 import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 import { t } from "@/i18n/t";
 
@@ -113,10 +114,29 @@ export function NewTimeEntryDialog({
   const { types: allowanceTypes } = useAllowanceTypes({ onlyActive: true });
   const { types: materialTypes } = useMaterialTypes({ onlyActive: true });
 
+  const { prefs, remember, sortByUsage, usageCount, suggestionsFor } = useTimeEntryPrefs();
+
   const activeProjects = useMemo(
-    () => projects.filter((p) => p.status !== "completed" && p.status !== "handover"),
-    [projects]
+    () => sortByUsage(projects.filter((p) => p.status !== "completed" && p.status !== "handover")),
+    [projects, sortByUsage]
   );
+
+  const descriptionSuggestions = useMemo(
+    () =>
+      suggestionsFor(
+        selectedProjectId && selectedProjectId !== "custom" && selectedProjectId !== "none"
+          ? selectedProjectId
+          : customProjectName
+      ),
+    [suggestionsFor, selectedProjectId, customProjectName]
+  );
+
+  const applyTimes = (from: string, to: string) => {
+    setStartTime(from);
+    setEndTime(to);
+    const diff = calcHoursBetween(from, to);
+    if (diff > 0) setHours(diff.toFixed(2));
+  };
 
   // Auto-fill customer when project changes
   useEffect(() => {
@@ -133,13 +153,22 @@ export function NewTimeEntryDialog({
   useEffect(() => {
     if (!open) return;
     setDate(new Date());
-    setStartTime("");
-    setEndTime("");
-    setHours("");
+    // Forhåndsfyll med brukerens vanlige valg (lagret lokalt)
+    setStartTime(prefs.lastStartTime || "");
+    setEndTime(prefs.lastEndTime || "");
+    setHours(
+      prefs.lastStartTime && prefs.lastEndTime
+        ? (calcHoursBetween(prefs.lastStartTime, prefs.lastEndTime) || 0).toFixed(2)
+        : ""
+    );
     setHourType("normal");
-    setSelectedProjectId(defaultProjectId || "");
-    setCustomProjectName("");
-    setCustomerName("");
+    const remembered =
+      prefs.lastProjectId && projects.some((p) => p.id === prefs.lastProjectId)
+        ? prefs.lastProjectId
+        : "";
+    setSelectedProjectId(defaultProjectId || remembered || "");
+    setCustomProjectName(defaultProjectId || remembered ? "" : prefs.lastCustomProjectName || "");
+    setCustomerName(prefs.lastCustomerName || "");
     setDescription("");
     setUseCustomProject(false);
     setAllowanceRows([]);
@@ -286,7 +315,10 @@ export function NewTimeEntryDialog({
         on_behalf_user_name: onBehalfName,
       });
 
-      if (ok) onOpenChange(false);
+      if (ok) {
+        rememberChoices();
+        onOpenChange(false);
+      }
       setIsSubmitting(false);
       return;
     }
@@ -308,8 +340,25 @@ export function NewTimeEntryDialog({
       on_behalf_user_name: onBehalfName,
     });
 
-    if (success) onOpenChange(false);
+    if (success) {
+      rememberChoices();
+      onOpenChange(false);
+    }
     setIsSubmitting(false);
+  };
+
+  const rememberChoices = () => {
+    const isKsProject =
+      !!selectedProjectId && selectedProjectId !== "custom" && selectedProjectId !== "none";
+    remember({
+      projectId: isKsProject ? selectedProjectId : undefined,
+      customProjectName: isKsProject ? undefined : customProjectName.trim() || undefined,
+      customerName: customerName.trim() || undefined,
+      startTime: startTime || undefined,
+      endTime: endTime || undefined,
+      hours: hours || undefined,
+      description: description.trim() || undefined,
+    });
   };
 
   const addMaterial = () => {
@@ -414,6 +463,9 @@ export function NewTimeEntryDialog({
                         </span>
                         {project.project_name}
                         {project.client_name ? ` — ${project.client_name}` : ""}
+                        {usageCount(project.id) > 0 && (
+                          <span className="ml-2 text-[10px] text-muted-foreground">★ ofte brukt</span>
+                        )}
                       </SelectItem>
                     ))}
                     <SelectItem value="custom">{t("auto.annet_fritekst")}</SelectItem>
@@ -506,6 +558,35 @@ export function NewTimeEntryDialog({
                 <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} locale={nb} initialFocus />
               </PopoverContent>
             </Popover>
+          </div>
+
+          {/* Hurtigvalg */}
+          <div className="flex flex-wrap gap-2">
+            {prefs.lastStartTime && prefs.lastEndTime && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => applyTimes(prefs.lastStartTime!, prefs.lastEndTime!)}
+              >
+                Vanlig dag {prefs.lastStartTime}–{prefs.lastEndTime}
+              </Button>
+            )}
+            <Button type="button" variant="outline" size="sm" onClick={() => applyTimes("07:00", "15:00")}>
+              07:00–15:00
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setHours("8");
+                setStartTime("");
+                setEndTime("");
+              }}
+            >
+              8 timer
+            </Button>
           </div>
 
           {/* Tid fra-til + total timer */}
@@ -607,6 +688,20 @@ export function NewTimeEntryDialog({
                 className="pl-10 min-h-[60px]"
               />
             </div>
+            {descriptionSuggestions.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {descriptionSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setDescription(s)}
+                    className="rounded-full border border-input px-3 py-1 text-xs hover:bg-muted"
+                  >
+                    {s.length > 40 ? `${s.slice(0, 40)}…` : s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Tillegg */}
