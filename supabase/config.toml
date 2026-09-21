@@ -133,3 +133,7 @@ verify_jwt = false
 
 [functions.submit-nybygg-lead]
 verify_jwt = false
+
+[functions.nextcom-order-api]
+verify_jwt = false
+
