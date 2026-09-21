@@ -153,13 +153,22 @@ export function NewTimeEntryDialog({
   useEffect(() => {
     if (!open) return;
     setDate(new Date());
-    setStartTime("");
-    setEndTime("");
-    setHours("");
+    // Forhåndsfyll med brukerens vanlige valg (lagret lokalt)
+    setStartTime(prefs.lastStartTime || "");
+    setEndTime(prefs.lastEndTime || "");
+    setHours(
+      prefs.lastStartTime && prefs.lastEndTime
+        ? (calcHoursBetween(prefs.lastStartTime, prefs.lastEndTime) || 0).toFixed(2)
+        : ""
+    );
     setHourType("normal");
-    setSelectedProjectId(defaultProjectId || "");
-    setCustomProjectName("");
-    setCustomerName("");
+    const remembered =
+      prefs.lastProjectId && projects.some((p) => p.id === prefs.lastProjectId)
+        ? prefs.lastProjectId
+        : "";
+    setSelectedProjectId(defaultProjectId || remembered || "");
+    setCustomProjectName(defaultProjectId || remembered ? "" : prefs.lastCustomProjectName || "");
+    setCustomerName(prefs.lastCustomerName || "");
     setDescription("");
     setUseCustomProject(false);
     setAllowanceRows([]);
