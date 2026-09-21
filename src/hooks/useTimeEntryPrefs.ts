@@ -86,7 +86,10 @@ export function useTimeEntryPrefs() {
       startTime?: string;
       endTime?: string;
       hours?: string;
+      hourType?: string;
       description?: string;
+      materialTypeIds?: string[];
+      allowanceTypeIds?: string[];
     }) => {
       const current = read(key);
       const projectKey = input.projectId || input.customProjectName || "";
