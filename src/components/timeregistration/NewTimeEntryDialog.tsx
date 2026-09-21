@@ -560,6 +560,35 @@ export function NewTimeEntryDialog({
             </Popover>
           </div>
 
+          {/* Hurtigvalg */}
+          <div className="flex flex-wrap gap-2">
+            {prefs.lastStartTime && prefs.lastEndTime && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => applyTimes(prefs.lastStartTime!, prefs.lastEndTime!)}
+              >
+                Vanlig dag {prefs.lastStartTime}–{prefs.lastEndTime}
+              </Button>
+            )}
+            <Button type="button" variant="outline" size="sm" onClick={() => applyTimes("07:00", "15:00")}>
+              07:00–15:00
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setHours("8");
+                setStartTime("");
+                setEndTime("");
+              }}
+            >
+              8 timer
+            </Button>
+          </div>
+
           {/* Tid fra-til + total timer */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
