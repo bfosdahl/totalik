@@ -22,30 +22,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify the token directly against the auth REST endpoint (works for both
-    // legacy JWTs and the new signing-key tokens, without auth-js session state)
+    // Verify the JWT cryptographically. Unlike /auth/v1/user, getClaims does
+    // not depend on a refresh-session row that another browser tab may rotate.
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-    const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${token}`, apikey: anonKey },
+    const authClient = createClient(supabaseUrl, anonKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
     });
-    if (!userRes.ok) {
-      console.error("Auth verification failed:", userRes.status, await userRes.text());
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    const requestingUserId = claimsData?.claims?.sub;
+    if (claimsError || !requestingUserId) {
+      console.error("JWT verification failed:", claimsError?.message ?? "missing sub claim");
       return new Response(
         JSON.stringify({ error: "Sesjonen er utløpt. Logg ut og inn igjen, og prøv på nytt." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const authedUser = await userRes.json();
-    if (!authedUser?.id) {
-      console.error("Auth verification returned no user");
-      return new Response(
-        JSON.stringify({ error: "Sesjonen er utløpt. Logg ut og inn igjen, og prøv på nytt." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-    const requestingUserId: string = authedUser.id;
 
     // Create Supabase client with service role key for admin operations
     const supabaseAdmin = createClient(

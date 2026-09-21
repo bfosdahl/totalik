@@ -56,6 +56,7 @@ import { useSearchParams } from "react-router-dom";
 import { applyDefaultHmsSetup } from "@/lib/applyDefaultHmsSetup";
 import { t } from "@/i18n/t";
 import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
+import { setAdminUserPassword } from "@/lib/setAdminUserPassword";
 
 type AppRole = "system_admin" | "company_admin" | "user";
 
@@ -378,24 +379,7 @@ export default function AdminUsers() {
 
   const resetPasswordMutation = useMutation({
     mutationFn: async ({ userId, newPassword, sendEmail }: { userId: string; newPassword: string; sendEmail: boolean }) => {
-      // Password administration is security-sensitive. Force a fresh access
-      // token and pass that exact token to the function. The shared Functions
-      // client can otherwise briefly retain the revoked token after rotation.
-      const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
-      const accessToken = refreshed.session?.access_token;
-      if (refreshError || !accessToken) {
-        throw new Error("Innloggingen kunne ikke fornyes. Logg ut og inn igjen.");
-      }
-
-      const { data, error } = await supabase.functions.invoke("reset-user-password", {
-        body: { userId, newPassword, sendEmail },
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (error) {
-        throw new Error(await readEdgeFunctionError(error, "Kunne ikke endre passord."));
-      }
-      if (data?.error) throw new Error(data.error);
-      return data;
+      return setAdminUserPassword({ userId, newPassword, sendEmail });
     },
     onSuccess: (data) => {
       setIsPasswordDialogOpen(false);
