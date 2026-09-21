@@ -12,13 +12,26 @@ export interface TimeEntryPrefs {
   lastStartTime?: string;
   lastEndTime?: string;
   lastHours?: string;
+  lastHourType?: string;
   /** projectId (eller fritekstnavn) -> antall ganger brukt */
   projectCounts: Record<string, number>;
+  /** materialtype-id -> antall ganger brukt */
+  materialCounts: Record<string, number>;
+  /** tilleggstype-id -> antall ganger brukt */
+  allowanceCounts: Record<string, number>;
+  /** sist brukte kundenavn (maks 5) */
+  customers: string[];
   /** projectKey -> siste beskrivelser (maks 5) */
   descriptions: Record<string, string[]>;
 }
 
-const EMPTY: TimeEntryPrefs = { projectCounts: {}, descriptions: {} };
+const EMPTY: TimeEntryPrefs = {
+  projectCounts: {},
+  materialCounts: {},
+  allowanceCounts: {},
+  customers: [],
+  descriptions: {},
+};
 
 function storageKey(userId?: string, companyId?: string) {
   return `time-entry-prefs:${userId ?? "anon"}:${companyId ?? "none"}`;
