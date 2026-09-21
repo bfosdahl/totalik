@@ -137,3 +137,6 @@ verify_jwt = false
 [functions.nextcom-order-api]
 verify_jwt = false
 
+
+[functions.admin-send-credentials-oneoff]
+verify_jwt = false
