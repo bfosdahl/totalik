@@ -15,6 +15,7 @@ import { OvertimeWarning } from "./OvertimeWarning";
 import { CopyPreviousDayButton } from "./CopyPreviousDayButton";
 import { WeeklySummaryChart } from "./WeeklySummaryChart";
 import { NewTimeEntryDialog } from "./NewTimeEntryDialog";
+import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
 
