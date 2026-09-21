@@ -688,6 +688,20 @@ export function NewTimeEntryDialog({
                 className="pl-10 min-h-[60px]"
               />
             </div>
+            {descriptionSuggestions.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {descriptionSuggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setDescription(s)}
+                    className="rounded-full border border-input px-3 py-1 text-xs hover:bg-muted"
+                  >
+                    {s.length > 40 ? `${s.slice(0, 40)}…` : s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Tillegg */}
