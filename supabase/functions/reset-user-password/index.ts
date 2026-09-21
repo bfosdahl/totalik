@@ -22,25 +22,30 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Verify the JWT by passing the incoming Authorization header to the auth client
+    // Verify the token directly against the auth REST endpoint (works for both
+    // legacy JWTs and the new signing-key tokens, without auth-js session state)
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-    const anonClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        auth: { autoRefreshToken: false, persistSession: false },
-        global: { headers: { Authorization: `Bearer ${token}` } },
-      }
-    );
-    const { data: authedUser, error: authedUserError } = await anonClient.auth.getUser();
-    if (authedUserError || !authedUser?.user) {
-      console.error("Auth verification error:", authedUserError);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: { Authorization: `Bearer ${token}`, apikey: anonKey },
+    });
+    if (!userRes.ok) {
+      console.error("Auth verification failed:", userRes.status, await userRes.text());
       return new Response(
         JSON.stringify({ error: "Sesjonen er utløpt. Logg ut og inn igjen, og prøv på nytt." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    const requestingUserId: string = authedUser.user.id;
+    const authedUser = await userRes.json();
+    if (!authedUser?.id) {
+      console.error("Auth verification returned no user");
+      return new Response(
+        JSON.stringify({ error: "Sesjonen er utløpt. Logg ut og inn igjen, og prøv på nytt." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const requestingUserId: string = authedUser.id;
 
     // Create Supabase client with service role key for admin operations
     const supabaseAdmin = createClient(
