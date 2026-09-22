@@ -29,9 +29,13 @@ export async function requireAuth(
         Deno.env.get("SUPABASE_ANON_KEY")!,
         { global: { headers: { Authorization: authHeader } } },
       );
-      const { data, error } = await supabase.auth.getUser();
-      if (!error && data?.user) {
-        return { userId: data.user.id };
+      // Verify the JWT locally (does not depend on the session row still
+      // existing, which breaks after refresh-token rotation).
+      const token = authHeader.replace("Bearer ", "");
+      const { data, error } = await supabase.auth.getClaims(token);
+      const userId = data?.claims?.sub as string | undefined;
+      if (!error && userId) {
+        return { userId };
       }
     } catch (e) {
       console.error("Auth check failed:", e);

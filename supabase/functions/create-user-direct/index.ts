@@ -43,11 +43,16 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Get the requesting user
-    const { data: { user: requestingUser }, error: userError } = await supabaseClient.auth.getUser();
-    
-    if (userError || !requestingUser) {
-      console.error("Auth verification failed:", userError?.message, "Status:", userError?.status);
+    // Verify the JWT locally (getClaims) instead of auth.getUser(), which
+    // fails with session_not_found after refresh-token rotation.
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const requestingUser = claimsData?.claims
+      ? { id: claimsData.claims.sub as string, email: claimsData.claims.email as string | undefined }
+      : null;
+
+    if (claimsError || !requestingUser?.id) {
+      console.error("Auth verification failed:", claimsError?.message);
       return new Response(JSON.stringify({ error: "Unauthorized - session may have expired. Please log in again." }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
