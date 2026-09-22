@@ -13,8 +13,8 @@ export const BRAND = {
   logo: "https://totalik.no/total-ik-logo.png",
   site: "https://totalik.no",
   supportEmail: "post@athenahms.no",
-  supportPhone: "+47 405 00 020",
-  companyLine: "Athena HMS AS &middot; Org.nr. 926 073 704",
+  supportPhone: "+47 941 49 311",
+  companyLine: "Athena Kurs og Internkontroll AS &middot; Org.nr 934606450 &middot; Gr&oslash;nland 1, 1767 Halden",
 };
 
 interface BrandedEmailOptions {
