@@ -69,6 +69,7 @@ Deno.serve(async (req) => {
 
     const html = brandedEmail({
       heading: "Velkommen til Total IK",
+      badge: "VELKOMMEN",
       subheading: "Her er innloggingen din",
       preheader: "Innlogging til Total IK",
       bodyHtml: `
