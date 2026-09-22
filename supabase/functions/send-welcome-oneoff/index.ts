@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { brandedEmail } from "../_shared/email-brand.ts";
 import { DEFAULT_PASSWORD, loginBlockHtml } from "../_shared/default-password.ts";
 
 const corsHeaders = {
@@ -44,15 +45,16 @@ Deno.serve(async (req) => {
     const companyName = (profile.companies as any)?.name || "Total-IK";
     const firstName = profile.first_name || "";
 
-    const html = `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-        <h1 style="color:#1a1a2e;text-align:center;margin:0 0 24px 0;">Innlogging til Total-IK</h1>
-        <p style="color:#333;font-size:16px;">Hei${firstName ? ` ${firstName}` : ""},</p>
-        <p style="color:#333;font-size:16px;">Her er innloggingsinformasjonen din til Total-IK for ${companyName}.</p>
+    const html = brandedEmail({
+      heading: `Innlogging til Total IK`,
+      subheading: companyName,
+      preheader: "Innloggingsinformasjonen din til Total IK",
+      bodyHtml: `
+        <p style="margin:0 0 14px 0;">Hei${firstName ? ` ${firstName}` : ""},</p>
+        <p style="margin:0 0 14px 0;">Her er innloggingsinformasjonen din til Total IK for ${companyName}.</p>
         ${loginBlockHtml(profile.email)}
-        <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
-        <p style="color:#999;font-size:12px;text-align:center;">Automatisk e-post fra Total-IK.</p>
-      </div>`;
+      `,
+    });
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
