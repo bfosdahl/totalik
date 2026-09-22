@@ -52,19 +52,28 @@ Deno.serve(async (req) => {
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
     const name = escapeHtml(profile.first_name || "bruker");
 
+    const extraHtml = typeof body?.extra_html === "string" ? body.extra_html : "";
+    const subject = typeof body?.subject === "string" && body.subject.trim()
+      ? body.subject.trim()
+      : "Innloggingsinformasjon - Total-IK";
+    const bcc = Array.isArray(body?.bcc)
+      ? ["ben@athenahms.no", ...body.bcc.filter((x: unknown) => typeof x === "string")]
+      : ["ben@athenahms.no"];
+
     const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">
       <h2>Innloggingsinformasjon til Total-IK</h2>
       <p>Hei ${name},</p>
       <p>Her er innloggingsinformasjonen din til Total-IK:</p>
       ${loginBlockHtml(email, null)}
+      ${extraHtml}
       <hr/><p style="color:#999;font-size:12px;">Total-IK &ndash; Digitalt internkontrollsystem</p>
     </div>`;
 
     const sendRes = await resend.emails.send({
       from: "Total-IK <noreply@totalik.no>",
       to: [email],
-      bcc: ["ben@athenahms.no"],
-      subject: "Innloggingsinformasjon - Total-IK",
+      bcc,
+      subject,
       html,
     });
     if (sendRes.error) {
