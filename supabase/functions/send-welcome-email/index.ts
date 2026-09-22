@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { brandedEmail } from "../_shared/email-brand.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
@@ -153,13 +154,12 @@ const handler = async (req: Request): Promise<Response> => {
       from: `Total-IK <noreply@totalik.no>`,
       to: [recipientEmail],
       subject: `Velkommen til ${companyName} - Konto opprettet`,
-      html: `<!DOCTYPE html>
-<html lang="no">
-<head><meta charset="utf-8"></head>
-<body>
+      html: brandedEmail({
+      heading: `Velkommen til Total-IK!`,
+      bodyHtml: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
+            
           </div>
           
           <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${safeFirstName}` : ''},</p>
@@ -181,13 +181,9 @@ const handler = async (req: Request): Promise<Response> => {
           
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           
-          <p style="color: #999; font-size: 12px; text-align: center;">
-            Dette er en automatisk generert e-post fra Total-IK.<br>
-            Hvis du ikke har opprettet denne kontoen, kan du ignorere denne e-posten.
-          </p>
-        </div>
-</body>
-</html>`,
+          
+        </div>`,
+    }),
     });
 
     console.log("Welcome email sent successfully:", emailResponse);
