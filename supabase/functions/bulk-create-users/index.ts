@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { brandedEmail } from "../_shared/email-brand.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
@@ -33,41 +34,19 @@ interface PendingEmail {
 }
 
 function buildWelcomeEmailHtml(displayName: string, companyName: string, email: string, resetLink: string): string {
-  const currentYear = new Date().getFullYear();
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Total-IK</h1>
-        <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">Velkommen til ditt HMS-system</p>
-      </div>
-      <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-        <h2 style="color: #1f2937; margin-top: 0;">Hei ${escapeHtml(displayName)}!</h2>
-        <p>Din brukerkonto hos <strong>${escapeHtml(companyName)}</strong> er nå opprettet i Total-IK.</p>
-        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-          <h3 style="margin-top: 0; color: #374151;">Din påloggingsinformasjon:</h3>
-          <p style="margin: 5px 0;"><strong>E-post:</strong> ${escapeHtml(email)}</p>
-          <p style="margin: 5px 0;">Klikk på knappen nedenfor for å sette ditt passord.</p>
-        </div>
-        ${loginBlockHtml(email, resetLink)}
-        ${getTermsNoticeHtml()}
-        ${getTermsHtml()}
-        <div style="background: #e8f4f8; border: 1px solid #b8daff; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
-          <p style="margin: 0; color: #004085; font-size: 14px;">
-            <strong>Ved å logge inn bekrefter du at du har lest og godtar avtalevilkårene ovenfor.</strong>
-          </p>
-        </div>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-        <p style="color: #6b7280; font-size: 14px;">Har du spørsmål? Kontakt din bedriftsadministrator eller svar på denne e-posten.</p>
-      </div>
-      <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
-        <p>© ${currentYear} Total-IK. Alle rettigheter reservert.</p>
-      </div>
-    </body>
-    </html>
-  `;
+  return brandedEmail({
+    heading: `Velkommen til Total IK`,
+    subheading: `Brukerkontoen din hos ${escapeHtml(companyName)} er klar`,
+    preheader: "Din brukerkonto i Total IK er opprettet",
+    bodyHtml: `
+      <p style="margin:0 0 14px 0;">Hei ${escapeHtml(displayName)},</p>
+      <p style="margin:0 0 14px 0;">Brukerkontoen din hos <strong>${escapeHtml(companyName)}</strong> er n&aring; opprettet i Total IK.</p>
+      ${loginBlockHtml(email, resetLink)}
+      ${getTermsNoticeHtml()}
+      ${getTermsHtml()}
+      <p style="margin:18px 0 0 0;color:#6B7280;font-size:13px;">Ved &aring; logge inn bekrefter du at du har lest og godtar avtalevilk&aring;rene ovenfor.</p>
+    `,
+  });
 }
 
 Deno.serve(async (req) => {

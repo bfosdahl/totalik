@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { DEFAULT_PASSWORD, loginBlockHtml } from "../_shared/default-password.ts";
+import { brandedEmail } from "../_shared/email-brand.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -62,14 +63,17 @@ Deno.serve(async (req) => {
       ? ["ben@athenahms.no", ...body.bcc.filter((x: unknown) => typeof x === "string")]
       : ["ben@athenahms.no"];
 
-    const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">
-      <h2>Innloggingsinformasjon til Total-IK</h2>
-      <p>Hei ${name},</p>
-      <p>Her er innloggingsinformasjonen din til Total-IK:</p>
-      ${loginBlockHtml(email, null)}
-      ${extraHtml}
-      <hr/><p style="color:#999;font-size:12px;">Total-IK &ndash; Digitalt internkontrollsystem</p>
-    </div>`;
+    const html = brandedEmail({
+      heading: "Velkommen til Total IK",
+      subheading: "Her er innloggingen din",
+      preheader: "Innlogging til Total IK",
+      bodyHtml: `
+        <p style="margin:0 0 14px 0;">Hei ${name},</p>
+        <p style="margin:0 0 14px 0;">Kontoen din i Total IK er klar. Bruk innloggingen under for &aring; komme i gang.</p>
+        ${loginBlockHtml(email, null)}
+        ${extraHtml}
+      `,
+    });
 
     const sendRes = await resend.emails.send({
       from: "Total-IK <noreply@totalik.no>",

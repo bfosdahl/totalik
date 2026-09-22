@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { brandedEmail } from "../_shared/email-brand.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { escapeHtml } from "../_shared/html-escape.ts";
@@ -121,12 +122,16 @@ serve(async (req) => {
     if (resendApiKey) {
       try {
         const resend = new Resend(resendApiKey);
-        const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-          <h2>Velkommen til Total-IK, ${escapeHtml(firstName)}!</h2>
-          <p>Din konto for <strong>${escapeHtml(companyName)}</strong> er opprettet, og vi har importert HMS-h&aring;ndboken din fra det gamle systemet.</p>
-          ${loginBlockHtml(cleanEmail, action)}
-          <hr/><p style="color:#999;font-size:12px;">Total-IK – Digitalt internkontrollsystem</p>
-        </div>`;
+        const html = brandedEmail({
+          heading: `Velkommen til Total IK`,
+          subheading: escapeHtml(companyName),
+          preheader: "Kontoen din i Total IK er opprettet",
+          bodyHtml: `
+            <p style="margin:0 0 14px 0;">Hei ${escapeHtml(firstName)},</p>
+            <p style="margin:0 0 14px 0;">Kontoen din for <strong>${escapeHtml(companyName)}</strong> er opprettet, og vi har importert HMS-h&aring;ndboken din fra det gamle systemet.</p>
+            ${loginBlockHtml(cleanEmail, action)}
+          `,
+        });
 
         const r = await resend.emails.send({
           from: "Total-IK <noreply@totalik.no>",

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { brandedEmail } from "../_shared/email-brand.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
@@ -169,22 +170,18 @@ serve(async (req) => {
             from: "Total-IK <noreply@totalik.no>",
             to: [email],
             subject: `Du er administrator for ${company.name}`,
-            html: `
-              <!DOCTYPE html>
-              <html><head><meta charset="utf-8"></head>
-              <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                  <h1 style="color: white; margin: 0;">Velkommen som administrator!</h1>
-                </div>
+            html: brandedEmail({
+      heading: `Velkommen som administrator!`,
+      bodyHtml: `
+                
                 <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
                   <p>Hei ${safeUserName},</p>
                   <p>Du har blitt lagt til som <strong>administrator</strong> for <strong>${safeCompanyName}</strong> i Total-IK.</p>
                   ${loginBlockHtml(email, resetData.properties.action_link)}
                   <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
-                  <p style="color: #888; font-size: 12px; text-align: center;">Denne e-posten ble sendt fra Total-IK.</p>
-                </div>
-              </body></html>
-            `,
+                  
+                </div>`,
+    }),
           });
           existingEmailSent = !emailResponse.error;
           if (emailResponse.error) console.error("Existing user email failed:", emailResponse.error);
@@ -293,17 +290,10 @@ serve(async (req) => {
           from: "Total-IK <noreply@totalik.no>",
           to: [email],
           subject: `Du er administrator for ${companyName}`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                <h1 style="color: white; margin: 0; font-size: 24px;">Velkommen som administrator!</h1>
-              </div>
+          html: brandedEmail({
+      heading: `Velkommen som administrator!`,
+      bodyHtml: `
+              
               
               <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 10px 10px;">
                 <p style="font-size: 16px;">Hei ${safeUserName},</p>
@@ -339,14 +329,9 @@ serve(async (req) => {
                 
                 <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
                 
-                <p style="color: #888; font-size: 12px; text-align: center;">
-                  Denne e-posten ble sendt fra Total-IK.<br>
-                  Hvis du ikke forventet denne invitasjonen, kan du trygt ignorere denne e-posten.
-                </p>
-              </div>
-            </body>
-            </html>
-          `,
+                
+              </div>`,
+    }),
         });
 
         if (emailResponse.error) {

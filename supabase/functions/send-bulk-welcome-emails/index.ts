@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { brandedEmail } from "../_shared/email-brand.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { loginBlockHtml } from "../_shared/default-password.ts";
 
@@ -158,28 +159,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
               from: `Total-IK <noreply@totalik.no>`,
               to: [profile.email],
               subject: `Velkommen til ${companyName} - Din brukerkonto`,
-              html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                  <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #1a1a2e; margin: 0;">Velkommen til Total-IK!</h1>
-                  </div>
-
-                  <p style="color: #333; font-size: 16px;">Hei${firstName ? ` ${esc(firstName)}` : ''},</p>
-
-                  <p style="color: #333; font-size: 16px;">
-                    Du har en brukerkonto hos ${esc(companyName)} i Total-IK systemet.
-                  </p>
-
+              html: brandedEmail({
+                heading: `Velkommen til Total IK`,
+                subheading: esc(companyName),
+                preheader: "Din brukerkonto i Total IK",
+                bodyHtml: `
+                  <p style="margin:0 0 14px 0;">Hei${firstName ? ` ${esc(firstName)}` : ''},</p>
+                  <p style="margin:0 0 14px 0;">Du har en brukerkonto hos ${esc(companyName)} i Total IK.</p>
                   ${loginBlockHtml(profile.email, resetLink)}
-
-                  <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-
-                  <p style="color: #999; font-size: 12px; text-align: center;">
-                    Dette er en automatisk generert e-post fra Total-IK.<br>
-                    Hvis du har spørsmål, kontakt din administrator.
-                  </p>
-                </div>
-              `,
+                `,
+              }),
             });
           } catch (e: any) {
             console.error(`Error preparing email payload for ${profile.email}:`, e);
