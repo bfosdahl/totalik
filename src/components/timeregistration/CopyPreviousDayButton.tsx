@@ -173,7 +173,6 @@ export function CopyPreviousWeekButton({
       return;
     }
     setIsCopying(true);
-    const copiedDates = new Set<string>();
     let successCount = 0;
     for (const entry of lastWeekEntries) {
       const src = new Date(entry.entry_date);
