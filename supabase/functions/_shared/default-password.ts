@@ -16,12 +16,15 @@ function esc(s: unknown): string {
 
 export function defaultPasswordHtml(email: string): string {
   return `
-    <div style="background:#f4f7fb;border:1px solid #d0d7e2;border-radius:8px;padding:20px;margin:24px 0;text-align:left;">
-      <p style="margin:0 0 8px 0;"><strong>Innloggingsadresse:</strong> <a href="${LOGIN_URL}" style="color:#0066cc;">${LOGIN_URL}</a></p>
-      <p style="margin:0 0 8px 0;"><strong>E-post:</strong> ${esc(email)}</p>
-      <p style="margin:0;"><strong>Passord:</strong> <code style="background:#fff;padding:4px 8px;border-radius:4px;border:1px solid #d0d7e2;">${DEFAULT_PASSWORD}</code></p>
-      <p style="margin:12px 0 0 0;color:#b8500a;font-size:13px;">Bytt passord etter f&oslash;rste innlogging (Innstillinger &rarr; Passord).</p>
-    </div>`;
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F8FB;border:1px solid #E4E8EF;border-left:4px solid #1A4DA0;border-radius:10px;margin:22px 0;">
+      <tr><td style="padding:20px 22px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1F2937;font-size:15px;line-height:1.7;">
+        <p style="margin:0 0 10px 0;font-weight:700;color:#101828;">Din innlogging</p>
+        <p style="margin:0 0 6px 0;"><span style="color:#6B7280;">Nettadresse:</span> <a href="${LOGIN_URL}" style="color:#1A4DA0;text-decoration:none;">${LOGIN_URL}</a></p>
+        <p style="margin:0 0 6px 0;"><span style="color:#6B7280;">Brukernavn:</span> <strong>${esc(email)}</strong></p>
+        <p style="margin:0;"><span style="color:#6B7280;">Passord:</span> <code style="background:#ffffff;padding:4px 10px;border-radius:6px;border:1px solid #E4E8EF;font-size:15px;">${DEFAULT_PASSWORD}</code></p>
+        <p style="margin:12px 0 0 0;color:#6B7280;font-size:13px;">Vi anbefaler at du bytter passord etter f&oslash;rste innlogging (Innstillinger &rarr; Passord).</p>
+      </td></tr>
+    </table>`;
 }
 
 /**
@@ -31,10 +34,9 @@ export function defaultPasswordHtml(email: string): string {
 export function loginBlockHtml(email: string, recoveryLink?: string | null): string {
   return `
     ${defaultPasswordHtml(email)}
-    <div style="text-align:center;margin:24px 0;">
-      <a href="${LOGIN_URL}" style="background:linear-gradient(135deg,#0066cc 0%,#0052a3 100%);color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;font-size:16px;">Logg inn p&aring; Total-IK</a>
-    </div>
-    <p style="color:#444;font-size:14px;text-align:center;margin:0 0 8px 0;">Fungerer ikke knappen? Kopier og lim inn denne adressen i nettleseren:</p>
-    <p style="text-align:center;font-size:15px;word-break:break-all;margin:0 0 20px 0;"><a href="${LOGIN_URL}" style="color:#0066cc;">${LOGIN_URL}</a></p>
-    ${recoveryLink ? `<p style="color:#666;font-size:13px;text-align:center;margin:0 0 20px 0;">Vil du heller sette ditt eget passord med en gang? <a href="${recoveryLink}" style="color:#0066cc;">Klikk her</a> (lenken utl&oslash;per om 24 timer).</p>` : ``}`;
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px auto;"><tr><td style="background:#1A4DA0;border-radius:8px;">
+      <a href="${LOGIN_URL}" style="display:inline-block;padding:14px 30px;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">Logg inn p&aring; Total IK</a>
+    </td></tr></table>
+    <p style="color:#6B7280;font-size:13px;text-align:center;margin:0 0 18px 0;">Fungerer ikke knappen? Kopier denne adressen inn i nettleseren:<br><a href="${LOGIN_URL}" style="color:#1A4DA0;word-break:break-all;">${LOGIN_URL}</a></p>
+    ${recoveryLink ? `<p style="color:#6B7280;font-size:13px;text-align:center;margin:0 0 18px 0;">Vil du heller sette ditt eget passord med en gang? <a href="${recoveryLink}" style="color:#1A4DA0;">Klikk her</a> (lenken utl&oslash;per om 24 timer).</p>` : ``}`;
 }
