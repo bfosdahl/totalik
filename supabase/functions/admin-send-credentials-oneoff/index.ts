@@ -38,19 +38,23 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    const previewOnly = body?.preview === true;
+
     const { data: profile } = await admin
       .from("profiles")
       .select("user_id, first_name")
       .ilike("email", email)
       .maybeSingle();
 
-    if (!profile?.user_id) return json({ error: "user not found" }, 404);
+    if (!previewOnly) {
+      if (!profile?.user_id) return json({ error: "user not found" }, 404);
 
-    const { error: updErr } = await admin.auth.admin.updateUserById(profile.user_id, {
-      password,
-      email_confirm: true,
-    });
-    if (updErr) throw updErr;
+      const { error: updErr } = await admin.auth.admin.updateUserById(profile.user_id, {
+        password,
+        email_confirm: true,
+      });
+      if (updErr) throw updErr;
+    }
 
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
     const name = escapeHtml(profile.first_name || "bruker");
@@ -70,7 +74,7 @@ Deno.serve(async (req) => {
       bodyHtml: `
         <p style="margin:0 0 14px 0;">Hei ${name},</p>
         <p style="margin:0 0 14px 0;">Kontoen din i Total IK er klar. Bruk innloggingen under for &aring; komme i gang.</p>
-        ${loginBlockHtml(email, null)}
+        ${previewOnly ? "" : loginBlockHtml(email, null)}
         ${extraHtml}
       `,
     });
