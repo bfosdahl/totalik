@@ -179,9 +179,6 @@ export function CopyPreviousWeekButton({
       const src = new Date(entry.entry_date);
       const offset = Math.round((src.getTime() - lastWeekStart.getTime()) / 86400000);
       const target = addDays(thisWeekStart, offset);
-      const targetKey = format(target, "yyyy-MM-dd");
-      if (filledDates.has(targetKey) && !copiedDates.has(targetKey)) continue;
-      copiedDates.add(targetKey);
       const ok = await onCopy({
         entry_date: format(target, "yyyy-MM-dd"),
         hours: entry.hours,
