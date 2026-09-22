@@ -145,24 +145,43 @@ export function CopyPreviousWeekButton({
   const thisWeekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const lastWeekStart = subDays(thisWeekStart, 7);
 
+  // Datoer i inneværende uke som allerede har timer for denne brukeren
+  const filledDates = new Set(
+    entries
+      .filter((e) => e.user_id === userId)
+      .map((e) => format(new Date(e.entry_date), "yyyy-MM-dd"))
+  );
+
+  const todayKey = format(currentDate, "yyyy-MM-dd");
+
   const lastWeekEntries = entries.filter((e) => {
     if (e.user_id !== userId) return false;
     if (e.source === "qr_clock" || e.source === "work_schedule") return false;
     const d = new Date(e.entry_date);
-    return d >= lastWeekStart && d < thisWeekStart;
+    if (!(d >= lastWeekStart && d < thisWeekStart)) return false;
+    const offset = Math.round((d.getTime() - lastWeekStart.getTime()) / 86400000);
+    const targetKey = format(addDays(thisWeekStart, offset), "yyyy-MM-dd");
+    // Hopp over dager fram i tid og dager som allerede har timer
+    if (targetKey > todayKey) return false;
+    if (filledDates.has(targetKey)) return false;
+    return true;
   });
 
   const handleCopyWeek = async () => {
     if (lastWeekEntries.length === 0) {
-      toast.error("Ingen timer å kopiere fra forrige uke");
+      toast.error("Ingen nye timer å kopiere fra forrige uke");
       return;
     }
     setIsCopying(true);
+    const copiedDates = new Set<string>();
     let successCount = 0;
     for (const entry of lastWeekEntries) {
       const src = new Date(entry.entry_date);
       const offset = Math.round((src.getTime() - lastWeekStart.getTime()) / 86400000);
       const target = addDays(thisWeekStart, offset);
+      const targetKey = format(target, "yyyy-MM-dd");
+      if (filledDates.has(targetKey) && !copiedDates.has(targetKey)) continue;
+      copiedDates.add(targetKey);
       const ok = await onCopy({
         entry_date: format(target, "yyyy-MM-dd"),
         hours: entry.hours,
