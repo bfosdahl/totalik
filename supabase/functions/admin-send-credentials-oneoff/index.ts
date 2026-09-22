@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       bodyHtml: `
         <p style="margin:0 0 14px 0;">Hei ${name},</p>
         <p style="margin:0 0 14px 0;">Kontoen din i Total IK er klar. Bruk innloggingen under for &aring; komme i gang.</p>
-        ${previewOnly ? "" : loginBlockHtml(email, null)}
+        ${previewOnly ? (typeof body?.demo_email === "string" ? loginBlockHtml(body.demo_email, null) : "") : loginBlockHtml(email, null)}
         ${extraHtml}
       `,
     });
