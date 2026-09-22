@@ -34,9 +34,9 @@ export function defaultPasswordHtml(email: string): string {
 export function loginBlockHtml(email: string, recoveryLink?: string | null): string {
   return `
     ${defaultPasswordHtml(email)}
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px auto;"><tr><td style="background:#1A4DA0;border-radius:8px;">
-      <a href="${LOGIN_URL}" style="display:inline-block;padding:14px 30px;color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">Logg inn p&aring; Total IK</a>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px auto;"><tr><td style="background:#7C3AED;border-radius:999px;">
+      <a href="${LOGIN_URL}" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">Logg inn p&aring; Total IK</a>
     </td></tr></table>
-    <p style="color:#6B7280;font-size:13px;text-align:center;margin:0 0 18px 0;">Fungerer ikke knappen? Kopier denne adressen inn i nettleseren:<br><a href="${LOGIN_URL}" style="color:#1A4DA0;word-break:break-all;">${LOGIN_URL}</a></p>
-    ${recoveryLink ? `<p style="color:#6B7280;font-size:13px;text-align:center;margin:0 0 18px 0;">Vil du heller sette ditt eget passord med en gang? <a href="${recoveryLink}" style="color:#1A4DA0;">Klikk her</a> (lenken utl&oslash;per om 24 timer).</p>` : ``}`;
+    <p style="color:#6B6580;font-size:13px;text-align:center;margin:0 0 18px 0;">Fungerer ikke knappen? Kopier denne adressen inn i nettleseren:<br><a href="${LOGIN_URL}" style="color:#7C3AED;word-break:break-all;">${LOGIN_URL}</a></p>
+    ${recoveryLink ? `<p style="color:#6B6580;font-size:13px;text-align:center;margin:0 0 18px 0;">Vil du heller sette ditt eget passord med en gang? <a href="${recoveryLink}" style="color:#7C3AED;">Klikk her</a> (lenken utl&oslash;per om 24 timer).</p>` : ``}`;
 }
