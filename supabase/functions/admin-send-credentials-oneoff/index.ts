@@ -20,7 +20,9 @@ Deno.serve(async (req) => {
   try {
     const secret = req.headers.get("x-cron-secret");
     const expected = Deno.env.get("ADMIN_ACTIONS_SECRET");
-    if (!expected || secret !== expected) return json({ error: "unauthorized" }, 401);
+    const alt = Deno.env.get("ONEOFF_MTV_SECRET");
+    const ok = (expected && secret === expected) || (alt && secret === alt);
+    if (!ok) return json({ error: "unauthorized" }, 401);
 
     const body = await req.json().catch(() => null);
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
