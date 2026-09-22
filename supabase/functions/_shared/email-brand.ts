@@ -14,7 +14,7 @@ export const BRAND = {
   logo: "https://totalik.no/total-ik-logo.png",
   site: "https://totalik.no",
   supportEmail: "post@athenahms.no",
-  supportPhone: "+47 941 49 311",
+  supportPhone: "tlf: 941 49 311 (Viktor &Oslash;rnelund) &nbsp;415 23 090 (Ben Fosdahl) &nbsp;484 04 274 (Gard Fosdahl)",
   companyLine: "Athena Kurs og Internkontroll AS &middot; Org.nr 934606450 &middot; Gr&oslash;nland 1, 1767 Halden",
 };
 
