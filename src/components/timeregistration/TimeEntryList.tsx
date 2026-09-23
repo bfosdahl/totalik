@@ -155,8 +155,7 @@ export function TimeEntryList({
                         </TooltipContent>
                       </Tooltip>
                     )}
-                    {entry.source === "qr_clock" &&
-                      (entry.geofence_status_in === "outside" || entry.geofence_status_out === "outside") && (
+                    {(entry.geofence_status_in === "outside" || entry.geofence_status_out === "outside") && (
                         <Tooltip>
                           <TooltipTrigger>
                             <MapPin className="h-4 w-4 text-amber-600" />
