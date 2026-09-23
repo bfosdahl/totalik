@@ -22,6 +22,19 @@ const TRADES = [
   "Blikkenslager", "Maler", "Gulvlegger", "Ventilasjon", "Generelt",
 ];
 
+const LANGUAGES = [
+  { value: "auto", label: "Automatisk (samme språk som jeg skriver)" },
+  { value: "norsk (bokmål)", label: "Norsk" },
+  { value: "English", label: "Engelsk" },
+  { value: "polski", label: "Polsk" },
+  { value: "lietuvių", label: "Litauisk" },
+  { value: "latviešu", label: "Latvisk" },
+  { value: "svenska", label: "Svensk" },
+  { value: "українська", label: "Ukrainsk" },
+  { value: "română", label: "Rumensk" },
+  { value: "Deutsch", label: "Tysk" },
+];
+
 interface AiChecklistDialogProps {
   trigger?: React.ReactNode;
   /** Called after a successful save so parent lists can refetch */
@@ -40,6 +53,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
   const [trade, setTrade] = useState("");
   const [detaljer, setDetaljer] = useState("");
   const [rutineRef, setRutineRef] = useState("");
+  const [language, setLanguage] = useState("auto");
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<any>(null);
 
@@ -58,6 +72,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
           trade: trade || undefined,
           detaljer: detaljer || undefined,
           rutine_referanse: rutineRef || undefined,
+          language,
         },
       });
       if (error) throw error;
@@ -130,6 +145,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
     setTrade("");
     setDetaljer("");
     setRutineRef("");
+    setLanguage("auto");
   };
 
   const handleRemoveCheckpoint = (index: number) => {
@@ -270,6 +286,23 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div>
+                  <Label>Språk på sjekklisten</Label>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map((l) => (
+                        <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Automatisk: sjekklisten lages på samme språk som du skriver i.
+                  </p>
                 </div>
 
                 <div>

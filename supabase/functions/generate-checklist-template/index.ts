@@ -36,10 +36,10 @@ serve(async (req) => {
       });
     }
 
-    const { tema, kategori, trade, detaljer, rutine_referanse } = await req.json();
+    const { tema, kategori, trade, detaljer, rutine_referanse, language } = await req.json();
 
     // Input length validation to prevent prompt-injection / large responses
-    const tooLong = [tema, kategori, trade, detaljer, rutine_referanse]
+    const tooLong = [tema, kategori, trade, detaljer, rutine_referanse, language]
       .filter(Boolean)
       .some((v: any) => typeof v === "string" && v.length > 2000);
     if (tooLong) {
@@ -80,7 +80,13 @@ Svar BARE med gyldig JSON (ingen markdown, ingen forklaring) med denne strukture
   "related_standards": ["Relevante standarder og forskrifter, f.eks. NS 3420, TEK17, SAK10"]
 }
 
-Lag 8-15 sjekkpunkter som er praktiske, konkrete og relevante for norsk byggebransje. Hvert sjekkpunkt skal ha tydelig hjelpetekst. Skriv på norsk (bokmål).`;
+Lag 8-15 sjekkpunkter som er praktiske, konkrete og relevante for norsk byggebransje. Hvert sjekkpunkt skal ha tydelig hjelpetekst.
+
+SPRÅK (viktigst av alt): ${
+      typeof language === "string" && language.trim() && language.trim().toLowerCase() !== "auto"
+        ? `Skriv ALT innhold (template_name, description, category, trade, checkpoint_text, help_text, related_standards) på ${language.trim()}.`
+        : `Oppdag språket brukeren har skrevet i (tema/tilleggsdetaljer) og skriv ALT innhold (template_name, description, category, trade, checkpoint_text, help_text, related_standards) på NØYAKTIG det samme språket. Hvis språket er uklart, bruk norsk (bokmål).`
+    } JSON-nøklene skal alltid være uendret på engelsk. Behold navn på norske standarder og forskrifter (NS 3420, TEK17, SAK10) uoversatt, men forklar dem på valgt språk.`;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
