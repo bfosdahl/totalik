@@ -152,6 +152,7 @@ const miniProjectTopItems = [
 ];
 
 const miniProjectItems = [
+  { id: "prosjektinfo", label: t("auto.prosjektinfo"), icon: Info, path: "/prosjektinfo", guestAllowed: false },
   { id: "sjekklister", label: t("auto.sjekklister"), icon: ClipboardCheck, path: "/sjekklister", guestAllowed: true },
   { id: "avvik", label: t("auto.avvik"), icon: AlertTriangle, path: "/avvik", guestAllowed: true },
   { id: "dokumentasjon", label: t("auto.dokumenter"), icon: FolderOpen, path: "/dokumentasjon", guestAllowed: true },
