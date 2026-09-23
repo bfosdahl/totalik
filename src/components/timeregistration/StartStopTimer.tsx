@@ -137,17 +137,41 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
 
   if (!isRunning) {
     return (
-      <Button 
-        onClick={handleStart} 
-        disabled={isDisabled}
-        size="lg"
-        className="w-full h-14 text-lg gap-3"
-      >
-        <Play className="h-6 w-6" />
-        Start arbeidstid
-      </Button>
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-2 text-sm">
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              Velg prosjekt
+            </Label>
+            <Select value={projectId} onValueChange={setProjectId} disabled={isDisabled}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Velg prosjekt (valgfritt)" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value={NO_PROJECT}>Uten prosjekt</SelectItem>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.project_number ? `${p.project_number} - ` : ""}{p.project_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={handleStart}
+            disabled={isDisabled}
+            size="lg"
+            className="w-full h-14 text-lg gap-3"
+          >
+            <Play className="h-6 w-6" />
+            Start arbeidstid
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
+
 
   return (
     <Card className={cn(
