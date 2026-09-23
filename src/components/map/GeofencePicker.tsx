@@ -22,7 +22,7 @@ interface GeofencePickerProps {
   onChange: (value: { lat: number; lng: number; radiusM: number }) => void;
 }
 
-const RADIUS_OPTIONS = [50, 100, 250, 500];
+const RADIUS_OPTIONS = [25, 50, 100, 250, 500];
 const DEFAULT_CENTER: [number, number] = [59.9139, 10.7522]; // Oslo
 
 export function GeofencePicker({ lat, lng, radiusM, address, onChange }: GeofencePickerProps) {
