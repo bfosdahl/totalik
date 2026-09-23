@@ -61,6 +61,12 @@ export interface TimeEntry {
   clock_out?: string | null;
   total_break_minutes?: number | null;
   work_schedule_id?: string | null;
+  // Geofence-info for stemplede timer
+  geofence_status_in?: string | null;
+  geofence_status_out?: string | null;
+  geofence_distance_in_m?: number | null;
+  geofence_distance_out_m?: number | null;
+  geofence_reason?: string | null;
   admin_edit_reason?: string | null;
   admin_edited_by?: string | null;
   admin_edited_at?: string | null;
