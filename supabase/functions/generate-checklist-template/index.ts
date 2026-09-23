@@ -36,10 +36,10 @@ serve(async (req) => {
       });
     }
 
-    const { tema, kategori, trade, detaljer, rutine_referanse } = await req.json();
+    const { tema, kategori, trade, detaljer, rutine_referanse, language } = await req.json();
 
     // Input length validation to prevent prompt-injection / large responses
-    const tooLong = [tema, kategori, trade, detaljer, rutine_referanse]
+    const tooLong = [tema, kategori, trade, detaljer, rutine_referanse, language]
       .filter(Boolean)
       .some((v: any) => typeof v === "string" && v.length > 2000);
     if (tooLong) {
