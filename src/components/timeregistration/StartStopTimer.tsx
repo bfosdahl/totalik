@@ -14,9 +14,18 @@ import { useProjectOptions } from "@/hooks/useProjectOptions";
 const NO_PROJECT = "__none__";
 const LAST_PROJECT_KEY = "timer:lastProjectId";
 
+export interface GeoStamp {
+  lat: number | null;
+  lng: number | null;
+  status: GeofenceStatus | null;
+  distanceM: number | null;
+}
+
 export interface TimerResult {
   ksProjectId: string | null;
   projectName: string | null;
+  startGeo?: GeoStamp | null;
+  endGeo?: GeoStamp | null;
 }
 
 interface StartStopTimerProps {
