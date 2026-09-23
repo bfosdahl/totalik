@@ -8,6 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { useProjectOptions } from "@/hooks/useProjectOptions";
+import { useKsModule2Settings } from "@/hooks/useKsModule2Settings";
+import { checkGeofence, getCurrentPosition, GeofenceStatus, GeoPoint } from "@/lib/geo";
+import { PositionMap } from "@/components/map/PositionMap";
+import { toast } from "sonner";
 import { useTimeClock } from "@/hooks/useTimeClock";
 import { t } from "@/i18n/t";
 
@@ -21,6 +33,81 @@ export default function TimeClock() {
   const [qrCodeId, setQrCodeId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [processing, setProcessing] = useState(false);
+  const { data: projectOptions = [] } = useProjectOptions();
+  const { settings } = useKsModule2Settings();
+  const allowOutside = (settings as any)?.geofence_allow_outside !== false;
+  const [projectId, setProjectId] = useState<string>("none");
+  const [pending, setPending] = useState<{
+    type: "in" | "out";
+    point: GeoPoint | null;
+    status: GeofenceStatus;
+    distanceM: number | null;
+  } | null>(null);
+  const [reason, setReason] = useState("");
+
+  const selectedProject = projectOptions.find((p) => p.id === projectId);
+  const fence =
+    selectedProject?.geofence_enabled && selectedProject.geofence_lat != null && selectedProject.geofence_lng != null
+      ? {
+          lat: selectedProject.geofence_lat as number,
+          lng: selectedProject.geofence_lng as number,
+          radiusM: selectedProject.geofence_radius_m || 150,
+        }
+      : null;
+
+  const performClock = async (
+    type: "in" | "out",
+    point: GeoPoint | null,
+    status: GeofenceStatus,
+    distanceM: number | null,
+    reasonText: string | null
+  ) => {
+    const geo = {
+      project_id: projectId === "none" ? null : projectId,
+      lat: point?.lat ?? null,
+      lng: point?.lng ?? null,
+      status,
+      distanceM,
+      reason: reasonText,
+    };
+    setProcessing(true);
+    if (type === "in") {
+      await clockIn(qrCodeId || undefined, geo);
+    } else {
+      const ok = await clockOut(notes || undefined, geo);
+      if (ok) setNotes("");
+    }
+    setProcessing(false);
+  };
+
+  const runClock = async (type: "in" | "out") => {
+    if (!fence) {
+      let point: GeoPoint | null = null;
+      if (projectId !== "none") {
+        try { point = await getCurrentPosition(); } catch { /* uten posisjon */ }
+      }
+      await performClock(type, point, point ? "unknown" : "unknown", null, null);
+      return;
+    }
+
+    setProcessing(true);
+    let point: GeoPoint | null = null;
+    try {
+      point = await getCurrentPosition();
+    } catch (err: any) {
+      toast.warning(err.message || "Fant ikke posisjon");
+    }
+    const result = checkGeofence(point, { lat: fence.lat, lng: fence.lng }, fence.radiusM);
+    setProcessing(false);
+
+    if (result.status === "inside") {
+      toast.success("Du er innenfor prosjektområdet.");
+      await performClock(type, point, result.status, result.distanceM, null);
+      return;
+    }
+    setReason("");
+    setPending({ type, point, status: result.status, distanceM: result.distanceM });
+  };
 
   const code = searchParams.get("kode");
 
@@ -47,20 +134,9 @@ export default function TimeClock() {
     }
   }, [user, authLoading, code, navigate]);
 
-  const handleClockIn = async () => {
-    setProcessing(true);
-    await clockIn(qrCodeId || undefined);
-    setProcessing(false);
-  };
+  const handleClockIn = () => runClock("in");
 
-  const handleClockOut = async () => {
-    setProcessing(true);
-    const result = await clockOut(notes || undefined);
-    if (result) {
-      setNotes("");
-    }
-    setProcessing(false);
-  };
+  const handleClockOut = () => runClock("out");
 
   const handleStartBreak = async () => {
     setProcessing(true);
@@ -116,6 +192,30 @@ export default function TimeClock() {
               {format(new Date(), "EEEE d. MMMM yyyy", { locale: nb })}
             </p>
           </div>
+
+          {/* Prosjekt og geogjerde */}
+          {projectOptions.length > 0 && (
+            <div className="space-y-2">
+              <Label>Prosjekt (valgfritt)</Label>
+              <Select value={projectId} onValueChange={setProjectId}>
+                <SelectTrigger><SelectValue placeholder="Velg prosjekt" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Ingen prosjekt</SelectItem>
+                  {projectOptions.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.project_number ? `${p.project_number} – ` : ""}{p.project_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fence && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Badge variant="outline">Geogjerde {fence.radiusM} m</Badge>
+                  Posisjonen din sjekkes når du stempler inn og ut.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Current status */}
           {activeEntry ? (
@@ -224,6 +324,54 @@ export default function TimeClock() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {pending?.status === "outside" ? "Du er utenfor prosjektområdet" : "Posisjon kunne ikke registreres"}
+            </DialogTitle>
+            <DialogDescription>
+              {pending?.status === "outside"
+                ? `Du er ${pending?.distanceM} meter fra prosjektområdet. ${
+                    allowOutside
+                      ? "Vil du likevel registrere arbeidstiden? Skriv en kort begrunnelse."
+                      : "Bedriften tillater ikke registrering utenfor området."
+                  }`
+                : "Vi fikk ikke tak i posisjonen din. Stemplingen blir merket som uten posisjon."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {pending?.point && fence && (
+            <PositionMap
+              position={{ lat: pending.point.lat, lng: pending.point.lng }}
+              fence={fence}
+              height={200}
+            />
+          )}
+
+          {(pending?.status === "outside" ? allowOutside : true) && (
+            <div className="space-y-2">
+              <Label htmlFor="tc-reason">Begrunnelse {pending?.status === "outside" ? "*" : "(valgfritt)"}</Label>
+              <Textarea id="tc-reason" value={reason} onChange={(e) => setReason(e.target.value)} rows={2} />
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPending(null)}>Avbryt</Button>
+            <Button
+              disabled={processing || (pending?.status === "outside" && (!allowOutside || !reason.trim()))}
+              onClick={async () => {
+                if (!pending) return;
+                await performClock(pending.type, pending.point, pending.status, pending.distanceM, reason || null);
+                setPending(null);
+              }}
+            >
+              {pending?.type === "in" ? "Stemple inn likevel" : "Stemple ut likevel"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

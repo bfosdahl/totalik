@@ -3024,6 +3024,7 @@ export type Database = {
           company_id: string
           created_at: string
           created_by: string | null
+          current_odometer: number | null
           default_for_user_id: string | null
           deleted_at: string | null
           deleted_by: string | null
@@ -3042,6 +3043,7 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by?: string | null
+          current_odometer?: number | null
           default_for_user_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -3060,6 +3062,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by?: string | null
+          current_odometer?: number | null
           default_for_user_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
@@ -3701,16 +3704,28 @@ export type Database = {
           company_id: string
           created_at: string
           distance_km: number | null
+          duration_minutes: number | null
+          end_lat: number | null
+          end_lng: number | null
           end_location: string | null
+          ended_at: string | null
+          gps_distance_km: number | null
+          gps_lost: boolean
           id: string
           notes: string | null
           odometer_end: number | null
           odometer_start: number
           passenger_count: number | null
           passengers: string | null
+          project_id: string | null
           purpose: string | null
+          start_lat: number | null
+          start_lng: number | null
           start_location: string
+          started_at: string | null
           status: string
+          stops: Json
+          tracking_mode: string
           trip_date: string
           trip_type: string
           updated_at: string
@@ -3725,16 +3740,28 @@ export type Database = {
           company_id: string
           created_at?: string
           distance_km?: number | null
+          duration_minutes?: number | null
+          end_lat?: number | null
+          end_lng?: number | null
           end_location?: string | null
+          ended_at?: string | null
+          gps_distance_km?: number | null
+          gps_lost?: boolean
           id?: string
           notes?: string | null
           odometer_end?: number | null
           odometer_start: number
           passenger_count?: number | null
           passengers?: string | null
+          project_id?: string | null
           purpose?: string | null
+          start_lat?: number | null
+          start_lng?: number | null
           start_location: string
+          started_at?: string | null
           status?: string
+          stops?: Json
+          tracking_mode?: string
           trip_date?: string
           trip_type?: string
           updated_at?: string
@@ -3749,16 +3776,28 @@ export type Database = {
           company_id?: string
           created_at?: string
           distance_km?: number | null
+          duration_minutes?: number | null
+          end_lat?: number | null
+          end_lng?: number | null
           end_location?: string | null
+          ended_at?: string | null
+          gps_distance_km?: number | null
+          gps_lost?: boolean
           id?: string
           notes?: string | null
           odometer_end?: number | null
           odometer_start?: number
           passenger_count?: number | null
           passengers?: string | null
+          project_id?: string | null
           purpose?: string | null
+          start_lat?: number | null
+          start_lng?: number | null
           start_location?: string
+          started_at?: string | null
           status?: string
+          stops?: Json
+          tracking_mode?: string
           trip_date?: string
           trip_type?: string
           updated_at?: string
@@ -3841,6 +3880,53 @@ export type Database = {
           {
             foreignKeyName: "driving_log_expenses_trip_id_fkey"
             columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "driving_log_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driving_log_track_points: {
+        Row: {
+          accuracy: number | null
+          company_id: string
+          created_at: string
+          entry_id: string
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+          speed: number | null
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          company_id: string
+          created_at?: string
+          entry_id: string
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+          speed?: number | null
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          company_id?: string
+          created_at?: string
+          entry_id?: string
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          speed?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driving_log_track_points_entry_id_fkey"
+            columns: ["entry_id"]
             isOneToOne: false
             referencedRelation: "driving_log_entries"
             referencedColumns: ["id"]
@@ -11721,6 +11807,10 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           description: string | null
+          geofence_enabled: boolean
+          geofence_lat: number | null
+          geofence_lng: number | null
+          geofence_radius_m: number
           gnr_bnr: string | null
           id: string
           is_deleted: boolean
@@ -11760,6 +11850,10 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
+          geofence_enabled?: boolean
+          geofence_lat?: number | null
+          geofence_lng?: number | null
+          geofence_radius_m?: number
           gnr_bnr?: string | null
           id?: string
           is_deleted?: boolean
@@ -11799,6 +11893,10 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           description?: string | null
+          geofence_enabled?: boolean
+          geofence_lat?: number | null
+          geofence_lng?: number | null
+          geofence_radius_m?: number
           gnr_bnr?: string | null
           id?: string
           is_deleted?: boolean
@@ -12040,6 +12138,7 @@ export type Database = {
           created_at: string
           default_deadline_days: number | null
           email_notifications_enabled: boolean | null
+          geofence_allow_outside: boolean
           id: string
           logo_url: string | null
           updated_at: string
@@ -12051,6 +12150,7 @@ export type Database = {
           created_at?: string
           default_deadline_days?: number | null
           email_notifications_enabled?: boolean | null
+          geofence_allow_outside?: boolean
           id?: string
           logo_url?: string | null
           updated_at?: string
@@ -12062,6 +12162,7 @@ export type Database = {
           created_at?: string
           default_deadline_days?: number | null
           email_notifications_enabled?: boolean | null
+          geofence_allow_outside?: boolean
           id?: string
           logo_url?: string | null
           updated_at?: string
@@ -17093,12 +17194,21 @@ export type Database = {
           break_paid: boolean | null
           break_start: string | null
           clock_in: string
+          clock_in_lat: number | null
+          clock_in_lng: number | null
           clock_out: string | null
+          clock_out_lat: number | null
+          clock_out_lng: number | null
           company_id: string
           created_at: string
           edit_reason: string | null
           edited_at: string | null
           edited_by: string | null
+          geofence_distance_in_m: number | null
+          geofence_distance_out_m: number | null
+          geofence_reason: string | null
+          geofence_status_in: string | null
+          geofence_status_out: string | null
           guest_employer: string | null
           guest_name: string | null
           guest_national_id: string | null
@@ -17107,6 +17217,7 @@ export type Database = {
           id: string
           is_guest_worker: boolean
           notes: string | null
+          project_id: string | null
           qr_code_id: string | null
           status: string
           total_break_minutes: number | null
@@ -17123,12 +17234,21 @@ export type Database = {
           break_paid?: boolean | null
           break_start?: string | null
           clock_in?: string
+          clock_in_lat?: number | null
+          clock_in_lng?: number | null
           clock_out?: string | null
+          clock_out_lat?: number | null
+          clock_out_lng?: number | null
           company_id: string
           created_at?: string
           edit_reason?: string | null
           edited_at?: string | null
           edited_by?: string | null
+          geofence_distance_in_m?: number | null
+          geofence_distance_out_m?: number | null
+          geofence_reason?: string | null
+          geofence_status_in?: string | null
+          geofence_status_out?: string | null
           guest_employer?: string | null
           guest_name?: string | null
           guest_national_id?: string | null
@@ -17137,6 +17257,7 @@ export type Database = {
           id?: string
           is_guest_worker?: boolean
           notes?: string | null
+          project_id?: string | null
           qr_code_id?: string | null
           status?: string
           total_break_minutes?: number | null
@@ -17153,12 +17274,21 @@ export type Database = {
           break_paid?: boolean | null
           break_start?: string | null
           clock_in?: string
+          clock_in_lat?: number | null
+          clock_in_lng?: number | null
           clock_out?: string | null
+          clock_out_lat?: number | null
+          clock_out_lng?: number | null
           company_id?: string
           created_at?: string
           edit_reason?: string | null
           edited_at?: string | null
           edited_by?: string | null
+          geofence_distance_in_m?: number | null
+          geofence_distance_out_m?: number | null
+          geofence_reason?: string | null
+          geofence_status_in?: string | null
+          geofence_status_out?: string | null
           guest_employer?: string | null
           guest_name?: string | null
           guest_national_id?: string | null
@@ -17167,6 +17297,7 @@ export type Database = {
           id?: string
           is_guest_worker?: boolean
           notes?: string | null
+          project_id?: string | null
           qr_code_id?: string | null
           status?: string
           total_break_minutes?: number | null
@@ -17247,6 +17378,10 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           approved_by_name: string | null
+          clock_in_lat: number | null
+          clock_in_lng: number | null
+          clock_out_lat: number | null
+          clock_out_lng: number | null
           company_id: string
           created_at: string
           customer_name: string | null
@@ -17254,6 +17389,11 @@ export type Database = {
           description: string | null
           end_time: string | null
           entry_date: string
+          geofence_distance_in_m: number | null
+          geofence_distance_out_m: number | null
+          geofence_reason: string | null
+          geofence_status_in: string | null
+          geofence_status_out: string | null
           hour_type: string
           hours: number
           id: string
@@ -17281,6 +17421,10 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           approved_by_name?: string | null
+          clock_in_lat?: number | null
+          clock_in_lng?: number | null
+          clock_out_lat?: number | null
+          clock_out_lng?: number | null
           company_id: string
           created_at?: string
           customer_name?: string | null
@@ -17288,6 +17432,11 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           entry_date: string
+          geofence_distance_in_m?: number | null
+          geofence_distance_out_m?: number | null
+          geofence_reason?: string | null
+          geofence_status_in?: string | null
+          geofence_status_out?: string | null
           hour_type?: string
           hours: number
           id?: string
@@ -17315,6 +17464,10 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           approved_by_name?: string | null
+          clock_in_lat?: number | null
+          clock_in_lng?: number | null
+          clock_out_lat?: number | null
+          clock_out_lng?: number | null
           company_id?: string
           created_at?: string
           customer_name?: string | null
@@ -17322,6 +17475,11 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           entry_date?: string
+          geofence_distance_in_m?: number | null
+          geofence_distance_out_m?: number | null
+          geofence_reason?: string | null
+          geofence_status_in?: string | null
+          geofence_status_out?: string | null
           hour_type?: string
           hours?: number
           id?: string

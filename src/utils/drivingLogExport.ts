@@ -105,3 +105,69 @@ export function exportDrivingLogToExcel(
 
   XLSX.writeFile(wb, filename);
 }
+
+/**
+ * Eksporterer en allerede filtrert liste (ansatt, kjøretøy, prosjekt, periode, turtype)
+ * med kolonner for ansatt, prosjekt, varighet og om turen ble registrert med GPS.
+ */
+export function exportFilteredDrivingLog(
+  entries: DrivingLogEntry[],
+  options: {
+    title?: string;
+    userNames?: Record<string, string>;
+    projectNames?: Record<string, string>;
+  } = {}
+) {
+  const rows = entries
+    .slice()
+    .sort((a, b) => new Date(a.trip_date).getTime() - new Date(b.trip_date).getTime())
+    .map((entry) => ({
+      Dato: format(new Date(entry.trip_date), "dd.MM.yyyy", { locale: nb }),
+      Ansatt: options.userNames?.[entry.user_id] || "-",
+      Prosjekt: (entry.project_id && options.projectNames?.[entry.project_id]) || "-",
+      Formål: entry.purpose || "-",
+      Turtype: tripTypeLabels[entry.trip_type] || entry.trip_type,
+      Startsted: entry.start_location,
+      Sluttsted: entry.end_location || "-",
+      "Km.stand start": entry.odometer_start,
+      "Km.stand slutt": entry.odometer_end ?? "-",
+      "Kjørt (km)": entry.distance_km,
+      "Varighet (min)": entry.duration_minutes ?? "-",
+      Kjøretøy: vehicleTypeLabels[entry.vehicle_type] || entry.vehicle_type,
+      Regnr: entry.vehicle_registration || "-",
+      Registrering: entry.tracking_mode === "gps" ? "GPS" : "Manuell",
+      "GPS-signal borte": entry.gps_lost ? "Ja" : "Nei",
+      Merknader: entry.notes || "-",
+    }));
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws["!cols"] = [
+    { wch: 12 }, { wch: 22 }, { wch: 24 }, { wch: 28 }, { wch: 14 },
+    { wch: 22 }, { wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 11 },
+    { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 13 }, { wch: 16 }, { wch: 28 },
+  ];
+  XLSX.utils.book_append_sheet(wb, ws, "Kjørebok");
+
+  const totalKm = entries.reduce((sum, e) => sum + Number(e.distance_km || 0), 0);
+  const summary = [
+    { Nøkkeltall: "Antall turer", Verdi: entries.length },
+    { Nøkkeltall: "Totalt km", Verdi: Number(totalKm.toFixed(1)) },
+    {
+      Nøkkeltall: "Yrkeskjøring km",
+      Verdi: Number(
+        entries.filter((e) => e.trip_type === "business").reduce((s, e) => s + Number(e.distance_km || 0), 0).toFixed(1)
+      ),
+    },
+    {
+      Nøkkeltall: "Privatkjøring km",
+      Verdi: Number(
+        entries.filter((e) => e.trip_type === "private").reduce((s, e) => s + Number(e.distance_km || 0), 0).toFixed(1)
+      ),
+    },
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), "Oppsummering");
+
+  const title = (options.title || "Kjorebok_rapport").replace(/\s+/g, "_");
+  XLSX.writeFile(wb, `${title}.xlsx`);
+}

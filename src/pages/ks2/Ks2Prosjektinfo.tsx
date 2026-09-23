@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import GeofencePicker from "@/components/map/GeofencePicker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,6 +59,12 @@ export default function Ks2Prosjektinfo() {
     partner_org_number: "",
     partner_logo_url: "",
   });
+  const [geofence, setGeofence] = useState<{
+    enabled: boolean;
+    lat: number | null;
+    lng: number | null;
+    radiusM: number;
+  }>({ enabled: false, lat: null, lng: null, radiusM: 150 });
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   useEffect(() => {
@@ -97,6 +105,12 @@ export default function Ks2Prosjektinfo() {
           partner_name: (p as any).partner_name || "",
           partner_org_number: (p as any).partner_org_number || "",
           partner_logo_url: (p as any).partner_logo_url || "",
+        });
+        setGeofence({
+          enabled: !!(p as any).geofence_enabled,
+          lat: (p as any).geofence_lat ?? null,
+          lng: (p as any).geofence_lng ?? null,
+          radiusM: (p as any).geofence_radius_m ?? 150,
         });
       } catch (error) {
         console.error("Error fetching project:", error);
@@ -150,6 +164,10 @@ export default function Ks2Prosjektinfo() {
           partner_name: formData.partner_name || null,
           partner_org_number: formData.partner_org_number || null,
           partner_logo_url: formData.partner_logo_url || null,
+          geofence_enabled: geofence.enabled,
+          geofence_lat: geofence.lat,
+          geofence_lng: geofence.lng,
+          geofence_radius_m: geofence.radiusM,
         } as any)
         .eq("id", projectId);
 
@@ -289,6 +307,38 @@ export default function Ks2Prosjektinfo() {
                 </SelectContent>
               </Select>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Geofence */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Geogjerde (arbeidsområde)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
+              <div>
+                <Label htmlFor="geofence-enabled">Skal dette prosjektet bruke geofence?</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Når ansatte starter eller stopper arbeidstid på prosjektet, kontrolleres det om de er
+                  innenfor området. Posisjon registreres kun ved inn- og utstempling.
+                </p>
+              </div>
+              <Switch
+                id="geofence-enabled"
+                checked={geofence.enabled}
+                onCheckedChange={(v) => setGeofence((prev) => ({ ...prev, enabled: v }))}
+              />
+            </div>
+            {geofence.enabled && (
+              <GeofencePicker
+                lat={geofence.lat}
+                lng={geofence.lng}
+                radiusM={geofence.radiusM}
+                address={formData.address}
+                onChange={({ lat, lng, radiusM }) => setGeofence((prev) => ({ ...prev, lat, lng, radiusM }))}
+              />
+            )}
           </CardContent>
         </Card>
 

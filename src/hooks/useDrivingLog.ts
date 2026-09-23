@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { GeoPoint } from "@/lib/geo";
 
 export interface DrivingLogEntry {
   id: string;
@@ -25,6 +26,19 @@ export interface DrivingLogEntry {
   status: string;
   created_at: string;
   updated_at: string;
+  // GPS
+  project_id: string | null;
+  tracking_mode: string;
+  start_lat: number | null;
+  start_lng: number | null;
+  end_lat: number | null;
+  end_lng: number | null;
+  gps_distance_km: number | null;
+  duration_minutes: number | null;
+  stops: any;
+  gps_lost: boolean;
+  started_at: string | null;
+  ended_at: string | null;
 }
 
 export interface StartTripInput {
@@ -37,6 +51,11 @@ export interface StartTripInput {
   trip_type: string;
   purpose?: string;
   notes?: string;
+  project_id?: string | null;
+  tracking_mode?: string;
+  start_lat?: number | null;
+  start_lng?: number | null;
+  started_at?: string | null;
 }
 
 export interface CompleteTripInput {
@@ -48,6 +67,16 @@ export interface CompleteTripInput {
   passenger_count?: number;
   passengers?: string;
   notes?: string;
+  project_id?: string | null;
+  end_lat?: number | null;
+  end_lng?: number | null;
+  gps_distance_km?: number | null;
+  duration_minutes?: number | null;
+  stops?: any;
+  gps_lost?: boolean;
+  ended_at?: string | null;
+  /** Rutepunkter som skal lagres sammen med turen */
+  trackPoints?: GeoPoint[];
 }
 
 export interface CreateDrivingLogInput {
@@ -65,7 +94,11 @@ export interface CreateDrivingLogInput {
   passenger_count?: number;
   passengers?: string;
   notes?: string;
+  project_id?: string | null;
 }
+
+const ENTRY_COLUMNS =
+  "id, user_id, company_id, trip_date, purpose, start_location, end_location, via_locations, odometer_start, odometer_end, distance_km, vehicle_type, vehicle_registration, vehicle_description, trip_type, passenger_count, passengers, notes, status, created_at, updated_at, project_id, tracking_mode, start_lat, start_lng, end_lat, end_lng, gps_distance_km, duration_minutes, stops, gps_lost, started_at, ended_at";
 
 export function useDrivingLog() {
   const { profile } = useAuth();
@@ -76,20 +109,40 @@ export function useDrivingLog() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("driving_log_entries")
-        .select(
-          "id, user_id, company_id, trip_date, purpose, start_location, end_location, via_locations, odometer_start, odometer_end, distance_km, vehicle_type, vehicle_registration, vehicle_description, trip_type, passenger_count, passengers, notes, status, created_at, updated_at"
-        )
+        .select(ENTRY_COLUMNS)
         .order("trip_date", { ascending: false })
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as DrivingLogEntry[];
+      return data as unknown as DrivingLogEntry[];
     },
     enabled: !!profile?.id,
   });
 
   // Active trip (status = 'active')
   const activeTrip = entries.data?.find(e => e.status === "active") ?? null;
+
+  /** Legger kjørelengden til kjøretøyets kilometerstand */
+  const bumpVehicleOdometer = async (registration: string | null | undefined, odometerEnd: number) => {
+    if (!registration || !profile?.company_id || !odometerEnd) return;
+    try {
+      const { data } = await supabase
+        .from("company_vehicles" as any)
+        .select("id, current_odometer")
+        .eq("company_id", profile.company_id)
+        .eq("license_plate", registration)
+        .maybeSingle();
+      const vehicle = data as any;
+      if (!vehicle) return;
+      if (vehicle.current_odometer != null && Number(vehicle.current_odometer) >= odometerEnd) return;
+      await supabase
+        .from("company_vehicles" as any)
+        .update({ current_odometer: odometerEnd })
+        .eq("id", vehicle.id);
+    } catch (e) {
+      console.error("Kunne ikke oppdatere kilometerstand", e);
+    }
+  };
 
   const startTrip = useMutation({
     mutationFn: async (input: StartTripInput) => {
@@ -104,13 +157,14 @@ export function useDrivingLog() {
           user_id: profile.id,
           company_id: profile.company_id,
           status: "active",
+          started_at: input.started_at || new Date().toISOString(),
           ...input,
-        })
+        } as any)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return data as unknown as DrivingLogEntry;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["driving-log"] });
@@ -122,22 +176,45 @@ export function useDrivingLog() {
   });
 
   const completeTrip = useMutation({
-    mutationFn: async ({ id, ...input }: CompleteTripInput) => {
+    mutationFn: async ({ id, trackPoints, ...input }: CompleteTripInput) => {
       const { data, error } = await supabase
         .from("driving_log_entries")
         .update({
           ...input,
+          ended_at: input.ended_at || new Date().toISOString(),
           status: "completed",
-        })
+        } as any)
         .eq("id", id)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+
+      if (trackPoints && trackPoints.length > 0 && profile?.id && profile?.company_id) {
+        const rows = trackPoints.map((p) => ({
+          entry_id: id,
+          company_id: profile.company_id,
+          user_id: profile.id,
+          lat: p.lat,
+          lng: p.lng,
+          accuracy: p.accuracy ?? null,
+          speed: p.speed ?? null,
+          recorded_at: p.recorded_at || new Date().toISOString(),
+        }));
+        const { error: pointError } = await supabase
+          .from("driving_log_track_points" as any)
+          .insert(rows as any);
+        if (pointError) console.error("Kunne ikke lagre rutepunkter", pointError);
+      }
+
+      const entry = data as unknown as DrivingLogEntry;
+      await bumpVehicleOdometer(entry.vehicle_registration, Number(input.odometer_end));
+
+      return entry;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["driving-log"] });
+      queryClient.invalidateQueries({ queryKey: ["company-vehicles"] });
       toast.success("Tur fullført og registrert i kjøreboken!");
     },
     onError: (error) => {
@@ -156,15 +233,17 @@ export function useDrivingLog() {
           company_id: profile.company_id,
           status: "completed",
           ...input,
-        })
+        } as any)
         .select()
         .single();
 
       if (error) throw error;
+      await bumpVehicleOdometer(input.vehicle_registration, Number(input.odometer_end));
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["driving-log"] });
+      queryClient.invalidateQueries({ queryKey: ["company-vehicles"] });
       toast.success("Tur registrert i kjøreboken");
     },
     onError: (error) => {
@@ -176,7 +255,7 @@ export function useDrivingLog() {
     mutationFn: async ({ id, ...input }: Partial<CreateDrivingLogInput> & { id: string }) => {
       const { data, error } = await supabase
         .from("driving_log_entries")
-        .update(input)
+        .update(input as any)
         .eq("id", id)
         .select()
         .single();

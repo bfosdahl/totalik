@@ -11,6 +11,8 @@ interface KsModule2Settings {
   weekly_report_enabled: boolean;
   logo_url: string | null;
   accent_color: string;
+  /** Om ansatte kan stemple inn/ut utenfor prosjektets geofence */
+  geofence_allow_outside: boolean;
   created_at: string;
   updated_at: string;
 }
