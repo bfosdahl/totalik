@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Play, Square, Pause, Briefcase } from "lucide-react";
+import { Play, Square, Pause, Briefcase, MapPin, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { checkGeofence, getCurrentPosition, GeofenceStatus, GeoPoint } from "@/lib/geo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
