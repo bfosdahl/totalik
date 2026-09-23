@@ -111,8 +111,12 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
     
     // Only register if at least 1 minute
     if (hours >= 1/60) {
-      onComplete(Math.round(hours * 4) / 4); // Round to nearest 0.25 hour
+      onComplete(Math.round(hours * 4) / 4, {
+        ksProjectId: projectId === NO_PROJECT ? null : projectId,
+        projectName: selectedProject?.project_name ?? null,
+      }); // Round to nearest 0.25 hour
     }
+
     
     // Reset state
     setIsRunning(false);
