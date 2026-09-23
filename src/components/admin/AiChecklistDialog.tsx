@@ -53,6 +53,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
   const [trade, setTrade] = useState("");
   const [detaljer, setDetaljer] = useState("");
   const [rutineRef, setRutineRef] = useState("");
+  const [language, setLanguage] = useState("auto");
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<any>(null);
 
@@ -71,6 +72,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
           trade: trade || undefined,
           detaljer: detaljer || undefined,
           rutine_referanse: rutineRef || undefined,
+          language,
         },
       });
       if (error) throw error;
@@ -143,6 +145,7 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
     setTrade("");
     setDetaljer("");
     setRutineRef("");
+    setLanguage("auto");
   };
 
   const handleRemoveCheckpoint = (index: number) => {
