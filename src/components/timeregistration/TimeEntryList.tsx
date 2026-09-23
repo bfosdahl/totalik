@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil, Package } from "lucide-react";
+import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil, PencilLine, Package } from "lucide-react";
 import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
 import { getHourBreakdown } from "@/utils/hourBreakdown";
 
