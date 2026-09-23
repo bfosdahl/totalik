@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Circle, useMapEvents, useMap } from "react-leaflet";
+import { useEffect, useRef, useState } from "react";
 import L, { OSM_ATTRIBUTION, OSM_TILE_URL } from "./LeafletBase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,30 +25,78 @@ interface GeofencePickerProps {
 const RADIUS_OPTIONS = [50, 100, 250, 500];
 const DEFAULT_CENTER: [number, number] = [59.9139, 10.7522]; // Oslo
 
-function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }) {
-  useMapEvents({
-    click: (e) => onPick(e.latlng.lat, e.latlng.lng),
-  });
-  return null;
-}
-
-function Recenter({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom() < 14 ? 15 : map.getZoom());
-  }, [center[0], center[1]]); // eslint-disable-line react-hooks/exhaustive-deps
-  return null;
-}
-
 export function GeofencePicker({ lat, lng, radiusM, address, onChange }: GeofencePickerProps) {
   const [search, setSearch] = useState(address || "");
   const [searching, setSearching] = useState(false);
-  const markerRef = useRef<L.Marker | null>(null);
 
-  const center: [number, number] = useMemo(
-    () => (lat != null && lng != null ? [lat, lng] : DEFAULT_CENTER),
-    [lat, lng]
-  );
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+  const circleRef = useRef<L.Circle | null>(null);
+  const onChangeRef = useRef(onChange);
+  const radiusRef = useRef(radiusM);
+  onChangeRef.current = onChange;
+  radiusRef.current = radiusM;
+
+  // Initier kart én gang
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+    const map = L.map(containerRef.current).setView(
+      lat != null && lng != null ? [lat, lng] : DEFAULT_CENTER,
+      15
+    );
+    L.tileLayer(OSM_TILE_URL, { attribution: OSM_ATTRIBUTION }).addTo(map);
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      onChangeRef.current({ lat: e.latlng.lat, lng: e.latlng.lng, radiusM: radiusRef.current });
+    });
+    mapRef.current = map;
+    setTimeout(() => map.invalidateSize(), 150);
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+      circleRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Oppdater markør, sirkel og senter
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (lat == null || lng == null) {
+      markerRef.current?.remove();
+      circleRef.current?.remove();
+      markerRef.current = null;
+      circleRef.current = null;
+      return;
+    }
+
+    if (!markerRef.current) {
+      const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+      marker.on("dragend", () => {
+        const pos = marker.getLatLng();
+        onChangeRef.current({ lat: pos.lat, lng: pos.lng, radiusM: radiusRef.current });
+      });
+      markerRef.current = marker;
+    } else {
+      markerRef.current.setLatLng([lat, lng]);
+    }
+
+    if (!circleRef.current) {
+      circleRef.current = L.circle([lat, lng], {
+        radius: radiusM,
+        color: "#2563eb",
+        fillOpacity: 0.12,
+      }).addTo(map);
+    } else {
+      circleRef.current.setLatLng([lat, lng]);
+      circleRef.current.setRadius(radiusM);
+    }
+
+    map.setView([lat, lng], map.getZoom() < 14 ? 15 : map.getZoom());
+    setTimeout(() => map.invalidateSize(), 100);
+  }, [lat, lng, radiusM]);
 
   const doSearch = async () => {
     if (!search.trim()) return;
@@ -68,7 +115,7 @@ export function GeofencePicker({ lat, lng, radiusM, address, onChange }: Geofenc
     if (lat == null && lng == null && address) {
       (async () => {
         const result = await geocodeAddress(address);
-        if (result) onChange({ lat: result.lat, lng: result.lng, radiusM });
+        if (result) onChangeRef.current({ lat: result.lat, lng: result.lng, radiusM: radiusRef.current });
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,29 +170,7 @@ export function GeofencePicker({ lat, lng, radiusM, address, onChange }: Geofenc
       </div>
 
       <div className="h-72 w-full overflow-hidden rounded-lg border">
-        <MapContainer center={center} zoom={15} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
-          <TileLayer url={OSM_TILE_URL} attribution={OSM_ATTRIBUTION} />
-          <Recenter center={center} />
-          <ClickHandler onPick={(la, ln) => onChange({ lat: la, lng: ln, radiusM })} />
-          {lat != null && lng != null && (
-            <>
-              <Marker
-                position={[lat, lng]}
-                draggable
-                ref={markerRef as any}
-                eventHandlers={{
-                  dragend: () => {
-                    const m = markerRef.current;
-                    if (!m) return;
-                    const pos = m.getLatLng();
-                    onChange({ lat: pos.lat, lng: pos.lng, radiusM });
-                  },
-                }}
-              />
-              <Circle center={[lat, lng]} radius={radiusM} pathOptions={{ color: "#2563eb", fillOpacity: 0.12 }} />
-            </>
-          )}
-        </MapContainer>
+        <div ref={containerRef} style={{ height: "100%", width: "100%" }} />
       </div>
 
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
