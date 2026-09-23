@@ -28,8 +28,27 @@ export interface TimeClockEntry {
   break_start: string | null;
   break_end: string | null;
   total_break_minutes: number | null;
+  project_id?: string | null;
+  clock_in_lat?: number | null;
+  clock_in_lng?: number | null;
+  clock_out_lat?: number | null;
+  clock_out_lng?: number | null;
+  geofence_status_in?: "inside" | "outside" | "unknown" | null;
+  geofence_status_out?: "inside" | "outside" | "unknown" | null;
+  geofence_distance_in_m?: number | null;
+  geofence_distance_out_m?: number | null;
+  geofence_reason?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface GeofenceClockInfo {
+  project_id?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  status?: "inside" | "outside" | "unknown" | null;
+  distanceM?: number | null;
+  reason?: string | null;
 }
 
 export function useTimeClock() {
@@ -127,7 +146,7 @@ export function useTimeClock() {
     }
   };
 
-  const clockIn = async (qrCodeId?: string): Promise<boolean> => {
+  const clockIn = async (qrCodeId?: string, geo?: GeofenceClockInfo): Promise<boolean> => {
     if (!user || !profile?.company_id) {
       toast.error("Du må være logget inn");
       return false;
@@ -146,7 +165,13 @@ export function useTimeClock() {
         qr_code_id: qrCodeId || null,
         clock_in: new Date().toISOString(),
         status: "active",
-      });
+        project_id: geo?.project_id ?? null,
+        clock_in_lat: geo?.lat ?? null,
+        clock_in_lng: geo?.lng ?? null,
+        geofence_status_in: geo?.status ?? null,
+        geofence_distance_in_m: geo?.distanceM ?? null,
+        geofence_reason: geo?.reason ?? null,
+      } as any);
 
       if (error) throw error;
       toast.success("✅ Stemplet inn!");
@@ -159,7 +184,7 @@ export function useTimeClock() {
     }
   };
 
-  const clockOut = async (notes?: string): Promise<boolean> => {
+  const clockOut = async (notes?: string, geo?: GeofenceClockInfo): Promise<boolean> => {
     if (!activeEntry) {
       toast.error("Du er ikke stemplet inn");
       return false;
@@ -177,8 +202,13 @@ export function useTimeClock() {
           hours_worked: Math.round(hoursWorked * 100) / 100,
           notes: notes || null,
           status: "completed",
+          clock_out_lat: geo?.lat ?? null,
+          clock_out_lng: geo?.lng ?? null,
+          geofence_status_out: geo?.status ?? null,
+          geofence_distance_out_m: geo?.distanceM ?? null,
+          geofence_reason: geo?.reason ?? activeEntry.geofence_reason ?? null,
           updated_at: new Date().toISOString(),
-        })
+        } as any)
         .eq("id", activeEntry.id);
 
       if (error) throw error;

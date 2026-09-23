@@ -24,6 +24,8 @@ import { WeeklyTimeView } from "@/components/timeregistration/WeeklyTimeView";
 import { Ks2NewTimeEntryDialog } from "@/components/ks2/Ks2NewTimeEntryDialog";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 import { TimeReportDialog } from "@/components/timeregistration/TimeReportDialog";
+import { ProjectClockCard } from "@/components/timeregistration/ProjectClockCard";
+import ProjectPresenceList from "@/components/ks2/ProjectPresenceList";
 import { t } from "@/i18n/t";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "payroll-21" | "custom" | "all";
@@ -194,6 +196,32 @@ export default function Ks2Timeregistrering() {
           </Button>
         </div>
       </div>
+
+      {/* Start/stopp arbeidstid med posisjonskontroll */}
+      {projectId && (
+        <ProjectClockCard
+          projectId={projectId}
+          projectName={projectName}
+          geofence={{
+            enabled: !!(project as any)?.geofence_enabled,
+            lat: (project as any)?.geofence_lat ?? null,
+            lng: (project as any)?.geofence_lng ?? null,
+            radiusM: (project as any)?.geofence_radius_m ?? 150,
+          }}
+        />
+      )}
+
+      {isCompanyAdmin && projectId && (
+        <ProjectPresenceList
+          projectId={projectId}
+          geofence={{
+            enabled: !!(project as any)?.geofence_enabled,
+            lat: (project as any)?.geofence_lat ?? null,
+            lng: (project as any)?.geofence_lng ?? null,
+            radiusM: (project as any)?.geofence_radius_m ?? 150,
+          }}
+        />
+      )}
 
       {/* View mode toggle and filter */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">

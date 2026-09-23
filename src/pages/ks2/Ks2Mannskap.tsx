@@ -47,6 +47,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import ProjectPresenceList from "@/components/ks2/ProjectPresenceList";
+import { useKsModule2Projects } from "@/hooks/useKsModule2Projects";
 import {
   HardHat,
   Plus,
@@ -100,6 +102,8 @@ const ROLE_OPTIONS = [
 
 export default function Ks2Mannskap() {
   const { projectId } = useParams<{ projectId: string }>();
+  const { projects } = useKsModule2Projects();
+  const currentProject: any = projects.find((p) => p.id === projectId);
   const { profile, isCompanyAdmin } = useAuth();
   const { users: companyUsers, isLoading: usersLoading, getUserDisplayName } = useCompanyUsers();
 
@@ -392,6 +396,19 @@ export default function Ks2Mannskap() {
           </Button>
         )}
       </div>
+
+      {/* Elektronisk mannskapsliste med geofence-status */}
+      {projectId && (
+        <ProjectPresenceList
+          projectId={projectId}
+          geofence={{
+            enabled: !!currentProject?.geofence_enabled,
+            lat: currentProject?.geofence_lat ?? null,
+            lng: currentProject?.geofence_lng ?? null,
+            radiusM: currentProject?.geofence_radius_m ?? 150,
+          }}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

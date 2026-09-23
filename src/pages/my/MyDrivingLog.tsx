@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { exportDrivingLogToExcel } from "@/utils/drivingLogExport";
+import { exportDrivingLogToExcel, exportFilteredDrivingLog } from "@/utils/drivingLogExport";
+import { useGpsTracker } from "@/hooks/useGpsTracker";
+import { useProjectOptions } from "@/hooks/useProjectOptions";
+import { useCompanyVehicles } from "@/hooks/useCompanyVehicles";
+import { useCompanyUsers } from "@/hooks/useCompanyUsers";
+import type { GpsTripSummary } from "@/components/driving-log/CompleteTripDialog";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +32,7 @@ import { StartTripDialog } from "@/components/driving-log/StartTripDialog";
 import { CompleteTripDialog } from "@/components/driving-log/CompleteTripDialog";
 import { ActiveTripCard } from "@/components/driving-log/ActiveTripCard";
 import { TripExpenses } from "@/components/driving-log/TripExpenses";
+import TripRouteMap from "@/components/driving-log/TripRouteMap";
 import { EditTripDialog } from "@/components/driving-log/EditTripDialog";
 import { ImportDrivingLogDialog } from "@/components/driving-log/ImportDrivingLogDialog";
 import { CreateTravelExpenseDialog } from "@/components/driving-log/CreateTravelExpenseDialog";
@@ -74,6 +80,22 @@ export default function MyDrivingLog() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [vehicleFilter, setVehicleFilter] = useState("all");
+  const [projectFilter, setProjectFilter] = useState("all");
+  const [employeeFilter, setEmployeeFilter] = useState("all");
+  const [gpsSummary, setGpsSummary] = useState<GpsTripSummary | null>(null);
+
+  const gps = useGpsTracker();
+  const { data: projectOptions = [] } = useProjectOptions();
+  const { vehicles } = useCompanyVehicles();
+  const { users } = useCompanyUsers();
+
+  const projectNames = Object.fromEntries(
+    projectOptions.map((p) => [p.id, p.project_number ? `${p.project_number} – ${p.project_name}` : p.project_name])
+  );
+  const userNames = Object.fromEntries(
+    users.map((u) => [u.id, `${u.first_name || ""} ${u.last_name || ""}`.trim() || u.email || "Ansatt"])
+  );
 
   const isAdmin = roles.includes("company_admin") || roles.includes("system_admin");
 
@@ -133,6 +155,12 @@ export default function MyDrivingLog() {
     }
     // Trip type filter
     if (tripTypeFilter !== "all" && entry.trip_type !== tripTypeFilter) return false;
+    // Vehicle filter (registreringsnummer)
+    if (vehicleFilter !== "all" && (entry.vehicle_registration || "") !== vehicleFilter) return false;
+    // Project filter
+    if (projectFilter !== "all" && (entry.project_id || "") !== projectFilter) return false;
+    // Employee filter
+    if (employeeFilter !== "all" && entry.user_id !== employeeFilter) return false;
     return true;
   });
 
@@ -227,7 +255,7 @@ export default function MyDrivingLog() {
           {activeTrip ? (
             <Button onClick={() => setCompleteDialogOpen(true)} className="gap-2">
               <Play className="w-4 h-4" />
-              {t("auto.fullfoer_aktiv_tur")}
+              {gps.isTracking ? "Stopp kjøretur" : t("auto.fullfoer_aktiv_tur")}
             </Button>
           ) : (
             <DropdownMenu>
@@ -260,9 +288,33 @@ export default function MyDrivingLog() {
         {activeTrip && (
           <ActiveTripCard
             trip={activeTrip}
-            onComplete={() => setCompleteDialogOpen(true)}
+            gps={{
+              isTracking: gps.isTracking && gps.trackedTripId === activeTrip.id,
+              distanceKm: gps.distanceKm,
+              durationMinutes: gps.durationMinutes,
+              stops: gps.stops,
+              signalLost: gps.signalLost,
+              error: gps.error,
+            }}
+            onComplete={() => {
+              if (gps.isTracking && gps.trackedTripId === activeTrip.id) {
+                const summary = gps.stop();
+                if (summary) {
+                  setGpsSummary({
+                    points: summary.points,
+                    stops: summary.stops,
+                    distanceKm: summary.distanceKm,
+                    durationMinutes: summary.durationMinutes,
+                    gpsLost: summary.gpsLost,
+                  });
+                }
+              }
+              setCompleteDialogOpen(true);
+            }}
             onCancel={() => {
               if (confirm("Er du sikker på at du vil avbryte denne turen?")) {
+                gps.stop();
+                setGpsSummary(null);
                 deleteEntry.mutate(activeTrip.id);
               }
             }}
@@ -358,6 +410,55 @@ export default function MyDrivingLog() {
               <SelectItem value="private">{t("auto.privat")}</SelectItem>
             </SelectContent>
           </Select>
+          {vehicles.length > 0 && (
+            <Select value={vehicleFilter} onValueChange={(v) => { setVehicleFilter(v); setSelectedIds(new Set()); }}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Kjøretøy" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle kjøretøy</SelectItem>
+                {vehicles.map((v) => (
+                  <SelectItem key={v.id} value={v.license_plate}>{v.license_plate}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {projectOptions.length > 0 && (
+            <Select value={projectFilter} onValueChange={(v) => { setProjectFilter(v); setSelectedIds(new Set()); }}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Prosjekt" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle prosjekter</SelectItem>
+                {projectOptions.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{projectNames[p.id]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {isAdmin && users.length > 0 && (
+            <Select value={employeeFilter} onValueChange={(v) => { setEmployeeFilter(v); setSelectedIds(new Set()); }}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Ansatt" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle ansatte</SelectItem>
+                {users.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>{userNames[u.id]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            disabled={filteredEntries.length === 0}
+            onClick={() => exportFilteredDrivingLog(filteredEntries, { title: "Kjorebok_rapport", userNames, projectNames })}
+          >
+            <Download className="w-3.5 h-3.5" />
+            Last ned rapport (filtrert)
+          </Button>
           <span className="text-sm text-muted-foreground">
             {filteredEntries.length} {filteredEntries.length === 1 ? "tur" : "turer"}
           </span>
@@ -366,7 +467,7 @@ export default function MyDrivingLog() {
               variant="ghost"
               size="sm"
               className="gap-1 text-muted-foreground"
-              onClick={() => { setYearFilter(String(currentYear)); setMonthFilter("all"); setTripTypeFilter("all"); setSelectedIds(new Set()); }}
+              onClick={() => { setYearFilter(String(currentYear)); setMonthFilter("all"); setTripTypeFilter("all"); setVehicleFilter("all"); setProjectFilter("all"); setEmployeeFilter("all"); setSelectedIds(new Set()); }}
             >
               <X className="w-3 h-3" />
               Nullstill
@@ -495,7 +596,8 @@ export default function MyDrivingLog() {
                         </TableRow>
                         {expandedTrip === entry.id && (
                           <TableRow key={`${entry.id}-expenses`}>
-                            <TableCell colSpan={10} className="bg-muted/30 p-4">
+                            <TableCell colSpan={10} className="bg-muted/30 p-4 space-y-4">
+                              <TripRouteMap trip={entry} />
                               <TripExpenses tripId={entry.id} />
                             </TableCell>
                           </TableRow>
@@ -527,7 +629,16 @@ export default function MyDrivingLog() {
       <StartTripDialog
         open={startDialogOpen}
         onOpenChange={setStartDialogOpen}
-        onSubmit={(data) => startTrip.mutate(data)}
+        onSubmit={(data, gpsStart) =>
+          startTrip.mutate(data, {
+            onSuccess: (entry: any) => {
+              if (data.tracking_mode === "gps" && entry?.id) {
+                gps.start(entry.id, gpsStart || undefined);
+                setGpsSummary(null);
+              }
+            },
+          })
+        }
         isPending={startTrip.isPending}
         lastOdometerEnd={lastOdometerEnd}
       />
@@ -536,9 +647,10 @@ export default function MyDrivingLog() {
         <CompleteTripDialog
           open={completeDialogOpen}
           onOpenChange={setCompleteDialogOpen}
-          onSubmit={(data) => completeTrip.mutate(data)}
+          onSubmit={(data) => completeTrip.mutate(data, { onSuccess: () => setGpsSummary(null) })}
           isPending={completeTrip.isPending}
           activeTrip={activeTrip}
+          gpsSummary={gpsSummary}
         />
       )}
 

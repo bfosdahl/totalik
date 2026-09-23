@@ -933,6 +933,19 @@ export default function Ks2Admin() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
+                        <Label>Tillat stempling utenfor prosjektområdet</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Ansatte kan starte/stoppe arbeidstid utenfor geogjerdet, men må skrive en begrunnelse.
+                          Slås dette av, blokkeres registrering utenfor området.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={(settings as any)?.geofence_allow_outside ?? true}
+                        onCheckedChange={v => handleSaveSettings("geofence_allow_outside" as any, v)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
                         <Label>{t("auto.ukentlig_ks_rapport")}</Label>
                         <p className="text-sm text-muted-foreground">
                           {t("auto.send_ukentlig_statusrapport_til_prosjekt")}
