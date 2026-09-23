@@ -41,17 +41,19 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [pausedSeconds, setPausedSeconds] = useState(0);
-
+  const [startGeo, setStartGeo] = useState<GeoStamp | null>(null);
+  const [locating, setLocating] = useState(false);
 
   // Load saved timer state from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("activeTimer");
     if (saved) {
-      const { startTime: savedStart, pausedSeconds: savedPaused, isPaused: savedIsPaused, projectId: savedProject } = JSON.parse(saved);
+      const { startTime: savedStart, pausedSeconds: savedPaused, isPaused: savedIsPaused, projectId: savedProject, startGeo: savedGeo } = JSON.parse(saved);
       setStartTime(new Date(savedStart));
       setPausedSeconds(savedPaused || 0);
       setIsPaused(savedIsPaused || false);
       if (savedProject) setProjectId(savedProject);
+      if (savedGeo) setStartGeo(savedGeo);
       setIsRunning(true);
     } else {
       const last = localStorage.getItem(LAST_PROJECT_KEY);
