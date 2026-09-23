@@ -273,6 +273,23 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
                 </div>
 
                 <div>
+                  <Label>Språk på sjekklisten</Label>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map((l) => (
+                        <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Automatisk: sjekklisten lages på samme språk som du skriver i.
+                  </p>
+                </div>
+
+                <div>
                   <Label className="flex items-center gap-1">
                     {t("auto.tilknyttet_rutine")}
                     <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
