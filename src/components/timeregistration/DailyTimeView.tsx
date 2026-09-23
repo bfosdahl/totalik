@@ -90,16 +90,19 @@ export function DailyTimeView({
     .reduce((sum, e) => sum + Number(e.hours), 0);
 
   // Handle timer completion
-  const handleTimerComplete = async (hours: number) => {
+  const handleTimerComplete = async (hours: number, result: TimerResult) => {
     const success = await onCreateEntry({
       entry_date: format(currentDate, "yyyy-MM-dd"),
       hours,
+      ks_project_id: result.ksProjectId,
+      project_name: result.projectName ?? undefined,
       description: `Automatisk registrert (${format(new Date(), "HH:mm")})`,
     });
     if (success) {
       toast.success(`${hours.toFixed(2)} timer registrert fra tidtaker`);
     }
   };
+
 
   // Get user's planned schedules for the current day
   const daySchedules = schedules.filter(s => 
