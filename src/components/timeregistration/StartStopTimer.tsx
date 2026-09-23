@@ -210,13 +210,19 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
           </div>
           <Button
             onClick={handleStart}
-            disabled={isDisabled}
+            disabled={isDisabled || locating}
             size="lg"
             className="w-full h-14 text-lg gap-3"
           >
             <Play className="h-6 w-6" />
-            Start arbeidstid
+            {locating ? "Henter posisjon …" : "Start arbeidstid"}
           </Button>
+          {fence && (
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              Prosjektet har arbeidsområde ({fence.radiusM} m). Posisjonen registreres kun når du starter og stopper arbeidstiden.
+            </p>
+          )}
         </CardContent>
       </Card>
     );
