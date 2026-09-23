@@ -28,9 +28,39 @@ async function extractPdfText(file: File): Promise<string> {
   return text.trim();
 }
 
+/** Henter ut tekst fra en Word-fil (.docx) uten ekstra avhengigheter. */
+async function extractDocxText(file: File): Promise<string> {
+  const JSZip = (await import("jszip")).default;
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+  const xml = await zip.file("word/document.xml")?.async("string");
+  if (!xml) return "";
+  return xml
+    .replace(/<\/w:p>/g, "\n")
+    .replace(/<w:tab[^>]*\/>/g, "\t")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+type MessageContent = string | any[];
+
 interface Message {
   role: "user" | "assistant";
-  content: string;
+  content: MessageContent;
 }
 
 interface Ks2ProjectSetupChatProps {
