@@ -255,6 +255,16 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
                 <Briefcase className="h-3 w-3" /> {selectedProject.project_name}
               </p>
             )}
+            {startGeo && (
+              <p className="text-xs mt-1 flex items-center gap-1">
+                <MapPin className={cn("h-3 w-3", startGeo.status === "outside" ? "text-amber-600" : "text-muted-foreground")} />
+                {startGeo.status === "inside"
+                  ? "Startet innenfor prosjektområdet"
+                  : startGeo.status === "outside"
+                    ? `Startet ${startGeo.distanceM} m utenfor prosjektområdet`
+                    : "Posisjon ikke registrert"}
+              </p>
+            )}
             <p className="text-3xl font-mono font-bold mt-1 tabular-nums">
               {formatTime(elapsedSeconds)}
             </p>
