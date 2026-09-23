@@ -82,16 +82,46 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
         pausedSeconds,
         isPaused,
         projectId,
+        startGeo,
       }));
     }
-  }, [isRunning, startTime, pausedSeconds, isPaused, projectId]);
+  }, [isRunning, startTime, pausedSeconds, isPaused, projectId, startGeo]);
 
 
   const selectedProject = projects.find((p) => p.id === projectId) || null;
+  const fence =
+    selectedProject?.geofence_enabled && selectedProject.geofence_lat != null && selectedProject.geofence_lng != null
+      ? {
+          lat: selectedProject.geofence_lat as number,
+          lng: selectedProject.geofence_lng as number,
+          radiusM: selectedProject.geofence_radius_m ?? 150,
+        }
+      : null;
 
-  const handleStart = () => {
+  /** Henter posisjon kun i det øyeblikket man starter eller stopper arbeidstiden */
+  const stampPosition = async (): Promise<GeoStamp | null> => {
+    if (projectId === NO_PROJECT) return null;
+    let point: GeoPoint | null = null;
+    try {
+      point = await getCurrentPosition();
+    } catch (err: any) {
+      toast.warning(err?.message || "Fant ikke posisjonen din");
+    }
+    if (!point) return { lat: null, lng: null, status: "unknown", distanceM: null };
+    if (!fence) return { lat: point.lat, lng: point.lng, status: "unknown", distanceM: null };
+    const result = checkGeofence(point, { lat: fence.lat, lng: fence.lng }, fence.radiusM);
+    return { lat: point.lat, lng: point.lng, status: result.status, distanceM: result.distanceM };
+  };
+
+  const handleStart = async () => {
     const now = new Date();
     if (projectId !== NO_PROJECT) localStorage.setItem(LAST_PROJECT_KEY, projectId);
+    setLocating(true);
+    const geo = await stampPosition();
+    setLocating(false);
+    setStartGeo(geo);
+    if (geo?.status === "inside") toast.success("Du er innenfor prosjektområdet.");
+    if (geo?.status === "outside") toast.warning(`Du er ${geo.distanceM} m fra prosjektområdet. Dette blir synlig for leder.`);
     setStartTime(now);
     setElapsedSeconds(0);
     setPausedSeconds(0);
