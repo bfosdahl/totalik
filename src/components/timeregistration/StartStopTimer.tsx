@@ -1,32 +1,50 @@
 import { useState, useEffect } from "react";
-import { Play, Square, Pause } from "lucide-react";
+import { Play, Square, Pause, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
+import { useProjectOptions } from "@/hooks/useProjectOptions";
+
+const NO_PROJECT = "__none__";
+const LAST_PROJECT_KEY = "timer:lastProjectId";
+
+export interface TimerResult {
+  ksProjectId: string | null;
+  projectName: string | null;
+}
 
 interface StartStopTimerProps {
-  onComplete: (hours: number) => void;
+  onComplete: (hours: number, result: TimerResult) => void;
   isDisabled?: boolean;
 }
 
 export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) {
+  const { data: projects = [] } = useProjectOptions();
+  const [projectId, setProjectId] = useState<string>(NO_PROJECT);
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [pausedSeconds, setPausedSeconds] = useState(0);
 
+
   // Load saved timer state from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("activeTimer");
     if (saved) {
-      const { startTime: savedStart, pausedSeconds: savedPaused, isPaused: savedIsPaused } = JSON.parse(saved);
+      const { startTime: savedStart, pausedSeconds: savedPaused, isPaused: savedIsPaused, projectId: savedProject } = JSON.parse(saved);
       setStartTime(new Date(savedStart));
       setPausedSeconds(savedPaused || 0);
       setIsPaused(savedIsPaused || false);
+      if (savedProject) setProjectId(savedProject);
       setIsRunning(true);
+    } else {
+      const last = localStorage.getItem(LAST_PROJECT_KEY);
+      if (last) setProjectId(last);
     }
   }, []);
 
@@ -50,18 +68,24 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
         startTime: startTime.toISOString(),
         pausedSeconds,
         isPaused,
+        projectId,
       }));
     }
-  }, [isRunning, startTime, pausedSeconds, isPaused]);
+  }, [isRunning, startTime, pausedSeconds, isPaused, projectId]);
+
+
+  const selectedProject = projects.find((p) => p.id === projectId) || null;
 
   const handleStart = () => {
     const now = new Date();
+    if (projectId !== NO_PROJECT) localStorage.setItem(LAST_PROJECT_KEY, projectId);
     setStartTime(now);
     setElapsedSeconds(0);
     setPausedSeconds(0);
     setIsPaused(false);
     setIsRunning(true);
   };
+
 
   const handlePause = () => {
     if (!isPaused) {
@@ -87,8 +111,12 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
     
     // Only register if at least 1 minute
     if (hours >= 1/60) {
-      onComplete(Math.round(hours * 4) / 4); // Round to nearest 0.25 hour
+      onComplete(Math.round(hours * 4) / 4, {
+        ksProjectId: projectId === NO_PROJECT ? null : projectId,
+        projectName: selectedProject?.project_name ?? null,
+      }); // Round to nearest 0.25 hour
     }
+
     
     // Reset state
     setIsRunning(false);
@@ -109,17 +137,41 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
 
   if (!isRunning) {
     return (
-      <Button 
-        onClick={handleStart} 
-        disabled={isDisabled}
-        size="lg"
-        className="w-full h-14 text-lg gap-3"
-      >
-        <Play className="h-6 w-6" />
-        Start arbeidstid
-      </Button>
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="flex items-center gap-2 text-sm">
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              Velg prosjekt
+            </Label>
+            <Select value={projectId} onValueChange={setProjectId} disabled={isDisabled}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder="Velg prosjekt (valgfritt)" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value={NO_PROJECT}>Uten prosjekt</SelectItem>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.project_number ? `${p.project_number} - ` : ""}{p.project_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={handleStart}
+            disabled={isDisabled}
+            size="lg"
+            className="w-full h-14 text-lg gap-3"
+          >
+            <Play className="h-6 w-6" />
+            Start arbeidstid
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
+
 
   return (
     <Card className={cn(
@@ -142,9 +194,15 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
                 </span>
               )}
             </div>
+            {selectedProject && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Briefcase className="h-3 w-3" /> {selectedProject.project_name}
+              </p>
+            )}
             <p className="text-3xl font-mono font-bold mt-1 tabular-nums">
               {formatTime(elapsedSeconds)}
             </p>
+
           </div>
           <div className="flex gap-2">
             <Button
