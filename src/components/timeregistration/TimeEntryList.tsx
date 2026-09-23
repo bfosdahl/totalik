@@ -42,6 +42,11 @@ interface TimeEntry {
   end_time?: string | null;
   total_break_minutes?: number | null;
   work_schedule_id?: string | null;
+  geofence_status_in?: string | null;
+  geofence_status_out?: string | null;
+  geofence_distance_in_m?: number | null;
+  geofence_distance_out_m?: number | null;
+  geofence_reason?: string | null;
   schedule_location?: string | null;
   schedule_role?: string | null;
   hour_type?: string | null;
