@@ -194,9 +194,15 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
                 </span>
               )}
             </div>
+            {selectedProject && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Briefcase className="h-3 w-3" /> {selectedProject.project_name}
+              </p>
+            )}
             <p className="text-3xl font-mono font-bold mt-1 tabular-nums">
               {formatTime(elapsedSeconds)}
             </p>
+
           </div>
           <div className="flex gap-2">
             <Button
