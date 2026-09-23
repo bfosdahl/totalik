@@ -352,6 +352,14 @@ export function useTimeEntries() {
         admin_edit_reason: isOnBehalf ? `Registrert av admin på vegne av ${targetUserName}` : null,
         admin_edited_by: isOnBehalf ? user.id : null,
         admin_edited_at: isOnBehalf ? new Date().toISOString() : null,
+        start_lat: entry.start_lat ?? null,
+        start_lng: entry.start_lng ?? null,
+        end_lat: entry.end_lat ?? null,
+        end_lng: entry.end_lng ?? null,
+        geofence_status_in: entry.geofence_status_in ?? null,
+        geofence_status_out: entry.geofence_status_out ?? null,
+        geofence_distance_in_m: entry.geofence_distance_in_m ?? null,
+        geofence_distance_out_m: entry.geofence_distance_out_m ?? null,
       } as any).select("id").single();
 
       if (error) throw error;
