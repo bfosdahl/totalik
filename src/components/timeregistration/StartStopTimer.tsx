@@ -36,11 +36,15 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
   useEffect(() => {
     const saved = localStorage.getItem("activeTimer");
     if (saved) {
-      const { startTime: savedStart, pausedSeconds: savedPaused, isPaused: savedIsPaused } = JSON.parse(saved);
+      const { startTime: savedStart, pausedSeconds: savedPaused, isPaused: savedIsPaused, projectId: savedProject } = JSON.parse(saved);
       setStartTime(new Date(savedStart));
       setPausedSeconds(savedPaused || 0);
       setIsPaused(savedIsPaused || false);
+      if (savedProject) setProjectId(savedProject);
       setIsRunning(true);
+    } else {
+      const last = localStorage.getItem(LAST_PROJECT_KEY);
+      if (last) setProjectId(last);
     }
   }, []);
 
@@ -64,9 +68,11 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
         startTime: startTime.toISOString(),
         pausedSeconds,
         isPaused,
+        projectId,
       }));
     }
-  }, [isRunning, startTime, pausedSeconds, isPaused]);
+  }, [isRunning, startTime, pausedSeconds, isPaused, projectId]);
+
 
   const handleStart = () => {
     const now = new Date();
