@@ -105,6 +105,15 @@ export interface CreateTimeEntry {
   on_behalf_user_id?: string | null;
   /** Admin only: display name for the employee (falls back to lookup) */
   on_behalf_user_name?: string | null;
+  /** GPS/geogjerde ved start og stopp av tidtaker */
+  start_lat?: number | null;
+  start_lng?: number | null;
+  end_lat?: number | null;
+  end_lng?: number | null;
+  geofence_status_in?: string | null;
+  geofence_status_out?: string | null;
+  geofence_distance_in_m?: number | null;
+  geofence_distance_out_m?: number | null;
 }
 
 export function useTimeEntries() {
