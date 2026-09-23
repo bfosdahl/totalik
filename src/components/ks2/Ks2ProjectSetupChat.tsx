@@ -127,8 +127,9 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const sendMessage = useCallback(async (userMessage: string) => {
-    if (!userMessage.trim() || isLoading) return;
+  const sendMessage = useCallback(async (userMessage: MessageContent) => {
+    const isEmpty = typeof userMessage === "string" ? !userMessage.trim() : !userMessage.length;
+    if (isEmpty || isLoading) return;
 
     const currentMessages = messagesRef.current;
     setInput("");
