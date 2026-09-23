@@ -97,6 +97,14 @@ export function DailyTimeView({
       ks_project_id: result.ksProjectId,
       project_name: result.projectName ?? undefined,
       description: `Automatisk registrert (${format(new Date(), "HH:mm")})`,
+      start_lat: result.startGeo?.lat ?? null,
+      start_lng: result.startGeo?.lng ?? null,
+      end_lat: result.endGeo?.lat ?? null,
+      end_lng: result.endGeo?.lng ?? null,
+      geofence_status_in: result.startGeo?.status ?? null,
+      geofence_status_out: result.endGeo?.status ?? null,
+      geofence_distance_in_m: result.startGeo?.distanceM ?? null,
+      geofence_distance_out_m: result.endGeo?.distanceM ?? null,
     });
     if (success) {
       toast.success(`${hours.toFixed(2)} timer registrert fra tidtaker`);

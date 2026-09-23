@@ -17387,6 +17387,8 @@ export type Database = {
           customer_name: string | null
           department_id: string | null
           description: string | null
+          end_lat: number | null
+          end_lng: number | null
           end_time: string | null
           entry_date: string
           geofence_distance_in_m: number | null
@@ -17403,6 +17405,8 @@ export type Database = {
           project_name: string | null
           project_number: string | null
           source: string | null
+          start_lat: number | null
+          start_lng: number | null
           start_time: string | null
           status: string
           subproject: string | null
@@ -17430,6 +17434,8 @@ export type Database = {
           customer_name?: string | null
           department_id?: string | null
           description?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
           end_time?: string | null
           entry_date: string
           geofence_distance_in_m?: number | null
@@ -17446,6 +17452,8 @@ export type Database = {
           project_name?: string | null
           project_number?: string | null
           source?: string | null
+          start_lat?: number | null
+          start_lng?: number | null
           start_time?: string | null
           status?: string
           subproject?: string | null
@@ -17473,6 +17481,8 @@ export type Database = {
           customer_name?: string | null
           department_id?: string | null
           description?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
           end_time?: string | null
           entry_date?: string
           geofence_distance_in_m?: number | null
@@ -17489,6 +17499,8 @@ export type Database = {
           project_name?: string | null
           project_number?: string | null
           source?: string | null
+          start_lat?: number | null
+          start_lng?: number | null
           start_time?: string | null
           status?: string
           subproject?: string | null

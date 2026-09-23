@@ -155,8 +155,7 @@ export function TimeEntryList({
                         </TooltipContent>
                       </Tooltip>
                     )}
-                    {entry.source === "qr_clock" &&
-                      (entry.geofence_status_in === "outside" || entry.geofence_status_out === "outside") && (
+                    {(entry.geofence_status_in === "outside" || entry.geofence_status_out === "outside") && (
                         <Tooltip>
                           <TooltipTrigger>
                             <MapPin className="h-4 w-4 text-amber-600" />
@@ -169,7 +168,22 @@ export function TimeEntryList({
                           </TooltipContent>
                         </Tooltip>
                       )}
-                    {showEmployee && entry.source !== "qr_clock" && entry.source !== "work_schedule" && (
+                    {entry.source !== "qr_clock" && entry.source !== "work_schedule" && entry.geofence_status_in && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <MapPin className="h-4 w-4 text-primary" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Startet med tidtaker og GPS</p>
+                          <p className="text-xs text-muted-foreground">
+                            Start: {entry.geofence_status_in === "inside" ? "innenfor området" : entry.geofence_status_in === "outside" ? `utenfor (${entry.geofence_distance_in_m ?? "?"} m)` : "posisjon ukjent"}
+                            {" · "}
+                            Slutt: {entry.geofence_status_out === "inside" ? "innenfor området" : entry.geofence_status_out === "outside" ? `utenfor (${entry.geofence_distance_out_m ?? "?"} m)` : "posisjon ukjent"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                    {showEmployee && entry.source !== "qr_clock" && entry.source !== "work_schedule" && !entry.geofence_status_in && (
                       <Tooltip>
                         <TooltipTrigger>
                           <PencilLine className="h-4 w-4 text-muted-foreground" />
