@@ -77,7 +77,7 @@ const INITIAL_MESSAGE = `Hei! Jeg er Prosjekt-hjelperen 👋
 
 Jeg hjelper deg å sette opp prosjektet med riktige sjekklister, rutiner og HMS-fokusområder.
 
-📎 **Tips:** Last opp en PDF (f.eks. salgsoppgave eller anbudsdokument) med 📎-knappen, så fyller jeg ut prosjektinformasjon automatisk!
+📎 **Tips:** Last opp et vedlegg med 📎-knappen – PDF, Word, bilde eller tekstfil (f.eks. salgsoppgave, anbud, tegning eller et bilde av befaringen). Da fyller jeg ut prosjektinformasjon automatisk!
 
 **Hva slags prosjekt skal du i gang med?**
 - Nybygg (enebolig, leilighetsbygg)
@@ -87,9 +87,18 @@ Jeg hjelper deg å sette opp prosjektet med riktige sjekklister, rutiner og HMS-
 
 Eller bare si "sett opp et forslag" så lager jeg et eksempel du kan tilpasse! 🔨`;
 
-function getDisplayContent(content: string): string {
-  return content
+function getDisplayContent(content: MessageContent): string {
+  const text = Array.isArray(content)
+    ? content
+        .map((part: any) =>
+          part?.type === "text" ? part.text : part?.type === "image_url" ? "📎 Bilde lastet opp" : ""
+        )
+        .filter(Boolean)
+        .join("\n")
+    : content;
+  return String(text ?? "")
     .replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, "")
+    .replace(/--- DOKUMENTINNHOLD ---[\s\S]*$/, "")
     .trim();
 }
 
