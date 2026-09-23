@@ -392,7 +392,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
         <input
           ref={fileInputRef}
           type="file"
-          accept="application/pdf,.pdf"
+          accept="application/pdf,.pdf,.docx,image/*,.txt,.csv,.md"
           className="hidden"
           onChange={handleFileSelected}
         />
@@ -409,7 +409,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading || setupComplete || parsingFile}
-            title="Last opp PDF (f.eks. salgsoppgave)"
+            title="Last opp vedlegg: PDF, Word, bilde eller tekstfil"
           >
             {parsingFile ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
           </Button>
@@ -440,7 +440,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
         {parsingFile && (
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <FileText className="w-3 h-3" />
-            Leser dokument og henter ut prosjektinformasjon...
+            Leser vedlegget og henter ut prosjektinformasjon...
           </div>
         )}
 
