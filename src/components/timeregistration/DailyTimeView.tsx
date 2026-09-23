@@ -10,7 +10,7 @@ import { useCompanyModules } from "@/hooks/useCompanyModules";
 import { useWorkSchedules, WorkSchedule } from "@/hooks/useWorkSchedules";
 import { useTimeEntries, CreateTimeEntry } from "@/hooks/useTimeEntries";
 import { useAuth } from "@/contexts/AuthContext";
-import { StartStopTimer } from "./StartStopTimer";
+import { StartStopTimer, TimerResult } from "./StartStopTimer";
 import { OvertimeWarning } from "./OvertimeWarning";
 import { CopyPreviousDayButton, CopyPreviousWeekButton } from "./CopyPreviousDayButton";
 import { WeeklySummaryChart } from "./WeeklySummaryChart";
