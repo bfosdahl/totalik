@@ -157,7 +157,7 @@ export function GeofencePicker({ lat, lng, radiusM, address, onChange }: Geofenc
             <SelectTrigger className="w-full sm:w-36">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[2000]">
               {RADIUS_OPTIONS.map((r) => (
                 <SelectItem key={r} value={String(r)}>{r} meter</SelectItem>
               ))}
@@ -169,7 +169,7 @@ export function GeofencePicker({ lat, lng, radiusM, address, onChange }: Geofenc
         </div>
       </div>
 
-      <div className="h-72 w-full overflow-hidden rounded-lg border">
+      <div className="relative z-0 isolate h-72 w-full overflow-hidden rounded-lg border">
         <div ref={containerRef} style={{ height: "100%", width: "100%" }} />
       </div>
 
