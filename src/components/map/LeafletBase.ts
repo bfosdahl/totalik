@@ -5,7 +5,9 @@ import markerIcon from "leaflet/dist/images/marker-icon.png?url";
 import markerShadow from "leaflet/dist/images/marker-shadow.png?url";
 
 /** Leaflet finner ikke standardikonene i Vite-bygg – sett dem eksplisitt. */
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
+  imagePath: "",
   iconRetinaUrl: markerIcon2x,
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
