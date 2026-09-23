@@ -147,16 +147,22 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
     }
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     if (!startTime) return;
-    
+
     const hours = elapsedSeconds / 3600;
-    
+
+    setLocating(true);
+    const endGeo = await stampPosition();
+    setLocating(false);
+
     // Only register if at least 1 minute
     if (hours >= 1/60) {
       onComplete(Math.round(hours * 4) / 4, {
         ksProjectId: projectId === NO_PROJECT ? null : projectId,
         projectName: selectedProject?.project_name ?? null,
+        startGeo,
+        endGeo,
       }); // Round to nearest 0.25 hour
     }
 
@@ -167,6 +173,7 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
     setElapsedSeconds(0);
     setPausedSeconds(0);
     setIsPaused(false);
+    setStartGeo(null);
     localStorage.removeItem("activeTimer");
     localStorage.removeItem("pauseStart");
   };
