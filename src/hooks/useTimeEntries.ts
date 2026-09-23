@@ -61,6 +61,12 @@ export interface TimeEntry {
   clock_out?: string | null;
   total_break_minutes?: number | null;
   work_schedule_id?: string | null;
+  // Geofence-info for stemplede timer
+  geofence_status_in?: string | null;
+  geofence_status_out?: string | null;
+  geofence_distance_in_m?: number | null;
+  geofence_distance_out_m?: number | null;
+  geofence_reason?: string | null;
   admin_edit_reason?: string | null;
   admin_edited_by?: string | null;
   admin_edited_at?: string | null;
@@ -166,25 +172,22 @@ export function useTimeEntries() {
       const { data: clockData, error: clockError } = await clockQuery;
       if (clockError) throw clockError;
 
+      // Hent prosjektnavn for stemplinger som er knyttet til et KS-prosjekt
+      const clockProjectIds = Array.from(
+        new Set((clockData || []).map((e: any) => e.project_id).filter(Boolean))
+      ) as string[];
+      const projectNameById = new Map<string, string>();
+      if (clockProjectIds.length > 0) {
+        const { data: projData } = await supabase
+          .from("ks_module2_projects")
+          .select("id, name")
+          .eq("company_id", profile.company_id)
+          .in("id", clockProjectIds);
+        (projData || []).forEach((p: any) => projectNameById.set(p.id, p.name));
+      }
+
       // Convert clock entries to TimeEntry format
-      const clockEntries: TimeEntry[] = (clockData || []).map((entry: {
-        id: string;
-        company_id: string;
-        user_id: string;
-        user_name: string;
-        clock_in: string;
-        clock_out: string | null;
-        hours_worked: number | null;
-        notes: string | null;
-        status: string;
-        total_break_minutes: number | null;
-        created_at: string;
-        updated_at: string;
-        approval_status: string | null;
-        approved_by: string | null;
-        approved_by_name: string | null;
-        approved_at: string | null;
-      }) => {
+      const clockEntries: TimeEntry[] = (clockData || []).map((entry: any) => {
         // Map approval_status to TimeEntry status format
         let status: "draft" | "submitted" | "approved" | "rejected" = "submitted";
         if (entry.approval_status === "approved") status = "approved";
@@ -197,8 +200,9 @@ export function useTimeEntries() {
           user_name: entry.user_name,
           entry_date: format(new Date(entry.clock_in), "yyyy-MM-dd"),
           hours: entry.hours_worked || 0,
-          project_name: null,
+          project_name: entry.project_id ? projectNameById.get(entry.project_id) ?? null : null,
           project_id: null,
+          ks_project_id: entry.project_id ?? null,
           description: entry.notes || `QR-stempling: ${format(new Date(entry.clock_in), "HH:mm")} - ${entry.clock_out ? format(new Date(entry.clock_out), "HH:mm") : ""}`,
           status,
           approved_by: entry.approved_by,
@@ -210,6 +214,11 @@ export function useTimeEntries() {
           clock_in: entry.clock_in,
           clock_out: entry.clock_out,
           total_break_minutes: entry.total_break_minutes,
+          geofence_status_in: entry.geofence_status_in ?? null,
+          geofence_status_out: entry.geofence_status_out ?? null,
+          geofence_distance_in_m: entry.geofence_distance_in_m ?? null,
+          geofence_distance_out_m: entry.geofence_distance_out_m ?? null,
+          geofence_reason: entry.geofence_reason ?? null,
         };
       });
 

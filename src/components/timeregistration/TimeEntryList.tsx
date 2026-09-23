@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil, Package } from "lucide-react";
+import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil, PencilLine, Package } from "lucide-react";
 import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
 import { getHourBreakdown } from "@/utils/hourBreakdown";
 
@@ -42,6 +42,11 @@ interface TimeEntry {
   end_time?: string | null;
   total_break_minutes?: number | null;
   work_schedule_id?: string | null;
+  geofence_status_in?: string | null;
+  geofence_status_out?: string | null;
+  geofence_distance_in_m?: number | null;
+  geofence_distance_out_m?: number | null;
+  geofence_reason?: string | null;
   schedule_location?: string | null;
   schedule_role?: string | null;
   hour_type?: string | null;
@@ -137,6 +142,41 @@ export function TimeEntryList({
                               {entry.total_break_minutes ? ` (${entry.total_break_minutes} min pause)` : ""}
                             </p>
                           )}
+                          {(entry.geofence_status_in || entry.geofence_status_out) && (
+                            <p className="text-xs text-muted-foreground">
+                              Start: {entry.geofence_status_in === "inside" ? "innenfor" : entry.geofence_status_in === "outside" ? `utenfor (${entry.geofence_distance_in_m ?? "?"} m)` : "ukjent"}
+                              {" · "}
+                              Slutt: {entry.geofence_status_out === "inside" ? "innenfor" : entry.geofence_status_out === "outside" ? `utenfor (${entry.geofence_distance_out_m ?? "?"} m)` : "ukjent"}
+                            </p>
+                          )}
+                          {entry.geofence_reason && (
+                            <p className="text-xs text-muted-foreground">Begrunnelse: {entry.geofence_reason}</p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                    {entry.source === "qr_clock" &&
+                      (entry.geofence_status_in === "outside" || entry.geofence_status_out === "outside") && (
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <MapPin className="h-4 w-4 text-amber-600" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Registrert utenfor prosjektområdet</p>
+                            {entry.geofence_reason && (
+                              <p className="text-xs text-muted-foreground">{entry.geofence_reason}</p>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    {showEmployee && entry.source !== "qr_clock" && entry.source !== "work_schedule" && (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <PencilLine className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Ført inn manuelt</p>
+                          <p className="text-xs text-muted-foreground">Ikke stemplet inn/ut med GPS</p>
                         </TooltipContent>
                       </Tooltip>
                     )}
