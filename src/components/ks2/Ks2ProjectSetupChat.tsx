@@ -272,29 +272,53 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     e.target.value = "";
     if (!file) return;
 
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    if (!isPdf) {
-      toast.error(t("auto.kun_pdf_filer_stoettes_for_oeyeblikket"));
+    const name = file.name.toLowerCase();
+    const isPdf = file.type === "application/pdf" || name.endsWith(".pdf");
+    const isDocx = name.endsWith(".docx");
+    const isImage = file.type.startsWith("image/");
+    const isText = file.type.startsWith("text/") || name.endsWith(".txt") || name.endsWith(".csv") || name.endsWith(".md");
+
+    if (name.endsWith(".doc") && !isDocx) {
+      toast.error("Gamle .doc-filer støttes ikke. Lagre som .docx eller PDF.");
       return;
     }
-    if (file.size > 15 * 1024 * 1024) {
-      toast.error("Filen er for stor (maks 15 MB)");
+    if (!isPdf && !isDocx && !isImage && !isText) {
+      toast.error("Støttede filer: PDF, Word (.docx), bilde eller tekstfil");
+      return;
+    }
+    if (file.size > (isImage ? 10 : 15) * 1024 * 1024) {
+      toast.error(`Filen er for stor (maks ${isImage ? 10 : 15} MB)`);
       return;
     }
 
+    const instruction = `Jeg har lastet opp "${file.name}". Bruk informasjonen til å fylle ut prosjektopplysninger og lag et forslag til prosjektoppsett (sjekklister, rutiner, HMS, milepæler).`;
+
     setParsingFile(true);
     try {
-      const text = await extractPdfText(file);
-      if (!text || text.length < 30) {
-        toast.error(t("auto.klarte_ikke_aa_lese_tekst_fra_pdf_en"));
+      if (isImage) {
+        const dataUrl = await fileToDataUrl(file);
+        await sendMessage([
+          { type: "text", text: instruction },
+          { type: "image_url", image_url: { url: dataUrl } },
+        ]);
+        return;
+      }
+
+      const text = isPdf
+        ? await extractPdfText(file)
+        : isDocx
+          ? await extractDocxText(file)
+          : await file.text();
+
+      if (!text || text.trim().length < 30) {
+        toast.error("Klarte ikke å lese tekst fra filen. Prøv en annen fil, eller skriv inn info selv.");
         return;
       }
       const truncated = text.length > 18000 ? text.slice(0, 18000) + "\n\n[...avkortet...]" : text;
-      const message = `Jeg har lastet opp dokumentet "${file.name}". Bruk informasjonen under til å fylle ut prosjektopplysninger og lag et forslag til prosjektoppsett (sjekklister, rutiner, HMS, milepæler).\n\n--- DOKUMENTINNHOLD ---\n${truncated}\n--- SLUTT ---`;
-      await sendMessage(message);
+      await sendMessage(`${instruction}\n\n--- DOKUMENTINNHOLD ---\n${truncated}\n--- SLUTT ---`);
     } catch (err) {
-      console.error("PDF parse error:", err);
-      toast.error(t("auto.kunne_ikke_lese_pdf_filen"));
+      console.error("File parse error:", err);
+      toast.error("Kunne ikke lese filen. Prøv PDF, Word (.docx), bilde eller tekstfil.");
     } finally {
       setParsingFile(false);
     }
