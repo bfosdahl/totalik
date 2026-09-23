@@ -74,14 +74,18 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
   }, [isRunning, startTime, pausedSeconds, isPaused, projectId]);
 
 
+  const selectedProject = projects.find((p) => p.id === projectId) || null;
+
   const handleStart = () => {
     const now = new Date();
+    if (projectId !== NO_PROJECT) localStorage.setItem(LAST_PROJECT_KEY, projectId);
     setStartTime(now);
     setElapsedSeconds(0);
     setPausedSeconds(0);
     setIsPaused(false);
     setIsRunning(true);
   };
+
 
   const handlePause = () => {
     if (!isPaused) {
