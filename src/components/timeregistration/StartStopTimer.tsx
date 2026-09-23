@@ -1,22 +1,36 @@
 import { useState, useEffect } from "react";
-import { Play, Square, Pause } from "lucide-react";
+import { Play, Square, Pause, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
+import { useProjectOptions } from "@/hooks/useProjectOptions";
+
+const NO_PROJECT = "__none__";
+const LAST_PROJECT_KEY = "timer:lastProjectId";
+
+export interface TimerResult {
+  ksProjectId: string | null;
+  projectName: string | null;
+}
 
 interface StartStopTimerProps {
-  onComplete: (hours: number) => void;
+  onComplete: (hours: number, result: TimerResult) => void;
   isDisabled?: boolean;
 }
 
 export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) {
+  const { data: projects = [] } = useProjectOptions();
+  const [projectId, setProjectId] = useState<string>(NO_PROJECT);
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [pausedSeconds, setPausedSeconds] = useState(0);
+
 
   // Load saved timer state from localStorage
   useEffect(() => {
