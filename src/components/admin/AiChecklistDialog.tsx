@@ -22,6 +22,19 @@ const TRADES = [
   "Blikkenslager", "Maler", "Gulvlegger", "Ventilasjon", "Generelt",
 ];
 
+const LANGUAGES = [
+  { value: "auto", label: "Automatisk (samme språk som jeg skriver)" },
+  { value: "norsk (bokmål)", label: "Norsk" },
+  { value: "English", label: "Engelsk" },
+  { value: "polski", label: "Polsk" },
+  { value: "lietuvių", label: "Litauisk" },
+  { value: "latviešu", label: "Latvisk" },
+  { value: "svenska", label: "Svensk" },
+  { value: "українська", label: "Ukrainsk" },
+  { value: "română", label: "Rumensk" },
+  { value: "Deutsch", label: "Tysk" },
+];
+
 interface AiChecklistDialogProps {
   trigger?: React.ReactNode;
   /** Called after a successful save so parent lists can refetch */
