@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -53,6 +54,7 @@ export interface GeofenceClockInfo {
 
 export function useTimeClock() {
   const { user, profile, isCompanyAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [qrCodes, setQrCodes] = useState<TimeClockQrCode[]>([]);
   const [entries, setEntries] = useState<TimeClockEntry[]>([]);
   const [activeEntry, setActiveEntry] = useState<TimeClockEntry | null>(null);
@@ -176,6 +178,7 @@ export function useTimeClock() {
       if (error) throw error;
       toast.success("✅ Stemplet inn!");
       await fetchEntries();
+      queryClient.invalidateQueries({ queryKey: ["project-presence"] });
       return true;
     } catch (error) {
       console.error("Error clocking in:", error);
@@ -214,6 +217,7 @@ export function useTimeClock() {
       if (error) throw error;
       toast.success(`✅ Stemplet ut! (${hoursWorked.toFixed(1)} timer)`);
       await fetchEntries();
+      queryClient.invalidateQueries({ queryKey: ["project-presence"] });
       return true;
     } catch (error: unknown) {
       console.error("Error clocking out:", error);
