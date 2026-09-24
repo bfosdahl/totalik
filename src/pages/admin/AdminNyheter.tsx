@@ -79,7 +79,7 @@ export default function AdminNyheter() {
       const { data } = await supabase
         .from("email_logs")
         .select("subject, status, created_at, recipient_email")
-        .eq("email_type", "unknown")
+        .eq("email_type", "newsletter")
         .gte("created_at", since)
         .order("created_at", { ascending: false })
         .limit(5000);
