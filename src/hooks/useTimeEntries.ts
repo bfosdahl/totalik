@@ -187,12 +187,13 @@ export function useTimeEntries() {
       ) as string[];
       const projectNameById = new Map<string, string>();
       if (clockProjectIds.length > 0) {
-        const { data: projData } = await supabase
+        const { data: projData, error: projError } = await supabase
           .from("ks_module2_projects")
-          .select("id, name")
+          .select("id, project_name")
           .eq("company_id", profile.company_id)
           .in("id", clockProjectIds);
-        (projData || []).forEach((p: any) => projectNameById.set(p.id, p.name));
+        if (projError) console.error("Kunne ikke hente prosjektnavn", projError);
+        (projData || []).forEach((p: any) => projectNameById.set(p.id, p.project_name));
       }
 
       // Convert clock entries to TimeEntry format
