@@ -236,6 +236,12 @@ export default function AdminNyheter() {
               placeholder="Nyheter i KS Bygg"
               maxLength={150}
             />
+            {duplicate && (
+              <p className="text-sm text-destructive">
+                Du har allerede sendt et nyhetsbrev med dette emnet{" "}
+                {new Date(duplicate.date).toLocaleDateString("nb-NO")} til {duplicate.sent} mottakere.
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Melding</Label>
@@ -316,6 +322,29 @@ export default function AdminNyheter() {
               <span className="ml-2">Send til {counts?.recipients ?? 0} mottakere</span>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Tidligere sendt</CardTitle>
+          <CardDescription>Nyhetsbrev sendt de siste 6 månedene. Trykk for å se emnet i feltet over.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {history.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ingen nyhetsbrev funnet.</p>
+          ) : (
+            <ul className="divide-y">
+              {history.map((h) => (
+                <li key={h.subject} className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span className="font-medium text-sm">{h.subject}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {new Date(h.date).toLocaleString("nb-NO", { dateStyle: "short", timeStyle: "short" })} · {h.delivered}/{h.sent} levert
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>
