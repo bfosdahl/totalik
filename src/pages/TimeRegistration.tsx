@@ -25,12 +25,14 @@ import { MyShiftsPanel } from "@/components/work-schedule/MyShiftsPanel";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 import { TimeReportDialog } from "@/components/timeregistration/TimeReportDialog";
 import { t } from "@/i18n/t";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useDepartmentMembership } from "@/hooks/useDepartmentMembership";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
 
 export default function TimeRegistration() {
-  const { user, isCompanyAdmin: isCoAdmin, isDepartmentAdmin, company } = useAuth();
+  const { user, isCompanyAdmin: isCoAdmin, isDepartmentAdmin, company, refreshCompany } = useAuth();
   const isCompanyAdmin = isCoAdmin || isDepartmentAdmin;
   const { departments, isInDepartment } = useDepartmentMembership();
   const [deptFilter, setDeptFilter] = useState<string>("all");
@@ -242,6 +244,32 @@ export default function TimeRegistration() {
                     {employeeOptions.map((emp) => (
                       <SelectItem key={emp.id} value={emp.id}>
                         {emp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {isCoAdmin && company && (
+                <Select
+                  value={String(company.standard_daily_hours ?? 7.5)}
+                  onValueChange={async (v) => {
+                    const { error } = await supabase
+                      .from("companies")
+                      .update({ standard_daily_hours: Number(v) } as any)
+                      .eq("id", company.id);
+                    if (error) { toast.error("Kunne ikke lagre standard arbeidsdag"); return; }
+                    await refreshCompany();
+                    toast.success("Standard arbeidsdag lagret");
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-[210px]" aria-label="Standard arbeidsdag">
+                    <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[7, 7.5, 8].map((h) => (
+                      <SelectItem key={h} value={String(h)}>
+                        Standard dag: {String(h).replace(".", ",")} t
                       </SelectItem>
                     ))}
                   </SelectContent>
