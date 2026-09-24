@@ -15,6 +15,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateTimeReportPdf } from "@/utils/timeReportPdf";
+import { useDepartmentMembership } from "@/hooks/useDepartmentMembership";
+import { useQuery } from "@tanstack/react-query";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TimeReportDialogProps {
   open: boolean;
@@ -26,8 +29,23 @@ interface TimeReportDialogProps {
 const toISO = (d: Date) => format(d, "yyyy-MM-dd");
 
 export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReportDialogProps) {
-  const { user, profile, company, isCompanyAdmin, isSystemAdmin } = useAuth();
-  const canSeeAll = isCompanyAdmin || isSystemAdmin;
+  const { user, profile, company, isCompanyAdmin, isSystemAdmin, isDepartmentAdmin } = useAuth();
+  const canSeeAll = isCompanyAdmin || isSystemAdmin || isDepartmentAdmin;
+  const { departments, isInDepartment } = useDepartmentMembership();
+  const [deptId, setDeptId] = useState("all");
+  const [projectId, setProjectId] = useState("all");
+  const { data: projects = [] } = useQuery({
+    queryKey: ["report-projects", profile?.company_id],
+    enabled: open && canSeeAll && !ksProjectId && Boolean(profile?.company_id),
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ks_module2_projects")
+        .select("id, project_name")
+        .eq("company_id", profile!.company_id!)
+        .order("project_name");
+      return (data || []) as { id: string; project_name: string }[];
+    },
+  });
 
   const thisWeek = {
     from: startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -61,10 +79,20 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
         .order("entry_date", { ascending: true });
 
       if (!canSeeAll) query = query.eq("user_id", user?.id ?? "");
-      if (ksProjectId) query = query.eq("ks_project_id", ksProjectId);
+      const pid = ksProjectId || (projectId !== "all" ? projectId : null);
+      if (pid) query = query.eq("ks_project_id", pid);
 
-      const { data, error } = await query;
+      const { data: raw, error } = await query;
       if (error) throw error;
+      const data = (raw || []).filter(
+        (e: any) =>
+          deptId === "all"
+            ? isCompanyAdmin || isSystemAdmin || e.user_id === user?.id || departments.some((d) => isInDepartment(e.user_id, d.id))
+            : isInDepartment(e.user_id, deptId)
+      );
+      const deptName = departments.find((d) => d.id === deptId)?.name;
+      const projName = projects.find((p) => p.id === projectId)?.project_name;
+      const filterLabel = [deptName, projName].filter(Boolean).join(" • ");
 
       if (!data || data.length === 0) {
         toast.error("Ingen timeføringer i valgt periode");
@@ -78,7 +106,7 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
         startDate: new Date(fromDate),
         endDate: new Date(toDate),
         subtitle: canSeeAll
-          ? undefined
+          ? filterLabel || undefined
           : `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || undefined,
       });
       toast.success("Timerapport lastet ned");
@@ -98,7 +126,7 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
           <DialogTitle>Timerapport (PDF)</DialogTitle>
           <DialogDescription>
             {canSeeAll
-              ? "Utskriftsvennlig timeliste for hele bedriften i valgt periode."
+              ? "Velg periode, avdeling og prosjekt. Rapporten viser bare de som har ført timer."
               : "Utskriftsvennlig timeliste for dine egne timer i valgt periode."}
           </DialogDescription>
         </DialogHeader>
@@ -163,6 +191,39 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
               />
             </div>
           </div>
+
+          {canSeeAll && (departments.length > 0 || (!ksProjectId && projects.length > 0)) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {departments.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Avdeling</Label>
+                  <Select value={deptId} onValueChange={setDeptId}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{isCompanyAdmin || isSystemAdmin ? "Alle avdelinger" : "Mine avdelinger"}</SelectItem>
+                      {departments.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {!ksProjectId && projects.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Prosjekt</Label>
+                  <Select value={projectId} onValueChange={setProjectId}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Alle prosjekter</SelectItem>
+                      {projects.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.project_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
 
           <Button className="w-full" onClick={handleGenerate} disabled={isGenerating}>
             {isGenerating ? (
