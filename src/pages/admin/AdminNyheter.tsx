@@ -328,7 +328,7 @@ export default function AdminNyheter() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Tidligere sendt</CardTitle>
-          <CardDescription>Nyhetsbrev sendt de siste 6 månedene. Trykk for å se emnet i feltet over.</CardDescription>
+          <CardDescription>Nyhetsbrev sendt de siste 6 månedene.</CardDescription>
         </CardHeader>
         <CardContent>
           {history.length === 0 ? (
