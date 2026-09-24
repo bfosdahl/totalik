@@ -22,7 +22,8 @@ Deno.serve(async (req) => {
     const secret = req.headers.get("x-cron-secret");
     const expected = Deno.env.get("ADMIN_ACTIONS_SECRET");
     const alt = Deno.env.get("ONEOFF_MTV_SECRET");
-    const ok = (expected && secret === expected) || (alt && secret === alt);
+    const alt2 = Deno.env.get("ONEOFF_VIGGO_SECRET");
+    const ok = (expected && secret === expected) || (alt && secret === alt) || (alt2 && secret === alt2);
     if (!ok) return json({ error: "unauthorized" }, 401);
 
     const body = await req.json().catch(() => null);
