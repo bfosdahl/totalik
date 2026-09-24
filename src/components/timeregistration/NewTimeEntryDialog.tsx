@@ -104,7 +104,8 @@ export function NewTimeEntryDialog({
   const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
   const [onBehalfUserId, setOnBehalfUserId] = useState<string>("__self__");
 
-  const { user, profile, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const { user, profile, company, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const standardHours = Number(company?.standard_daily_hours ?? 7.5) || 7.5;
   const canRegisterForOthers = isCompanyAdmin || isSystemAdmin;
   const { users: companyUsers, getUserDisplayName } = useCompanyUsers();
 
