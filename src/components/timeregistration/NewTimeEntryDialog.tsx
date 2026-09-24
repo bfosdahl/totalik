@@ -104,7 +104,8 @@ export function NewTimeEntryDialog({
   const [overtimeSegments, setOvertimeSegments] = useState<OvertimeSegment[]>([]);
   const [onBehalfUserId, setOnBehalfUserId] = useState<string>("__self__");
 
-  const { user, profile, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const { user, profile, company, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const standardHours = Number(company?.standard_daily_hours ?? 7.5) || 7.5;
   const canRegisterForOthers = isCompanyAdmin || isSystemAdmin;
   const { users: companyUsers, getUserDisplayName } = useCompanyUsers();
 
@@ -175,7 +176,7 @@ export function NewTimeEntryDialog({
     setHours(
       prefs.lastStartTime && prefs.lastEndTime
         ? (calcHoursBetween(prefs.lastStartTime, prefs.lastEndTime) || 0).toFixed(2)
-        : ""
+        : String(standardHours)
     );
     setHourType(((prefs.lastHourType as HourType) || "normal") as HourType);
     const remembered =
@@ -613,12 +614,12 @@ export function NewTimeEntryDialog({
               variant="outline"
               size="sm"
               onClick={() => {
-                setHours("8");
+                setHours(String(standardHours));
                 setStartTime("");
                 setEndTime("");
               }}
             >
-              8 timer
+              {String(standardHours).replace(".", ",")} timer
             </Button>
             <Button
               type="button"
@@ -682,7 +683,7 @@ export function NewTimeEntryDialog({
                   step="0.25"
                   min="0.25"
                   max="24"
-                  placeholder="7.5"
+                  placeholder={String(standardHours)}
                   value={hours}
                   onChange={(e) => setHours(e.target.value)}
                   className="pl-10"

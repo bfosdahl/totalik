@@ -25,11 +25,17 @@ import { MyShiftsPanel } from "@/components/work-schedule/MyShiftsPanel";
 import { exportTimeEntriesToExcel } from "@/utils/timeEntryExport";
 import { TimeReportDialog } from "@/components/timeregistration/TimeReportDialog";
 import { t } from "@/i18n/t";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useDepartmentMembership } from "@/hooks/useDepartmentMembership";
 
 type DateFilter = "this-week" | "last-week" | "this-month" | "last-month" | "all";
 
 export default function TimeRegistration() {
-  const { user, isCompanyAdmin, company } = useAuth();
+  const { user, isCompanyAdmin: isCoAdmin, isDepartmentAdmin, company, refreshCompany } = useAuth();
+  const isCompanyAdmin = isCoAdmin || isDepartmentAdmin;
+  const { departments, isInDepartment } = useDepartmentMembership();
+  const [deptFilter, setDeptFilter] = useState<string>("all");
   const {
     entries,
     isLoading,
@@ -86,6 +92,7 @@ export default function TimeRegistration() {
 
   const filteredEntries = entries.filter((entry) => {
     if (employeeFilter !== "all" && entry.user_id !== employeeFilter) return false;
+    if (deptFilter !== "all" && !isInDepartment(entry.user_id, deptFilter)) return false;
     if (!start || !end) return true;
     const entryDate = new Date(entry.entry_date);
     return entryDate >= start && entryDate <= end;
@@ -93,7 +100,11 @@ export default function TimeRegistration() {
 
   // Unique employee list for filter dropdown
   const employeeOptions = Array.from(
-    new Map(entries.map((e) => [e.user_id, e.user_name])).entries()
+    new Map(
+      entries
+        .filter((e) => deptFilter === "all" || isInDepartment(e.user_id, deptFilter))
+        .map((e) => [e.user_id, e.user_name])
+    ).entries()
   )
     .map(([id, name]) => ({ id, name }))
     .sort((a, b) => a.name.localeCompare(b.name, "nb"));
@@ -128,7 +139,7 @@ export default function TimeRegistration() {
           
           {/* Action buttons - horizontal scroll on mobile */}
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-            {isCompanyAdmin && (
+            {isCoAdmin && (
               <Button variant="outline" size="sm" onClick={() => setQrDialogOpen(true)} className="shrink-0">
                 <QrCode className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t("auto.qr_stempling")}</span>
@@ -209,6 +220,20 @@ export default function TimeRegistration() {
                   <SelectItem value="all">{t("auto.alle")}</SelectItem>
                 </SelectContent>
               </Select>
+              {isCompanyAdmin && departments.length > 0 && (
+                <Select value={deptFilter} onValueChange={(v) => { setDeptFilter(v); setEmployeeFilter("all"); }}>
+                  <SelectTrigger className="w-full sm:w-[200px]" aria-label="Avdeling">
+                    <SelectValue placeholder="Alle avdelinger" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isCoAdmin && <SelectItem value="all">Alle avdelinger</SelectItem>}
+                    {!isCoAdmin && <SelectItem value="all">Mine avdelinger</SelectItem>}
+                    {departments.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {isCompanyAdmin && (
                 <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
                   <SelectTrigger className="w-full sm:w-[220px]">
@@ -219,6 +244,32 @@ export default function TimeRegistration() {
                     {employeeOptions.map((emp) => (
                       <SelectItem key={emp.id} value={emp.id}>
                         {emp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {isCoAdmin && company && (
+                <Select
+                  value={String(company.standard_daily_hours ?? 7.5)}
+                  onValueChange={async (v) => {
+                    const { error } = await supabase
+                      .from("companies")
+                      .update({ standard_daily_hours: Number(v) } as any)
+                      .eq("id", company.id);
+                    if (error) { toast.error("Kunne ikke lagre standard arbeidsdag"); return; }
+                    await refreshCompany();
+                    toast.success("Standard arbeidsdag lagret");
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-[210px]" aria-label="Standard arbeidsdag">
+                    <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[7, 7.5, 8].map((h) => (
+                      <SelectItem key={h} value={String(h)}>
+                        Standard dag: {String(h).replace(".", ",")} t
                       </SelectItem>
                     ))}
                   </SelectContent>

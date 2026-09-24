@@ -82,7 +82,7 @@ export function TimeEntryList({
   onConfirmSchedule,
   showEmployee = false,
 }: TimeEntryListProps) {
-  const { user, isCompanyAdmin } = useAuth();
+  const { user, isCompanyAdmin, isDepartmentAdmin } = useAuth();
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
 
   if (entries.length === 0) {
@@ -121,9 +121,10 @@ export function TimeEntryList({
             const config = statusConfig[entry.status];
             const canModify =
               (isCompanyAdmin && entry.status !== "pending_confirmation") ||
+              (isDepartmentAdmin && entry.user_id !== user?.id && entry.status !== "approved" && entry.status !== "pending_confirmation") ||
               (entry.user_id === user?.id &&
                 (entry.status === "draft" || entry.status === "submitted" || entry.status === "rejected"));
-            const canApprove = isCompanyAdmin && entry.status === "submitted";
+            const canApprove = (isCompanyAdmin || (isDepartmentAdmin && entry.user_id !== user?.id)) && entry.status === "submitted";
 
             return (
               <TableRow key={entry.id} className={entry.status === "pending_confirmation" ? "bg-blue-50/50 dark:bg-blue-950/30" : ""}>

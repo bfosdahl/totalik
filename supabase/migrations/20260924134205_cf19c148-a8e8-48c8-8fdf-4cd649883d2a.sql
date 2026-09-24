@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.is_department_leader_of(uuid, uuid) TO authenticated, service_role;

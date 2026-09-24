@@ -37,6 +37,7 @@ interface CompanyInfo {
   status: string | null;
   scheduled_termination_date: string | null;
   terminated_at: string | null;
+  standard_daily_hours?: number | null;
 }
 
 interface GuestAccessInfo {
@@ -99,12 +100,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isCompanyTerminated =
     !!company && (company.status === "inactive" || !!company.terminated_at);
 
-  const fetchAdminDepartments = async (userId: string) => {
+  const fetchAdminDepartments = async (userId: string, profileId?: string) => {
     try {
+      // user_departments.user_id kan være enten auth-id eller profil-id
+      const ids = profileId ? [userId, profileId] : [userId];
       const { data, error } = await supabase
         .from("user_departments")
         .select("department_id")
-        .eq("user_id", userId)
+        .in("user_id", ids)
         .eq("is_department_admin", true);
 
       if (error) throw error;
@@ -223,10 +226,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .from("user_roles")
           .select("role")
           .eq("user_id", userId),
-        fetchAdminDepartments(userId),
       ]);
 
       const profileData = profileRes.data;
+      await fetchAdminDepartments(userId, profileData?.id);
       if (profileData) {
         setProfile(profileData as UserProfile);
 
@@ -234,7 +237,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (profileData.company_id) {
           const { data: companyData } = await supabase
             .from("companies")
-            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count, status, scheduled_termination_date, terminated_at")
+            .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count, status, scheduled_termination_date, terminated_at, standard_daily_hours")
             .eq("id", profileData.company_id)
             .maybeSingle();
 
@@ -379,7 +382,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
         const { data: companyData } = await supabase
           .from("companies")
-          .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count, status, scheduled_termination_date, terminated_at")
+          .select("id, name, org_number, logo_url, address, postal_code, city, phone, email, accent_color, has_departments, employee_count, brreg_employee_count, status, scheduled_termination_date, terminated_at, standard_daily_hours")
           .eq("id", profile.company_id)
           .maybeSingle();
 
