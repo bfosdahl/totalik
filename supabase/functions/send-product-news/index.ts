@@ -227,12 +227,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const MAX_BATCH = 50;
     for (let i = 0; i < payload.length; i += MAX_BATCH) {
       const chunk = payload.slice(i, i + MAX_BATCH);
-      const { error } = await resend.batch.send(chunk);
+      const { data: batchResults, error } = await resend.batch.send(chunk);
       if (error) {
         console.error("Resend batch error:", error);
         errors.push(error.message ?? "ukjent feil");
       } else {
         sent += chunk.length;
+        // Logg sendingen som nyhetsbrev (skilles fra system-e-poster i Tidligere sendt-listen)
+        if (!testEmail) {
+          const logs = chunk.map((p, i) => ({
+            recipient_email: Array.isArray(p.to) ? p.to[0] : String(p.to),
+            subject,
+            status: "sent" as const,
+            email_type: "newsletter",
+            sent_by: user.email ?? null,
+            resend_email_id: Array.isArray(batchResults) ? (batchResults[i]?.id ?? null) : null,
+          }));
+          if (logs.length) {
+            const { error: logErr } = await supabase.from("email_logs").insert(logs);
+            if (logErr) console.error("email_logs insert error:", logErr);
+          }
+        }
       }
     }
 
