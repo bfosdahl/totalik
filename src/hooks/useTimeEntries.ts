@@ -117,7 +117,8 @@ export interface CreateTimeEntry {
 }
 
 export function useTimeEntries() {
-  const { user, profile, isCompanyAdmin } = useAuth();
+  const { user, profile, isCompanyAdmin: isCoAdmin, isDepartmentAdmin } = useAuth();
+  const isCompanyAdmin = isCoAdmin || isDepartmentAdmin;
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
