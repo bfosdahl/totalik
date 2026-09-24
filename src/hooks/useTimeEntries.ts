@@ -322,7 +322,7 @@ export function useTimeEntries() {
 
     try {
       const isOnBehalf = !!entry.on_behalf_user_id && entry.on_behalf_user_id !== user.id;
-      if (isOnBehalf && !isCompanyAdmin) {
+      if (isOnBehalf && !isCoAdmin) {
         toast.error("Bare admin kan føre timer for andre ansatte");
         return false;
       }
