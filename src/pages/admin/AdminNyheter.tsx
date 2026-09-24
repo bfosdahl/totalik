@@ -94,7 +94,6 @@ export default function AdminNyheter() {
       }
       setHistory(
         Array.from(map.values())
-          .filter((g) => g.emails.size >= 5 || /nyhet/i.test(g.subject))
           .map((g) => ({ subject: g.subject, date: g.date, sent: g.emails.size, delivered: g.delivered.size })),
       );
     })();
