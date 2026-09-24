@@ -72,6 +72,36 @@ export default function AdminNyheter() {
     }
   };
 
+  const [history, setHistory] = useState<{ subject: string; date: string; sent: number; delivered: number }[]>([]);
+  useEffect(() => {
+    (async () => {
+      const since = new Date(Date.now() - 180 * 86400000).toISOString();
+      const { data } = await supabase
+        .from("email_logs")
+        .select("subject, status, created_at, recipient_email")
+        .eq("email_type", "unknown")
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(5000);
+      const map = new Map<string, { subject: string; date: string; emails: Set<string>; delivered: Set<string> }>();
+      for (const r of data ?? []) {
+        const key = r.subject ?? "";
+        if (!key) continue;
+        const g = map.get(key) ?? { subject: key, date: r.created_at, emails: new Set(), delivered: new Set() };
+        g.emails.add(r.recipient_email);
+        if (r.status === "delivered") g.delivered.add(r.recipient_email);
+        map.set(key, g);
+      }
+      setHistory(
+        Array.from(map.values())
+          .filter((g) => g.emails.size >= 5 || /nyhet/i.test(g.subject))
+          .map((g) => ({ subject: g.subject, date: g.date, sent: g.emails.size, delivered: g.delivered.size })),
+      );
+    })();
+  }, [isSending]);
+
+  const duplicate = history.find((h) => h.subject.trim().toLowerCase() === subject.trim().toLowerCase() && subject.trim());
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
