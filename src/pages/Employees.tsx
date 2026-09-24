@@ -21,13 +21,16 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { t } from "@/i18n/t";
 import { BulkMessageDialog } from "@/components/hr/BulkMessageDialog";
+import { useDepartmentMembership } from "@/hooks/useDepartmentMembership";
 
 export default function Employees() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { isCompanyAdmin, isSystemAdmin, company } = useAuth();
+  const { isCompanyAdmin, isSystemAdmin, isDepartmentAdmin, company } = useAuth();
   const { employees, courses, isLoading } = useEmployees();
   const [searchQuery, setSearchQuery] = useState("");
+  const { departments, isInDepartment } = useDepartmentMembership();
+  const [deptFilter, setDeptFilter] = useState("all");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   
   // Dialog states
@@ -49,11 +52,17 @@ export default function Employees() {
 
   const canManage = isCompanyAdmin || isSystemAdmin;
 
-  const filteredEmployees = employees?.filter(emp => 
-    emp.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    emp.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredEmployees = employees?.filter(emp => {
+    if (deptFilter !== "all" && !isInDepartment(emp.user_id, deptFilter)) return false;
+    // Avdelingsledere ser kun ansatte i egne avdelinger
+    if (!canManage && isDepartmentAdmin && deptFilter === "all" &&
+        !departments.some((d) => isInDepartment(emp.user_id, d.id))) return false;
+    return (
+      emp.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }) || [];
 
   // Calculate expiring courses
   const expiringCourses = courses?.filter(course => {
@@ -311,6 +320,19 @@ export default function Employees() {
                   className="pl-10"
                 />
               </div>
+              {departments.length > 0 && (
+                <Select value={deptFilter} onValueChange={setDeptFilter}>
+                  <SelectTrigger className="w-[200px]" aria-label="Avdeling">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{canManage ? "Alle avdelinger" : "Mine avdelinger"}</SelectItem>
+                    {departments.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Employee List */}
