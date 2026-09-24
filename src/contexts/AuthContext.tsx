@@ -99,12 +99,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isCompanyTerminated =
     !!company && (company.status === "inactive" || !!company.terminated_at);
 
-  const fetchAdminDepartments = async (userId: string) => {
+  const fetchAdminDepartments = async (userId: string, profileId?: string) => {
     try {
+      // user_departments.user_id kan være enten auth-id eller profil-id
+      const ids = profileId ? [userId, profileId] : [userId];
       const { data, error } = await supabase
         .from("user_departments")
         .select("department_id")
-        .eq("user_id", userId)
+        .in("user_id", ids)
         .eq("is_department_admin", true);
 
       if (error) throw error;
@@ -223,10 +225,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .from("user_roles")
           .select("role")
           .eq("user_id", userId),
-        fetchAdminDepartments(userId),
       ]);
 
       const profileData = profileRes.data;
+      await fetchAdminDepartments(userId, profileData?.id);
       if (profileData) {
         setProfile(profileData as UserProfile);
 
