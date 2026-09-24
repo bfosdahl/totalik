@@ -1354,6 +1354,7 @@ export type Database = {
           sg_approved: boolean | null
           sg_expiry_date: string | null
           sg_org_number: string | null
+          standard_daily_hours: number
           status: Database["public"]["Enums"]["company_status"]
           terminated_at: string | null
           termination_note: string | null
@@ -1401,6 +1402,7 @@ export type Database = {
           sg_approved?: boolean | null
           sg_expiry_date?: string | null
           sg_org_number?: string | null
+          standard_daily_hours?: number
           status?: Database["public"]["Enums"]["company_status"]
           terminated_at?: string | null
           termination_note?: string | null
@@ -1448,6 +1450,7 @@ export type Database = {
           sg_approved?: boolean | null
           sg_expiry_date?: string | null
           sg_org_number?: string | null
+          standard_daily_hours?: number
           status?: Database["public"]["Enums"]["company_status"]
           terminated_at?: string | null
           termination_note?: string | null
@@ -18699,6 +18702,10 @@ export type Database = {
       is_company_admin: { Args: { _user_id: string }; Returns: boolean }
       is_department_admin_for: {
         Args: { _department_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_department_leader_of: {
+        Args: { _employee: string; _leader: string }
         Returns: boolean
       }
       is_hms_responsible: { Args: { user_id: string }; Returns: boolean }
