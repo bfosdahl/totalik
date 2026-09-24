@@ -72,6 +72,36 @@ export default function AdminNyheter() {
     }
   };
 
+  const [history, setHistory] = useState<{ subject: string; date: string; sent: number; delivered: number }[]>([]);
+  useEffect(() => {
+    (async () => {
+      const since = new Date(Date.now() - 180 * 86400000).toISOString();
+      const { data } = await supabase
+        .from("email_logs")
+        .select("subject, status, created_at, recipient_email")
+        .eq("email_type", "unknown")
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(5000);
+      const map = new Map<string, { subject: string; date: string; emails: Set<string>; delivered: Set<string> }>();
+      for (const r of data ?? []) {
+        const key = r.subject ?? "";
+        if (!key) continue;
+        const g = map.get(key) ?? { subject: key, date: r.created_at, emails: new Set(), delivered: new Set() };
+        g.emails.add(r.recipient_email);
+        if (r.status === "delivered") g.delivered.add(r.recipient_email);
+        map.set(key, g);
+      }
+      setHistory(
+        Array.from(map.values())
+          .filter((g) => g.emails.size >= 5 || /nyhet/i.test(g.subject))
+          .map((g) => ({ subject: g.subject, date: g.date, sent: g.emails.size, delivered: g.delivered.size })),
+      );
+    })();
+  }, [isSending]);
+
+  const duplicate = history.find((h) => h.subject.trim().toLowerCase() === subject.trim().toLowerCase() && subject.trim());
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -206,6 +236,12 @@ export default function AdminNyheter() {
               placeholder="Nyheter i KS Bygg"
               maxLength={150}
             />
+            {duplicate && (
+              <p className="text-sm text-destructive">
+                Du har allerede sendt et nyhetsbrev med dette emnet{" "}
+                {new Date(duplicate.date).toLocaleDateString("nb-NO")} til {duplicate.sent} mottakere.
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Melding</Label>
@@ -286,6 +322,29 @@ export default function AdminNyheter() {
               <span className="ml-2">Send til {counts?.recipients ?? 0} mottakere</span>
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Tidligere sendt</CardTitle>
+          <CardDescription>Nyhetsbrev sendt de siste 6 månedene.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {history.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ingen nyhetsbrev funnet.</p>
+          ) : (
+            <ul className="divide-y">
+              {history.map((h) => (
+                <li key={h.subject} className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                  <span className="font-medium text-sm">{h.subject}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {new Date(h.date).toLocaleString("nb-NO", { dateStyle: "short", timeStyle: "short" })} · {h.delivered}/{h.sent} levert
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>
