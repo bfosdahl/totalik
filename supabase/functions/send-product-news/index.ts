@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { BRAND, brandedEmail, brandButton } from "../_shared/email-brand.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,10 +24,37 @@ interface Recipient {
 }
 
 function bodyToHtml(body: string): string {
-  return body
-    .split(/\n{2,}/)
-    .map((block) => `<p style="color:#333;font-size:16px;line-height:1.6;margin:0 0 16px 0;">${esc(block).replace(/\n/g, "<br>")}</p>`)
-    .join("");
+  const out: string[] = [];
+  let bullets: string[] = [];
+  let para: string[] = [];
+  const flushBullets = () => {
+    if (!bullets.length) return;
+    out.push(`<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 18px 0;">${bullets
+      .map((b) => `<tr><td valign="top" style="width:18px;padding:4px 0;color:${BRAND.accent};font-size:15px;line-height:1.6;">&#9679;</td><td style="padding:4px 0;color:${BRAND.text};font-size:15px;line-height:1.6;">${esc(b)}</td></tr>`)
+      .join("")}</table>`);
+    bullets = [];
+  };
+  const flushPara = () => {
+    if (!para.length) return;
+    out.push(`<p style="margin:0 0 16px 0;color:${BRAND.text};font-size:15px;line-height:1.7;">${para.map(esc).join("<br>")}</p>`);
+    para = [];
+  };
+  for (const raw of body.split("\n")) {
+    const line = raw.trim();
+    if (!line) { flushBullets(); flushPara(); continue; }
+    const bullet = line.match(/^[-*•]\s+(.*)$/);
+    if (bullet) { flushPara(); bullets.push(bullet[1]); continue; }
+    const isHeading = line.length <= 60 && /[A-ZÆØÅ]/.test(line) && line === line.toUpperCase();
+    if (isHeading) {
+      flushBullets(); flushPara();
+      out.push(`<h2 style="margin:26px 0 10px 0;padding:0 0 8px 0;border-bottom:2px solid ${BRAND.border};color:${BRAND.deep};font-size:16px;letter-spacing:1px;font-weight:700;">${esc(line)}</h2>`);
+      continue;
+    }
+    flushBullets();
+    para.push(line);
+  }
+  flushBullets(); flushPara();
+  return out.join("");
 }
 
 function imagesToHtml(images: string[]): string {
@@ -34,30 +62,24 @@ function imagesToHtml(images: string[]): string {
   return images
     .map(
       (url) =>
-        `<div style="margin:0 0 16px 0;text-align:center;"><img src="${esc(url)}" alt="" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;"></div>`,
+        `<div style="margin:0 0 16px 0;text-align:center;"><img src="${esc(url)}" alt="" style="max-width:100%;height:auto;border-radius:12px;display:block;margin:0 auto;"></div>`,
     )
     .join("");
 }
 
 function renderEmail(subject: string, body: string, r: Recipient, images: string[]): string {
-  return `
-    <meta charset="utf-8">
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <h1 style="color:#1a1a2e;margin:0;font-size:22px;">${esc(subject)}</h1>
-      </div>
-      <p style="color:#333;font-size:16px;">Hei${r.firstName ? ` ${esc(r.firstName)}` : ""},</p>
-      ${bodyToHtml(body)}
-      ${imagesToHtml(images)}
-      <div style="text-align:center;margin:28px 0;">
-        <a href="${LOGIN_URL}" style="background:linear-gradient(135deg,#0066cc 0%,#0052a3 100%);color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;font-size:16px;">Logg inn p&aring; Total-IK</a>
-      </div>
-      <hr style="border:none;border-top:1px solid #eee;margin:28px 0;">
-      <p style="color:#999;font-size:12px;text-align:center;">
-        Du mottar denne e-posten fordi ${esc(r.companyName || "din bedrift")} har en aktiv l&oslash;sning i Total-IK.<br>
-        Har du sp&oslash;rsm&aring;l, svar p&aring; denne e-posten eller kontakt post@athenahms.no.
-      </p>
-    </div>`;
+  const bodyHtml = `
+    <p style="margin:0 0 18px 0;color:${BRAND.text};font-size:15px;line-height:1.7;">Hei${r.firstName ? ` ${esc(r.firstName)}` : ""},</p>
+    ${bodyToHtml(body)}
+    ${imagesToHtml(images)}
+    ${brandButton(LOGIN_URL, "Logg inn p&aring; Total IK")}`;
+  return brandedEmail({
+    heading: esc(subject),
+    badge: "NYHETER",
+    preheader: esc(subject),
+    bodyHtml,
+    footerNote: `Du mottar denne e-posten fordi ${esc(r.companyName || "din bedrift")} bruker Total IK.`,
+  });
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
