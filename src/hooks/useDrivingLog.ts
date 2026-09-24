@@ -208,7 +208,10 @@ export function useDrivingLog() {
       }
 
       const entry = data as unknown as DrivingLogEntry;
-      await bumpVehicleOdometer(entry.vehicle_registration, Number(input.odometer_end));
+      // Kun oppdater kjøretøyets km-stand når turen hadde en reell startverdi
+      if (Number(entry.odometer_start) > 0) {
+        await bumpVehicleOdometer(entry.vehicle_registration, Number(input.odometer_end));
+      }
 
       return entry;
     },
