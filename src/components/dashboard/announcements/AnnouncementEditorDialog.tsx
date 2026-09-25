@@ -152,7 +152,7 @@ export function AnnouncementEditorDialog({ open, onOpenChange, editing, isAdmin,
           </div>
 
           <div className="space-y-2">
-            <Label>Bilder og vedlegg</Label>
+            <Label className="block">Bilder og vedlegg</Label>
             <input
               ref={fileRef}
               type="file"
