@@ -148,6 +148,29 @@ export default function Ks2AvvikIntegrated() {
     corrective_action: "",
     root_cause: "",
   });
+  const [smartLoading, setSmartLoading] = useState(false);
+  const [smartHint, setSmartHint] = useState<string | null>(null);
+
+  const runSmartSeverity = async () => {
+    setSmartLoading(true);
+    setSmartHint(null);
+    const d = await jevAssist<{ severity: string; affectsProgress: number | null }>({
+      mode: "project_deviation",
+      title: newAvvik.title,
+      description: newAvvik.description,
+      location: newAvvik.location,
+      projectName: project?.project_name || "",
+    });
+    if (d) {
+      setNewAvvik((prev) => ({ ...prev, severity: d.severity }));
+      setSmartHint(
+        d.affectsProgress != null && d.affectsProgress >= 0.5
+          ? "Avviket påvirker trolig fremdriften – vurder å varsle byggherre."
+          : "Avviket påvirker trolig ikke fremdriften."
+      );
+    }
+    setSmartLoading(false);
+  };
 
   // Filter avvik based on type (KS or HMS)
   const ksAvvik = avvikList.filter(a => !HMS_CATEGORY_VALUES.includes(a.category));
