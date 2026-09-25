@@ -19,6 +19,7 @@ import { AlertTriangle, Info } from "lucide-react";
 import { checkSundayConflictForEmployee, type SundayStatus } from "@/utils/sundayComplianceCheck";
 import { t } from "@/i18n/t";
 import { supabase } from "@/integrations/supabase/client";
+import { SmartShiftCheck } from "./SmartShiftCheck";
 
 interface CreateShiftDialogProps {
   open: boolean;
@@ -681,6 +682,18 @@ export function CreateShiftDialog({ open, onOpenChange, onSuccess, defaultDate, 
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 />
               </div>
+
+              <SmartShiftCheck
+                employeeIds={isEditMode ? [formData.employee_id].filter(Boolean) : selectedEmployeeIds}
+                dates={formData.schedule_date ? (isEditMode ? [formData.schedule_date] : buildDates()) : []}
+                startTime={formData.start_time}
+                endTime={formData.end_time}
+                role={formData.shift_role ? ROLES[formData.shift_role] || formData.shift_role : ""}
+                location={formData.location ? LOCATIONS[formData.location]?.label || formData.location : ""}
+                projectName={formData.project_id ? projects.find((p) => p.id === formData.project_id)?.project_name || "" : formData.project_name || ""}
+                notes={formData.notes}
+                excludeScheduleId={editShift?.id}
+              />
             </div>
           </ScrollArea>
 
