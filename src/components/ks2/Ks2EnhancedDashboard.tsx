@@ -40,15 +40,17 @@ import {
 } from "recharts";
 import { Ks2PopulateExampleButton } from "./Ks2PopulateExampleButton";
 import { Ks2WelcomeCard } from "./Ks2WelcomeCard";
+import { Ks2SmartPanel } from "./Ks2SmartPanel";
 import { t } from "@/i18n/t";
 
 interface Ks2EnhancedDashboardProps {
   contractorType?: string | null;
   projectAddress?: string | null;
   noSubcontractors?: boolean;
+  projectName?: string | null;
 }
 
-export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcontractors }: Ks2EnhancedDashboardProps = {}) {
+export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcontractors, projectName }: Ks2EnhancedDashboardProps = {}) {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { checklists, stats, isLoading } = useKsModule2Checklists(projectId || "");
@@ -188,6 +190,16 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
           </div>
         </CardContent>
       </Card>
+
+      {/* Smart prosjekthjelp (Jev) */}
+      {projectId && (
+        <Ks2SmartPanel
+          projectId={projectId}
+          projectName={projectName || ""}
+          checklists={checklists}
+          avvik={avvik}
+        />
+      )}
 
       {/* Progress Circle and Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
