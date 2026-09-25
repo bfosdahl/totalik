@@ -487,6 +487,28 @@ export function CreateTravelExpenseDialog({
               </div>
             </div>
 
+            <JevCheckPanel
+              label="Sjekk reiseregningen"
+              disabled={!purpose || !destination}
+              hint="Fyll inn formål og destinasjon først."
+              run={async (call) => {
+                const r = await call<{ ok: number | null; flagged: { index: number }[] }>({
+                  mode: "expense_check", purpose, destination, departureDate, returnDate, totalKm,
+                  dietDays: parseInt(dietDays || "0"), accommodationDays: parseInt(accommodationDays || "0"), total: grandTotal,
+                  items: expenseItems.map((i) => ({ category: i.category, description: i.description, date: i.date, amount: i.amount })),
+                });
+                if (!r) return null;
+                const out = r.flagged.map((f) => {
+                  const it = expenseItems[f.index];
+                  return { ok: false, text: `Utlegg ${f.index + 1}${it?.description ? ` («${it.description}»)` : ""} bør sjekkes.` };
+                });
+                if (r.ok !== null && r.ok < 0.5) out.unshift({ ok: false, text: "Noe i reiseregningen virker feil eller mangler – se over datoer, døgn og beløp." });
+                if (out.length === 0) out.push({ ok: true, text: "Reiseregningen ser ryddig ut." });
+                return out;
+              }}
+            />
+
+
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("auto.avbryt")}</Button>
               <Button type="submit" disabled={isPending || !purpose || !destination}>
