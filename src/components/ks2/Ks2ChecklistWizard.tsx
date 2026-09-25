@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Ks2ChecklistSmartCheck } from "./Ks2ChecklistSmartCheck";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1047,6 +1048,13 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
                 </Card>
               ))}
             </div>
+
+            <Ks2ChecklistSmartCheck
+              title={title}
+              projectName={projectData?.name || projectData?.project_name}
+              items={items}
+              onRegisterDeviation={() => { window.location.href = `/ks/project/${projectId}/avvik`; }}
+            />
 
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep("details")}>
