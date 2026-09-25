@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { JevCheckPanel } from "@/components/shared/JevCheckPanel";
 import {
   Dialog,
   DialogContent,
@@ -314,6 +315,26 @@ export function IkHmsChemicalRiskDialog({
         {draft && (
           <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
         )}
+
+        <JevCheckPanel
+          label="Kontroller vurderingen"
+          disabled={exposureTypes.length === 0}
+          hint="Velg eksponeringsvei først."
+          run={async (call) => {
+            const r = await call<{ ppeOk: number | null; severityOk: number | null; measuresOk: number | null }>({
+              mode: "chemical_check", productName: chemical.product_name, dangerClasses: chemical.danger_classes || [],
+              exposureTypes, exposureLevel, exposureDuration, hazardSeverity, exposureProbability,
+              workTasks, measures: existingMeasures, ppe: requiredPpe,
+            });
+            if (!r) return null;
+            const bad = (v: number | null) => v !== null && v < 0.5;
+            return [
+              bad(r.ppeOk) ? { ok: false, text: "Verneutstyret dekker trolig ikke alle eksponeringsveier." } : { ok: true, text: "Verneutstyret ser tilstrekkelig ut." },
+              bad(r.severityOk) ? { ok: false, text: "Alvorlighet/sannsynlighet virker satt for lavt eller høyt ut fra fareklassene." } : { ok: true, text: "Risikotallene virker rimelige." },
+              bad(r.measuresOk) ? { ok: false, text: "Mangler tiltak utover verneutstyr (bytte produkt, avtrekk, rutiner)." } : { ok: true, text: "Tiltakene ser tilstrekkelige ut." },
+            ];
+          }}
+        />
 
         {/* Progress indicator */}
         <div className="mb-4">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { JevCheckPanel } from "@/components/shared/JevCheckPanel";
 import DOMPurify from "dompurify";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -424,6 +425,18 @@ const PersonalhandbokPage = () => {
                       className="font-mono text-xs"
                     />
                   </div>
+                  <JevCheckPanel
+                    label="Kontroller mot regler"
+                    run={async (call) => {
+                      const r = await call<{ lawful: number | null; clear: number | null; outdated: number | null }>({ mode: "handbook_check", title: editingChapter.title, content: editingChapter.content });
+                      if (!r) return null;
+                      return [
+                        r.lawful !== null && r.lawful < 0.5 ? { ok: false, text: "Noe kan stride mot arbeidsmiljøloven, ferieloven eller folketrygdloven. Sjekk frister, ferie, overtid og sykefravær." } : { ok: true, text: "Ingen tydelige lovbrudd funnet." },
+                        r.clear !== null && r.clear < 0.5 ? { ok: false, text: "Teksten kan være uklar – mangler ansvar, frister eller fremgangsmåte?" } : { ok: true, text: "Teksten virker tydelig." },
+                        ...(r.outdated !== null && r.outdated >= 0.5 ? [{ ok: false, text: "Kan inneholde utdaterte satser, årstall eller lovhenvisninger." }] : []),
+                      ];
+                    }}
+                  />
                   <div className="flex gap-2">
                     <Button onClick={handleSaveChapter} disabled={saving}>
                       <Save className="w-4 h-4 mr-1.5" />

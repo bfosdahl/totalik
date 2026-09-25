@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { JevCheckPanel } from "@/components/shared/JevCheckPanel";
 import {
   Dialog,
   DialogContent,
@@ -124,6 +125,19 @@ export function AddTripDialog({ open, onOpenChange, onSubmit, isPending, lastOdo
             <Label htmlFor="purpose">{t("auto.formaal_med_turen")}</Label>
             <Input id="purpose" value={purpose} onChange={e => setPurpose(e.target.value)} placeholder="F.eks. Kundemøte hos Bygg AS (kan fylles inn senere)" />
           </div>
+
+          <JevCheckPanel
+            label="Foreslå type kjøring"
+            disabled={purpose.trim().length < 3}
+            hint="Skriv formål med turen først."
+            run={async (call) => {
+              const r = await call<{ tripType: string; confidence: number | null }>({ mode: "trip_type", purpose, from: startLocation, to: endLocation, notes });
+              if (!r) return null;
+              const names: Record<string, string> = { business: "Yrkeskjøring", commute: "Arbeidsreise", private: "Privat" };
+              setTripType(r.tripType);
+              return [{ ok: true, text: `Satt til «${names[r.tripType]}». Endre over om det er feil.` }];
+            }}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
