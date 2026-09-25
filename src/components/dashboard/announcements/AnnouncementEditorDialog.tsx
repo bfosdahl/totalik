@@ -15,6 +15,7 @@ import {
   useAnnouncementPeople,
 } from "@/hooks/useCompanyAnnouncements";
 import { AttachmentList, PendingFiles } from "./AttachmentList";
+import { SmartAnnouncementSuggest } from "./SmartAnnouncementSuggest";
 
 interface Props {
   open: boolean;
@@ -107,6 +108,13 @@ export function AnnouncementEditorDialog({ open, onOpenChange, editing, isAdmin,
             <Label htmlFor="ann-body">Melding</Label>
             <Textarea id="ann-body" value={body} onChange={(e) => setBody(e.target.value)} rows={5} placeholder="Skriv meldingen her..." />
           </div>
+          <SmartAnnouncementSuggest
+            title={title}
+            body={body}
+            onPin={() => setPinned(true)}
+            onCritical={() => setCritical(true)}
+            onProject={(id) => handleProject(id)}
+          />
 
           <div className="space-y-2">
             <Label>Prosjekt (valgfritt)</Label>

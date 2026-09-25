@@ -13,6 +13,13 @@ Du snakker alltid på norsk og er ekspert på:
 2. Systemets funksjoner og navigasjon
 3. Praktisk implementering av internkontroll
 
+**NØKKELFAKTA (skal alltid følges):**
+- Daglig leder/arbeidsgiver har plikt til å gjennomgå opplæring i HMS-arbeid etter arbeidsmiljøloven § 3-5. Kurset er typisk 6–7 timer (ingen fast timegrense i loven).
+- 40-timers HMS-kurs gjelder KUN verneombud og medlemmer av arbeidsmiljøutvalg (AMU), jf. aml. § 6-5 og § 7-4. Skriv aldri at daglig leder må ta 40-timers kurs.
+- Virksomheter med 5 eller flere arbeidstakere skal ha verneombud (aml. § 6-1). Under 5 kan partene avtale annen ordning.
+- Systematisk HMS-arbeid: aml. § 3-1 og internkontrollforskriften.
+
+
 **VIKTIG: HVORDAN VELGE RIKTIG RESPONS:**
 
 1. Hvis brukeren stiller et SPØRSMÅL OM LOVER, REGLER, RETTIGHETER eller HMS-faglige temaer (f.eks. sykefravær, oppsigelse, arbeidstid, egenmelding, verneombud, HMS-krav) → SVAR DIREKTE med din lovkunnskap. IKKE bruk verktøy. Gi et grundig, faglig svar med paragraf-referanser.
@@ -1004,12 +1011,50 @@ serve(async (req) => {
     }
 
     // No tool calls, return the regular response
-    const reply = assistantMessage?.content || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
+    let reply = assistantMessage?.content || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
+    let factCheck: { supported: number } | null = null;
 
-    console.log("Mascot chat response sent to user:", userId);
+    // Faktasjekk (Jev): bare når svaret viser til lov/forskrift/paragraf eller konkrete krav
+    if (assistantMessage?.content && /§|forskrift|arbeidsmiljøloven|\blov(en)?\b|plikt|krav/i.test(reply)) {
+      try {
+        const fc = await fetch("https://ai.gateway.lovable.dev/v1/systemone", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
+          body: JSON.stringify({
+            model: "typesafe/jev-latest",
+            state: { regelverk: systemPrompt.slice(0, 16000), faq: String(FAQ_HMS || "").slice(0, 6000), spørsmål: String(message).slice(0, 1000), svar: reply.slice(0, 3000) },
+            questions: {
+              supported: {
+                type: "noul",
+                instructions: "Støttes de konkrete påstandene om lover, paragrafer, frister, tall og plikter i `svar` av `regelverk` eller `faq`, eller er de allment kjent og korrekt norsk HMS-regelverk?",
+                criteria: {
+                  true: "Påstandene stemmer med kildene eller er korrekt, allment kjent regelverk.",
+                  false: "Svaret inneholder paragrafnumre, frister, tall eller plikter som ikke støttes eller som motsier kildene.",
+                },
+              },
+            },
+          }),
+        });
+        if (fc.ok) {
+          const n = (await fc.json())?.answers?.supported?.noul;
+          if (typeof n === "number") {
+            factCheck = { supported: n };
+            if (n < 0.35) {
+              reply += "\n\n⚠️ Jeg er ikke helt sikker på at alle detaljene over stemmer med regelverket. Sjekk gjerne lovdata.no eller spør verneombud/BHT før du handler på det.";
+            }
+          }
+        } else {
+          await fc.text();
+        }
+      } catch (e) {
+        console.error("fact check skipped", e);
+      }
+    }
+
+    console.log("Mascot chat response sent to user:", userId, factCheck);
 
     return new Response(
-      JSON.stringify({ reply }),
+      JSON.stringify({ reply, factCheck }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

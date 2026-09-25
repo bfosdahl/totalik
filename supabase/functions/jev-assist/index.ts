@@ -188,6 +188,122 @@ Deno.serve(async (req) => {
       return json({ results, checkedCompetence: hasJob });
     }
 
+    // ---------------- TIMESJEKK (før godkjenning) ----------------
+    if (mode === "time_check") {
+      const { data: roles } = await admin.from("user_roles").select("role").eq("user_id", uid);
+      const ok = (roles || []).some((r: any) => ["company_admin", "department_admin", "system_admin"].includes(r.role));
+      if (!ok) return json({ error: "Kun leder/admin kan sjekke timer" }, 403);
+      const ids: string[] = (Array.isArray(body?.entryIds) ? body.entryIds : []).slice(0, 40).map(String);
+      if (!ids.length) return json({ results: [] });
+      const { data: rows } = await admin.from("time_entries").select("id, description, hours, entry_date")
+        .eq("company_id", companyId).in("id", ids);
+      const entries = rows || [];
+      const results: Record<string, string[]> = {};
+      const qs: Record<string, unknown> = {};
+      const state: Record<string, unknown> = {};
+      entries.forEach((e: any, i: number) => {
+        const w: string[] = [];
+        const h = Number(e.hours);
+        if (!(h > 0)) w.push("0 timer – mulig tastefeil");
+        else if (h > 13) w.push(`${h} t på én dag – mulig tastefeil`);
+        const d = clip(e.description, 400);
+        if (!d) w.push("Mangler beskrivelse");
+        else {
+          state[`t${i}`] = { beskrivelse: d, timer: h };
+          qs[`d${i}`] = {
+            type: "noul",
+            instructions: `Er beskrivelsen i \`t${i}.beskrivelse\` konkret nok til at en kunde forstår hvilket arbeid som ble utført og kan godta det på en faktura?`,
+            criteria: {
+              true: "Konkret: sier hva som ble gjort, f.eks. «Montert gips i stue 2. etg» eller «Service på kran, byttet hydraulikkslange».",
+              false: "For vag: sier nesten ingenting om arbeidet, f.eks. «jobb», «jobbet på tomta», «div», «arbeid».",
+            },
+          };
+        }
+        results[e.id] = w;
+      });
+      if (Object.keys(qs).length) {
+        try {
+          const answers = await jev(state, qs);
+          entries.forEach((e: any, i: number) => {
+            const n = answers[`d${i}`]?.noul;
+            if (typeof n === "number" && n < 0.4) results[e.id].push("Beskrivelsen er trolig for vag til å fakturere");
+          });
+        } catch (err: any) {
+          if (err?.status === 402 || err?.status === 403) return json({ error: err.message }, err.status);
+          console.error("time description check skipped", err);
+        }
+      }
+      return json({ results: Object.entries(results).map(([id, warnings]) => ({ id, warnings })) });
+    }
+
+    // ---------------- DAGRAPPORT → AVVIK ----------------
+    if (mode === "daily_report") {
+      const t = body?.texts || {};
+      const existing = clip(t.avvik, 3000).toLowerCase();
+      const sentences: string[] = [];
+      for (const k of ["arbeid", "fremdrift", "hms", "merknader"]) {
+        for (const s of clip(t[k], 3000).split(/(?<=[.!?])\s+|\n+/)) {
+          const x = s.trim();
+          if (x.length >= 12 && !existing.includes(x.toLowerCase()) && !sentences.includes(x)) sentences.push(x);
+        }
+      }
+      const list = sentences.slice(0, 25);
+      if (!list.length) return json({ suggestions: [] });
+      const state: Record<string, string> = {};
+      const qs: Record<string, unknown> = {};
+      list.forEach((s, i) => {
+        state[`s${i}`] = s;
+        qs[`q${i}`] = {
+          type: "noul",
+          instructions: `Beskriver setningen i \`s${i}\` fra en dagrapport på en byggeplass en hendelse eller et forhold som bør registreres som avvik (feil, skade, nestenulykke, farlig forhold, mangel, brudd på rutine)?`,
+          criteria: {
+            true: "Ja: noe gikk galt eller er feil/farlig, f.eks. «Stillas manglet rekkverk», «Feil armering oppdaget», «Arbeider skled på is».",
+            false: "Nei: vanlig arbeid, fremdrift, vær eller planer, f.eks. «Støpt dekke i 2. etg», «Regn hele dagen».",
+          },
+        };
+      });
+      const answers = await jev(state, qs);
+      const suggestions = list.map((text, i) => ({ text, noul: answers[`q${i}`]?.noul }))
+        .filter((s) => typeof s.noul === "number" && s.noul >= 0.6)
+        .sort((a, b) => b.noul - a.noul).slice(0, 5);
+      return json({ suggestions });
+    }
+
+    // ---------------- OPPSLAGSTAVLE ----------------
+    if (mode === "announcement") {
+      const title = clip(body?.title, 300), text = clip(body?.body, 3000);
+      if ((title + text).length < 8) return json({ error: "Skriv tittel og melding først" }, 400);
+      const { data: projs } = await admin.from("ks_module2_projects").select("id, project_name")
+        .eq("company_id", companyId).order("created_at", { ascending: false }).limit(60);
+      const projects = (projs || []).filter((p: any) => p.project_name);
+      const questions: Record<string, unknown> = {
+        importance: {
+          type: "choice",
+          instructions: "Hvor viktig er meldingen i `melding` for de ansatte som mottar den?",
+          criteria: {
+            normal: "Vanlig: generell info, sosialt, påminnelser uten konsekvens om man går glipp av dem.",
+            important: "Viktig: endringer i plan, oppmøte, frister eller rutiner som alle må få med seg.",
+            critical: "Kritisk: fare for liv/helse, stans i arbeid, akutt sikkerhetsbeskjed som må leses straks.",
+          },
+        },
+      };
+      if (projects.length) {
+        const c: Record<string, string> = { none: "Meldingen gjelder ikke ett bestemt prosjekt." };
+        projects.forEach((p: any, i: number) => { c[`p${i}`] = p.project_name; });
+        questions.project = { type: "choice", instructions: "Hvilket prosjekt gjelder meldingen i `melding`, om noen?", criteria: c };
+      }
+      const answers = await jev({ melding: { tittel: title, tekst: text } }, questions);
+      const imp = answers.importance;
+      if (!imp?.choice) return json({ error: "Fikk ikke et gyldig forslag" }, 502);
+      const pc = answers.project;
+      const pi = pc?.choice && pc.choice !== "none" ? Number(String(pc.choice).slice(1)) : -1;
+      const p = pi >= 0 ? projects[pi] : null;
+      return json({
+        importance: imp.choice, importanceConfidence: imp.confidence ?? null,
+        project: p && (pc.confidence ?? 0) >= 0.4 ? { id: p.id, name: p.project_name, confidence: pc.confidence ?? null } : null,
+      });
+    }
+
     return json({ error: "Ukjent modus" }, 400);
   } catch (e: any) {
     if (e?.status && e?.message) return json({ error: e.message }, e.status);
