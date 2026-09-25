@@ -41,6 +41,8 @@ export interface TimeReportOptions {
   /** Undertittel, f.eks. navnet på ansatt når en ansatt tar ut sin egen rapport */
   subtitle?: string;
   allowances?: TimeReportAllowance[];
+  /** Sum per avdeling → per ansatt (vises på egen side) */
+  departmentGroups?: { department: string; rows: { name: string; hours: number }[] }[];
 }
 
 const fmtTime = (t?: string | null) => (t ? String(t).substring(0, 5) : "");
@@ -350,6 +352,40 @@ export async function generateTimeReportPdf(opts: TimeReportOptions): Promise<st
       1: { cellWidth: "auto" },
     },
   });
+
+  if (opts.departmentGroups && opts.departmentGroups.length > 0) {
+    const groupBody: any[] = [];
+    let grand = 0;
+    opts.departmentGroups.forEach((g) => {
+      const sum = g.rows.reduce((s, r) => s + r.hours, 0);
+      grand += sum;
+      groupBody.push([
+        { content: g.department, styles: { fontStyle: "bold", fillColor: [242, 244, 247] } },
+        { content: `${sum.toFixed(2).replace(".", ",")} t`, styles: { fontStyle: "bold", fillColor: [242, 244, 247], halign: "right" } },
+      ]);
+      g.rows.forEach((r) => groupBody.push([`   ${r.name}`, { content: `${r.hours.toFixed(2).replace(".", ",")} t`, styles: { halign: "right" } }]));
+    });
+    groupBody.push([
+      { content: "Totalt", styles: { fontStyle: "bold" } },
+      { content: `${grand.toFixed(2).replace(".", ",")} t`, styles: { fontStyle: "bold", halign: "right" } },
+    ]);
+    doc.addPage();
+    doc.setFont("Inter", "bold");
+    doc.setFontSize(12);
+    doc.text("Timer per avdeling", margin, 16);
+    autoTable(doc, {
+      startY: 20,
+      head: [["Avdeling / ansatt", "Timer"]],
+      body: groupBody,
+      theme: "grid",
+      margin: { left: margin, right: margin },
+      tableWidth: 140,
+      styles: { font: "Inter", fontSize: 9, cellPadding: 2 },
+      headStyles: { font: "Inter", fontStyle: "bold", fillColor: [242, 244, 247], textColor: [30, 30, 30] },
+    });
+  }
+
+
 
   const fileName = `Timeliste_${companyName.replace(/[^a-zA-Z0-9æøåÆØÅ]/g, "_")}_${
     startDate ? format(startDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")
