@@ -304,6 +304,94 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ---------------- PROSJEKTOPPSTART ----------------
+    if (mode === "project_start") {
+      const description = clip(body?.description, 2000);
+      if (description.length < 10) return json({ error: "Beskriv jobben først" }, 400);
+      const templates: { id: string; name: string; description: string }[] =
+        (Array.isArray(body?.templates) ? body.templates : []).slice(0, 25)
+          .map((x: any) => ({ id: clip(x?.id, 60), name: clip(x?.name, 100), description: clip(x?.description, 200) }))
+          .filter((x: any) => x.id && x.name);
+      const questions: Record<string, unknown> = {
+        projectType: {
+          type: "choice",
+          instructions: "Hvilken prosjekttype passer best for jobben beskrevet i `jobb`?",
+          criteria: {
+            standard: "Standard: større byggeprosjekt som trenger komplett styring – byggesak, SHA-plan, økonomi, underleverandører, fremdrift.",
+            small: "Lite prosjekt: mindre jobb med enklere behov – sjekklister, bilder, timer og befaringer, uten full byggesak.",
+            mini: "Mini: enkel jobb eller lite småoppdrag – bare sjekklister, avvik og dokumenter.",
+          },
+        },
+      };
+      if (templates.length) {
+        const c: Record<string, string> = { blank: "Tomt prosjekt: ingen av malene passer tydelig." };
+        templates.forEach((x, i) => { c[`t${i}`] = `${x.name}: ${x.description || "ingen beskrivelse"}`; });
+        questions.template = {
+          type: "choice",
+          instructions: "Hvilken av prosjektmalene i `maler` passer best til jobben i `jobb`? Velg blank om ingen passer tydelig.",
+          criteria: c,
+        };
+      }
+      const answers = await jev({ jobb: description, maler: templates.map((x) => `${x.name}: ${x.description}`) }, questions);
+      const pt = answers.projectType;
+      if (!pt?.choice || !["standard", "small", "mini"].includes(pt.choice)) {
+        return json({ error: "Fikk ikke et gyldig forslag" }, 502);
+      }
+      const tc = answers.template;
+      const ti = tc?.choice && tc.choice !== "blank" ? Number(String(tc.choice).slice(1)) : -1;
+      const tpl = ti >= 0 && (tc.confidence ?? 0) >= 0.4 ? templates[ti] : null;
+      return json({
+        projectType: pt.choice, typeConfidence: pt.confidence ?? null,
+        template: tpl ? { id: tpl.id, name: tpl.name, confidence: tc.confidence ?? null } : null,
+      });
+    }
+
+    // ---------------- SJA: FORESLÅ FARER ----------------
+    if (mode === "sja") {
+      const work = clip(body?.workDescription, 2000);
+      if (work.length < 10) return json({ error: "Beskriv arbeidet først" }, 400);
+      const existing: string[] = (Array.isArray(body?.existingRisks) ? body.existingRisks : []).slice(0, 30).map((x: unknown) => clip(x, 200).toLowerCase());
+      const HAZARDS: { id: string; risk: string; consequence: string; probability: string; measures: string[] }[] = [
+        { id: "fall_hoyde", risk: "Fall fra høyde (stillas, stige, tak, åpning i gulv)", consequence: "Alvorlig", probability: "Mulig", measures: ["Rekkverk/gjerding av åpninger", "Godkjent stillas med kontrollert merking", "Personlig fallsikring der rekkverk ikke er mulig", "Sjekk stiger og stillas før bruk"] },
+        { id: "fallende_gjenstand", risk: "Fallende gjenstander og verktøy fra arbeid over hodehøyde", consequence: "Alvorlig", probability: "Mulig", measures: ["Fotlist og nett på stillas", "Sikre verktøy og materialer mot fall", "Avsperr området under arbeidet", "Hjelm for alle i sonen"] },
+        { id: "kran_loft", risk: "Kran- og løfteoperasjoner – svingende eller fallende last", consequence: "Alvorlig", probability: "Mulig", measures: ["Sertifisert kranfører og signalgiver", "Sjekk løfteutstyr og stropper før bruk", "Hold folk unna svingradius og under last", "Stans løft ved vind over grenseverdi"] },
+        { id: "grave_ras", risk: "Rasfare ved graving i grøft/sjakt", consequence: "Alvorlig", probability: "Mulig", measures: ["Sikre grøft med spunt eller avflassing", "Ikke opphold i usikret grøft", "Kontroll av kabler og ledninger før graving"] },
+        { id: "strom", risk: "Elektrisk støt fra kabling, skjøteledninger eller anlegg", consequence: "Alvorlig", probability: "Mulig", measures: ["Bruk jordfeilbryter", "Sjekk kabler og koblinger for skade", "Kun fagfolk på elektrisk anlegg"] },
+        { id: "maskin_klem", risk: "Klem- og skjærefare fra maskiner og verktøy", consequence: "Moderat", probability: "Mulig", measures: ["Skjerming og sikringer på plass", "Opplæring før bruk av maskin", "Stans maskin før rengjøring/justering"] },
+        { id: "kjoretoy_pakjorsel", risk: "Påkjørsel fra anleggsmaskiner, dumper eller trafikk på byggeplassen", consequence: "Alvorlig", probability: "Mulig", measures: ["Skill gående og kjørende med fysiske barrierer", "Ryggesignal/banemann ved rygging", "Refleksvest for alle på området"] },
+        { id: "stoy", risk: "Skadelig støy fra maskiner og verktøy", consequence: "Moderat", probability: "Sannsynlig", measures: ["Hørselsvern i merkede soner", "Velg stillere verktøy der mulig", "Begrens eksponeringstid"] },
+        { id: "vibrasjon", risk: "Hånd-arm-vibrasjon fra rivehammer, vinkelsliper e.l.", consequence: "Moderat", probability: "Sannsynlig", measures: ["Begrens triggertid per skift", "Pauser og arbeidsrotasjon", "Vedlikeholdt, lavvibrerende verktøy"] },
+        { id: "stov_kjemikalier", risk: "Støv, sveisrøyk eller kjemikalier (betong, løsemidler, kvartsstøv)", consequence: "Moderat", probability: "Sannsynlig", measures: ["Punktavsug eller våt kapping", "Åndedrettsvern ved behov", "Les sikkerhetsdatablad før bruk", "God ventilasjon innendørs"] },
+        { id: "tung_loft", risk: "Tunge løft og belastningsskader ved manuell håndtering", consequence: "Moderat", probability: "Sannsynlig", measures: ["Bruk løftehjelpemidler", "Toløft over 25 kg", "Varier arbeidsstilling"] },
+        { id: "brann_varmt", risk: "Brannfare ved varmt arbeid (sveising, kutting, brenner)", consequence: "Alvorlig", probability: "Mulig", measures: ["Varmt arbeid-tillatelse og brannvakt", "Slokkingsutstyr tilgjengelig", "Etterkontroll minst 1 time etter arbeid"] },
+        { id: "vaer_kulde", risk: "Vær og vind – kulde, glatte underlag eller sterk vind", consequence: "Moderat", probability: "Sannsynlig", measures: ["Strø/sand glatte flater", "Stans høydarbeid og kran ved sterk vind", "Egnet arbeidstøy og varmestue"] },
+        { id: "asbest_pcb", risk: "Mistanke om asbest, PCB eller andre farlige stoffer i eksisterende bygg", consequence: "Alvorlig", probability: "Mulig", measures: ["Stans arbeid ved funn av mistenkelig materiale", "Prøvetaking og kartlegging før riving", "Sertifisert firma ved sanitetsfjerning"] },
+        { id: "arbeid_alene", risk: "Arbeid alene uten tilsyn eller nødkommunikasjon", consequence: "Moderat", probability: "Mulig", measures: ["Avtalt kontakt/intervall med kollega", "Telefon eller nødknapp tilgjengelig"] },
+        { id: "orden_rydding", risk: "Dårlig orden – snublefare, blokkerte rømningsveier, skarpe gjenstander", consequence: "Moderat", probability: "Sannsynlig", measures: ["Daglig rydding av arbeidsområdet", "Hold rømningsveier frie", "Kast avfall med spiker/skarp kant straks"] },
+      ];
+      const state: Record<string, unknown> = { arbeid: work, farer: {} as Record<string, string> };
+      const qs: Record<string, unknown> = {};
+      HAZARDS.forEach((h, i) => {
+        (state.farer as any)[`f${i}`] = h.risk;
+        qs[`f${i}`] = {
+          type: "noul",
+          instructions: `Er faren i \`farer.f${i}\` reelt relevant for arbeidet beskrevet i \`arbeid\`, slik at den bør være med i en SJA (sikker jobbanalyse)?`,
+          criteria: {
+            true: "Faren kan faktisk oppstå under dette arbeidet, eller er en kjent standardfare for denne typen arbeid.",
+            false: "Faren er lite sannsynlig eller irrelevant for dette arbeidet.",
+          },
+        };
+      });
+      const answers = await jev(state, qs);
+      const suggestions = HAZARDS.map((h, i) => ({ ...h, noul: answers[`f${i}`]?.noul }))
+        .filter((h) => typeof h.noul === "number" && h.noul >= 0.55)
+        .filter((h) => !existing.some((e) => e && h.risk.toLowerCase().includes(e.slice(0, 20))))
+        .sort((a, b) => b.noul - a.noul)
+        .slice(0, 8)
+        .map(({ noul, ...h }) => h);
+      return json({ suggestions });
+    }
+
     return json({ error: "Ukjent modus" }, 400);
   } catch (e: any) {
     if (e?.status && e?.message) return json({ error: e.message }, e.status);
