@@ -113,6 +113,7 @@ export function RegisterAbsenceDialog({
 
     setIsSubmitting(false);
     if (success) {
+      clearDraft();
       resetForm();
       onOpenChange(false);
     }
@@ -128,6 +129,9 @@ export function RegisterAbsenceDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {draft && (
+            <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+          )}
           {/* Employee selection (only if not for self) */}
           {!forSelf && (
             <div className="space-y-2">
