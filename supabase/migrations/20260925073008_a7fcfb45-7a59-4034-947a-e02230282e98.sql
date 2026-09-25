@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.touch_announcement_activity() FROM PUBLIC, anon, authenticated;
