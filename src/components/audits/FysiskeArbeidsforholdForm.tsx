@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuditFormBase } from '@/hooks/useAuditFormBase';
+import { DraftRestoreBanner } from '@/components/shared/DraftRestoreBanner';
 import {
   useChecklistSectionsState,
   initChecklistState,
