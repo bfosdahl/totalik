@@ -294,20 +294,23 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     try {
       // Save checklists
       if (checklists.length > 0) {
-        const checklistInserts = checklists.map((cl) => ({
-          project_id: projectId,
-          company_id: companyId,
-          title: cl.name,
-          template_name: cl.name,
-          checklist_items: (cl.checkpoints || []).map((cp: string, idx: number) => ({
-            id: `item-${idx}`,
-            checkpoint: cp,
-            value: null,
-            comment: "",
-          })),
-          status: "not_started",
-          progress_percent: 0,
-        }));
+        const checklistInserts = checklists.map((cl) => {
+          const name = String(cl.title || cl.name || "Sjekkliste").slice(0, 200);
+          return {
+            project_id: projectId,
+            company_id: companyId,
+            title: name,
+            template_name: name,
+            checklist_items: (cl.checkpoints || []).map((cp: string, idx: number) => ({
+              id: `item-${idx}`,
+              checkpoint: cp,
+              value: null,
+              comment: "",
+            })),
+            status: "planned",
+            progress_percent: 0,
+          };
+        });
 
         const { error: clError } = await (supabase
           .from("ks_module2_checklists" as any)
@@ -315,6 +318,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
         if (clError) {
           console.error("Error saving AI checklists:", clError);
+          toast.error("Sjekklistene fra hjelperen kunne ikke lagres");
         }
       }
 
@@ -323,7 +327,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
         const routineInserts = routines.map((r) => ({
           project_id: projectId,
           company_id: companyId,
-          name: r.name,
+          name: String(r.title || r.name || "Rutine").slice(0, 200),
           description: r.description || null,
           category: r.category || "general",
           routine_number: "",
@@ -335,6 +339,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
 
         if (rError) {
           console.error("Error saving AI routines:", rError);
+          toast.error("Rutinene fra hjelperen kunne ikke lagres");
         }
       }
     } catch (error) {
