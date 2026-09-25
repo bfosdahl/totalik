@@ -372,10 +372,11 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
       const createdProject = await onSubmit(projectData);
       
       // Save AI-generated checklists and routines to the new project
-      if (createdProject?.id && profile?.company_id) {
+      const targetCompanyId = (createdProject as any)?.company_id || profile?.company_id;
+      if (createdProject?.id && targetCompanyId) {
         await saveAiRecommendations(
           createdProject.id,
-          profile.company_id,
+          targetCompanyId,
           data.recommended_checklists || [],
           data.recommended_routines || []
         );
