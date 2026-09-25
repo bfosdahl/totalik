@@ -417,6 +417,161 @@ Deno.serve(async (req) => {
       return json({ keep });
     }
 
+    // ---------------- PROSJEKT: DAGENS PRIORITERINGER ----------------
+    if (mode === "project_priorities") {
+      const projectName = clip(body?.projectName, 200);
+      const items: { id: string; type: string; title: string; detail: string }[] = (Array.isArray(body?.items) ? body.items : []).slice(0, 25)
+        .map((x: any) => ({ id: clip(x?.id, 60), type: clip(x?.type, 20), title: clip(x?.title, 200), detail: clip(x?.detail, 300) }))
+        .filter((x) => x.id && x.title);
+      if (!items.length) return json({ results: [] });
+      const state: Record<string, unknown> = { prosjekt: projectName, dato: new Date().toISOString().slice(0, 10), oppgaver: {} as Record<string, unknown> };
+      const qs: Record<string, unknown> = {};
+      items.forEach((it, i) => {
+        (state.oppgaver as any)[`o${i}`] = { type: it.type, tittel: it.title, detalj: it.detail };
+        qs[`o${i}`] = {
+          type: "noul",
+          instructions: `Bør oppgaven i \`oppgaver.o${i}\` prioriteres av prosjektledelsen I DAG, ut fra type, frist og konsekvens av å vente?`,
+          criteria: {
+            true: "Bør gjøres i dag: forfalt, frist i dag/i morgen, eller åpen sikkerhets-/kvalitetshendelse som blokkerer videre arbeid.",
+            false: "Kan vente: god tid til fristen og ingen umiddelbar konsekvens.",
+          },
+        };
+      });
+      const answers = await jev(state, qs);
+      const results = items.map((it, i) => ({ id: it.id, noul: typeof answers[`o${i}`]?.noul === "number" ? answers[`o${i}`].noul : null }))
+        .sort((a, b) => (b.noul ?? -1) - (a.noul ?? -1));
+      return json({ results });
+    }
+
+    // ---------------- PROSJEKT: FORFALT-TRIAGE ----------------
+    if (mode === "overdue_triage") {
+      const projectId = clip(body?.projectId, 60);
+      const projectName = clip(body?.projectName, 200);
+      const items: { id: string; title: string; daysOverdue: number }[] = (Array.isArray(body?.items) ? body.items : []).slice(0, 15)
+        .map((x: any) => ({ id: clip(x?.id, 60), title: clip(x?.title, 200), daysOverdue: Math.max(0, Number(x?.daysOverdue) || 0) }))
+        .filter((x) => x.id && x.title);
+      if (!items.length) return json({ results: [] });
+      let crew: { id: string; name: string; role: string }[] = [];
+      if (projectId) {
+        const { data: crewRows } = await admin.from("ks_module2_project_crew")
+          .select("user_id, display_name, project_role")
+          .eq("project_id", projectId).eq("company_id", companyId).eq("is_active", true).limit(30);
+        crew = (crewRows || []).map((c: any) => ({ id: c.user_id, name: c.display_name || "Ukjent", role: c.project_role || "" }));
+      }
+      const state: Record<string, unknown> = { prosjekt: projectName, forfalt: {} as Record<string, unknown>, mannskap: crew.map((c) => ({ navn: c.name, rolle: c.role })) };
+      const qs: Record<string, unknown> = {};
+      items.forEach((it, i) => {
+        (state.forfalt as any)[`f${i}`] = { tittel: it.title, dager_forfalt: it.daysOverdue };
+        qs[`k${i}`] = {
+          type: "noul",
+          instructions: `Er den forfalte egenkontrollen i \`forfalt.f${i}\` kritisk, dvs. at arbeidet ikke bør fortsette før den er gjort, eller at den gjelder sikkerhet, bæring, fukt eller lovpålagt kontroll?`,
+          criteria: {
+            true: "Kritisk: gjelder sikkerhet, bærende konstruksjon, fukt/tetting, eller lovpålagt kontroll før videre arbeid.",
+            false: "Ikke kritisk: dokumentasjon, finish eller kontroll som kan ettergjøres uten fare.",
+          },
+        };
+        if (crew.length) {
+          const crit: Record<string, string> = { none: "Ingen i mannskapet passer tydelig bedre enn andre." };
+          crew.forEach((c, j) => { crit[`c${j}`] = `${c.name}${c.role ? ` (${c.role})` : ""}`; });
+          qs[`a${i}`] = {
+            type: "choice",
+            instructions: `Hvem i \`mannskap\` bør få ansvar for å gjennomføre den forfalte kontrollen i \`forfalt.f${i}\`, ut fra rolle?`,
+            criteria: crit,
+          };
+        }
+      });
+      const answers = await jev(state, qs);
+      const results = items.map((it, i) => {
+        const k = answers[`k${i}`]?.noul;
+        const a = answers[`a${i}`];
+        let assignee: { id: string; name: string } | null = null;
+        if (a?.choice && a.choice !== "none") {
+          const j = Number(String(a.choice).slice(1));
+          if (j >= 0 && crew[j]) assignee = { id: crew[j].id, name: crew[j].name };
+        }
+        return { id: it.id, critical: typeof k === "number" ? k : null, assignee };
+      });
+      return json({ results });
+    }
+
+    // ---------------- PROSJEKT: SJEKK FULLFØRTE EGENKONTROLLER ----------------
+    if (mode === "checklist_review") {
+      const projectName = clip(body?.projectName, 200);
+      const lists: { id: string; title: string; items: { label: string; value: string; comment: string }[] }[] = (Array.isArray(body?.checklists) ? body.checklists : []).slice(0, 5)
+        .map((c: any) => ({
+          id: clip(c?.id, 60), title: clip(c?.title, 200),
+          items: (Array.isArray(c?.items) ? c.items : []).slice(0, 30).map((it: any) => ({
+            label: clip(it?.label, 150), value: clip(it?.value, 50), comment: clip(it?.comment, 300),
+          })),
+        }))
+        .filter((c) => c.id && c.title && c.items.length);
+      if (!lists.length) return json({ results: [] });
+      const state: Record<string, unknown> = { prosjekt: projectName, kontroller: {} as Record<string, unknown> };
+      const qs: Record<string, unknown> = {};
+      lists.forEach((c, i) => {
+        (state.kontroller as any)[`k${i}`] = { tittel: c.title, svar: c.items };
+        qs[`k${i}`] = {
+          type: "noul",
+          instructions: `Inneholder svarene i egenkontrollen \`kontroller.k${i}\` noe som bør følges opp som et avvik (feil, mangler, avvikende kommentarer, "nei"-svar på kritiske punkter)?`,
+          criteria: {
+            true: "Minst ett svar viser en feil, mangel eller et kritisk punkt som ikke er i orden.",
+            false: "Alle svar er i orden, eller avvikene er bagatellmessige.",
+          },
+        };
+        qs[`s${i}`] = {
+          type: "choice",
+          instructions: `Hvor alvorlig er det verste funnet i egenkontrollen \`kontroller.k${i}\`?`,
+          criteria: {
+            low: "Lav: bagatell, kan rettes ved anledning.",
+            medium: "Middels: bør rettes snart, ingen umiddelbar fare.",
+            high: "Høy: kan gi skade, stopp eller reklamasjon om det ikke rettes raskt.",
+            critical: "Kritisk: fare for liv og helse, eller arbeidet må stoppe.",
+          },
+        };
+      });
+      const answers = await jev(state, qs);
+      const results = lists.map((c, i) => ({
+        id: c.id,
+        noul: typeof answers[`k${i}`]?.noul === "number" ? answers[`k${i}`].noul : null,
+        severity: ["low", "medium", "high", "critical"].includes(answers[`s${i}`]?.choice) ? answers[`s${i}`].choice : null,
+      }));
+      return json({ results });
+    }
+
+    // ---------------- PROSJEKT: AVVIK (alvorlighet + fremdrift) ----------------
+    if (mode === "project_deviation") {
+      const title = clip(body?.title, 300);
+      const description = clip(body?.description, 3000);
+      if (!title && !description) return json({ error: "Skriv tittel eller beskrivelse først" }, 400);
+      const state = { avvik: { tittel: title, beskrivelse: description, sted: clip(body?.location, 200) }, prosjekt: clip(body?.projectName, 200) };
+      const answers = await jev(state, {
+        severity: {
+          type: "choice",
+          instructions: "Hvor alvorlig er avviket i `avvik`, og hvor raskt må det følges opp?",
+          criteria: {
+            low: "Lav: liten betydning, kan rettes ved anledning.",
+            medium: "Middels: bør rettes innen kort tid, ingen umiddelbar fare.",
+            high: "Høy: kan føre til skade, stopp eller betydelig tap om det ikke rettes raskt.",
+            critical: "Kritisk: personskade har skjedd, eller det er umiddelbar fare for liv og helse.",
+          },
+        },
+        affects_progress: {
+          type: "noul",
+          instructions: "Påvirker avviket i `avvik` fremdriften i `prosjekt`, dvs. at planlagt arbeid må vente eller endres?",
+          criteria: {
+            true: "Arbeid må stoppe eller omplanlegges til avviket er rettet, eller frister/fremdriftsplan rammes.",
+            false: "Arbeidet kan fortsette som planlagt mens avviket rettes.",
+          },
+        },
+      });
+      const sev = answers.severity;
+      if (!["low", "medium", "high", "critical"].includes(sev?.choice)) return json({ error: "Fikk ikke et gyldig forslag, fyll inn selv" }, 502);
+      return json({
+        severity: sev.choice, severityConfidence: sev.confidence ?? null,
+        affectsProgress: typeof answers.affects_progress?.noul === "number" ? answers.affects_progress.noul : null,
+      });
+    }
+
     return json({ error: "Ukjent modus" }, 400);
   } catch (e: any) {
     if (e?.status && e?.message) return json({ error: e.message }, e.status);
