@@ -309,6 +309,10 @@ export function IkHmsChemicalRiskDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {draft && (
+          <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+        )}
+
         {/* Progress indicator */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
