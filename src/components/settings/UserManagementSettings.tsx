@@ -632,7 +632,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+        className="flex flex-wrap items-center justify-between gap-3"
       >
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={onBack}>
@@ -650,7 +650,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setBulkImportOpen(true)}>
             <Upload className="w-4 h-4 mr-2" />
             Importer
@@ -752,8 +752,8 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium">
-                        {companyUser.first_name && companyUser.last_name
-                          ? `${companyUser.first_name} ${companyUser.last_name}`
+                        {companyUser.first_name || companyUser.last_name
+                          ? `${companyUser.first_name || ""} ${companyUser.last_name || ""}`.trim()
                           : companyUser.email || "Ukjent bruker"}
                       </span>
                       {getStatusBadge(companyUser.status)}
