@@ -377,5 +377,6 @@ export function TimeEntryList({
         />
       )}
     </div>
+    </>
   );
 }
