@@ -165,6 +165,8 @@ export function LogTemperatureDialog({
         corrective_action: correctiveAction || undefined,
       });
 
+      clearDraft();
+
       const newCompleted = completedCount + 1;
       setCompletedCount(newCompleted);
 
@@ -267,6 +269,9 @@ export function LogTemperatureDialog({
         )}
 
         <div className="space-y-4 py-4">
+          {draft && !isEditMode && (
+            <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+          )}
           <div className="space-y-2">
             <Label htmlFor="equipment">{t("auto.velg_utstyr")}</Label>
             <Select value={selectedEquipmentId} onValueChange={setSelectedEquipmentId} disabled={isEditMode}>
