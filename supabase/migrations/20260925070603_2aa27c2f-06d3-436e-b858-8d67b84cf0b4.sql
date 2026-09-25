@@ -1,0 +1,2 @@
+CREATE POLICY "Department leaders can delete department time entries" ON public.time_entries FOR DELETE TO authenticated USING ((company_id = get_user_company_id(auth.uid())) AND is_department_leader_of(auth.uid(), user_id) AND user_id <> auth.uid());
+CREATE POLICY "Department leaders can delete department clock entries" ON public.time_clock_entries FOR DELETE TO authenticated USING ((company_id = get_user_company_id(auth.uid())) AND is_department_leader_of(auth.uid(), user_id) AND user_id <> auth.uid());
