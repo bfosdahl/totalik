@@ -18856,6 +18856,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      owns_profile: { Args: { _profile_id: string }; Returns: boolean }
       pad_number: { Args: { p_len: number; p_num: number }; Returns: string }
       profile_self_update_columns_ok: {
         Args: {

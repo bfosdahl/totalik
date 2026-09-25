@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.owns_profile(uuid) FROM PUBLIC, anon;
