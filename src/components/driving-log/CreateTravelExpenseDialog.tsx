@@ -186,6 +186,7 @@ export function CreateTravelExpenseDialog({
         amount: Number(item.amount),
       })),
     });
+    clearDraft();
   };
 
   const resetForm = () => {
@@ -224,6 +225,9 @@ export function CreateTravelExpenseDialog({
 
         <ScrollArea className="flex-1 pr-4">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {draft && (
+              <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+            )}
             {/* Basic info */}
             <div className="space-y-4">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">{t("auto.reisedetaljer")}</h3>
