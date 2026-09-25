@@ -70,6 +70,25 @@ const VernerundeForm = () => {
   // Form state
   const [formData, setFormData] = useState(getDefaultFormData);
 
+  // Utkast-lagring for nye vernerunder (ikke ved redigering av lagrede)
+  const isNewForm = !!selectedTemplate && !selectedFormId;
+  const { draft: localDraft, clear: clearLocalDraft, refresh: refreshDraft } = useFormDraft(
+    "vernerunde:ny",
+    formData,
+    { enabled: isNewForm }
+  );
+
+  const restoreLocalDraft = () => {
+    if (!localDraft) return;
+    const data = localDraft.data as ReturnType<typeof getDefaultFormData>;
+    const template = templates.find((t) => t.id === data.templateId);
+    if (template) {
+      setSelectedTemplate(template);
+      setExpandedCategories(new Set(template.checkpoints.map((cp) => cp.category)));
+    }
+    setFormData({ ...getDefaultFormData(), ...data });
+  };
+
   // Group checkpoints by category
   const checkpointsByCategory = useMemo(() => {
     if (!selectedTemplate) return {};
