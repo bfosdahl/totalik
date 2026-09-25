@@ -87,6 +87,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
     });
 
     if (success) {
+      clearDraft();
       onOpenChange(false);
       // Reset form
       setTargetEmployeeId("");
@@ -128,6 +129,9 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {draft && (
+              <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+            )}
             {/* Show current shift info */}
             {shift && (
               <div className="p-3 bg-muted rounded-lg text-sm">
