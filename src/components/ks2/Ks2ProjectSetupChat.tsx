@@ -244,9 +244,36 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             milestones: parsed.milestones || []
           };
 
+          // Jev kontrollsjekker at sjekklister/rutiner passer til prosjektet før de brukes
+          try {
+            const convo = [...currentMessages, { role: "user", content: userMessage }]
+              .filter(m => m.role === "user").map(m => getDisplayContent(m.content)).join("\n").slice(-2500);
+            const desc = [projectData.project_name, projectData.description, convo].filter(Boolean).join("\n");
+            const cl = projectData.recommended_checklists || [];
+            const rt = projectData.recommended_routines || [];
+            const items = [...cl, ...rt].map((x: any) => ({ title: x?.title || "", description: x?.description || "" }));
+            if (items.length) {
+              const { data: rev } = await supabase.functions.invoke("jev-assist", {
+                body: { mode: "setup_review", description: desc, items },
+              });
+              const keep: boolean[] | undefined = rev?.keep;
+              if (Array.isArray(keep) && keep.length === items.length) {
+                const newCl = cl.filter((_: any, i: number) => keep[i]);
+                const newRt = rt.filter((_: any, i: number) => keep[cl.length + i]);
+                const removed = items.length - newCl.length - newRt.length;
+                // Aldri tøm listene helt
+                if (newCl.length) projectData.recommended_checklists = newCl;
+                if (newRt.length) projectData.recommended_routines = newRt;
+                if (removed > 0) toast.info(`Fjernet ${removed} forslag som ikke passet til prosjektet`);
+              }
+            }
+          } catch (e) {
+            console.warn("Kontrollsjekk hoppet over:", e);
+          }
+
           setTimeout(() => {
             onComplete(projectData);
-          }, 1000);
+          }, 600);
         } catch (e) {
           console.error("Error parsing JSON:", e, jsonContent);
         }

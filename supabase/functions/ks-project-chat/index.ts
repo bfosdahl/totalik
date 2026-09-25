@@ -170,6 +170,57 @@ VIKTIG: Generer ALLTID en handlig (action) når brukeren eksplisitt ber om å le
   return prompt;
 }
 
+// Jev forhåndsvurderer samtalen (punkt 1 + 2): hva er allerede kjent, så hjelperen slipper unødvendige spørsmål.
+async function jevPreassess(messages: any[], key: string): Promise<string> {
+  const text = messages.filter((m) => m?.role === "user").map((m) =>
+    Array.isArray(m.content) ? m.content.filter((p: any) => p?.type === "text").map((p: any) => p.text).join("\n") : String(m.content ?? "")
+  ).join("\n---\n").slice(-6000).trim();
+  if (text.length < 8) return "";
+  const TRADES: Record<string, string> = {
+    grunnarbeid: "grunnarbeid/graving", betong: "betong/støp", tomrer: "tømrer/trearbeid", tak: "tak/taktekking",
+    ror: "rør/sanitær", elektro: "elektro", vatrom: "våtrom/flis", riving: "riving", maling: "maling/overflate", ventilasjon: "ventilasjon",
+  };
+  const yn = (q: string) => ({ type: "noul", instructions: q, criteria: { true: "Ja, det står tydelig i `samtale`.", false: "Nei, det er ikke oppgitt eller er uklart." } });
+  const questions: Record<string, unknown> = {
+    kind: { type: "choice", instructions: "Hvilken type byggeprosjekt beskriver brukeren i `samtale`?", criteria: {
+      nybygg: "Nybygg (enebolig, leilighetsbygg, næringsbygg)", totalrenovering: "Totalrenovering av eksisterende bygg",
+      tilbygg: "Tilbygg eller påbygg", fagentreprise: "Fagentreprise – ett fag for en annen entreprenør",
+      mindre: "Mindre oppussing/reparasjon (f.eks. ett rom, bad, kjøkken)", ukjent: "Ikke mulig å si ut fra samtalen" } },
+    contractor: { type: "choice", instructions: "Hvilken entrepriseform har brukerens firma i prosjektet i `samtale`?", criteria: {
+      total: "Totalentreprise – prosjekterer og bygger alt", hoved: "Hovedentreprise – bygger etter byggherrens prosjektering",
+      under: "Underentreprise/fagentreprise for en annen entreprenør", ukjent: "Ikke oppgitt eller uklart" } },
+    name: yn("Har brukeren oppgitt navn eller en tydelig betegnelse på prosjektet?"),
+    address: yn("Har brukeren oppgitt adresse eller sted for prosjektet?"),
+    client: yn("Har brukeren oppgitt hvem som er byggherre/kunde?"),
+    ready: yn("Har brukeren nå gitt nok opplysninger om hva som skal bygges (type og omfang), eller bedt om et forslag, slik at et prosjektoppsett kan foreslås uten flere spørsmål?"),
+  };
+  for (const [k, v] of Object.entries(TRADES)) questions[`t_${k}`] = { type: "noul", instructions: `Inngår ${v} i arbeidet beskrevet i \`samtale\`?`, criteria: { true: "Ja, nevnt eller helt åpenbart for denne jobben.", false: "Nei eller uklart." } };
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/systemone", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
+    body: JSON.stringify({ model: "typesafe/jev-latest", state: { samtale: text }, questions }),
+  });
+  if (!res.ok) { console.error("Jev", res.status, await res.text()); return ""; }
+  const a = (await res.json())?.answers || {};
+  const known: string[] = []; const missing: string[] = [];
+  const conf = (x: any) => (x?.confidence ?? 0) >= 0.6;
+  if (a.kind?.choice && a.kind.choice !== "ukjent" && conf(a.kind)) known.push(`Prosjekttype: ${a.kind.choice}`); else missing.push("prosjekttype");
+  if (a.contractor?.choice && a.contractor.choice !== "ukjent" && conf(a.contractor)) known.push(`Entrepriseform: ${a.contractor.choice}`); else missing.push("entrepriseform");
+  const trades = Object.keys(TRADES).filter((k) => (a[`t_${k}`]?.noul ?? 0) >= 0.6).map((k) => TRADES[k]);
+  if (trades.length) known.push(`Fag som inngår: ${trades.join(", ")}`);
+  if ((a.name?.noul ?? 0) >= 0.6) known.push("Prosjektnavn er oppgitt"); else missing.push("prosjektnavn");
+  if ((a.address?.noul ?? 0) >= 0.6) known.push("Adresse er oppgitt"); else missing.push("adresse");
+  if ((a.client?.noul ?? 0) >= 0.6) known.push("Byggherre er oppgitt"); else missing.push("byggherre");
+  const ready = (a.ready?.noul ?? 0) >= 0.6;
+  console.log("Jev preassess", JSON.stringify({ known, missing, ready }));
+  return `\n\nFORHÅNDSVURDERING AV SAMTALEN (automatisk, ikke vis til brukeren):
+Allerede kjent – IKKE spør om dette igjen: ${known.join("; ") || "ingenting ennå"}.
+Mangler: ${missing.join(", ") || "ingenting viktig"}.
+${ready
+    ? "Brukeren har gitt nok informasjon. Gå RETT til forslag med JSON-blokken nå. Manglende navn/adresse/byggherre kan stå tomt eller få et fornuftig arbeidsnavn – ikke still flere spørsmål."
+    : "Still maks ETT kort oppfølgingsspørsmål om det viktigste som mangler (type og omfang først). Ikke spør om noe som allerede er kjent."}`;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -205,7 +256,11 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = buildSystemPrompt(projectContext, setupMode);
+    let systemPrompt = buildSystemPrompt(projectContext, setupMode);
+    if (setupMode && Array.isArray(messages)) {
+      const hint = await jevPreassess(messages, LOVABLE_API_KEY).catch((e) => { console.error("Jev preassess failed", e); return ""; });
+      if (hint) systemPrompt += hint;
+    }
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

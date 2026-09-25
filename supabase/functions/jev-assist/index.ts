@@ -392,6 +392,31 @@ Deno.serve(async (req) => {
       return json({ suggestions });
     }
 
+    // ---------------- PROSJEKT-HJELPER: KONTROLLSJEKK AV FORSLAG ----------------
+    if (mode === "setup_review") {
+      const description = clip(body?.description, 3000);
+      const items: { title: string; description: string }[] = (Array.isArray(body?.items) ? body.items : []).slice(0, 30)
+        .map((x: any) => ({ title: clip(x?.title, 150), description: clip(x?.description, 300) }));
+      if (description.length < 5 || !items.length) return json({ keep: items.map(() => true) });
+      const state: Record<string, unknown> = { prosjekt: description, forslag: {} as Record<string, string> };
+      const qs: Record<string, unknown> = {};
+      items.forEach((it, i) => {
+        (state.forslag as any)[`p${i}`] = `${it.title}${it.description ? ": " + it.description : ""}`;
+        qs[`p${i}`] = {
+          type: "noul",
+          instructions: `Er sjekklisten/rutinen i \`forslag.p${i}\` relevant for byggeprosjektet beskrevet i \`prosjekt\`?`,
+          criteria: {
+            true: "Relevant: arbeidet eller risikoen den dekker inngår i prosjektet, eller den er en generell KS/HMS-sjekkliste som gjelder alle byggeprosjekter.",
+            false: "Irrelevant: den gjelder et fag, en bygningsdel eller en arbeidsoperasjon som ikke inngår i dette prosjektet.",
+          },
+        };
+      });
+      const answers = await jev(state, qs);
+      // Fjern kun når Jev er ganske sikker på at det er irrelevant; manglende svar = behold.
+      const keep = items.map((_, i) => { const n = answers[`p${i}`]?.noul; return typeof n !== "number" || n >= 0.25; });
+      return json({ keep });
+    }
+
     return json({ error: "Ukjent modus" }, 400);
   } catch (e: any) {
     if (e?.status && e?.message) return json({ error: e.message }, e.status);
