@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect, useMemo, useCallback, memo, createContext, useContext } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslate } from "@/hooks/useTranslate";
 import { motion, AnimatePresence } from "framer-motion";
@@ -372,6 +372,8 @@ const ExpandableSubmenu = memo(function ExpandableSubmenu({
   );
 });
 
+const ModulePlacementContext = createContext<"all" | "owned" | "more">("all");
+
 /** Generic collapsible module section (locked or active) */
 const ModuleSection = memo(function ModuleSection({
   sectionKey, moduleType, icon, label, color, dotColor,
@@ -387,6 +389,9 @@ const ModuleSection = memo(function ModuleSection({
   onOrder: (type: string) => void;
   children: React.ReactNode;
 }) {
+  const placement = useContext(ModulePlacementContext);
+  if (placement === "owned" && !hasModule) return null;
+  if (placement === "more" && hasModule) return null;
   return (
     <div className={cn(!hasModule && "opacity-60")}>
       <SectionHeaderButton
@@ -780,6 +785,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             </ExpandableSubmenu>
           </div>
 
+          {(() => { const moduleBlock = (<>
           {/* ── IK/MAT ── */}
           <ModuleSection
             sectionKey="ikMat" moduleType="IK_MAT" icon={ShieldCheck} label={t("auto.ik_mat")}
@@ -880,6 +886,32 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
           >
             <NavItemList items={personalhandbokItems} locationPathname={pathname} locationSearch={search} navigate={navigate} t={t} />
           </ModuleSection>
+          </>);
+            const lockedCount = [hasIkMat, hasIkAlkohol, hasKsBygg, hasIkFdv, hasPersonalhandbok].filter((h) => !h).length;
+            return (
+              <>
+                <ModulePlacementContext.Provider value="owned">{moduleBlock}</ModulePlacementContext.Provider>
+                {lockedCount > 0 && !collapsed && (
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setMoreModulesOpen((o) => !o)}
+                      className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    >
+                      <span className="flex items-center gap-2">
+                        <LayoutGrid className="w-4 h-4" />
+                        Flere moduler ({lockedCount})
+                      </span>
+                      {moreModulesOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                    <ExpandableSubmenu isVisible={moreModulesOpen}>
+                      <ModulePlacementContext.Provider value="more">{moduleBlock}</ModulePlacementContext.Provider>
+                    </ExpandableSubmenu>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+
 
           {/* Administrasjon */}
           {(isSystemAdmin || isCompanyAdmin) && (
