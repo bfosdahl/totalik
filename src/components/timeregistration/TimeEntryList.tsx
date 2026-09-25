@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Check, X, Clock, Trash2, QrCode, CalendarCheck, MapPin, Pencil, PencilLine, Package } from "lucide-react";
 import { EditTimeEntryDialog } from "./EditTimeEntryDialog";
+import { SmartTimeCheck } from "./SmartTimeCheck";
 import { getHourBreakdown } from "@/utils/hourBreakdown";
 
 import { Badge } from "@/components/ui/badge";
@@ -84,6 +85,7 @@ export function TimeEntryList({
 }: TimeEntryListProps) {
   const { user, isCompanyAdmin, isDepartmentAdmin } = useAuth();
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
+  const [smartWarnings, setSmartWarnings] = useState<Record<string, string[]>>({});
 
   if (entries.length === 0) {
     return (
@@ -99,7 +101,13 @@ export function TimeEntryList({
     );
   }
 
+  const submittedIds = onApprove && (isCompanyAdmin || isDepartmentAdmin)
+    ? entries.filter((e) => e.status === "submitted" && e.user_id !== (isCompanyAdmin ? "" : user?.id)).map((e) => e.id)
+    : [];
+
   return (
+    <>
+    <SmartTimeCheck entryIds={submittedIds} onResult={setSmartWarnings} />
     <div className="border rounded-lg overflow-x-auto">
       <Table>
 
@@ -241,7 +249,16 @@ export function TimeEntryList({
                   })()}
                 </TableCell>
 
-                <TableCell>{entry.project_name || "-"}</TableCell>
+                <TableCell>
+                  {entry.project_name || "-"}
+                  {smartWarnings[entry.id] && (
+                    <div className="mt-1 space-y-0.5">
+                      {smartWarnings[entry.id].map((w) => (
+                        <div key={w} className="text-[11px] leading-tight rounded bg-accent px-1.5 py-0.5 text-accent-foreground">⚠ {w}</div>
+                      ))}
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell className="hidden md:table-cell max-w-[200px] truncate">
                   {entry.description || "-"}
                 </TableCell>
