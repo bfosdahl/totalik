@@ -99,6 +99,31 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
         return;
       }
 
+      // Grupper timer per avdeling → ansatt
+      let departmentGroups: { department: string; rows: { name: string; hours: number }[] }[] | undefined;
+      if (canSeeAll) {
+        const groupDepts = deptId === "all" ? departments : departments.filter((d) => d.id === deptId);
+        const buckets = new Map<string, Map<string, number>>();
+        const add = (dept: string, name: string, h: number) => {
+          const m = buckets.get(dept) ?? new Map<string, number>();
+          m.set(name, (m.get(name) || 0) + h);
+          buckets.set(dept, m);
+        };
+        (data as any[]).forEach((e) => {
+          const name = e.user_name || "Ukjent";
+          const h = Number(e.hours) || 0;
+          const hit = groupDepts.filter((d) => isInDepartment(e.user_id, d.id));
+          if (hit.length === 0) add("Uten avdeling", name, h);
+          else hit.forEach((d) => add(d.name, name, h));
+        });
+        departmentGroups = [...buckets.entries()]
+          .sort((a, b) => (a[0] === "Uten avdeling" ? 1 : b[0] === "Uten avdeling" ? -1 : a[0].localeCompare(b[0], "nb")))
+          .map(([department, m]) => ({
+            department,
+            rows: [...m.entries()].sort((a, b) => a[0].localeCompare(b[0], "nb")).map(([name, hours]) => ({ name, hours })),
+          }));
+      }
+
       await generateTimeReportPdf({
         entries: data as any,
         companyName: company?.name || "Bedrift",
@@ -108,6 +133,7 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
         subtitle: canSeeAll
           ? filterLabel || undefined
           : `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || undefined,
+        departmentGroups,
       });
       toast.success("Timerapport lastet ned");
       onOpenChange(false);
