@@ -46,6 +46,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import UserSelect from "@/components/audits/UserSelect";
 import { DeviationFileUpload, PendingFile } from "./DeviationFileUpload";
 import { SmartDeviationSuggest } from "./SmartDeviationSuggest";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 
 // Use shared type
 import type { DeviationCategory } from "@/hooks/useDeviations";
@@ -120,6 +122,46 @@ export function NewDeviationDialog({
   // Pending files for upload
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 
+  // Universal utkast: tar vare på feltene hvis dialogen lukkes før lagring
+  const isDirty = !!title.trim() || !!description.trim() || !!incidentLocation.trim() ||
+    !!estimatedLoss.trim() || !!shortTermImprovement.trim() || !!longTermImprovement.trim() ||
+    !!consequenceFor || category !== "safety" || priority !== "medium" ||
+    happenedBefore !== "unknown" || !!responsibleForClosingId || !!assigneeId;
+  const draftData = {
+    title, description, category, priority, assigneeId,
+    dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : "",
+    incidentLocation,
+    incidentDate: incidentDate ? format(incidentDate, "yyyy-MM-dd") : "",
+    discoveredBy, happenedBefore, consequenceFor, estimatedLoss,
+    shortTermImprovement, longTermImprovement, responsibleForClosingId,
+  };
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    "avvik:ny",
+    draftData,
+    { enabled: isDirty },
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    const d = draft.data as typeof draftData;
+    setTitle(d.title || "");
+    setDescription(d.description || "");
+    setCategory((d.category as DeviationCategory) || "safety");
+    setPriority(d.priority || "medium");
+    setAssigneeId(d.assigneeId || "");
+    setDueDate(d.dueDate ? new Date(d.dueDate) : undefined);
+    setIncidentLocation(d.incidentLocation || "");
+    setIncidentDate(d.incidentDate ? new Date(d.incidentDate) : new Date());
+    setDiscoveredBy(d.discoveredBy || "");
+    setHappenedBefore(d.happenedBefore || "unknown");
+    setConsequenceFor(d.consequenceFor || "");
+    setEstimatedLoss(d.estimatedLoss || "");
+    setShortTermImprovement(d.shortTermImprovement || "");
+    setLongTermImprovement(d.longTermImprovement || "");
+    setResponsibleForClosingId(d.responsibleForClosingId || "");
+    dismissDraft();
+  };
+
   const resetForm = () => {
     setTitle("");
     setDescription("");
@@ -189,6 +231,7 @@ export function NewDeviationDialog({
       
       rememberDeviationChoices({ category, responsibleForClosingId });
       resetForm();
+      clearDraft();
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -197,6 +240,10 @@ export function NewDeviationDialog({
 
   const formContent = (
     <form id="deviation-form" onSubmit={handleSubmit} className="space-y-5">
+      {draft && !isDirty && (
+        <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+      )}
+
       {/* Basic info section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
