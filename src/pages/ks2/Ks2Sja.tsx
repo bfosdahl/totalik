@@ -556,6 +556,21 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                 </Card>
               )}
 
+              {!isCompleted && (
+                <SmartSjaSuggest
+                  workDescription={workDescription}
+                  existingRisks={risks.map((r) => r.description || "")}
+                  onAdd={(h) => {
+                    const updatedRisks = [...risks, { description: h.risk, consequence: h.consequence, probability: h.probability }];
+                    const updatedMeasures = [...measures, ...h.measures.map((m) => ({ risk: h.risk, measure: m, responsible: "" }))];
+                    setRisks(updatedRisks);
+                    setMeasures(updatedMeasures);
+                    debouncedAutoSave(updatedRisks, updatedMeasures);
+                    toast.success("Fare og tiltak lagt til");
+                  }}
+                />
+              )}
+
               <div className="space-y-2">
                 {risks.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
