@@ -14,6 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { CleaningRecord } from '@/hooks/useIkMatCleaningPlan';
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { t } from "@/i18n/t";
 
 interface CleaningTask {
@@ -64,6 +66,20 @@ export const FillCleaningPlanDialog = ({
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const isDirty = !!(notes || cleaningRecords.some(r => r.completed || r.notes));
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `ikmat-renhold:${frequencyType ?? existingResponse?.frequency_type ?? "generell"}`,
+    { cleaningRecords, notes },
+    { enabled: open && isDirty && existingResponse?.status !== 'completed' }
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    if (draft.data.cleaningRecords?.length === cleaningRecords.length) setCleaningRecords(draft.data.cleaningRecords);
+    setNotes(draft.data.notes || '');
+    dismissDraft();
+  };
+
   useEffect(() => {
     if (open && cleaningTasks.length > 0) {
       if (existingResponse) {
@@ -110,6 +126,7 @@ export const FillCleaningPlanDialog = ({
         status,
         frequency_type: frequencyType || existingResponse?.frequency_type,
       });
+      clearDraft();
       onOpenChange(false);
     } catch (error) {
       console.error('Error saving cleaning plan:', error);
@@ -148,6 +165,9 @@ export const FillCleaningPlanDialog = ({
 
         <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-6">
+            {draft && (
+              <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+            )}
             {cleaningRecords.map((record, index) => {
               const task = cleaningTasks[index];
               return (
