@@ -234,6 +234,15 @@ function DailyReportForm({
     photos: photos,
   });
 
+  const submitForm = async (asDraft: boolean) => {
+    try {
+      await onSubmit(buildData(), asDraft);
+      clearDraft();
+    } catch {
+      /* lar brukeren prøve igjen */
+    }
+  };
+
   const SectionHeader = ({ id, label, icon }: { id: string; label: string; icon: React.ReactNode }) => (
     <button
       type="button"
