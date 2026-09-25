@@ -45,6 +45,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UserSelect from "@/components/audits/UserSelect";
 import { DeviationFileUpload, PendingFile } from "./DeviationFileUpload";
+import { SmartDeviationSuggest } from "./SmartDeviationSuggest";
 
 // Use shared type
 import type { DeviationCategory } from "@/hooks/useDeviations";
@@ -296,6 +297,17 @@ export function NewDeviationDialog({
           className="min-h-[80px] resize-none"
         />
       </div>
+
+      <SmartDeviationSuggest
+        title={title}
+        description={description}
+        location={incidentLocation}
+        onApply={(s) => {
+          if (s.category) setCategory(s.category as DeviationCategory);
+          if (s.priority) setPriority(s.priority);
+          if (s.responsibleId) setResponsibleForClosingId(s.responsibleId);
+        }}
+      />
 
       {/* Happened before and consequence */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
