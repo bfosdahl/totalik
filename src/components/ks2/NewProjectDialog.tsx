@@ -10,6 +10,7 @@ import { Loader2, FileText, Sparkles, ClipboardList, Plus, Trash2, Save, Buildin
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewKsModule2ProjectInput, ProjectType } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSetupChat } from "./Ks2ProjectSetupChat";
+import { SmartProjectStartSuggest } from "./SmartProjectStartSuggest";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
