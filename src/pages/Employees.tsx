@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { t } from "@/i18n/t";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BulkMessageDialog } from "@/components/hr/BulkMessageDialog";
 import { useDepartmentMembership } from "@/hooks/useDepartmentMembership";
 
@@ -39,6 +40,7 @@ export default function Employees() {
   const [createDirectDialogOpen, setCreateDirectDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
+  const [inviteSendNow, setInviteSendNow] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [createForm, setCreateForm] = useState({
@@ -102,7 +104,8 @@ export default function Employees() {
         body: {
           email: inviteEmail,
           companyId: company.id,
-          role: inviteRole
+          role: inviteRole,
+          sendEmail: inviteSendNow,
         }
       });
 
@@ -118,7 +121,8 @@ export default function Employees() {
       }
       if (data?.error) throw new Error(data.error);
 
-      toast.success(data?.reactivated ? "Bruker reaktivert: " + inviteEmail : "Invitasjon sendt til " + inviteEmail);
+      toast.success(data?.reactivated ? "Bruker reaktivert: " + inviteEmail : (inviteSendNow ? "Invitasjon sendt til " : "Ansatt lagt til (ikke invitert): ") + inviteEmail);
+      setInviteSendNow(false);
       setInviteDialogOpen(false);
       setInviteEmail("");
       setInviteRole("user");
@@ -615,12 +619,19 @@ export default function Employees() {
               </Select>
             </div>
           </div>
+          <div className="flex items-start gap-2 rounded-lg border p-3">
+            <Checkbox id="emp-invite-send" checked={inviteSendNow} onCheckedChange={(v) => setInviteSendNow(v === true)} />
+            <div>
+              <Label htmlFor="emp-invite-send">Send brukerinfo på e-post nå</Label>
+              <p className="text-xs text-muted-foreground">Står av: ansatt lagres som «Ikke invitert».</p>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
               {t("auto.avbryt")}
             </Button>
             <Button onClick={handleInviteUser} disabled={!inviteEmail || isInviting}>
-              {isInviting ? "Sender..." : "Send invitasjon"}
+              {isInviting ? "Lagrer..." : inviteSendNow ? "Lagre og send" : "Lagre ansatt"}
             </Button>
           </DialogFooter>
         </DialogContent>

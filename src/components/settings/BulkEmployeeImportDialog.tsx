@@ -30,10 +30,23 @@ export function BulkEmployeeImportDialog({
 
   const reset = () => { setRows([]); setSendNow(false); };
 
+  const [parsing, setParsing] = useState(false);
   const handleFile = async (file: File) => {
     try {
-      const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
-      const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+      let data: Record<string, unknown>[];
+      if (file.name.toLowerCase().endsWith(".pdf")) {
+        if (file.size > 10 * 1024 * 1024) { toast.error("PDF er for stor (maks 10 MB)"); return; }
+        setParsing(true);
+        const buf = new Uint8Array(await file.arrayBuffer());
+        let bin = ""; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+        const { data: res, error } = await supabase.functions.invoke("parse-employee-file", { body: { base64: btoa(bin) } });
+        setParsing(false);
+        if (error || res?.error) { toast.error(res?.error || "Kunne ikke lese PDF"); return; }
+        data = (res.employees || []).map((e: any) => ({ fornavn: e.firstName, etternavn: e.lastName, epost: e.email, rolle: e.admin ? "admin" : "" }));
+      } else {
+        const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        data = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+      }
       const existing = new Set(existingEmails.map((e) => e.toLowerCase()));
       const seen = new Set<string>();
       const parsed: Row[] = [];
@@ -59,7 +72,8 @@ export function BulkEmployeeImportDialog({
       if (!parsed.length) toast.error("Fant ingen ansatte i filen");
       setRows(parsed);
     } catch {
-      toast.error("Kunne ikke lese filen. Bruk Excel eller CSV.");
+      setParsing(false);
+      toast.error("Kunne ikke lese filen. Bruk Excel, CSV eller PDF.");
     }
   };
 
@@ -100,14 +114,14 @@ export function BulkEmployeeImportDialog({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Importer ansatte</DialogTitle>
-          <DialogDescription>Last opp Excel eller CSV med fornavn, etternavn og e-post. Du ser listen før noe lagres.</DialogDescription>
+          <DialogDescription>Last opp Excel, CSV eller PDF med fornavn, etternavn og e-post. Du ser listen før noe lagres.</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <label className="cursor-pointer">
-              <Upload className="w-4 h-4 mr-2" />Velg fil
-              <input type="file" accept=".xlsx,.xls,.csv" className="hidden"
+              {parsing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}{parsing ? "Leser PDF..." : "Velg fil"}
+              <input type="file" accept=".xlsx,.xls,.csv,.pdf" className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }} />
             </label>
           </Button>
