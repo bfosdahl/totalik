@@ -66,10 +66,13 @@ Deno.serve(async (req) => {
       const description = clip(body?.description, 3000);
       if (!title && !description) return json({ error: "Skriv tittel eller beskrivelse først" }, 400);
       const { data: people } = await admin.from("profiles")
-        .select("id, first_name, last_name, job_title")
+        .select("id, user_id, first_name, last_name")
         .eq("company_id", companyId).eq("is_active", true).limit(60);
+      const { data: roleRows } = await admin.from("user_roles").select("user_id, role").in("user_id", (people || []).map((p: any) => p.user_id));
+      const roleName: Record<string, string> = { company_admin: "bedriftsadministrator/leder", department_admin: "avdelingsleder" };
       const staff = (people || []).map((p: any) => ({
-        id: p.id, name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Ukjent", role: p.job_title || "",
+        id: p.id, name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Ukjent",
+        role: (roleRows || []).filter((r: any) => r.user_id === p.user_id).map((r: any) => roleName[r.role]).filter(Boolean).join(", ") || "ansatt",
       }));
       const responsibleCriteria: Record<string, string> = { none: "Ingen på listen passer tydelig bedre enn andre." };
       staff.forEach((s, i) => { responsibleCriteria[`p${i}`] = `${s.name}${s.role ? ` (${s.role})` : ""}`; });
@@ -121,7 +124,7 @@ Deno.serve(async (req) => {
       const dates: string[] = (Array.isArray(body?.dates) ? body.dates : []).filter((d: unknown) => /^\d{4}-\d{2}-\d{2}$/.test(String(d))).slice(0, 62);
       const start = clip(body?.startTime, 5), end = clip(body?.endTime, 5);
       if (!ids.length || !dates.length || !/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end)) return json({ error: "Velg ansatt, dato og tid først" }, 400);
-      const { data: emps } = await admin.from("profiles").select("id, first_name, last_name, job_title").eq("company_id", companyId).in("id", ids);
+      const { data: emps } = await admin.from("profiles").select("id, first_name, last_name").eq("company_id", companyId).in("id", ids);
       const employees = emps || [];
       const minD = dates.reduce((a, b) => (a < b ? a : b)), maxD = dates.reduce((a, b) => (a > b ? a : b));
       const shiftDay = (d: string, n: number) => { const x = new Date(`${d}T12:00:00Z`); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
@@ -159,7 +162,7 @@ Deno.serve(async (req) => {
         results.forEach((r, i) => {
           const e: any = employees.find((x: any) => x.id === r.employeeId);
           (state.ansatte as any)[`a${i}`] = {
-            stilling: e?.job_title || "", kurs: (courses || []).filter((c: any) => c.employee_id === r.employeeId)
+            kurs: (courses || []).filter((c: any) => c.employee_id === r.employeeId)
               .map((c: any) => ({ kurs: c.course_name, utløper: c.expiry_date || "utløper ikke" })),
           };
           qs[`c${i}`] = {
