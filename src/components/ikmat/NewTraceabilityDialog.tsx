@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { t } from "@/i18n/t";
 
 interface NewTraceabilityDialogProps {
@@ -131,6 +133,23 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
     internal_shelf_life_days: "",
     produced_by: "",
   });
+
+  // Utkast: tar vare på skjemaet ved utilsiktet lukking (bilder/filer kan ikke lagres)
+  const isDirty = !!(
+    formData.product_name || formData.batch_number || formData.supplier_name ||
+    formData.notes || formData.receipt_temperature || formData.allergens.length > 0
+  );
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    "ikmat-varemottak:ny",
+    formData,
+    { enabled: open && isDirty }
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    setFormData(prev => ({ ...prev, ...draft.data }));
+    dismissDraft();
+  };
 
   const handleAllergenToggle = (allergen: string, checked: boolean) => {
     setFormData(prev => ({
@@ -361,6 +380,7 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
       setSelectedFile(null);
       setLabelImageFile(null);
       setLabelImagePreview(null);
+      clearDraft();
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting traceability record:", error);
@@ -383,6 +403,9 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {draft && (
+            <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+          )}
           {/* Label Image Upload with AI Scanning - MOVED TO TOP */}
           <div className="space-y-2 p-4 border-2 border-dashed border-primary/30 rounded-lg bg-primary/5">
             <Label className="flex items-center gap-2 text-base font-semibold">

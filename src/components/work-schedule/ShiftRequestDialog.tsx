@@ -14,6 +14,8 @@ import { useShiftRequests, ShiftRequestType } from "@/hooks/useShiftRequests";
 import { WorkSchedule } from "@/hooks/useWorkSchedules";
 import { LOCATIONS, ROLES, getLocationLabel } from "./shiftOptions";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { t } from "@/i18n/t";
 
 interface ShiftRequestDialogProps {
@@ -39,6 +41,28 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
   const [absenceReason, setAbsenceReason] = useState("");
   const [notes, setNotes] = useState("");
 
+  const isDirty = !!(targetEmployeeId || isOpenRequest || absenceReason || notes);
+  const draftData = { targetEmployeeId, isOpenRequest, proposedDate, proposedStartTime, proposedEndTime, proposedLocation, proposedRole, absenceReason, notes };
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `vaktforesporsel:${requestType}:${shift?.id ?? "ny"}`,
+    draftData,
+    { enabled: open && isDirty }
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    setTargetEmployeeId(draft.data.targetEmployeeId || "");
+    setIsOpenRequest(!!draft.data.isOpenRequest);
+    setProposedDate(draft.data.proposedDate || "");
+    setProposedStartTime(draft.data.proposedStartTime || "08:00");
+    setProposedEndTime(draft.data.proposedEndTime || "16:00");
+    setProposedLocation(draft.data.proposedLocation || "");
+    setProposedRole(draft.data.proposedRole || "");
+    setAbsenceReason(draft.data.absenceReason || "");
+    setNotes(draft.data.notes || "");
+    dismissDraft();
+  };
+
   const otherUsers = users.filter(u => u.id !== profile?.id);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +87,7 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
     });
 
     if (success) {
+      clearDraft();
       onOpenChange(false);
       // Reset form
       setTargetEmployeeId("");
@@ -104,6 +129,9 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {draft && (
+              <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+            )}
             {/* Show current shift info */}
             {shift && (
               <div className="p-3 bg-muted rounded-lg text-sm">

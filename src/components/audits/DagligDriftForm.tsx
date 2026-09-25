@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuditFormBase } from '@/hooks/useAuditFormBase';
+import { DraftRestoreBanner } from '@/components/shared/DraftRestoreBanner';
 import {
   useChecklistSectionsState,
   initChecklistState,
@@ -190,6 +191,9 @@ const DagligDriftForm = () => {
     isSaving,
     showForm,
     formTypeResponses,
+    localDraft,
+    restoreLocalDraft,
+    clearLocalDraft,
     handleCreateNew,
     handleSelectResponse,
     handleDelete,
@@ -250,15 +254,19 @@ const DagligDriftForm = () => {
 
   if (!showForm) {
     return (
-
-      <SavedFormsList
-        responses={formTypeResponses}
-        onDelete={handleDelete}
-        onSelect={handleSelectResponse}
-        onCreateNew={handleCreateNew}
-        isDeleting={isSaving}
-        title={t("auto.daglig_drift")}
-      />
+      <div className="space-y-4">
+        {localDraft && (
+          <DraftRestoreBanner savedAt={localDraft.savedAt} onRestore={restoreLocalDraft} onDiscard={clearLocalDraft} />
+        )}
+        <SavedFormsList
+          responses={formTypeResponses}
+          onDelete={handleDelete}
+          onSelect={handleSelectResponse}
+          onCreateNew={handleCreateNew}
+          isDeleting={isSaving}
+          title={t("auto.daglig_drift")}
+        />
+      </div>
     );
   }
 

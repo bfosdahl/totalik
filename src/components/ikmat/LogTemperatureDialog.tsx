@@ -31,6 +31,8 @@ import {
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
 import { useLastUsed } from "@/hooks/useLastUsed";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 
 interface LogTemperatureDialogProps {
   open: boolean;
@@ -64,6 +66,23 @@ export function LogTemperatureDialog({
   const [completedCount, setCompletedCount] = useState(0);
 
   const isEditMode = !!editLog;
+
+  // Utkast: tar vare på temperatur/notat/korrigerende tiltak ved utilsiktet lukking
+  const isDirty = !isEditMode && !!(temperature || notes || correctiveAction);
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    "ikmat-temperatur:ny",
+    { selectedEquipmentId, temperature, notes, correctiveAction },
+    { enabled: open && isDirty }
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    setSelectedEquipmentId(draft.data.selectedEquipmentId || "");
+    setTemperature(draft.data.temperature || "");
+    setNotes(draft.data.notes || "");
+    setCorrectiveAction(draft.data.correctiveAction || "");
+    dismissDraft();
+  };
 
   // Husk forrige temperatur per utstyr (lokalt) og tilby den som forslag
   const { lastUsed, remember: rememberTemp } = useLastUsed("ikmat-temperatur", {
@@ -145,6 +164,8 @@ export function LogTemperatureDialog({
         notes: notes || undefined,
         corrective_action: correctiveAction || undefined,
       });
+
+      clearDraft();
 
       const newCompleted = completedCount + 1;
       setCompletedCount(newCompleted);
@@ -248,6 +269,9 @@ export function LogTemperatureDialog({
         )}
 
         <div className="space-y-4 py-4">
+          {draft && !isEditMode && (
+            <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+          )}
           <div className="space-y-2">
             <Label htmlFor="equipment">{t("auto.velg_utstyr")}</Label>
             <Select value={selectedEquipmentId} onValueChange={setSelectedEquipmentId} disabled={isEditMode}>

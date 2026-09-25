@@ -15,6 +15,8 @@ import { format, parseISO } from "date-fns";
 import { nb } from "date-fns/locale";
 import { DrivingLogEntry } from "@/hooks/useDrivingLog";
 import { CreateTravelExpenseInput } from "@/hooks/useTravelExpenseReports";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { t } from "@/i18n/t";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -82,6 +84,38 @@ export function CreateTravelExpenseDialog({
   const [notes, setNotes] = useState("");
   const [selectedTripIds, setSelectedTripIds] = useState<Set<string>>(new Set());
   const [expenseItems, setExpenseItems] = useState<ExpenseItemInput[]>([]);
+
+  const isDirty = !!(purpose || destination || departureLocation || notes || selectedTripIds.size > 0 || expenseItems.length > 0 || dietDays || accommodationDays || passengerSupplement);
+  // Kvitteringsfiler kan ikke lagres i utkast – kun metadata
+  const draftData = {
+    purpose, destination, departureDate, returnDate, departureLocation,
+    mileageRate, passengerSupplement, dietRate, dietDays,
+    accommodationRate, accommodationDays, notes,
+    selectedTripIds: Array.from(selectedTripIds),
+    expenseItems: expenseItems.map(({ receipt_file, ...rest }) => rest),
+  };
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft("reiseregning:ny", draftData, { enabled: open && isDirty });
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    const d = draft.data;
+    setPurpose(d.purpose || "");
+    setDestination(d.destination || "");
+    setDepartureDate(d.departureDate || format(new Date(), "yyyy-MM-dd"));
+    setReturnDate(d.returnDate || format(new Date(), "yyyy-MM-dd"));
+    setDepartureLocation(d.departureLocation || "");
+    setMileageRate(d.mileageRate || "3.50");
+    setPassengerSupplement(d.passengerSupplement || "");
+    setDietRate(d.dietRate || "0");
+    setDietDays(d.dietDays || "");
+    setAccommodationRate(d.accommodationRate || "0");
+    setAccommodationDays(d.accommodationDays || "");
+    setNotes(d.notes || "");
+    setSelectedTripIds(new Set(d.selectedTripIds || []));
+    setExpenseItems(d.expenseItems || []);
+    dismissDraft();
+  };
+
 
   // Calculate total km from selected trips
   const totalKm = useMemo(() => {
@@ -152,6 +186,7 @@ export function CreateTravelExpenseDialog({
         amount: Number(item.amount),
       })),
     });
+    clearDraft();
   };
 
   const resetForm = () => {
@@ -190,6 +225,9 @@ export function CreateTravelExpenseDialog({
 
         <ScrollArea className="flex-1 pr-4">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {draft && (
+              <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+            )}
             {/* Basic info */}
             <div className="space-y-4">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">{t("auto.reisedetaljer")}</h3>

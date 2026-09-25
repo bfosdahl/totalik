@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { CreateAbsence } from "@/hooks/useEmployeeAbsence";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { t } from "@/i18n/t";
 
 interface RegisterAbsenceDialogProps {
@@ -65,6 +67,26 @@ export function RegisterAbsenceDialog({
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isDirty = !!(absenceType || startDate || endDate || reason || notes);
+  const draftData = {
+    absenceType,
+    startDate: startDate ? format(startDate, "yyyy-MM-dd") : "",
+    endDate: endDate ? format(endDate, "yyyy-MM-dd") : "",
+    reason,
+    notes,
+  };
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft("fravaer:ny", draftData, { enabled: open && isDirty });
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    setAbsenceType(draft.data.absenceType || "");
+    setStartDate(draft.data.startDate ? new Date(draft.data.startDate + "T12:00:00") : undefined);
+    setEndDate(draft.data.endDate ? new Date(draft.data.endDate + "T12:00:00") : undefined);
+    setReason(draft.data.reason || "");
+    setNotes(draft.data.notes || "");
+    dismissDraft();
+  };
+
   const resetForm = () => {
     setSelectedEmployee(forSelf && profile?.id ? profile.id : "");
     setAbsenceType("");
@@ -91,6 +113,7 @@ export function RegisterAbsenceDialog({
 
     setIsSubmitting(false);
     if (success) {
+      clearDraft();
       resetForm();
       onOpenChange(false);
     }
@@ -106,6 +129,9 @@ export function RegisterAbsenceDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {draft && (
+            <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+          )}
           {/* Employee selection (only if not for self) */}
           {!forSelf && (
             <div className="space-y-2">
