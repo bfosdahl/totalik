@@ -10,6 +10,7 @@ import { Loader2, FileText, Sparkles, ClipboardList, Plus, Trash2, Save, Buildin
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { NewKsModule2ProjectInput, ProjectType } from "@/hooks/useKsModule2Projects";
 import { Ks2ProjectSetupChat } from "./Ks2ProjectSetupChat";
+import { SmartProjectStartSuggest } from "./SmartProjectStartSuggest";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -411,6 +412,16 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             <p className="text-sm text-muted-foreground mb-6">
               {t("auto.velg_hvilken_type_prosjekt_du_vil_oppret")}
             </p>
+            <SmartProjectStartSuggest
+              templates={[
+                ...PROJECT_TEMPLATES.map((x) => ({ id: x.id, name: x.name, description: x.description })),
+                ...customTemplates.map((x) => ({ id: x.id, name: x.template_name, description: x.description || "" })),
+              ]}
+              onApply={(type, templateId) => {
+                setSelectedProjectType(type);
+                if (type === "standard" && templateId) handleTemplateChange(templateId);
+              }}
+            />
             <div className="grid gap-4">
               {getProjectTypeOptions().map((option) => {
                 const Icon = option.icon;

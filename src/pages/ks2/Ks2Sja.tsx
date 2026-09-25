@@ -24,6 +24,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { registerPdfFont } from "@/utils/pdfFont";
 import { t } from "@/i18n/t";
+import { SmartSjaSuggest } from "@/components/ks2/SmartSjaSuggest";
 
 // === Detail/Edit View ===
 function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void }) {
@@ -554,6 +555,21 @@ function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void
                     </Button>
                   </CardContent>
                 </Card>
+              )}
+
+              {!isCompleted && (
+                <SmartSjaSuggest
+                  workDescription={workDescription}
+                  existingRisks={risks.map((r) => r.description || "")}
+                  onAdd={(h) => {
+                    const updatedRisks = [...risks, { description: h.risk, consequence: h.consequence, probability: h.probability }];
+                    const updatedMeasures = [...measures, ...h.measures.map((m) => ({ risk: h.risk, measure: m, responsible: "" }))];
+                    setRisks(updatedRisks);
+                    setMeasures(updatedMeasures);
+                    debouncedAutoSave(updatedRisks, updatedMeasures);
+                    toast.success("Fare og tiltak lagt til");
+                  }}
+                />
               )}
 
               <div className="space-y-2">
