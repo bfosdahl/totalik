@@ -6,6 +6,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckpointResponse, CheckpointItem, getCheckpointText } from "@/hooks/useIkMatChecklistResponses";
 import { Check, X, Minus } from "lucide-react";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { t } from "@/i18n/t";
 
 interface FillChecklistDialogProps {
@@ -35,6 +37,20 @@ export function FillChecklistDialog({
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const isDirty = !!(notes || responses.some(r => r.status !== 'na' || r.comment));
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `ikmat-sjekkliste:${checklistName}`,
+    { responses, notes },
+    { enabled: open && isDirty }
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    if (draft.data.responses?.length === responses.length) setResponses(draft.data.responses);
+    setNotes(draft.data.notes || '');
+    dismissDraft();
+  };
+
   const updateResponse = (index: number, field: keyof CheckpointResponse, value: any) => {
     setResponses(prev => {
       const newResponses = [...prev];
@@ -47,8 +63,9 @@ export function FillChecklistDialog({
     setIsSaving(true);
     const success = await onSave(responses, status, notes);
     setIsSaving(false);
-    
+
     if (success) {
+      clearDraft();
       onOpenChange(false);
     }
   };
@@ -82,6 +99,10 @@ export function FillChecklistDialog({
             Fyll alle OK
           </Button>
         </div>
+
+        {draft && (
+          <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+        )}
 
         <div className="space-y-6">
           {responses.map((response, index) => (
