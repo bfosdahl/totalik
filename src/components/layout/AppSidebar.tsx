@@ -538,6 +538,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
   const canOrderModules = isCompanyAdmin;
   const { getPricing } = useModulePricing();
 
+  const [moreModulesOpen, setMoreModulesOpen] = useState(false);
   const hasKsBygg = hasModule("IK_BYGG");
   const hasIkMat = hasModule("IK_MAT");
   const hasIkAlkohol = hasModule("IK_ALKOHOL");
