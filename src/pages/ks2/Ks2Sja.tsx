@@ -25,6 +25,8 @@ import autoTable from "jspdf-autotable";
 import { registerPdfFont } from "@/utils/pdfFont";
 import { t } from "@/i18n/t";
 import { SmartSjaSuggest } from "@/components/ks2/SmartSjaSuggest";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 
 // === Detail/Edit View ===
 function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void }) {
@@ -889,6 +891,26 @@ export default function Ks2Sja() {
 
   const { sjaList, isLoading, createSja, deleteSja } = useKsModule2Sja(projectId);
 
+  // Universal utkast: tar vare på SJA-feltene hvis dialogen lukkes før lagring
+  const sjaIsDirty = !!formData.title || !!formData.work_description || !!formData.location ||
+    !!formData.responsible_name || formData.overall_risk_level !== "medium";
+  const { draft: sjaDraft, clear: clearSjaDraft, dismiss: dismissSjaDraft } = useFormDraft(
+    `ks-sja:${projectId}`,
+    formData,
+    { enabled: sjaIsDirty },
+  );
+  const restoreSjaDraft = () => {
+    if (!sjaDraft) return;
+    const d = sjaDraft.data as Partial<CreateSjaInput>;
+    setFormData({
+      title: "", work_description: "", location: "",
+      planned_date: format(new Date(), "yyyy-MM-dd"),
+      responsible_name: "", overall_risk_level: "medium",
+      ...d,
+    });
+    dismissSjaDraft();
+  };
+
   const getRiskBadge = (level: string) => {
     switch (level) {
       case "high": return <Badge variant="destructive">{t("auto.hoey_risiko")}</Badge>;
@@ -933,6 +955,7 @@ export default function Ks2Sja() {
       planned_date: format(new Date(), "yyyy-MM-dd"),
       responsible_name: "", overall_risk_level: "medium",
     });
+    clearSjaDraft();
 
     // Open the detail view immediately so user can add risks
     if (result) {
@@ -1072,6 +1095,9 @@ export default function Ks2Sja() {
             </DialogTitle>
             <DialogDescription>{t("auto.opprett_en_ny_sja_for_aa_vurdere_risiko_")}</DialogDescription>
           </DialogHeader>
+          {sjaDraft && !sjaIsDirty && (
+            <DraftRestoreBanner savedAt={sjaDraft.savedAt} onRestore={restoreSjaDraft} onDiscard={clearSjaDraft} />
+          )}
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>{t("auto.tittel_arbeidsoppgave")}</Label>
