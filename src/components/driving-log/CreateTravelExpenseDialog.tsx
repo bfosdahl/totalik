@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -94,7 +94,7 @@ export function CreateTravelExpenseDialog({
     selectedTripIds: Array.from(selectedTripIds),
     expenseItems: expenseItems.map(({ receipt_file, ...rest }) => rest),
   };
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft("reiseregning:ny", draftData, { enabled: open && isDirty });
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft("reiseregning:ny", draftData, { enabled: open && isDirty });
 
   const restoreDraft = () => {
     if (!draft) return;
@@ -498,4 +498,6 @@ export function CreateTravelExpenseDialog({
       </DialogContent>
     </Dialog>
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
 }

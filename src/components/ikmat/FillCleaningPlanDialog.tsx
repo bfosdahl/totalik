@@ -67,11 +67,13 @@ export const FillCleaningPlanDialog = ({
   const [isSaving, setIsSaving] = useState(false);
 
   const isDirty = !!(notes || cleaningRecords.some(r => r.completed || r.notes));
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft(
     `ikmat-renhold:${frequencyType ?? existingResponse?.frequency_type ?? "generell"}`,
     { cleaningRecords, notes },
     { enabled: open && isDirty && existingResponse?.status !== 'completed' }
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
 
   const restoreDraft = () => {
     if (!draft) return;

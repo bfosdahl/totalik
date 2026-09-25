@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -43,11 +43,13 @@ export function ShiftRequestDialog({ open, onOpenChange, shift, requestType }: S
 
   const isDirty = !!(targetEmployeeId || isOpenRequest || absenceReason || notes);
   const draftData = { targetEmployeeId, isOpenRequest, proposedDate, proposedStartTime, proposedEndTime, proposedLocation, proposedRole, absenceReason, notes };
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft(
     `vaktforesporsel:${requestType}:${shift?.id ?? "ny"}`,
     draftData,
     { enabled: open && isDirty }
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
 
   const restoreDraft = () => {
     if (!draft) return;

@@ -12,15 +12,19 @@ export function useFormDraft<T>(namespace: string, data: T, opts: { enabled: boo
   const [draft, setDraft] = useState<{ data: T; savedAt: string } | null>(null);
   const loadedRef = useRef(false);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     try {
       const raw = localStorage.getItem(key);
       setDraft(raw ? JSON.parse(raw) : null);
     } catch {
       setDraft(null);
     }
-    loadedRef.current = true;
   }, [key]);
+
+  useEffect(() => {
+    refresh();
+    loadedRef.current = true;
+  }, [refresh]);
 
   // Autolagre (debounce)
   useEffect(() => {
@@ -53,5 +57,5 @@ export function useFormDraft<T>(namespace: string, data: T, opts: { enabled: boo
 
   const dismiss = useCallback(() => setDraft(null), []);
 
-  return { draft, clear, dismiss };
+  return { draft, clear, dismiss, refresh };
 }

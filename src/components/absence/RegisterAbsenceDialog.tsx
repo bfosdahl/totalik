@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
@@ -75,7 +75,7 @@ export function RegisterAbsenceDialog({
     reason,
     notes,
   };
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft("fravaer:ny", draftData, { enabled: open && isDirty });
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft("fravaer:ny", draftData, { enabled: open && isDirty });
 
   const restoreDraft = () => {
     if (!draft) return;
@@ -259,4 +259,6 @@ export function RegisterAbsenceDialog({
       </DialogContent>
     </Dialog>
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
 }
