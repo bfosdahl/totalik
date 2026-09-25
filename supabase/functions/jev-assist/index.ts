@@ -572,6 +572,97 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ---------------- KJØREBOK: type kjøring ----------------
+    if (mode === "trip_type") {
+      const purpose = clip(body?.purpose, 500);
+      if (!purpose) return json({ error: "Skriv formål med turen først" }, 400);
+      const answers = await jev({ tur: { formaal: purpose, fra: clip(body?.from, 200), til: clip(body?.to, 200), notat: clip(body?.notes, 500) } }, {
+        trip_type: {
+          type: "choice",
+          instructions: "Hvilken type kjøring er turen i `tur` etter norske skatteregler?",
+          criteria: {
+            business: "Yrkeskjøring: kjøring i jobbens tjeneste, f.eks. kundebesøk, byggeplass, møte, henting av materialer, service.",
+            commute: "Arbeidsreise: vanlig reise mellom hjem og fast arbeidssted.",
+            private: "Privat: kjøring som ikke har med jobben å gjøre, f.eks. handling, fritid, familie.",
+          },
+        },
+      });
+      const c = answers.trip_type;
+      if (!["business", "commute", "private"].includes(c?.choice)) return json({ error: "Fikk ikke et gyldig forslag, velg selv" }, 502);
+      return json({ tripType: c.choice, confidence: c.confidence ?? null });
+    }
+
+    // ---------------- REISEREGNING: kontroll ----------------
+    if (mode === "expense_check") {
+      const items = (Array.isArray(body?.items) ? body.items : []).slice(0, 40).map((i: any) => ({
+        kategori: clip(i?.category, 50), beskrivelse: clip(i?.description, 200), dato: clip(i?.date, 20), belop_kr: Number(i?.amount) || 0,
+      }));
+      const state = {
+        reise: {
+          formaal: clip(body?.purpose, 300), destinasjon: clip(body?.destination, 200),
+          fra_dato: clip(body?.departureDate, 20), til_dato: clip(body?.returnDate, 20),
+          km: Number(body?.totalKm) || 0, diettdogn: Number(body?.dietDays) || 0, overnattinger: Number(body?.accommodationDays) || 0,
+          totalt_kr: Number(body?.total) || 0,
+        },
+        utlegg: items,
+      };
+      const questions: Record<string, unknown> = {
+        ok: {
+          type: "noul",
+          instructions: "Ser reiseregningen i `reise` og `utlegg` ryddig og troverdig ut, uten tydelige feil eller mangler?",
+          criteria: {
+            true: "Beløp, datoer, dager og utlegg henger sammen med formål og reiselengde.",
+            false: "Noe virker feil: uvanlig høye beløp, utlegg utenfor reisedatoene, flere diettdøgn/overnattinger enn reisen varer, manglende beskrivelse, dobbeltføring eller private utgifter.",
+          },
+        },
+      };
+      items.forEach((_: unknown, i: number) => {
+        questions[`i${i}`] = {
+          type: "noul",
+          instructions: `Er utlegg nr. ${i + 1} i \`utlegg\` (indeks ${i}) mistenkelig eller bør sjekkes før godkjenning?`,
+          criteria: { true: "Uvanlig beløp, dato utenfor reisen, uklar/manglende beskrivelse, ser privat ut eller er trolig dobbeltført.", false: "Ser normalt ut for denne reisen." },
+        };
+      });
+      const answers = await jev(state, questions);
+      const flagged = items.map((it: any, i: number) => ({ index: i, noul: answers[`i${i}`]?.noul })).filter((x: any) => typeof x.noul === "number" && x.noul >= 0.6);
+      return json({ ok: typeof answers.ok?.noul === "number" ? answers.ok.noul : null, flagged });
+    }
+
+    // ---------------- STOFFKARTOTEK: kontroll av vurdering ----------------
+    if (mode === "chemical_check") {
+      const state = {
+        kjemikalie: { navn: clip(body?.productName, 200), fareklasser: (body?.dangerClasses || []).slice(0, 20).map((d: unknown) => clip(d, 80)) },
+        vurdering: {
+          eksponeringsveier: (body?.exposureTypes || []).slice(0, 10).map((d: unknown) => clip(d, 40)),
+          eksponeringsniva: clip(body?.exposureLevel, 40), varighet: clip(body?.exposureDuration, 40),
+          alvorlighet_1_5: Number(body?.hazardSeverity) || 0, sannsynlighet_1_5: Number(body?.exposureProbability) || 0,
+          arbeidsoppgaver: (body?.workTasks || []).slice(0, 15).map((w: any) => clip(w?.description, 150)),
+          tiltak: (body?.measures || []).slice(0, 15).map((m: any) => clip(m?.description || m?.measure || m, 150)),
+          verneutstyr: (body?.ppe || []).slice(0, 15).map((p: unknown) => clip(p, 60)),
+        },
+      };
+      const answers = await jev(state, {
+        ppe_ok: { type: "noul", instructions: "Er verneutstyret i `vurdering` tilstrekkelig for fareklassene i `kjemikalie` og eksponeringsveiene?", criteria: { true: "Utstyret dekker de aktuelle eksponeringsveiene (hud, øyne, innånding).", false: "Mangler utstyr for en eller flere eksponeringsveier eller fareklasser." } },
+        severity_ok: { type: "noul", instructions: "Står alvorlighet og sannsynlighet i `vurdering` i rimelig forhold til fareklassene i `kjemikalie` og bruken?", criteria: { true: "Tallene virker rimelige.", false: "Alvorlighet eller sannsynlighet er trolig satt for lavt eller for høyt." } },
+        measures_ok: { type: "noul", instructions: "Er tiltakene i `vurdering` tilstrekkelige, etter prinsippet substitusjon, tekniske tiltak, organisatoriske tiltak og verneutstyr?", criteria: { true: "Det finnes relevante tiltak utover bare verneutstyr, eller risikoen er lav.", false: "Kun verneutstyr eller ingen tiltak selv om risikoen ikke er lav." } },
+      });
+      const n = (a: any) => (typeof a?.noul === "number" ? a.noul : null);
+      return json({ ppeOk: n(answers.ppe_ok), severityOk: n(answers.severity_ok), measuresOk: n(answers.measures_ok) });
+    }
+
+    // ---------------- PERSONALHÅNDBOK: kontroll mot regler ----------------
+    if (mode === "handbook_check") {
+      const text = clip(String(body?.content || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " "), 6000);
+      if (text.length < 20) return json({ error: "Kapittelet har for lite tekst" }, 400);
+      const answers = await jev({ kapittel: { tittel: clip(body?.title, 200), tekst: text } }, {
+        lawful: { type: "noul", instructions: "Er innholdet i `kapittel` i tråd med norsk arbeidsmiljølov, ferielov og folketrygdloven?", criteria: { true: "Ingenting strider mot lovens minstekrav.", false: "Noe gir ansatte dårligere vilkår enn loven, f.eks. for kort oppsigelsestid, for lite ferie, ulovlig overtid eller feil om sykemelding/egenmelding." } },
+        clear: { type: "noul", instructions: "Er `kapittel` tydelig nok til at en ansatt forstår hva som gjelder og hva de skal gjøre?", criteria: { true: "Klart, konkret og forståelig.", false: "Uklart, mangler ansvar/frister/fremgangsmåte eller inneholder plassholdertekst." } },
+        outdated: { type: "noul", instructions: "Inneholder `kapittel` tegn på utdatert informasjon, f.eks. gamle satser, gamle lovhenvisninger eller årstall som ikke lenger gjelder?", criteria: { true: "Trolig utdatert.", false: "Ingen tegn på utdatert innhold." } },
+      });
+      const n = (a: any) => (typeof a?.noul === "number" ? a.noul : null);
+      return json({ lawful: n(answers.lawful), clear: n(answers.clear), outdated: n(answers.outdated) });
+    }
+
     return json({ error: "Ukjent modus" }, 400);
   } catch (e: any) {
     if (e?.status && e?.message) return json({ error: e.message }, e.status);
