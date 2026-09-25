@@ -377,6 +377,7 @@ export function NewTimeEntryDialog({
 
       if (ok) {
         rememberChoices();
+        clearDraft();
         onOpenChange(false);
       }
       setIsSubmitting(false);
@@ -402,6 +403,7 @@ export function NewTimeEntryDialog({
 
     if (success) {
       rememberChoices();
+      clearDraft();
       onOpenChange(false);
     }
     setIsSubmitting(false);
@@ -476,6 +478,9 @@ export function NewTimeEntryDialog({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {draft && (
+            <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+          )}
           {/* Admin: Registrer for annen ansatt */}
           {canRegisterForOthers && companyUsers.length > 0 && (
             <div className="space-y-2 rounded-md border border-primary/30 bg-primary/5 p-3">
