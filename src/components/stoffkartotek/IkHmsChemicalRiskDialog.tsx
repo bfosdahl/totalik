@@ -32,6 +32,8 @@ import {
   WorkTask,
   ProtectiveMeasure,
 } from "@/hooks/useChemicalRiskAssessment";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
 
@@ -185,6 +187,36 @@ export function IkHmsChemicalRiskDialog({
   }, [open, assessment, isLoading, chemical.id, isCreating]);
 
   const riskLevel = calculateChemicalRiskLevel(hazardSeverity, exposureProbability);
+
+  // Lokalt utkast: tar vare på påbegynt risikovurdering ved utilsiktet lukking.
+  const draftData = {
+    exposureTypes, exposureLevel, exposureDuration, exposedWorkersCount,
+    hazardSeverity, exposureProbability, workTasks, existingMeasures,
+    requiredPpe, phase1Conclusion,
+  };
+  const isDirty = open && !assessment?.phase_1_completed &&
+    (exposureTypes.length > 0 || exposureLevel !== "" || workTasks.length > 0 ||
+     requiredPpe.length > 0 || phase1Conclusion.trim() !== "");
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `stoffkartotek-risiko:${chemical.id}`,
+    draftData,
+    { enabled: isDirty },
+  );
+  const restoreDraft = () => {
+    if (!draft) return;
+    const d = draft.data;
+    setExposureTypes(d.exposureTypes || []);
+    setExposureLevel(d.exposureLevel || "");
+    setExposureDuration(d.exposureDuration || "");
+    setExposedWorkersCount(d.exposedWorkersCount ?? 1);
+    setHazardSeverity(d.hazardSeverity ?? 3);
+    setExposureProbability(d.exposureProbability ?? 3);
+    setWorkTasks(d.workTasks || []);
+    setExistingMeasures(d.existingMeasures || []);
+    setRequiredPpe(d.requiredPpe || []);
+    setPhase1Conclusion(d.phase1Conclusion || "");
+    dismissDraft();
+  };
 
   const handleSave = (complete: boolean = false) => {
     if (!assessment) {
