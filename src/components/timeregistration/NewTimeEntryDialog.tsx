@@ -37,6 +37,8 @@ import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreateTimeEntry, HourType, TimeEntryAllowanceInput, TimeEntryMaterialInput } from "@/hooks/useTimeEntries";
 import { useTimeEntryPrefs } from "@/hooks/useTimeEntryPrefs";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { OvertimeSegmentsEditor, SegmentSummary, OvertimeSegment, computeSegmentBreakdown } from "./OvertimeSegments";
 import { t } from "@/i18n/t";
 
@@ -153,6 +155,47 @@ export function NewTimeEntryDialog({
     setEndTime(to);
     const diff = calcHoursBetween(from, to);
     if (diff > 0) setHours(diff.toFixed(2));
+  };
+
+  // Utkast-lagring: tar vare på påbegynt føring hvis dialogen lukkes
+  const isDirty = !!(
+    description || customProjectName || projectNumber || subproject || tagsInput ||
+    allowanceRows.length > 0 || materialRows.length > 0 || overtimeSegments.length > 0
+  );
+  const draftData = {
+    date: format(date, "yyyy-MM-dd"),
+    startTime, endTime, hours, hourType,
+    selectedProjectId, customProjectName, customerName,
+    projectNumber, subproject, tagsInput, description,
+    useCustomProject, allowanceRows, materialRows, overtimeSegments, onBehalfUserId,
+  };
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `timeforing:ny:${defaultProjectId ?? "global"}`,
+    draftData,
+    { enabled: open && isDirty }
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    const d = draft.data;
+    if (d.date) setDate(new Date(d.date + "T12:00:00"));
+    setStartTime(d.startTime || "");
+    setEndTime(d.endTime || "");
+    setHours(d.hours || "");
+    setHourType((d.hourType as HourType) || "normal");
+    setSelectedProjectId(d.selectedProjectId || "");
+    setCustomProjectName(d.customProjectName || "");
+    setCustomerName(d.customerName || "");
+    setProjectNumber(d.projectNumber || "");
+    setSubproject(d.subproject || "");
+    setTagsInput(d.tagsInput || "");
+    setDescription(d.description || "");
+    setUseCustomProject(!!d.useCustomProject);
+    setAllowanceRows(d.allowanceRows || []);
+    setMaterialRows(d.materialRows || []);
+    setOvertimeSegments(d.overtimeSegments || []);
+    setOnBehalfUserId(d.onBehalfUserId || "__self__");
+    dismissDraft();
   };
 
   // Auto-fill customer when project changes
