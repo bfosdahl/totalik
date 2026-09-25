@@ -205,7 +205,11 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = buildSystemPrompt(projectContext, setupMode);
+    let systemPrompt = buildSystemPrompt(projectContext, setupMode);
+    if (setupMode && Array.isArray(messages)) {
+      const hint = await jevPreassess(messages, LOVABLE_API_KEY).catch((e) => { console.error("Jev preassess failed", e); return ""; });
+      if (hint) systemPrompt += hint;
+    }
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
