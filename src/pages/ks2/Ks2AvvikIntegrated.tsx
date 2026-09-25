@@ -26,8 +26,10 @@ import {
   FileWarning,
   Shield,
   Loader2,
-  FileText
+  FileText,
+  Sparkles
 } from "lucide-react";
+import { jevAssist } from "@/lib/jevAssist";
 import { useKsModule2Avvik, KsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
@@ -534,6 +536,25 @@ export default function Ks2AvvikIntegrated() {
                 placeholder={t("auto.detaljert_beskrivelse_av_avviket")}
                 rows={3}
               />
+            </div>
+
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Sparkles className="h-4 w-4 text-primary" /> Smart forslag
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={runSmartSeverity}
+                  disabled={smartLoading || (newAvvik.title + newAvvik.description).trim().length < 8}
+                >
+                  {smartLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                  Foreslå alvorlighet
+                </Button>
+              </div>
+              {smartHint && <p className="text-xs text-muted-foreground">{smartHint}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
