@@ -467,13 +467,21 @@ export function useTimeEntries() {
         toast.error("Timer er allerede godkjent og kan ikke slettes. Kontakt admin for å oppheve godkjenningen.");
         return false;
       }
+      let deletedCount = 0;
       if (id.startsWith("clock_")) {
         const realId = id.replace("clock_", "");
-        const { error } = await supabase.from("time_clock_entries").delete().eq("id", realId);
+        const { data, error } = await supabase.from("time_clock_entries").delete().eq("id", realId).select("id");
         if (error) throw error;
+        deletedCount = data?.length ?? 0;
       } else {
-        const { error } = await supabase.from("time_entries").delete().eq("id", id);
+        const { data, error } = await supabase.from("time_entries").delete().eq("id", id).select("id");
         if (error) throw error;
+        deletedCount = data?.length ?? 0;
+      }
+      if (deletedCount === 0) {
+        toast.error("Kunne ikke slette timeregistrering – du har ikke tilgang, eller den er allerede slettet.");
+        await fetchEntries();
+        return false;
       }
       toast.success("Timeregistrering slettet");
       await fetchEntries();
