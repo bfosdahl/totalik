@@ -24,6 +24,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { registerPdfFont } from "@/utils/pdfFont";
 import { t } from "@/i18n/t";
+import { SmartSjaSuggest } from "@/components/ks2/SmartSjaSuggest";
 
 // === Detail/Edit View ===
 function Ks2SjaDetail({ sja, onClose }: { sja: KsModule2Sja; onClose: () => void }) {
