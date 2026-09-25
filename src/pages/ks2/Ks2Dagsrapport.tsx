@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import { SmartDailyReportDeviations } from "@/components/ks2/SmartDailyReportDeviations";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import {
@@ -409,6 +410,20 @@ function DailyReportForm({
           </div>
         )}
       </div>
+
+      <SmartDailyReportDeviations
+        texts={{
+          arbeid: workDesc,
+          fremdrift: [progressDesc, delayReason].filter(Boolean).join("\n"),
+          hms: [hmsObs, hmsIncText, qualityText].filter(Boolean).join("\n"),
+          merknader: notes,
+          avvik: deviationsText,
+        }}
+        onAdd={(text) => {
+          setDeviationsText((prev) => (prev ? `${prev}\n${text}` : text));
+          setExpandedSections((prev) => ({ ...prev, deviations: true }));
+        }}
+      />
 
       {/* Action Buttons */}
       <div className="flex gap-2 pt-4 border-t sticky bottom-0 bg-background pb-2">
