@@ -242,6 +242,7 @@ export function IkHmsChemicalRiskDialog({
         phase_1_completed: complete,
       },
     });
+    clearDraft();
   };
 
   const addWorkTask = () => {
