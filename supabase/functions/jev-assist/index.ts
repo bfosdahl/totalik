@@ -54,10 +54,13 @@ Deno.serve(async (req) => {
     if (!uid) return json({ error: "Sesjonen er utløpt" }, 401);
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: me } = await admin.from("profiles").select("company_id").eq("user_id", uid).maybeSingle();
-    const companyId = me?.company_id as string | undefined;
-    if (!companyId) return json({ error: "Fant ikke bedrift" }, 403);
-
     const body = await req.json().catch(() => null);
+    let companyId = me?.company_id as string | undefined;
+    if (body?.companyId && body.companyId !== companyId) {
+      const { data: sa } = await admin.from("user_roles").select("role").eq("user_id", uid).eq("role", "system_admin").maybeSingle();
+      if (sa) companyId = String(body.companyId);
+    }
+    if (!companyId) return json({ error: "Fant ikke bedrift" }, 403);
     const mode = body?.mode;
 
     // ---------------- SMART AVVIK ----------------
