@@ -1739,51 +1739,155 @@ export type Database = {
           },
         ]
       }
+      company_announcement_recipients: {
+        Row: {
+          announcement_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_announcement_recipients_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "company_announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_announcement_replies: {
+        Row: {
+          announcement_id: string
+          attachments: Json
+          author_name: string | null
+          body: string
+          company_id: string
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          is_deleted: boolean
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          attachments?: Json
+          author_name?: string | null
+          body?: string
+          company_id: string
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_deleted?: boolean
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          attachments?: Json
+          author_name?: string | null
+          body?: string
+          company_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_deleted?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_announcement_replies_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "company_announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_announcement_replies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_announcements: {
         Row: {
+          attachments: Json
+          audience: string
           body: string
           company_id: string
           created_at: string
           created_by: string | null
           created_by_name: string | null
+          created_by_user_id: string | null
           deleted_at: string | null
           deleted_by: string | null
           expires_at: string | null
           id: string
+          is_critical: boolean
           is_deleted: boolean
           is_pinned: boolean
+          last_activity_at: string
+          project_id: string | null
           publish_at: string
           title: string
           updated_at: string
         }
         Insert: {
+          attachments?: Json
+          audience?: string
           body: string
           company_id: string
           created_at?: string
           created_by?: string | null
           created_by_name?: string | null
+          created_by_user_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           expires_at?: string | null
           id?: string
+          is_critical?: boolean
           is_deleted?: boolean
           is_pinned?: boolean
+          last_activity_at?: string
+          project_id?: string | null
           publish_at?: string
           title: string
           updated_at?: string
         }
         Update: {
+          attachments?: Json
+          audience?: string
           body?: string
           company_id?: string
           created_at?: string
           created_by?: string | null
           created_by_name?: string | null
+          created_by_user_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
           expires_at?: string | null
           id?: string
+          is_critical?: boolean
           is_deleted?: boolean
           is_pinned?: boolean
+          last_activity_at?: string
+          project_id?: string | null
           publish_at?: string
           title?: string
           updated_at?: string
@@ -1794,6 +1898,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_announcements_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "ks_module2_projects"
             referencedColumns: ["id"]
           },
         ]
@@ -18470,6 +18581,10 @@ export type Database = {
     }
     Functions: {
       attach_audit_trigger: { Args: { p_table: string }; Returns: undefined }
+      can_view_announcement: {
+        Args: { _ann: string; _uid: string }
+        Returns: boolean
+      }
       check_company_admin_role: {
         Args: { p_user_id: string }
         Returns: boolean
