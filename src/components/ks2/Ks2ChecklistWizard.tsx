@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Ks2ChecklistSmartCheck } from "./Ks2ChecklistSmartCheck";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -471,7 +472,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
               toast.success(t("auto.egenkontroll_lagret_i_dokumentasjon"));
             }
           }
-          onClose({ saved: true });
+          closeWizard({ saved: true });
         }
       } else {
         // Just update progress
@@ -484,7 +485,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           progress_percent: progress,
         });
         if (result) {
-          onClose({ saved: true });
+          closeWizard({ saved: true });
         }
       }
       return;
@@ -520,7 +521,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
           toast.success(t("auto.egenkontroll_lagret_i_dokumentasjon"));
         }
       }
-      onClose({ saved: true });
+      closeWizard({ saved: true });
     }
   };
 
@@ -533,7 +534,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   }, {} as Record<string, ChecklistTemplate[]>);
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose({ saved: false }); }}>
+    <Dialog open onOpenChange={(open) => { if (!open) closeWizard({ saved: false }); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -541,6 +542,15 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             {isEditing ? `Fortsett: ${title}` : "Ny egenkontroll"}
           </DialogTitle>
         </DialogHeader>
+        {draft && !isDirty && (
+          <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm space-y-2">
+            <p>Du har ulagrede svar fra {new Date(draft.savedAt).toLocaleString("nb-NO", { hour12: false })}. Vil du fortsette der du slapp?</p>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={restoreDraft}>Gjenopprett</Button>
+              <Button size="sm" variant="ghost" onClick={clearDraft}>Forkast</Button>
+            </div>
+          </div>
+        )}
 
         {/* Progress */}
         <div className="mb-6">
@@ -1083,7 +1093,10 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
               title={title}
               projectName={projectData?.name || projectData?.project_name}
               items={items}
-              onRegisterDeviation={() => { window.location.href = `/ks/project/${projectId}/avvik`; }}
+              onRegisterDeviation={() => {
+                try { localStorage.setItem(`draft:ks-sjekkliste:${projectId}:${existingChecklist?.id || "ny"}:${profile?.user_id ?? "anon"}`, JSON.stringify({ data: draftData, savedAt: new Date().toISOString() })); } catch { /* */ }
+                window.location.href = `/ks/project/${projectId}/avvik`;
+              }}
             />
 
             <div className="flex gap-2 pt-4">
