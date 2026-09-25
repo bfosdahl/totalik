@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { JevCheckPanel } from "@/components/shared/JevCheckPanel";
 import DOMPurify from "dompurify";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";

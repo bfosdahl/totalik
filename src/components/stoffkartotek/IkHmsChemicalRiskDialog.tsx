@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { JevCheckPanel } from "@/components/shared/JevCheckPanel";
 import {
   Dialog,
   DialogContent,
