@@ -65,6 +65,8 @@ import { DailyReportPhotoGallery } from "@/components/ks2/DailyReportPhotoGaller
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
@@ -127,6 +129,52 @@ function DailyReportForm({
   );
   const [notes, setNotes] = useState(initialData?.notes || "");
   const [photos, setPhotos] = useState<DailyReportPhoto[]>((initialData?.photos as any) || []);
+
+  // Universal utkast: tar vare på feltene hvis dialogen lukkes før lagring (kun nye rapporter)
+  const isDirty = !!weather || !!temp || !!windCond || !!precip || ownCrew !== "0" ||
+    !!workDesc || !!workAreas || !!workStartTime || !!workEndTime || !!equipmentText ||
+    !!materialsText || !!progressDesc || progressPct !== 0 || !onSchedule || !!delayReason ||
+    !!hmsObs || safetyMeeting || !!qualityText || !!hmsIncText || !!subAttText || !!deviationsText || !!notes;
+  const draftData = {
+    date: format(date, "yyyy-MM-dd"), weather, temp, windCond, precip, ownCrew,
+    workDesc, workAreas, workStartTime, workEndTime, equipmentText, materialsText,
+    progressDesc, progressPct, onSchedule, delayReason, hmsObs, safetyMeeting,
+    qualityText, hmsIncText, subAttText, deviationsText, notes,
+  };
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `ks-dagsrapport:${projectId}`,
+    draftData,
+    { enabled: !initialData && isDirty },
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    const d = draft.data as typeof draftData;
+    try { setDate(new Date(d.date)); } catch { setDate(new Date()); }
+    setWeather(d.weather || "");
+    setTemp(d.temp || "");
+    setWindCond(d.windCond || "");
+    setPrecip(d.precip || "");
+    setOwnCrew(d.ownCrew ?? "0");
+    setWorkDesc(d.workDesc || "");
+    setWorkAreas(d.workAreas || "");
+    setWorkStartTime(d.workStartTime || "");
+    setWorkEndTime(d.workEndTime || "");
+    setEquipmentText(d.equipmentText || "");
+    setMaterialsText(d.materialsText || "");
+    setProgressDesc(d.progressDesc || "");
+    setProgressPct(d.progressPct ?? 0);
+    setOnSchedule(d.onSchedule ?? true);
+    setDelayReason(d.delayReason || "");
+    setHmsObs(d.hmsObs || "");
+    setSafetyMeeting(!!d.safetyMeeting);
+    setQualityText(d.qualityText || "");
+    setHmsIncText(d.hmsIncText || "");
+    setSubAttText(d.subAttText || "");
+    setDeviationsText(d.deviationsText || "");
+    setNotes(d.notes || "");
+    dismissDraft();
+  };
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     weather: true,
@@ -202,6 +250,9 @@ function DailyReportForm({
 
   return (
     <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+      {!initialData && draft && !isDirty && (
+        <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+      )}
       {/* Date */}
       <div>
         <Label>{t("auto.dato")}</Label>
@@ -425,16 +476,25 @@ function DailyReportForm({
         }}
       />
 
-      {/* Action Buttons */}
+  const submitForm = async (asDraft: boolean) => {
+    try {
+      await onSubmit(buildData(), asDraft);
+      clearDraft();
+    } catch {
+      /* lar brukeren prøve igjen */
+    }
+  };
+
+  {/* Action Buttons */}
       <div className="flex gap-2 pt-4 border-t sticky bottom-0 bg-background pb-2">
         <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
           {t("auto.avbryt")}
         </Button>
-        <Button variant="secondary" onClick={() => onSubmit(buildData(), true)} disabled={isSubmitting} className="flex-1">
+        <Button variant="secondary" onClick={() => submitForm(true)} disabled={isSubmitting} className="flex-1">
           <Clock className="h-4 w-4 mr-1" />
           {t("auto.lagre_utkast")}
         </Button>
-        <Button onClick={() => onSubmit(buildData(), false)} disabled={isSubmitting} className="flex-1">
+        <Button onClick={() => submitForm(false)} disabled={isSubmitting} className="flex-1">
           <Send className="h-4 w-4 mr-1" />
           {t("auto.send_inn")}
         </Button>
