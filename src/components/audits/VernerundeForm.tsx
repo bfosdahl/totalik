@@ -200,6 +200,7 @@ const VernerundeForm = () => {
       setSelectedTemplate(null);
       setFormData(getDefaultFormData());
       setExpandedCategories(new Set());
+      clearLocalDraft();
     }
   };
 
@@ -250,6 +251,7 @@ const VernerundeForm = () => {
     setFormData(getDefaultFormData());
     setExpandedCategories(new Set());
     setIsBuildingCustom(false);
+    refreshDraft();
   };
 
   const completedCount = selectedTemplate 
