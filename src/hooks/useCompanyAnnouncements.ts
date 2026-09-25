@@ -81,6 +81,12 @@ export async function uploadAnnouncementFiles(companyId: string, files: File[]) 
   return out;
 }
 
+function notifyAnnouncement(announcement_id: string, kind: "new" | "reply") {
+  supabase.functions
+    .invoke("notify-announcement", { body: { announcement_id, kind } })
+    .catch((e) => console.warn("notify-announcement failed", e));
+}
+
 export function useCompanyAnnouncements() {
   const { user, profile, company, isCompanyAdmin } = useAuth();
   const queryClient = useQueryClient();
@@ -170,6 +176,7 @@ export function useCompanyAnnouncements() {
         .single();
       if (error) throw error;
       await saveRecipients(data.id, input);
+      notifyAnnouncement(data.id, "new");
     },
     onSuccess: () => {
       invalidate();
@@ -312,6 +319,7 @@ export function useAnnouncementReplies(announcementId: string | null) {
         attachments: uploaded,
       });
       if (error) throw error;
+      notifyAnnouncement(announcementId, "reply");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["announcement-replies", announcementId] });
