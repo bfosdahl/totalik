@@ -127,8 +127,17 @@ Deno.serve(async (req) => {
     const isCompanyAdmin = !!roleRes.data?.some((r: any) => r.role === "company_admin");
     const adminProfile = adminProfileRes.data;
 
-    // System admins may edit anywhere; company admins only inside their own company.
-    if (!isSystemAdmin && (!isCompanyAdmin || !adminProfile)) {
+    // System admins may edit anywhere; company admins only inside their own company;
+    // department leaders only for other employees in their own department(s).
+    let isDeptLeader = false;
+    if (!isSystemAdmin && !isCompanyAdmin && adminProfile && existing.user_id !== adminId) {
+      const { data: lead } = await admin.rpc("is_department_leader_of", {
+        _leader: adminId,
+        _employee: existing.user_id,
+      });
+      isDeptLeader = lead === true;
+    }
+    if (!isSystemAdmin && !((isCompanyAdmin || isDeptLeader) && adminProfile)) {
       return json({ error: "Forbidden: krever admin for dette selskapet" }, 403);
     }
 

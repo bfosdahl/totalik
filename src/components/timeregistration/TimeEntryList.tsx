@@ -121,7 +121,7 @@ export function TimeEntryList({
             const config = statusConfig[entry.status];
             const canModify =
               (isCompanyAdmin && entry.status !== "pending_confirmation") ||
-              (isDepartmentAdmin && entry.user_id !== user?.id && entry.status !== "approved" && entry.status !== "pending_confirmation") ||
+              (isDepartmentAdmin && entry.user_id !== user?.id && entry.status !== "pending_confirmation") ||
               (entry.user_id === user?.id &&
                 (entry.status === "draft" || entry.status === "submitted" || entry.status === "rejected"));
             const canApprove = (isCompanyAdmin || (isDepartmentAdmin && entry.user_id !== user?.id)) && entry.status === "submitted";
