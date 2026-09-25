@@ -19,6 +19,8 @@ import { nb } from "date-fns/locale";
 import { SignaturePad } from "@/components/ks2/SignaturePad";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { t } from "@/i18n/t";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   draft: { label: t("auto.utkast"), variant: "secondary" },
@@ -62,6 +64,19 @@ export default function Ks2Endringsmeldinger() {
     material_cost: "",
     internal_notes: "",
   });
+
+  // Universal utkast: tar vare på feltene hvis dialogen lukkes før lagring
+  const isDirty = Object.values(formData).some((v) => !!v);
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `ks-endringsmelding:${projectId}`,
+    formData,
+    { enabled: isDirty },
+  );
+  const restoreDraft = () => {
+    if (!draft) return;
+    setFormData((prev) => ({ ...prev, ...draft.data }));
+    dismissDraft();
+  };
 
   // Approval state
   const [approvalName, setApprovalName] = useState("");
@@ -123,6 +138,7 @@ export default function Ks2Endringsmeldinger() {
 
     setIsCreateOpen(false);
     resetForm();
+    clearDraft();
   };
 
   const handleSendForApproval = (order: KsModule2ChangeOrder) => {
@@ -194,6 +210,9 @@ export default function Ks2Endringsmeldinger() {
             <DialogHeader>
               <DialogTitle>{t("auto.ny_endringsmelding")}</DialogTitle>
             </DialogHeader>
+            {draft && !isDirty && (
+              <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+            )}
             <div className="space-y-4 py-4">
               <div>
                 <Label htmlFor="title">{t("auto.tittel_2")}</Label>
