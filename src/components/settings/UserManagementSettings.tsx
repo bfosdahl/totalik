@@ -63,6 +63,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDepartments } from "@/hooks/useDepartments";
 import { useInvalidateCompanyUsers } from "@/hooks/useCompanyUsers";
 import { t } from "@/i18n/t";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BulkEmployeeImportDialog } from "./BulkEmployeeImportDialog";
+import { Upload, Send } from "lucide-react";
 
 interface UserManagementSettingsProps {
   onBack: () => void;
@@ -95,6 +98,13 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
   const [selectedUser, setSelectedUser] = useState<CompanyUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [sendInviteNow, setSendInviteNow] = useState(false);
+  const [sendDirectNow, setSendDirectNow] = useState(false);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
+  const [inviteFilter, setInviteFilter] = useState<"all" | "not_invited" | "invited" | "logged_in">("all");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sendingInvites, setSendingInvites] = useState(false);
+  const [loginStatus, setLoginStatus] = useState<Record<string, { last_sign_in_at: string | null; invitation_sent_at: string | null; invitation_sent_by_name: string | null }>>({});
   
   // Invite form state
   const [inviteForm, setInviteForm] = useState({
@@ -197,6 +207,10 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       });
 
       setUsers(usersWithRoles);
+      const { data: ls } = await supabase.rpc("get_company_user_login_status" as any, { _company_id: company.id });
+      const map: typeof loginStatus = {};
+      ((ls as any[]) || []).forEach((r) => { map[r.user_id] = r; });
+      setLoginStatus(map);
     } catch (error) {
       console.error("Error loading users:", error);
       toast.error(t("auto.kunne_ikke_laste_brukere"));
@@ -231,13 +245,15 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           role: inviteForm.role === "department_admin" ? "user" : inviteForm.role, // department_admin is not a user_roles role
           departmentId: inviteForm.departmentId,
           isDepartmentAdmin: inviteForm.role === "department_admin",
+          sendEmail: sendInviteNow,
         },
       });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast.success(t("auto.bruker_invitert"));
+      toast.success(sendInviteNow ? "Ansatt lagt til og brukerinfo sendt" : "Ansatt lagt til (ikke invitert ennå)");
+      setSendInviteNow(false);
       setInviteDialogOpen(false);
       setInviteForm({ email: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       loadUsers();
@@ -266,6 +282,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         body: {
           email: createForm.email.trim(),
           password: createForm.password,
+          sendEmail: sendDirectNow,
           firstName: createForm.firstName.trim(),
           lastName: createForm.lastName.trim(),
           role: createForm.role,
@@ -304,7 +321,8 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         });
       }
 
-      toast.success(t("auto.bruker_opprettet_2"));
+      toast.success(sendDirectNow ? t("auto.bruker_opprettet_2") : "Bruker opprettet (ingen e-post sendt)");
+      setSendDirectNow(false);
       setCreateDirectDialogOpen(false);
       setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
       setShowPassword(false);
@@ -482,6 +500,30 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     }
   };
 
+  const inviteState = (u: CompanyUser): "logged_in" | "invited" | "not_invited" => {
+    const s = loginStatus[u.user_id];
+    if (s?.last_sign_in_at) return "logged_in";
+    if (s?.invitation_sent_at) return "invited";
+    return "not_invited";
+  };
+
+  const sendInvitations = async (ids: string[]) => {
+    if (!ids.length) return;
+    setSendingInvites(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-user-invitations", { body: { userIds: ids } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Invitasjon sendt til ${data.sent} ansatt${data.sent === 1 ? "" : "e"}${data.failed?.length ? `, ${data.failed.length} feilet` : ""}`);
+      setSelectedIds(new Set());
+      loadUsers();
+    } catch (e: any) {
+      toast.error(e.message || "Kunne ikke sende invitasjon");
+    } finally {
+      setSendingInvites(false);
+    }
+  };
+
   const handleSuspendUser = async (companyUser: CompanyUser) => {
     if (companyUser.user_id === user?.id) {
       toast.error(t("auto.du_kan_ikke_suspendere_din_egen_konto"));
@@ -609,13 +651,17 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           </div>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setBulkImportOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Importer
+          </Button>
           <Button variant="outline" onClick={() => setCreateDirectDialogOpen(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
-            {t("auto.legg_til")}
+            Med passord
           </Button>
           <Button onClick={() => setInviteDialogOpen(true)}>
-            <Mail className="w-4 h-4 mr-2" />
-            {t("auto.send_invitasjon")}
+            <Plus className="w-4 h-4 mr-2" />
+            Legg til ansatt
           </Button>
         </div>
       </motion.div>
@@ -644,14 +690,38 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 {t("auto.legg_til")}
               </Button>
               <Button onClick={() => setInviteDialogOpen(true)}>
-                <Mail className="w-4 h-4 mr-2" />
-                {t("auto.send_invitasjon")}
+                <Plus className="w-4 h-4 mr-2" />
+                Legg til ansatt
               </Button>
             </div>
           </div>
         ) : (
+          <>
+          <div className="flex flex-wrap items-center gap-2 p-3 border-b border-border">
+            {([["all","Alle"],["not_invited","Ikke invitert"],["invited","Invitert"],["logged_in","Har logget inn"]] as const).map(([k, l]) => (
+              <Button key={k} size="sm" variant={inviteFilter === k ? "default" : "outline"} onClick={() => { setInviteFilter(k); setSelectedIds(new Set()); }}>
+                {l} ({k === "all" ? users.length : users.filter((u) => inviteState(u) === k).length})
+              </Button>
+            ))}
+            {selectedIds.size > 0 && (
+              <Button size="sm" className="ml-auto" disabled={sendingInvites} onClick={() => sendInvitations([...selectedIds])}>
+                {sendingInvites ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                Send invitasjon til valgte ({selectedIds.size})
+              </Button>
+            )}
+          </div>
+          {inviteFilter === "not_invited" && users.some((u) => inviteState(u) === "not_invited" && u.is_active) && (
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-border text-sm">
+              <Checkbox
+                id="select-all-invite"
+                checked={users.filter((u) => inviteState(u) === "not_invited" && u.is_active).every((u) => selectedIds.has(u.user_id))}
+                onCheckedChange={(v) => setSelectedIds(v === true ? new Set(users.filter((u) => inviteState(u) === "not_invited" && u.is_active).map((u) => u.user_id)) : new Set())}
+              />
+              <Label htmlFor="select-all-invite">Velg alle som ikke er invitert</Label>
+            </div>
+          )}
           <div className="divide-y divide-border">
-            {users.map((companyUser) => (
+            {users.filter((u) => inviteFilter === "all" || inviteState(u) === inviteFilter).map((companyUser) => (
               <div
                 key={companyUser.id}
                 className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ${
@@ -659,6 +729,13 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 }`}
               >
                 <div className="flex items-center gap-4">
+                  {companyUser.user_id !== user?.id && companyUser.role !== "system_admin" && companyUser.is_active && inviteState(companyUser) !== "logged_in" && (
+                    <Checkbox
+                      aria-label="Velg for invitasjon"
+                      checked={selectedIds.has(companyUser.user_id)}
+                      onCheckedChange={(v) => setSelectedIds((prev) => { const n = new Set(prev); v === true ? n.add(companyUser.user_id) : n.delete(companyUser.user_id); return n; })}
+                    />
+                  )}
                   <div className="relative">
                     <Avatar>
                       <AvatarImage src={companyUser.avatar_url || undefined} />
@@ -692,6 +769,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{companyUser.email}</p>
+                    {(() => {
+                      const st = inviteState(companyUser);
+                      const s = loginStatus[companyUser.user_id];
+                      const d = (v?: string | null) => v ? new Date(v).toLocaleDateString("nb-NO") : "";
+                      if (st === "logged_in") return <p className="text-xs text-primary">Har logget inn · sist {d(s?.last_sign_in_at)}</p>;
+                      if (st === "invited") return <p className="text-xs text-muted-foreground">Invitert {d(s?.invitation_sent_at)}{s?.invitation_sent_by_name ? ` av ${s.invitation_sent_by_name}` : ""} · ikke logget inn</p>;
+                      return <p className="text-xs text-destructive">Ikke invitert</p>;
+                    })()}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -714,6 +799,12 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {companyUser.is_active && (
+                          <DropdownMenuItem onClick={() => sendInvitations([companyUser.user_id])}>
+                            <Mail className="w-4 h-4 mr-2" />
+                            {inviteState(companyUser) === "not_invited" ? "Send invitasjon" : "Send brukerinfo på nytt"}
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={() => openEditDialog(companyUser)}>
                           <Edit2 className="w-4 h-4 mr-2" />
                           {t("auto.rediger")}
@@ -752,16 +843,24 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               </div>
             ))}
           </div>
+          </>
         )}
       </motion.div>
+
+      <BulkEmployeeImportDialog
+        open={bulkImportOpen}
+        onOpenChange={setBulkImportOpen}
+        existingEmails={users.map((u) => u.email || "").filter(Boolean)}
+        onDone={() => { loadUsers(); invalidateCompanyUsers(); }}
+      />
 
       {/* Invite User Dialog */}
       <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("auto.inviter_ny_bruker")}</DialogTitle>
+            <DialogTitle>Legg til ansatt</DialogTitle>
             <DialogDescription>
-              {t("auto.send_en_invitasjon_til_en_ny_bruker_de_v")}
+              Ansatte får ingen e-post før du velger å sende brukerinfo.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -861,6 +960,13 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               </div>
             )}
           </div>
+          <div className="flex items-start gap-2 rounded-lg border p-3">
+            <Checkbox id="invite-send-now" checked={sendInviteNow} onCheckedChange={(v) => setSendInviteNow(v === true)} />
+            <div>
+              <Label htmlFor="invite-send-now">Send brukerinfo på e-post nå</Label>
+              <p className="text-xs text-muted-foreground">Står av: ansatt lagres som «Ikke invitert».</p>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
               {t("auto.avbryt")}
@@ -869,9 +975,9 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
-                <Mail className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4 mr-2" />
               )}
-              Send invitasjon
+              {sendInviteNow ? "Lagre og send" : "Lagre ansatt"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1017,6 +1123,10 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                 </p>
               </div>
             )}
+          </div>
+          <div className="flex items-start gap-2 rounded-lg border p-3">
+            <Checkbox id="direct-send-now" checked={sendDirectNow} onCheckedChange={(v) => setSendDirectNow(v === true)} />
+            <Label htmlFor="direct-send-now">Send brukerinfo på e-post nå</Label>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDirectDialogOpen(false)}>

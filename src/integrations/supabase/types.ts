@@ -16326,6 +16326,8 @@ export type Database = {
           hms_card_required: boolean | null
           hourly_rate: number | null
           id: string
+          invitation_sent_at: string | null
+          invitation_sent_by: string | null
           is_active: boolean
           is_assigned_to_main: boolean | null
           is_hms_responsible: boolean | null
@@ -16359,6 +16361,8 @@ export type Database = {
           hms_card_required?: boolean | null
           hourly_rate?: number | null
           id?: string
+          invitation_sent_at?: string | null
+          invitation_sent_by?: string | null
           is_active?: boolean
           is_assigned_to_main?: boolean | null
           is_hms_responsible?: boolean | null
@@ -16392,6 +16396,8 @@ export type Database = {
           hms_card_required?: boolean | null
           hourly_rate?: number | null
           id?: string
+          invitation_sent_at?: string | null
+          invitation_sent_by?: string | null
           is_active?: boolean
           is_assigned_to_main?: boolean | null
           is_hms_responsible?: boolean | null
@@ -18751,6 +18757,15 @@ export type Database = {
           hourly_rate: number
           id: string
           signature_data: string
+          user_id: string
+        }[]
+      }
+      get_company_user_login_status: {
+        Args: { _company_id: string }
+        Returns: {
+          invitation_sent_at: string
+          invitation_sent_by_name: string
+          last_sign_in_at: string
           user_id: string
         }[]
       }

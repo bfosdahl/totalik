@@ -67,7 +67,8 @@ serve(async (req) => {
     }
 
     // Get the request body first to check for companyId
-    const { email: rawEmail, firstName, lastName, role: requestedRole, companyId: requestedCompanyId } = await req.json();
+    const { email: rawEmail, firstName, lastName, role: requestedRole, companyId: requestedCompanyId, sendEmail: rawSendEmail } = await req.json();
+    const sendEmail = rawSendEmail !== false;
     const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
     // Check if system admin (can specify any company / role)
@@ -192,7 +193,7 @@ serve(async (req) => {
         }
 
         let emailSent = false;
-        if (resend) {
+        if (resend && sendEmail) {
           try {
             const companyName = company?.name || "din bedrift";
             await resend.emails.send({
@@ -202,6 +203,7 @@ serve(async (req) => {
               html: `<p>Hei,</p><p>Din konto i <strong>${esc(companyName)}</strong> er reaktivert.</p>${loginBlockHtml(email, resetLink)}`,
             });
             emailSent = true;
+            await supabaseAdmin.from("profiles").update({ invitation_sent_at: new Date().toISOString(), invitation_sent_by: requestingUser.id }).eq("user_id", existingUser.id);
           } catch (e) {
             console.error("Reactivation email failed:", e);
           }
@@ -337,7 +339,7 @@ serve(async (req) => {
 
     // Send welcome email with Resend - includes secure recovery link (no plaintext password)
     let emailSent = false;
-    if (resend) {
+    if (resend && sendEmail) {
       try {
         const companyName = company?.name || "din bedrift";
         const userName = firstName ? firstName : "bruker";
@@ -386,6 +388,7 @@ serve(async (req) => {
 
         console.log("Email sent successfully:", emailResponse);
         emailSent = true;
+        await supabaseAdmin.from("profiles").update({ invitation_sent_at: new Date().toISOString(), invitation_sent_by: requestingUser.id }).eq("user_id", newUser.user.id);
       } catch (emailError) {
         console.error("Error sending email:", emailError);
       }

@@ -92,7 +92,8 @@ serve(async (req) => {
       });
     }
 
-    const { email: rawEmail, firstName, lastName, role: requestedRole } = await req.json();
+    const { email: rawEmail, firstName, lastName, role: requestedRole, sendEmail: rawSendEmail } = await req.json();
+    const sendEmail = rawSendEmail !== false;
     const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
     // Server-side role whitelist: prevent privilege escalation.
@@ -223,7 +224,7 @@ serve(async (req) => {
 
     // Send welcome email with the fixed default password (no recovery link — SafeLinks konsumerer dem).
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (resendApiKey) {
+    if (resendApiKey && sendEmail) {
       try {
         const resend = new Resend(resendApiKey);
 
@@ -278,6 +279,7 @@ serve(async (req) => {
           `,
         });
         console.log(`Welcome email with default password sent to ${email}`);
+        await supabaseAdmin.from("profiles").update({ invitation_sent_at: new Date().toISOString(), invitation_sent_by: requestingUser.id }).eq("user_id", newUser.user.id);
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
       }
