@@ -4,6 +4,7 @@ import {
   type AuditFormResponse,
   type FormType,
 } from "@/hooks/useAuditFormResponses";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import type { Json } from "@/integrations/supabase/types";
 
 interface SaveMetadata {
@@ -37,6 +38,23 @@ export function useAuditFormBase<T>(options: {
   const [formData, setFormData] = useState<T>(getInitialData);
   const [existingId, setExistingId] = useState<string | undefined>();
   const [showForm, setShowForm] = useState(false);
+
+  // Lokalt utkast: tar vare på påbegynt skjema ved utilsiktet lukking/navigering.
+  // Kun for NYE skjemaer (uten existingId) – eksisterende utkast lagres i DB.
+  const isDirty = showForm && !existingId &&
+    JSON.stringify(formData) !== JSON.stringify(getInitialData());
+  const {
+    draft: localDraft,
+    clear: clearLocalDraft,
+    dismiss: dismissLocalDraft,
+  } = useFormDraft<T>(`revisjon:${formType}`, formData, { enabled: isDirty });
+
+  const restoreLocalDraft = useCallback(() => {
+    if (!localDraft) return;
+    setFormData(localDraft.data);
+    setShowForm(true);
+    dismissLocalDraft();
+  }, [localDraft, dismissLocalDraft]);
 
   const formTypeResponses = responses.filter((r) => r.form_type === formType);
 
