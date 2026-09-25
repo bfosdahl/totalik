@@ -16,7 +16,6 @@ import {
 } from "@/hooks/useCompanyAnnouncements";
 import { AttachmentList, PendingFiles } from "./AttachmentList";
 import { SmartAnnouncementSuggest } from "./SmartAnnouncementSuggest";
-import { toast } from "sonner";
 
 interface Props {
   open: boolean;
