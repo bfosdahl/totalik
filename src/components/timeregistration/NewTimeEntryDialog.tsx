@@ -169,11 +169,13 @@ export function NewTimeEntryDialog({
     projectNumber, subproject, tagsInput, description,
     useCustomProject, allowanceRows, materialRows, overtimeSegments, onBehalfUserId,
   };
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft(
     `timeforing:ny:${defaultProjectId ?? "global"}`,
     draftData,
     { enabled: open && isDirty }
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
 
   const restoreDraft = () => {
     if (!draft) return;

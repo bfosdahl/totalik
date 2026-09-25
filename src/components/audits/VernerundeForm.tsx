@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -69,6 +71,25 @@ const VernerundeForm = () => {
   
   // Form state
   const [formData, setFormData] = useState(getDefaultFormData);
+
+  // Utkast-lagring for nye vernerunder (ikke ved redigering av lagrede)
+  const isNewForm = !!selectedTemplate && !selectedFormId;
+  const { draft: localDraft, clear: clearLocalDraft, refresh: refreshDraft } = useFormDraft(
+    "vernerunde:ny",
+    formData,
+    { enabled: isNewForm }
+  );
+
+  const restoreLocalDraft = () => {
+    if (!localDraft) return;
+    const data = localDraft.data as ReturnType<typeof getDefaultFormData>;
+    const template = templates.find((t) => t.id === data.templateId);
+    if (template) {
+      setSelectedTemplate(template);
+      setExpandedCategories(new Set(template.checkpoints.map((cp) => cp.category)));
+    }
+    setFormData({ ...getDefaultFormData(), ...data });
+  };
 
   // Group checkpoints by category
   const checkpointsByCategory = useMemo(() => {
@@ -179,6 +200,7 @@ const VernerundeForm = () => {
       setSelectedTemplate(null);
       setFormData(getDefaultFormData());
       setExpandedCategories(new Set());
+      clearLocalDraft();
     }
   };
 
@@ -229,6 +251,7 @@ const VernerundeForm = () => {
     setFormData(getDefaultFormData());
     setExpandedCategories(new Set());
     setIsBuildingCustom(false);
+    refreshDraft();
   };
 
   const completedCount = selectedTemplate 
@@ -253,6 +276,14 @@ const VernerundeForm = () => {
         isDeleting={isDeleting}
         title={t("auto.lagrede_vernerunder")}
       />
+
+      {localDraft && !selectedFormId && (
+        <DraftRestoreBanner
+          savedAt={localDraft.savedAt}
+          onRestore={restoreLocalDraft}
+          onDiscard={clearLocalDraft}
+        />
+      )}
 
       {isBuildingCustom && !selectedTemplate ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>

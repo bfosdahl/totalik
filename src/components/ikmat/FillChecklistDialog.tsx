@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -38,11 +38,13 @@ export function FillChecklistDialog({
   const [isSaving, setIsSaving] = useState(false);
 
   const isDirty = !!(notes || responses.some(r => r.status !== 'na' || r.comment));
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft(
     `ikmat-sjekkliste:${checklistName}`,
     { responses, notes },
     { enabled: open && isDirty }
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
 
   const restoreDraft = () => {
     if (!draft) return;

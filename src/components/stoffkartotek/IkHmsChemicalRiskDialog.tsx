@@ -197,11 +197,13 @@ export function IkHmsChemicalRiskDialog({
   const isDirty = open && !assessment?.phase_1_completed &&
     (exposureTypes.length > 0 || exposureLevel !== "" || workTasks.length > 0 ||
      requiredPpe.length > 0 || phase1Conclusion.trim() !== "");
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft(
     `stoffkartotek-risiko:${chemical.id}`,
     draftData,
     { enabled: isDirty },
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
   const restoreDraft = () => {
     if (!draft) return;
     const d = draft.data;

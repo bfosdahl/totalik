@@ -69,11 +69,13 @@ export function LogTemperatureDialog({
 
   // Utkast: tar vare på temperatur/notat/korrigerende tiltak ved utilsiktet lukking
   const isDirty = !isEditMode && !!(temperature || notes || correctiveAction);
-  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+  const { draft, clear: clearDraft, dismiss: dismissDraft, refresh: refreshDraft } = useFormDraft(
     "ikmat-temperatur:ny",
     { selectedEquipmentId, temperature, notes, correctiveAction },
     { enabled: open && isDirty }
   );
+  // Les utkast på nytt hver gang dialogen åpnes (hooken forblir montert).
+  useEffect(() => { if (open) refreshDraft(); }, [open, refreshDraft]);
 
   const restoreDraft = () => {
     if (!draft) return;
