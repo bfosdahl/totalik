@@ -24,8 +24,8 @@ export function JevCheckPanel({ label, disabled, hint, run }: Props) {
   };
 
   return (
-    <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
-      <Button type="button" variant="outline" size="sm" onClick={go} disabled={loading || disabled} className="w-full sm:w-auto">
+    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+      <Button type="button" variant="outline" onClick={go} disabled={loading || disabled} className="w-full sm:w-auto h-11 border-primary/50 bg-background text-primary font-semibold hover:bg-primary/10 hover:text-primary">
         {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
         {label}
       </Button>
