@@ -190,6 +190,9 @@ const DagligDriftForm = () => {
     isSaving,
     showForm,
     formTypeResponses,
+    localDraft,
+    restoreLocalDraft,
+    clearLocalDraft,
     handleCreateNew,
     handleSelectResponse,
     handleDelete,
@@ -250,15 +253,19 @@ const DagligDriftForm = () => {
 
   if (!showForm) {
     return (
-
-      <SavedFormsList
-        responses={formTypeResponses}
-        onDelete={handleDelete}
-        onSelect={handleSelectResponse}
-        onCreateNew={handleCreateNew}
-        isDeleting={isSaving}
-        title={t("auto.daglig_drift")}
-      />
+      <div className="space-y-4">
+        {localDraft && (
+          <DraftRestoreBanner savedAt={localDraft.savedAt} onRestore={restoreLocalDraft} onDiscard={clearLocalDraft} />
+        )}
+        <SavedFormsList
+          responses={formTypeResponses}
+          onDelete={handleDelete}
+          onSelect={handleSelectResponse}
+          onCreateNew={handleCreateNew}
+          isDeleting={isSaving}
+          title={t("auto.daglig_drift")}
+        />
+      </div>
     );
   }
 
