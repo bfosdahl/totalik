@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { motion } from "framer-motion";
