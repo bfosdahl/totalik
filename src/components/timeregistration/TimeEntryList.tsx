@@ -254,7 +254,7 @@ export function TimeEntryList({
                   {smartWarnings[entry.id] && (
                     <div className="mt-1 space-y-0.5">
                       {smartWarnings[entry.id].map((w) => (
-                        <div key={w} className="text-[11px] leading-tight rounded bg-accent px-1.5 py-0.5 text-accent-foreground">⚠ {w}</div>
+                        <div key={w} className="text-[11px] leading-tight rounded border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-foreground">⚠ {w}</div>
                       ))}
                     </div>
                   )}
