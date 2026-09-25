@@ -403,6 +403,9 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {draft && (
+            <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
+          )}
           {/* Label Image Upload with AI Scanning - MOVED TO TOP */}
           <div className="space-y-2 p-4 border-2 border-dashed border-primary/30 rounded-lg bg-primary/5">
             <Label className="flex items-center gap-2 text-base font-semibold">
