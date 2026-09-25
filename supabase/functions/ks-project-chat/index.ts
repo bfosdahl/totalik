@@ -218,7 +218,7 @@ Allerede kjent – IKKE spør om dette igjen: ${known.join("; ") || "ingenting e
 Mangler: ${missing.join(", ") || "ingenting viktig"}.
 ${ready
     ? "Brukeren har gitt nok informasjon. Gå RETT til forslag med JSON-blokken nå. Manglende navn/adresse/byggherre kan stå tomt eller få et fornuftig arbeidsnavn – ikke still flere spørsmål."
-    : "Still maks ETT kort oppfølgingsspørsmål om det viktigste som mangler (type og omfang først). Ikke spør om noe som allerede er kjent."}`;
+    : "Still NØYAKTIG ETT kort oppfølgingsspørsmål – ingen punktliste med flere spørsmål. Spør om det viktigste som mangler for å lage oppsettet (type/omfang, ellers entrepriseform). Spør IKKE om prosjektnavn, adresse eller byggherre – det kan fylles ut senere. Ikke spør om noe som allerede er kjent."}`;
 }
 
 serve(async (req) => {
