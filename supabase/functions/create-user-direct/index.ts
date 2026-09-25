@@ -279,6 +279,7 @@ serve(async (req) => {
           `,
         });
         console.log(`Welcome email with default password sent to ${email}`);
+        await supabaseAdmin.from("profiles").update({ invitation_sent_at: new Date().toISOString(), invitation_sent_by: requestingUser.id }).eq("user_id", newUser.user.id);
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
       }
