@@ -108,6 +108,36 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
   // Project and company data for PDF generation
   const [projectData, setProjectData] = useState<any>(null);
   const [companyData, setCompanyData] = useState<any>(null);
+
+  // Universal utkast: tar vare på svar hvis dialogen lukkes eller man går til avvik
+  const hasAnswers = items.some((i) => (i.value !== null && i.value !== undefined && i.value !== "") || !!i.comment);
+  const isDirty = step === "items" && (hasAnswers || !!inspectorSignature);
+  const draftData = { title, items, inspectorName, inspectorSignature, responsibleUserId, responsibleUserName, deadlineDate, selectedTemplate, isAdminTemplate, isCustomChecklist };
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    `ks-sjekkliste:${projectId}:${existingChecklist?.id || "ny"}`,
+    draftData,
+    { enabled: isDirty },
+  );
+  const restoreDraft = () => {
+    if (!draft) return;
+    const d = draft.data as typeof draftData;
+    setTitle(d.title || "");
+    setItems(d.items || []);
+    setInspectorName(d.inspectorName || "");
+    setInspectorSignature(d.inspectorSignature || "");
+    setResponsibleUserId(d.responsibleUserId || "");
+    setResponsibleUserName(d.responsibleUserName || "");
+    setDeadlineDate(d.deadlineDate || "");
+    if (d.selectedTemplate) setSelectedTemplate(d.selectedTemplate);
+    setIsAdminTemplate(!!d.isAdminTemplate);
+    setIsCustomChecklist(!!d.isCustomChecklist);
+    setStep("items");
+    dismissDraft();
+  };
+  const closeWizard = (result?: { saved: boolean }) => {
+    if (result?.saved) clearDraft();
+    onClose(result);
+  };
   
   // Fetch project and company data for PDF generation
   useEffect(() => {
