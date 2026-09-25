@@ -1,92 +1,46 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Megaphone, Pin, PinOff, Plus, Trash2, Pencil, Check, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useCompanyAnnouncements, CompanyAnnouncement } from "@/hooks/useCompanyAnnouncements";
+  AlertTriangle, ChevronDown, ChevronUp, Megaphone, MessageCircle, Paperclip, Pencil, Pin, PinOff, Plus, Trash2, Users,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  CompanyAnnouncement, useAnnouncementPeople, useCompanyAnnouncements,
+} from "@/hooks/useCompanyAnnouncements";
+import { AnnouncementEditorDialog } from "./announcements/AnnouncementEditorDialog";
+import { AnnouncementThreadDialog } from "./announcements/AnnouncementThreadDialog";
 import { cn } from "@/lib/utils";
 
-const formatDate = (value: string) => {
-  try {
-    return new Date(value).toLocaleDateString("nb-NO", { day: "2-digit", month: "short" });
-  } catch {
-    return "";
-  }
-};
+const fmt = (v: string) =>
+  new Date(v).toLocaleString("nb-NO", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
 
 export function AnnouncementsBoard() {
   const {
-    announcements,
-    readIds,
-    isLoading,
-    isAdmin,
-    createAnnouncement,
-    updateAnnouncement,
-    togglePinned,
-    deleteAnnouncement,
-    markAsRead,
-    isSaving,
+    announcements, readIds, isLoading, isAdmin, userId, canManage,
+    createAnnouncement, updateAnnouncement, togglePinned, deleteAnnouncement, markAsRead, isSaving,
   } = useCompanyAnnouncements();
+  const { projects } = useAnnouncementPeople();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<CompanyAnnouncement | null>(null);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [pinned, setPinned] = useState(false);
-  const [expiresAt, setExpiresAt] = useState("");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [projectFilter, setProjectFilter] = useState("all");
   const [showAll, setShowAll] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
-  const visible = announcements.filter((a) => a.is_pinned || !readIds.includes(a.id));
-  const shown = showAll ? visible : visible.slice(0, 3);
-  const hiddenCount = visible.length - shown.length;
+  const projectName = useMemo(() => Object.fromEntries(projects.map((p) => [p.id, p.name])), [projects]);
+  const usedProjects = projects.filter((p) => announcements.some((a) => a.project_id === p.id));
 
-  if (!isLoading && visible.length === 0 && !isAdmin) return null;
+  const filtered = announcements.filter((a) => projectFilter === "all" || a.project_id === projectFilter);
+  const shown = showAll ? filtered : filtered.slice(0, 5);
+  const unread = announcements.filter((a) => !readIds.includes(a.id)).length;
+  const openAnn = announcements.find((a) => a.id === openId) || null;
 
-  const openNew = () => {
-    setEditing(null);
-    setTitle("");
-    setBody("");
-    setPinned(false);
-    setExpiresAt("");
-    setDialogOpen(true);
-  };
-
-  const openEdit = (a: CompanyAnnouncement) => {
-    setEditing(a);
-    setTitle(a.title);
-    setBody(a.body);
-    setPinned(a.is_pinned);
-    setExpiresAt(a.expires_at ? a.expires_at.slice(0, 10) : "");
-    setDialogOpen(true);
-  };
-
-  const handleSave = async () => {
-    if (!title.trim() || !body.trim()) return;
-    const payload = {
-      title: title.trim(),
-      body: body.trim(),
-      is_pinned: pinned,
-      expires_at: expiresAt ? new Date(`${expiresAt}T23:59:59`).toISOString() : null,
-    };
-    if (editing) {
-      await updateAnnouncement({ id: editing.id, ...payload });
-    } else {
-      await createAnnouncement(payload);
-    }
-    setDialogOpen(false);
+  const open = (a: CompanyAnnouncement) => {
+    setOpenId(a.id);
+    if (!readIds.includes(a.id)) markAsRead(a.id).catch(() => undefined);
   };
 
   return (
@@ -101,191 +55,130 @@ export function AnnouncementsBoard() {
             <Megaphone className="w-4 h-4 md:w-5 md:h-5 text-primary" />
           </div>
           <h3 className="text-base md:text-lg font-semibold truncate">Oppslagstavle</h3>
-          {visible.length > 0 && (
-            <Badge variant="secondary" className="shrink-0">{visible.length}</Badge>
-          )}
+          {unread > 0 && <Badge variant="destructive" className="shrink-0">{unread} nye</Badge>}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {isAdmin && (
-            <Button size="sm" onClick={openNew} className="gap-2">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Ny melding</span>
-            </Button>
-          )}
-          <Button
-            size="icon"
-            variant="ghost"
-            title={collapsed ? "Vis oppslagstavle" : "Skjul oppslagstavle"}
-            onClick={() => setCollapsed((v) => !v)}
-          >
+          <Button size="sm" onClick={() => { setEditing(null); setEditorOpen(true); }} className="gap-2">
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Ny melding</span>
+          </Button>
+          <Button size="icon" variant="ghost" title={collapsed ? "Vis" : "Skjul"} onClick={() => setCollapsed((v) => !v)}>
             {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </Button>
         </div>
       </div>
 
-      {collapsed ? null : isLoading ? (
-        <p className="text-sm text-muted-foreground">Laster meldinger...</p>
-      ) : visible.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Ingen meldinger akkurat nå. Skriv en melding som alle ansatte ser på forsiden.
-        </p>
-      ) : (
-        <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
-          {shown.map((a) => (
-            <div
-              key={a.id}
-              className={cn(
-                "rounded-lg border p-3 md:p-4",
-                a.is_pinned ? "border-primary/40 bg-primary/5" : "border-border bg-background"
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {a.is_pinned && (
-                      <Badge variant="default" className="gap-1">
-                        <Pin className="w-3 h-3" />
-                        Viktig
-                      </Badge>
-                    )}
-                    <h4 className="font-semibold text-sm md:text-base truncate">{a.title}</h4>
-                  </div>
-                  <p
+      {!collapsed && (
+        <>
+          {usedProjects.length > 0 && (
+            <div className="mb-3">
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="h-9 w-full sm:w-64"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Alle meldinger</SelectItem>
+                  {usedProjects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Laster meldinger...</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Ingen meldinger ennå. Trykk «Ny melding» for å skrive til alle eller til de som er på et prosjekt.
+            </p>
+          ) : (
+            <div className="divide-y divide-border rounded-lg border border-border">
+              {shown.map((a) => {
+                const isUnread = !readIds.includes(a.id);
+                return (
+                  <div
+                    key={a.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => open(a)}
+                    onKeyDown={(e) => e.key === "Enter" && open(a)}
                     className={cn(
-                      "text-sm text-muted-foreground mt-1 whitespace-pre-wrap",
-                      expandedIds.includes(a.id) ? "" : "line-clamp-3"
+                      "flex cursor-pointer items-start gap-3 p-3 transition-colors hover:bg-muted/50",
+                      a.is_pinned && "bg-primary/5"
                     )}
                   >
-                    {a.body}
-                  </p>
-                  {a.body.length > 160 && (
-                    <button
-                      type="button"
-                      className="text-xs text-primary mt-1 hover:underline"
-                      onClick={() =>
-                        setExpandedIds((ids) =>
-                          ids.includes(a.id) ? ids.filter((x) => x !== a.id) : [...ids, a.id]
-                        )
-                      }
-                    >
-                      {expandedIds.includes(a.id) ? "Vis mindre" : "Vis mer"}
-                    </button>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {a.created_by_name || "Ledelsen"} · {formatDate(a.publish_at)}
-                    {a.expires_at ? ` · gjelder til ${formatDate(a.expires_at)}` : ""}
-                  </p>
-                </div>
-                {isAdmin && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      title={a.is_pinned ? "Løsne fra toppen" : "Fest øverst"}
-                      onClick={() => togglePinned({ id: a.id, is_pinned: !a.is_pinned })}
-                    >
-                      {a.is_pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-                    </Button>
-                    <Button size="icon" variant="ghost" title="Rediger" onClick={() => openEdit(a)}>
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      title="Fjern"
-                      onClick={() => deleteAnnouncement(a.id)}
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
+                    <div className="flex w-5 shrink-0 flex-col items-center gap-1 pt-0.5">
+                      {a.is_pinned && <Pin className="h-4 w-4 fill-destructive text-destructive" />}
+                      {a.is_critical && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                      {!a.is_pinned && !a.is_critical && isUnread && <span className="mt-1.5 h-2 w-2 rounded-full bg-primary" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className={cn("truncate text-sm md:text-base", isUnread ? "font-semibold" : "font-medium")}>{a.title}</h4>
+                        <span className="shrink-0 text-xs text-muted-foreground">{fmt(a.last_activity_at || a.publish_at)}</span>
+                      </div>
+                      <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{a.body}</p>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span>{a.created_by_name || "Ukjent"}</span>
+                        {a.project_id && projectName[a.project_id] && (
+                          <Badge variant="secondary" className="h-5 px-1.5 text-[11px]">{projectName[a.project_id]}</Badge>
+                        )}
+                        {a.audience === "selected" && (
+                          <span className="flex items-center gap-1"><Users className="h-3 w-3" />{a.recipient_ids.length}</span>
+                        )}
+                        {a.reply_count > 0 && (
+                          <span className="flex items-center gap-1"><MessageCircle className="h-3 w-3" />{a.reply_count}</span>
+                        )}
+                        {a.attachments.length > 0 && (
+                          <span className="flex items-center gap-1"><Paperclip className="h-3 w-3" />{a.attachments.length}</span>
+                        )}
+                      </div>
+                    </div>
+                    {canManage(a) && (
+                      <div className="flex shrink-0 flex-col gap-0.5 sm:flex-row" onClick={(e) => e.stopPropagation()}>
+                        {isAdmin && (
+                          <Button size="icon" variant="ghost" className="h-8 w-8" title={a.is_pinned ? "Løsne" : "Fest øverst"}
+                            onClick={() => togglePinned({ id: a.id, is_pinned: !a.is_pinned })}>
+                            {a.is_pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                          </Button>
+                        )}
+                        <Button size="icon" variant="ghost" className="h-8 w-8" title="Rediger"
+                          onClick={() => { setEditing(a); setEditorOpen(true); }}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" title="Fjern"
+                          onClick={() => window.confirm("Fjerne meldingen?") && deleteAnnouncement(a.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-
-              {!readIds.includes(a.id) && (
-                <div className="mt-3">
-                  <Button size="sm" variant="outline" className="gap-2" onClick={() => markAsRead(a.id)}>
-                    <Check className="w-4 h-4" />
-                    Lest
-                  </Button>
-                </div>
-              )}
+                );
+              })}
             </div>
-          ))}
-          {(hiddenCount > 0 || showAll) && visible.length > 3 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full gap-2"
-              onClick={() => setShowAll((v) => !v)}
-            >
-              {showAll ? (
-                <>
-                  <ChevronUp className="w-4 h-4" /> Vis færre
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4" /> Vis alle ({hiddenCount} til)
-                </>
-              )}
+          )}
+          {filtered.length > 5 && (
+            <Button variant="ghost" size="sm" className="mt-2 w-full gap-2" onClick={() => setShowAll((v) => !v)}>
+              {showAll ? <><ChevronUp className="w-4 h-4" /> Vis færre</> : <><ChevronDown className="w-4 h-4" /> Vis alle ({filtered.length - 5} til)</>}
             </Button>
           )}
-        </div>
+        </>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>{editing ? "Rediger melding" : "Ny melding til alle ansatte"}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="announcement-title">Tittel</Label>
-              <Input
-                id="announcement-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="F.eks. Fellesmøte fredag kl. 08:00"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="announcement-body">Melding</Label>
-              <Textarea
-                id="announcement-body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                rows={5}
-                placeholder="Skriv meldingen her..."
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="announcement-expires">Gjelder til (valgfritt)</Label>
-              <Input
-                id="announcement-expires"
-                type="date"
-                value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div>
-                <p className="text-sm font-medium">Fest øverst</p>
-                <p className="text-xs text-muted-foreground">
-                  Viktige meldinger vises alltid først og forsvinner ikke når de er lest.
-                </p>
-              </div>
-              <Switch checked={pinned} onCheckedChange={setPinned} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Avbryt
-            </Button>
-            <Button onClick={handleSave} disabled={isSaving || !title.trim() || !body.trim()}>
-              {editing ? "Lagre" : "Publiser"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AnnouncementEditorDialog
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        editing={editing}
+        isAdmin={isAdmin}
+        userId={userId}
+        isSaving={isSaving}
+        onSave={async (input) => {
+          if (editing) await updateAnnouncement({ id: editing.id, ...input });
+          else await createAnnouncement(input);
+        }}
+      />
+      <AnnouncementThreadDialog
+        announcement={openAnn}
+        projectName={openAnn?.project_id ? projectName[openAnn.project_id] : undefined}
+        onClose={() => setOpenId(null)}
+      />
     </motion.div>
   );
 }
