@@ -277,6 +277,14 @@ const VernerundeForm = () => {
         title={t("auto.lagrede_vernerunder")}
       />
 
+      {localDraft && !selectedFormId && (
+        <DraftRestoreBanner
+          savedAt={localDraft.savedAt}
+          onRestore={restoreLocalDraft}
+          onDiscard={clearLocalDraft}
+        />
+      )}
+
       {isBuildingCustom && !selectedTemplate ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <CustomVernerundeBuilder
