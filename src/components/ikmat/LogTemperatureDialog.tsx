@@ -31,6 +31,8 @@ import {
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
 import { useLastUsed } from "@/hooks/useLastUsed";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 
 interface LogTemperatureDialogProps {
   open: boolean;
@@ -64,6 +66,23 @@ export function LogTemperatureDialog({
   const [completedCount, setCompletedCount] = useState(0);
 
   const isEditMode = !!editLog;
+
+  // Utkast: tar vare på temperatur/notat/korrigerende tiltak ved utilsiktet lukking
+  const isDirty = !isEditMode && !!(temperature || notes || correctiveAction);
+  const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
+    "ikmat-temperatur:ny",
+    { selectedEquipmentId, temperature, notes, correctiveAction },
+    { enabled: open && isDirty }
+  );
+
+  const restoreDraft = () => {
+    if (!draft) return;
+    setSelectedEquipmentId(draft.data.selectedEquipmentId || "");
+    setTemperature(draft.data.temperature || "");
+    setNotes(draft.data.notes || "");
+    setCorrectiveAction(draft.data.correctiveAction || "");
+    dismissDraft();
+  };
 
   // Husk forrige temperatur per utstyr (lokalt) og tilby den som forslag
   const { lastUsed, remember: rememberTemp } = useLastUsed("ikmat-temperatur", {
