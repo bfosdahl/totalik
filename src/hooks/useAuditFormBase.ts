@@ -99,10 +99,13 @@ export function useAuditFormBase<T>(options: {
         status,
         existingId,
       );
-      if (result) setExistingId(result.id);
+      if (result) {
+        setExistingId(result.id);
+        clearLocalDraft();
+      }
       return result;
     },
-    [formType, formData, buildMetadata, existingId, saveFormResponse],
+    [formType, formData, buildMetadata, existingId, saveFormResponse, clearLocalDraft],
   );
 
   return {
@@ -112,6 +115,9 @@ export function useAuditFormBase<T>(options: {
     showForm,
     isSaving,
     formTypeResponses,
+    localDraft,
+    restoreLocalDraft,
+    clearLocalDraft,
     handleCreateNew,
     handleSelectResponse,
     handleDelete,
