@@ -476,16 +476,7 @@ function DailyReportForm({
         }}
       />
 
-  const submitForm = async (asDraft: boolean) => {
-    try {
-      await onSubmit(buildData(), asDraft);
-      clearDraft();
-    } catch {
-      /* lar brukeren prøve igjen */
-    }
-  };
-
-  {/* Action Buttons */}
+      {/* Action Buttons */}
       <div className="flex gap-2 pt-4 border-t sticky bottom-0 bg-background pb-2">
         <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
           {t("auto.avbryt")}
