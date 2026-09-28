@@ -130,7 +130,12 @@ export function useWorkSchedules() {
       return true;
     } catch (error) {
       console.error("Error creating work schedule:", error);
-      toast.error("Kunne ikke opprette arbeidsplan");
+      const msg = error instanceof Error ? error.message : "";
+      toast.error(
+        msg.includes("row-level security")
+          ? "Du har ikke tilgang til å opprette denne vakten"
+          : "Kunne ikke opprette arbeidsplan"
+      );
       return false;
     }
   };
@@ -160,7 +165,12 @@ export function useWorkSchedules() {
       return rows.length;
     } catch (error) {
       console.error("Error creating work schedules:", error);
-      toast.error("Kunne ikke opprette vaktene");
+      const msg = error instanceof Error ? error.message : "";
+      toast.error(
+        msg.includes("row-level security")
+          ? "Du har ikke tilgang til å opprette disse vaktene"
+          : "Kunne ikke opprette vaktene"
+      );
       return 0;
     }
   };
