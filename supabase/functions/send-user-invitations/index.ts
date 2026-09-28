@@ -22,9 +22,15 @@ Deno.serve(async (req) => {
     const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: claims, error: claimsErr } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
-    const callerId = claims?.claims?.sub as string | undefined;
-    if (claimsErr || !callerId) return json({ error: "Sesjonen er utløpt. Logg inn på nytt." }, 401);
+    const token = authHeader.replace("Bearer ", "");
+    let callerId: string | undefined;
+    const { data: claims } = await userClient.auth.getClaims(token).catch(() => ({ data: null }));
+    callerId = claims?.claims?.sub as string | undefined;
+    if (!callerId) {
+      const { data: u } = await admin.auth.getUser(token);
+      callerId = u?.user?.id;
+    }
+    if (!callerId) return json({ error: "Sesjonen er utløpt. Logg inn på nytt." }, 401);
 
     const { data: roles } = await admin.from("user_roles").select("role").eq("user_id", callerId);
     const isSys = roles?.some((r) => r.role === "system_admin");
@@ -37,7 +43,7 @@ Deno.serve(async (req) => {
       : [];
     if (userIds.length === 0) return json({ error: "Ingen ansatte valgt" }, 400);
 
-    const { data: me } = await admin.from("profiles").select("company_id").eq("user_id", callerId).single();
+    const { data: me } = await admin.from("profiles").select("company_id").eq("user_id", callerId).limit(1).maybeSingle();
     const companyId = isSys && body?.companyId ? body.companyId : me?.company_id;
     if (!companyId) return json({ error: "Fant ikke bedrift" }, 400);
 
@@ -91,6 +97,6 @@ Deno.serve(async (req) => {
     return json({ success: true, sent, failed });
   } catch (e) {
     console.error("send-user-invitations error:", e);
-    return json({ error: "Uventet feil" }, 500);
+    return json({ error: "Uventet feil: " + (e instanceof Error ? e.message : String(e)) }, 500);
   }
 });
