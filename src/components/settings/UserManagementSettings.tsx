@@ -512,7 +512,11 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     setSendingInvites(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-user-invitations", { body: { userIds: ids } });
-      if (error) throw error;
+      if (error) {
+        let msg = "Kunne ikke sende invitasjon";
+        try { const j = await (error as any).context?.json?.(); msg = j?.error || msg; } catch { /* ignore */ }
+        throw new Error(msg);
+      }
       if (data?.error) throw new Error(data.error);
       toast.success(`Invitasjon sendt til ${data.sent} ansatt${data.sent === 1 ? "" : "e"}${data.failed?.length ? `, ${data.failed.length} feilet` : ""}`);
       setSelectedIds(new Set());
