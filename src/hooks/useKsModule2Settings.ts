@@ -34,8 +34,23 @@ export function useKsModule2Settings() {
 
       if (error) throw error;
 
-      // If no settings exist, create default ones
+      // If no settings exist, try to create default ones.
+      // INSERT is admin-only (RLS), so non-admin users fall back to
+      // in-memory defaults instead of failing the whole query.
       if (!data) {
+        const defaults: KsModule2Settings = {
+          id: "",
+          company_id: companyId!,
+          default_deadline_days: 7,
+          email_notifications_enabled: true,
+          weekly_report_enabled: true,
+          logo_url: null,
+          accent_color: "#5B6BFF",
+          geofence_allow_outside: false,
+          created_at: "",
+          updated_at: "",
+        };
+
         const { data: newData, error: createError } = await supabase
           .from("ks_module2_settings" as any)
           .insert({
@@ -48,7 +63,10 @@ export function useKsModule2Settings() {
           .select()
           .single();
 
-        if (createError) throw createError;
+        if (createError) {
+          // RLS blocked the insert (non-admin) — use defaults, don't throw.
+          return defaults;
+        }
         return newData as unknown as KsModule2Settings;
       }
 
