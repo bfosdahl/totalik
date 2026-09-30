@@ -101,6 +101,7 @@ function DailyReportForm({
   const [ownCrew, setOwnCrew] = useState(initialData?.own_crew_count?.toString() || "0");
   const [workDesc, setWorkDesc] = useState(initialData?.work_description || "");
   const [workAreas, setWorkAreas] = useState(initialData?.work_areas || "");
+  const [planTomorrow, setPlanTomorrow] = useState(initialData?.plan_tomorrow || "");
   const [workStartTime, setWorkStartTime] = useState(initialData?.work_start_time || "");
   const [workEndTime, setWorkEndTime] = useState(initialData?.work_end_time || "");
   const [equipmentText, setEquipmentText] = useState(
@@ -132,12 +133,12 @@ function DailyReportForm({
 
   // Universal utkast: tar vare på feltene hvis dialogen lukkes før lagring (kun nye rapporter)
   const isDirty = !!weather || !!temp || !!windCond || !!precip || ownCrew !== "0" ||
-    !!workDesc || !!workAreas || !!workStartTime || !!workEndTime || !!equipmentText ||
+    !!workDesc || !!workAreas || !!planTomorrow || !!workStartTime || !!workEndTime || !!equipmentText ||
     !!materialsText || !!progressDesc || progressPct !== 0 || !onSchedule || !!delayReason ||
     !!hmsObs || safetyMeeting || !!qualityText || !!hmsIncText || !!subAttText || !!deviationsText || !!notes;
   const draftData = {
     date: format(date, "yyyy-MM-dd"), weather, temp, windCond, precip, ownCrew,
-    workDesc, workAreas, workStartTime, workEndTime, equipmentText, materialsText,
+    workDesc, workAreas, planTomorrow, workStartTime, workEndTime, equipmentText, materialsText,
     progressDesc, progressPct, onSchedule, delayReason, hmsObs, safetyMeeting,
     qualityText, hmsIncText, subAttText, deviationsText, notes,
   };
@@ -158,6 +159,7 @@ function DailyReportForm({
     setOwnCrew(d.ownCrew ?? "0");
     setWorkDesc(d.workDesc || "");
     setWorkAreas(d.workAreas || "");
+    setPlanTomorrow(d.planTomorrow || "");
     setWorkStartTime(d.workStartTime || "");
     setWorkEndTime(d.workEndTime || "");
     setEquipmentText(d.equipmentText || "");
@@ -205,6 +207,7 @@ function DailyReportForm({
     total_crew_count: Number(ownCrew) || 0,
     work_description: workDesc || undefined,
     work_areas: workAreas || undefined,
+    plan_tomorrow: planTomorrow || undefined,
     work_start_time: workStartTime || undefined,
     work_end_time: workEndTime || undefined,
     equipment_used: equipmentText ? equipmentText.split(",").map((e) => ({ name: e.trim() })) : [],
@@ -337,6 +340,10 @@ function DailyReportForm({
             <div>
               <Label className="text-xs">{t("auto.beskrivelse_av_utfoert_arbeid")}</Label>
               <Textarea value={workDesc} onChange={(e) => setWorkDesc(e.target.value)} placeholder={t("auto.beskrivelse_av_dagens_arbeid")} rows={4} />
+            </div>
+            <div>
+              <Label className="text-xs">Plan for i morgen</Label>
+              <Textarea value={planTomorrow} onChange={(e) => setPlanTomorrow(e.target.value)} placeholder="Hva er planen for den kommende dagen?" rows={3} />
             </div>
             <div>
               <Label className="text-xs">{t("auto.arbeidsomraader")}</Label>
@@ -540,6 +547,11 @@ function generateReportEmailHtml(report: DailyReport): string {
     if (report.work_areas) sections.push(`<p style="margin:4px 0 0;font-size:13px;color:#64748b;">Områder: ${report.work_areas}</p>`);
   }
 
+  // Plan for i morgen
+  if (report.plan_tomorrow) {
+    sections.push(`<h3 style="margin:16px 0 4px;font-size:14px;color:#475569;">Plan for i morgen</h3><p style="margin:0;font-size:14px;white-space:pre-wrap;">${report.plan_tomorrow}</p>`);
+  }
+
   // Progress
   if (report.progress_description) {
     let progHtml = `<p style="margin:0;font-size:14px;">${report.progress_description}</p>`;
@@ -592,6 +604,7 @@ export default function Ks2Dagsrapport() {
     total_crew_count: r.total_crew_count,
     work_description: r.work_description || undefined,
     work_areas: r.work_areas || undefined,
+    plan_tomorrow: r.plan_tomorrow || undefined,
     work_start_time: r.work_start_time || undefined,
     work_end_time: r.work_end_time || undefined,
     equipment_used: r.equipment_used || [],
@@ -879,6 +892,14 @@ export default function Ks2Dagsrapport() {
                         {report.delay_reason && (
                           <p className="text-xs text-destructive mt-1">Årsak: {report.delay_reason}</p>
                         )}
+                      </div>
+                    )}
+
+                    {/* Plan for i morgen */}
+                    {report.plan_tomorrow && (
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-1">Plan for i morgen</h4>
+                        <p className="text-sm whitespace-pre-wrap">{report.plan_tomorrow}</p>
                       </div>
                     )}
 

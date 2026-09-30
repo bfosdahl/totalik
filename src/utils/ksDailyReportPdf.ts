@@ -466,6 +466,13 @@ async function buildDailyReportPdf(
     y += 2;
   }
 
+  // Plan for i morgen
+  if (report.plan_tomorrow) {
+    section("Plan for i morgen");
+    para(report.plan_tomorrow);
+    y += 2;
+  }
+
   // Equipment / materials
   if (report.equipment_used?.length > 0 || report.materials_received?.length > 0) {
     section("Utstyr og materialer");
