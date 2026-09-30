@@ -101,6 +101,7 @@ function DailyReportForm({
   const [ownCrew, setOwnCrew] = useState(initialData?.own_crew_count?.toString() || "0");
   const [workDesc, setWorkDesc] = useState(initialData?.work_description || "");
   const [workAreas, setWorkAreas] = useState(initialData?.work_areas || "");
+  const [planTomorrow, setPlanTomorrow] = useState(initialData?.plan_tomorrow || "");
   const [workStartTime, setWorkStartTime] = useState(initialData?.work_start_time || "");
   const [workEndTime, setWorkEndTime] = useState(initialData?.work_end_time || "");
   const [equipmentText, setEquipmentText] = useState(
@@ -132,12 +133,12 @@ function DailyReportForm({
 
   // Universal utkast: tar vare på feltene hvis dialogen lukkes før lagring (kun nye rapporter)
   const isDirty = !!weather || !!temp || !!windCond || !!precip || ownCrew !== "0" ||
-    !!workDesc || !!workAreas || !!workStartTime || !!workEndTime || !!equipmentText ||
+    !!workDesc || !!workAreas || !!planTomorrow || !!workStartTime || !!workEndTime || !!equipmentText ||
     !!materialsText || !!progressDesc || progressPct !== 0 || !onSchedule || !!delayReason ||
     !!hmsObs || safetyMeeting || !!qualityText || !!hmsIncText || !!subAttText || !!deviationsText || !!notes;
   const draftData = {
     date: format(date, "yyyy-MM-dd"), weather, temp, windCond, precip, ownCrew,
-    workDesc, workAreas, workStartTime, workEndTime, equipmentText, materialsText,
+    workDesc, workAreas, planTomorrow, workStartTime, workEndTime, equipmentText, materialsText,
     progressDesc, progressPct, onSchedule, delayReason, hmsObs, safetyMeeting,
     qualityText, hmsIncText, subAttText, deviationsText, notes,
   };
@@ -158,6 +159,7 @@ function DailyReportForm({
     setOwnCrew(d.ownCrew ?? "0");
     setWorkDesc(d.workDesc || "");
     setWorkAreas(d.workAreas || "");
+    setPlanTomorrow(d.planTomorrow || "");
     setWorkStartTime(d.workStartTime || "");
     setWorkEndTime(d.workEndTime || "");
     setEquipmentText(d.equipmentText || "");
@@ -205,6 +207,7 @@ function DailyReportForm({
     total_crew_count: Number(ownCrew) || 0,
     work_description: workDesc || undefined,
     work_areas: workAreas || undefined,
+    plan_tomorrow: planTomorrow || undefined,
     work_start_time: workStartTime || undefined,
     work_end_time: workEndTime || undefined,
     equipment_used: equipmentText ? equipmentText.split(",").map((e) => ({ name: e.trim() })) : [],

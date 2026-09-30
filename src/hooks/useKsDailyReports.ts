@@ -20,6 +20,7 @@ export interface DailyReport {
   total_crew_count: number;
   work_description: string | null;
   work_areas: string | null;
+  plan_tomorrow: string | null;
   work_start_time: string | null;
   work_end_time: string | null;
   equipment_used: any[];
@@ -54,6 +55,7 @@ export interface CreateDailyReport {
   total_crew_count?: number;
   work_description?: string;
   work_areas?: string;
+  plan_tomorrow?: string;
   work_start_time?: string;
   work_end_time?: string;
   equipment_used?: any[];
