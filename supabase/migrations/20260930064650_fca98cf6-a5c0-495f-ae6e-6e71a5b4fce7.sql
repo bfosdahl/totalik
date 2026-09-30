@@ -1,0 +1,1 @@
+ALTER TABLE public.ks_daily_reports ADD COLUMN IF NOT EXISTS plan_tomorrow TEXT;

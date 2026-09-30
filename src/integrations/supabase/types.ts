@@ -9449,6 +9449,7 @@ export type Database = {
           on_schedule: boolean | null
           own_crew_count: number | null
           photos: Json | null
+          plan_tomorrow: string | null
           precipitation: string | null
           progress_description: string | null
           progress_percentage: number | null
@@ -9490,6 +9491,7 @@ export type Database = {
           on_schedule?: boolean | null
           own_crew_count?: number | null
           photos?: Json | null
+          plan_tomorrow?: string | null
           precipitation?: string | null
           progress_description?: string | null
           progress_percentage?: number | null
@@ -9531,6 +9533,7 @@ export type Database = {
           on_schedule?: boolean | null
           own_crew_count?: number | null
           photos?: Json | null
+          plan_tomorrow?: string | null
           precipitation?: string | null
           progress_description?: string | null
           progress_percentage?: number | null
