@@ -27,7 +27,14 @@ import { useCustomCleaningTasks } from "@/hooks/useCustomCleaningTasks";
 import { useIkMatCleaningPlan } from "@/hooks/useIkMatCleaningPlan";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { EQUIPMENT_TYPE_DEFAULTS } from "@/lib/temperatureGuidelines";
+import {
+  EQUIPMENT_TYPE_DEFAULTS,
+  getTemperatureGuideline,
+  getStatusBgClass,
+  getStatusTextClass,
+} from "@/lib/temperatureGuidelines";
+import { cn } from "@/lib/utils";
+import { AlertTriangle } from "lucide-react";
 import { t } from "@/i18n/t";
 
 const TYPE_META = {
