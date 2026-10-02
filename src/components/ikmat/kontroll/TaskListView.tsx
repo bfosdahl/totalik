@@ -172,7 +172,7 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
                                 equip.measurement_frequency === 'monthly' ? 'Månedlig' :
                                 equip.measurement_frequency === 'on_demand' ? 'Ved behov' : 'Ukentlig';
               return (
-                <div key={equip.id} className="p-3 rounded-lg border bg-card">
+                <div key={equip.id} role="button" tabIndex={0} onClick={() => navigate('/ik-mat/kontroll?tab=temperatur')} className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/50 transition-colors">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm">{equip.name}</p>
@@ -219,7 +219,7 @@ export const TaskListView = ({ tasks, onCreateTask }: TaskListViewProps) => {
               if (tasksForFreq.length === 0) return null;
               
               return (
-                <div key={freq} className="p-3 rounded-lg border bg-card">
+                <div key={freq} role="button" tabIndex={0} onClick={() => navigate('/ik-mat/kontroll?tab=renholdsplan')} className="p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/50 transition-colors">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm capitalize">{freq} renhold</p>
