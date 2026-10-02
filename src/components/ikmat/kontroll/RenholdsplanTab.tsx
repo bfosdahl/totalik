@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil, Calendar, CalendarDays, CalendarRange, QrCode } from "lucide-react";
@@ -323,16 +324,21 @@ export const RenholdsplanTab = () => {
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{task.method}</p>
                       <p className="text-xs text-muted-foreground mt-1">Ansvarlig: {task.responsible}</p>
                     </div>
-                    {isCustom && (
-                      <div className="flex gap-1 flex-shrink-0">
+                    <div className="flex gap-1 flex-shrink-0">
+                      {isCustom && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditTask(task)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteTask((task as any).id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => isCustom ? handleDeleteTask((task as any).id) : handleDeleteGeneratedTask(task)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
