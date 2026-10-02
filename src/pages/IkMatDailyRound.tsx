@@ -410,6 +410,50 @@ export default function IkMatDailyRound() {
                     className="text-2xl h-14 text-center"
                   />
                 </div>
+                {(() => {
+                  const parsed = parseFloat(tempInput.replace(",", "."));
+                  if (isNaN(parsed)) return null;
+                  const guideline = getTemperatureGuideline(equip.equipment_type, parsed);
+                  return (
+                    <>
+                      <div
+                        className={cn(
+                          "rounded-lg border p-4 space-y-2",
+                          getStatusBgClass(guideline.status)
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          {guideline.status === "green" ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          ) : (
+                            <AlertTriangle
+                              className={cn(
+                                "h-5 w-5",
+                                guideline.status === "red" ? "text-red-600" : "text-yellow-600"
+                              )}
+                            />
+                          )}
+                          <span className={cn("font-semibold", getStatusTextClass(guideline.status))}>
+                            {guideline.message}
+                          </span>
+                        </div>
+                        <p className={cn("text-sm", getStatusTextClass(guideline.status))}>
+                          <strong>{t("auto.anbefalt_tiltak")}</strong> {guideline.action}
+                        </p>
+                      </div>
+                      {guideline.status !== "green" && (
+                        <div className="rounded-lg border border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800 p-4 flex items-start gap-2">
+                          <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+                          <div className="text-sm text-red-700 dark:text-red-400">
+                            <span className="font-semibold">{t("auto.avvik_registrert")}</span>
+                            <br />
+                            {t("auto.temperaturen_er_utenfor_akseptable_grens")}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </>
             )}
 
