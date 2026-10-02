@@ -178,6 +178,39 @@ export const RenholdsplanTab = () => {
     }
   };
 
+  // Slett en oppgave fra den genererte renholdsplanen (lagret i modulinnstillingene)
+  const handleDeleteGeneratedTask = async (task: CleaningTask) => {
+    if (!confirm('Er du sikker på at du vil slette denne oppgaven?')) return;
+    if (!ikMatModule?.id || !ikMatModule?.settings) {
+      toast.error('Kunne ikke slette oppgaven');
+      return;
+    }
+    const settings = ikMatModule.settings as any;
+    const plan: CleaningTask[] = settings.generatedContent?.cleaningPlan || [];
+    const newPlan = plan.filter(
+      t => !(t.area === task.area && t.method === task.method && t.frequency === task.frequency)
+    );
+    if (newPlan.length === plan.length) {
+      toast.error('Fant ikke oppgaven');
+      return;
+    }
+    const newSettings = {
+      ...settings,
+      generatedContent: { ...settings.generatedContent, cleaningPlan: newPlan },
+    };
+    const { error } = await supabase
+      .from('company_modules')
+      .update({ settings: newSettings })
+      .eq('id', ikMatModule.id);
+    if (error) {
+      console.error('Error deleting generated cleaning task:', error);
+      toast.error('Kunne ikke slette oppgaven');
+      return;
+    }
+    setCleaningPlan(newPlan);
+    toast.success('Oppgave slettet');
+  };
+
   const handleDownloadPdf = async (response: any) => {
     try {
       await generateCleaningPlanPdf({
