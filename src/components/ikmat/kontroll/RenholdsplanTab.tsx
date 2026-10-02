@@ -76,7 +76,6 @@ export const RenholdsplanTab = () => {
 
   useEffect(() => {
     if (!isLoading && modules.length > 0) {
-      const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
       if (ikMatModule?.settings) {
         const settings = ikMatModule.settings as any;
         if (settings.generatedContent?.cleaningPlan) {
