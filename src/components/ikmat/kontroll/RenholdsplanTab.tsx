@@ -367,16 +367,20 @@ export const RenholdsplanTab = () => {
                       </TableCell>
                       <TableCell>{task.responsible}</TableCell>
                       <TableCell>
-                        {isCustom && (
-                          <div className="flex gap-1">
+                        <div className="flex gap-1">
+                          {isCustom && (
                             <Button variant="ghost" size="sm" onClick={() => handleEditTask(task)}>
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteTask((task as any).id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => isCustom ? handleDeleteTask((task as any).id) : handleDeleteGeneratedTask(task)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
