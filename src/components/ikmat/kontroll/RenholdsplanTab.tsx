@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Sparkles, ClipboardCheck, Download, FileText, Trash2, Plus, Pencil, Calendar, CalendarDays, CalendarRange, QrCode } from "lucide-react";
@@ -61,6 +62,7 @@ const normalizeFrequency = (freq: string | undefined | null): FrequencyType => {
 export const RenholdsplanTab = () => {
   const { company } = useAuth();
   const { modules, isLoading } = useCompanyModules();
+  const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
   const [searchParams, setSearchParams] = useSearchParams();
   const [cleaningPlan, setCleaningPlan] = useState<CleaningTask[]>([]);
   const { responses, isLoading: isLoadingResponses, createResponse, updateResponse, deleteResponse } = useIkMatCleaningPlan();
@@ -75,7 +77,6 @@ export const RenholdsplanTab = () => {
 
   useEffect(() => {
     if (!isLoading && modules.length > 0) {
-      const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
       if (ikMatModule?.settings) {
         const settings = ikMatModule.settings as any;
         if (settings.generatedContent?.cleaningPlan) {
@@ -176,6 +177,39 @@ export const RenholdsplanTab = () => {
     if (confirm('Er du sikker på at du vil slette denne oppgaven?')) {
       await deleteTask.mutateAsync(id);
     }
+  };
+
+  // Slett en oppgave fra den genererte renholdsplanen (lagret i modulinnstillingene)
+  const handleDeleteGeneratedTask = async (task: CleaningTask) => {
+    if (!confirm('Er du sikker på at du vil slette denne oppgaven?')) return;
+    if (!ikMatModule?.id || !ikMatModule?.settings) {
+      toast.error('Kunne ikke slette oppgaven');
+      return;
+    }
+    const settings = ikMatModule.settings as any;
+    const plan: CleaningTask[] = settings.generatedContent?.cleaningPlan || [];
+    const newPlan = plan.filter(
+      t => !(t.area === task.area && t.method === task.method && t.frequency === task.frequency)
+    );
+    if (newPlan.length === plan.length) {
+      toast.error('Fant ikke oppgaven');
+      return;
+    }
+    const newSettings = {
+      ...settings,
+      generatedContent: { ...settings.generatedContent, cleaningPlan: newPlan },
+    };
+    const { error } = await supabase
+      .from('company_modules')
+      .update({ settings: newSettings })
+      .eq('id', ikMatModule.id);
+    if (error) {
+      console.error('Error deleting generated cleaning task:', error);
+      toast.error('Kunne ikke slette oppgaven');
+      return;
+    }
+    setCleaningPlan(newPlan);
+    toast.success('Oppgave slettet');
   };
 
   const handleDownloadPdf = async (response: any) => {
@@ -290,16 +324,21 @@ export const RenholdsplanTab = () => {
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{task.method}</p>
                       <p className="text-xs text-muted-foreground mt-1">Ansvarlig: {task.responsible}</p>
                     </div>
-                    {isCustom && (
-                      <div className="flex gap-1 flex-shrink-0">
+                    <div className="flex gap-1 flex-shrink-0">
+                      {isCustom && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditTask(task)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteTask((task as any).id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => isCustom ? handleDeleteTask((task as any).id) : handleDeleteGeneratedTask(task)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
@@ -328,16 +367,20 @@ export const RenholdsplanTab = () => {
                       </TableCell>
                       <TableCell>{task.responsible}</TableCell>
                       <TableCell>
-                        {isCustom && (
-                          <div className="flex gap-1">
+                        <div className="flex gap-1">
+                          {isCustom && (
                             <Button variant="ghost" size="sm" onClick={() => handleEditTask(task)}>
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteTask((task as any).id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => isCustom ? handleDeleteTask((task as any).id) : handleDeleteGeneratedTask(task)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
