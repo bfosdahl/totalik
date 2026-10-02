@@ -36,6 +36,16 @@ const IkMatKontroll = () => {
     }
   }, [hasModule, isLoading, navigate]);
 
+  // Sync tab when URL changes (e.g. buttons navigating to ?tab=...)
+  const urlTab = searchParams.get("tab");
+  useEffect(() => {
+    if (urlTab && urlTab !== activeTab) {
+      setActiveTab(urlTab);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTab]);
+
   // Update URL when tab changes
   const handleTabChange = (value: string) => {
     setActiveTab(value);
