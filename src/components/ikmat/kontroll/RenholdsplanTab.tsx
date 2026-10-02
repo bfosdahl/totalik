@@ -61,6 +61,7 @@ const normalizeFrequency = (freq: string | undefined | null): FrequencyType => {
 export const RenholdsplanTab = () => {
   const { company } = useAuth();
   const { modules, isLoading } = useCompanyModules();
+  const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
   const [searchParams, setSearchParams] = useSearchParams();
   const [cleaningPlan, setCleaningPlan] = useState<CleaningTask[]>([]);
   const { responses, isLoading: isLoadingResponses, createResponse, updateResponse, deleteResponse } = useIkMatCleaningPlan();
