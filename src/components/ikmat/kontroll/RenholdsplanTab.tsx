@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
@@ -65,6 +65,10 @@ export const RenholdsplanTab = () => {
   const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
   const [searchParams, setSearchParams] = useSearchParams();
   const [cleaningPlan, setCleaningPlan] = useState<CleaningTask[]>([]);
+  // Kopien av modulinnstillingene som faktisk ligger i databasen. Oppdateres
+  // manuelt ved hver skriving, ellers vil neste sletting bygge planen fra en
+  // gammel versjon og skrive tilbake oppgaver som nettopp ble slettet.
+  const settingsRef = useRef<any>(null);
   const { responses, isLoading: isLoadingResponses, createResponse, updateResponse, deleteResponse } = useIkMatCleaningPlan();
   const { tasks: customTasks, isLoading: customTasksLoading, createTask, updateTask, deleteTask } = useCustomCleaningTasks();
   const [fillDialogOpen, setFillDialogOpen] = useState(false);
@@ -79,6 +83,7 @@ export const RenholdsplanTab = () => {
     if (!isLoading && modules.length > 0) {
       if (ikMatModule?.settings) {
         const settings = ikMatModule.settings as any;
+        settingsRef.current = settings;
         if (settings.generatedContent?.cleaningPlan) {
           setCleaningPlan(settings.generatedContent.cleaningPlan);
         }
@@ -182,11 +187,11 @@ export const RenholdsplanTab = () => {
   // Slett en oppgave fra den genererte renholdsplanen (lagret i modulinnstillingene)
   const handleDeleteGeneratedTask = async (task: CleaningTask) => {
     if (!confirm('Er du sikker på at du vil slette denne oppgaven?')) return;
-    if (!ikMatModule?.id || !ikMatModule?.settings) {
+    const settings = settingsRef.current ?? (ikMatModule?.settings as any);
+    if (!ikMatModule?.id || !settings) {
       toast.error('Kunne ikke slette oppgaven');
       return;
     }
-    const settings = ikMatModule.settings as any;
     const plan: CleaningTask[] = settings.generatedContent?.cleaningPlan || [];
     const newPlan = plan.filter(
       t => !(t.area === task.area && t.method === task.method && t.frequency === task.frequency)
@@ -199,15 +204,17 @@ export const RenholdsplanTab = () => {
       ...settings,
       generatedContent: { ...settings.generatedContent, cleaningPlan: newPlan },
     };
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('company_modules')
       .update({ settings: newSettings })
-      .eq('id', ikMatModule.id);
-    if (error) {
-      console.error('Error deleting generated cleaning task:', error);
+      .eq('id', ikMatModule.id)
+      .select('id');
+    if (error || !data || data.length === 0) {
+      console.error('Error deleting generated cleaning task:', error || 'no rows updated');
       toast.error('Kunne ikke slette oppgaven');
       return;
     }
+    settingsRef.current = newSettings;
     setCleaningPlan(newPlan);
     toast.success('Oppgave slettet');
   };
