@@ -8,3 +8,7 @@
 - [x] Prosjekt, SHA, SJA, sjekklister
 - [x] 3 arbeidsdager x 4 ansatte + sjef: timer (føre, endre, slette, redigere)
 - [x] Arbeidsplaner – test alle veier
+
+## Rapport: aktive brukerbedrifter per modul (5. okt)
+- [ ] Slett testbedrifter fra gårsdagens simulering (Tømrer Nordvik, Renhold Glans, Marine Simulert) — deaktiverede brukere + soft-delete selskaper
+- [ ] Tell reelle aktive bedrifter med HMS og KS Bygg i bruk (har data/brukere, ikke bare lisens)
