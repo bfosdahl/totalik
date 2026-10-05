@@ -4332,6 +4332,81 @@ export type Database = {
           },
         ]
       }
+      employee_equipment: {
+        Row: {
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          employee_id: string
+          id: string
+          is_deleted: boolean
+          issued_date: string
+          item_name: string
+          notes: string | null
+          quantity: number
+          returned_date: string | null
+          serial_number: string | null
+          size: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          employee_id: string
+          id?: string
+          is_deleted?: boolean
+          issued_date?: string
+          item_name: string
+          notes?: string | null
+          quantity?: number
+          returned_date?: string | null
+          serial_number?: string | null
+          size?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          employee_id?: string
+          id?: string
+          is_deleted?: boolean
+          issued_date?: string
+          item_name?: string
+          notes?: string | null
+          quantity?: number
+          returned_date?: string | null
+          serial_number?: string | null
+          size?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_equipment_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_equipment_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_meetings: {
         Row: {
           action_items: Json | null
