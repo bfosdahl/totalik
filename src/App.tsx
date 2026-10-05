@@ -139,6 +139,7 @@ const HrSurveys = lazy(() => import("./pages/hr/HrSurveys"));
 const MyContract = lazy(() => import("./pages/hr/MyContract"));
 const HrSundayReport = lazy(() => import("./pages/hr/HrSundayReport"));
 const HrVehicles = lazy(() => import("./pages/hr/HrVehicles"));
+const HrEquipment = lazy(() => import("./pages/hr/HrEquipment"));
 
 // My pages
 const MyAbsence = lazy(() => import("./pages/my/MyAbsence"));

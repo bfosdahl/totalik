@@ -145,6 +145,7 @@ const personaladministrasjonItems = {
     { icon: Users, labelKey: "nav.employeeOverview", path: "/employees", color: "text-blue-500" },
     { icon: FileText, labelKey: "nav.employmentContracts", path: "/hr/contracts", color: "text-slate-500" },
     { icon: HeartPulse, labelKey: "nav.absence", path: "/hr/absence", color: "text-rose-500" },
+    { icon: HardHat, label: "Utstyr og klær", path: "/hr/utstyr", color: "text-orange-500" },
     { icon: UserCheck, labelKey: "nav.performanceReviews", path: "/hr/meetings", color: "text-emerald-500" },
     { icon: BarChart3, labelKey: "nav.surveys", path: "/hr/surveys", color: "text-purple-500" },
     { icon: CalendarDays, labelKey: "nav.approveVacation", path: "/time-off?view=admin", color: "text-orange-500" },
