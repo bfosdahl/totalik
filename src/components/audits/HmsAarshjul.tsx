@@ -374,7 +374,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     }
   };
 
-  // Check if an activity is completed for current year
+  // Check if an activity is completed for the selected year
   const isActivityCompleted = (activityId: string): boolean => {
     // Find form types that match this activity
     const matchingFormTypes = Object.entries(formTypeToActivityId)
@@ -382,7 +382,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       .map(([formType]) => formType);
     
     return completedActivities.some(
-      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === currentYear
+      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === selectedYear
     );
   };
 
@@ -393,7 +393,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       .map(([formType]) => formType);
     
     const completed = completedActivities.find(
-      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === currentYear
+      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === selectedYear
     );
     
     if (completed) {
