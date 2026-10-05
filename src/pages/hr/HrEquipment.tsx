@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Shirt, Wrench, HardHat, Package, Loader2, Undo2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Shirt, Wrench, HardHat, Package, Loader2, Undo2, Download } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyUsers } from "@/hooks/useCompanyUsers";
@@ -101,6 +102,65 @@ export default function HrEquipment() {
     onError: (e: any) => toast.error("Kunne ikke lagre: " + e.message),
   });
 
+  const exportList = async (scope: "one" | "all", fmt: "pdf" | "xlsx") => {
+    try {
+      let q = (supabase as any)
+        .from("employee_equipment")
+        .select("employee_id, category, item_name, quantity, size, serial_number, issued_date, returned_date, notes")
+        .eq("company_id", companyId)
+        .eq("is_deleted", false)
+        .order("issued_date", { ascending: false });
+      if (scope === "one") q = q.eq("employee_id", employeeId);
+      const { data, error } = await q;
+      if (error) throw error;
+      const nameOf = (id: string) => {
+        const u = users.find((x) => x.id === id);
+        return u ? getUserDisplayName(u) : "Ukjent";
+      };
+      const rows = ((data || []) as Item[])
+        .map((i) => ({
+          Ansatt: nameOf(i.employee_id),
+          Type: CATS[i.category]?.label ?? i.category,
+          Utstyr: i.item_name,
+          Antall: i.quantity,
+          Størrelse: i.size || "",
+          Serienr: i.serial_number || "",
+          Utdelt: safeFormatDate(i.issued_date, "dd.MM.yyyy"),
+          Status: i.returned_date ? `Levert ${safeFormatDate(i.returned_date, "dd.MM.yyyy")}` : "Hos ansatt",
+          Notat: i.notes || "",
+        }))
+        .sort((a, b) => a.Ansatt.localeCompare(b.Ansatt, "nb"));
+      if (!rows.length) { toast.info("Ingen utstyr å laste ned"); return; }
+      const base = scope === "one" ? `utstyr-${nameOf(employeeId)}` : "utstyr-alle-ansatte";
+      const file = `${base.replace(/[^a-zA-Z0-9æøåÆØÅ-]+/g, "_")}-${getLocalDateString()}`;
+      if (fmt === "xlsx") {
+        const XLSX = await import("xlsx");
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Utstyr");
+        XLSX.writeFile(wb, `${file}.xlsx`);
+      } else {
+        const { default: jsPDF } = await import("jspdf");
+        const { default: autoTable } = await import("jspdf-autotable");
+        const doc = new jsPDF({ orientation: "landscape" });
+        doc.setFontSize(16);
+        doc.text(scope === "one" ? `Utstyr og klær – ${nameOf(employeeId)}` : "Utstyr og klær – alle ansatte", 14, 16);
+        doc.setFontSize(9);
+        doc.text(`Utskrevet ${safeFormatDate(getLocalDateString(), "dd.MM.yyyy")}`, 14, 22);
+        const cols = Object.keys(rows[0]).filter((c) => scope === "all" || c !== "Ansatt");
+        autoTable(doc, {
+          startY: 27,
+          head: [cols],
+          body: rows.map((r) => cols.map((c) => String((r as any)[c]))),
+          styles: { fontSize: 8 },
+        });
+        doc.save(`${file}.pdf`);
+      }
+    } catch (e: any) {
+      toast.error("Kunne ikke laste ned: " + e.message);
+    }
+  };
+
   const patch = useMutation({
     mutationFn: async ({ id, values }: { id: string; values: Record<string, unknown> }) => {
       const { error } = await (supabase as any).from("employee_equipment").update(values).eq("id", id);
@@ -190,6 +250,17 @@ export default function HrEquipment() {
             <Button onClick={openNew} disabled={!employeeId} className="gap-2">
               <Plus className="h-4 w-4" /> Legg til utstyr
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2"><Download className="h-4 w-4" /> Last ned</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem disabled={!employeeId} onClick={() => exportList("one", "pdf")}>Valgt ansatt – PDF</DropdownMenuItem>
+                <DropdownMenuItem disabled={!employeeId} onClick={() => exportList("one", "xlsx")}>Valgt ansatt – Excel</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportList("all", "pdf")}>Alle ansatte – PDF</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportList("all", "xlsx")}>Alle ansatte – Excel</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </CardContent>
         </Card>
 
