@@ -18,6 +18,7 @@ import {
   FlaskConical,
   BookOpen,
   ChevronRight,
+  ChevronLeft,
   Check,
   CheckCircle2,
   Pencil,
@@ -252,6 +253,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
 
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
 
   // Fetch completed activities from database
   useEffect(() => {
