@@ -467,7 +467,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       await downloadAarshjulPdf(rows, {
         companyName: company?.name || "",
         orgNumber: (company as any)?.org_number ?? null,
-        year: currentYear,
+        year: selectedYear,
       });
       toast.success("Årshjulet er lastet ned");
     } catch (e) {
@@ -736,7 +736,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                       const labelX = center + labelRadius * Math.cos(midAngle);
                       const labelY = center + labelRadius * Math.sin(midAngle);
 
-                      const isCurrentMonth = month.id === currentMonth;
+                      const isCurrentMonth = month.id === currentMonth && selectedYear === currentYear;
                       const isSelected = month.id === selectedMonth;
                       const isHovered = month.id === hoveredMonth;
                       const hasActivities = activitiesByMonth[month.id].length > 0;
@@ -806,7 +806,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                       textAnchor="middle"
                       className="text-sm font-bold fill-foreground"
                     >
-                      {new Date().getFullYear()}
+                      {selectedYear}
                     </text>
                     <text
                       x={center}
