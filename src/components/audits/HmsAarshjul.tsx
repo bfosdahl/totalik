@@ -681,16 +681,51 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full sm:w-auto shrink-0"
-                onClick={handleDownloadAarshjul}
-                disabled={isDownloading}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                {isDownloading ? "Lager PDF..." : "Last ned årshjul"}
-              </Button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center border rounded-md">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setSelectedYear((y) => y - 1)}
+                    title="Forrige år"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm font-semibold min-w-[3.5rem] text-center select-none">
+                    {selectedYear}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setSelectedYear((y) => y + 1)}
+                    title="Neste år"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+                {selectedYear !== currentYear && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setSelectedYear(currentYear)}
+                  >
+                    I år
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 ml-auto sm:ml-0"
+                  onClick={handleDownloadAarshjul}
+                  disabled={isDownloading}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {isDownloading ? "Lager PDF..." : "Last ned årshjul"}
+                </Button>
+              </div>
             </div>
           </CardHeader>
 
