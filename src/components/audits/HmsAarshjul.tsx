@@ -18,6 +18,7 @@ import {
   FlaskConical,
   BookOpen,
   ChevronRight,
+  ChevronLeft,
   Check,
   CheckCircle2,
   Pencil,
@@ -252,6 +253,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
 
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
 
   // Fetch completed activities from database
   useEffect(() => {
@@ -372,7 +374,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
     }
   };
 
-  // Check if an activity is completed for current year
+  // Check if an activity is completed for the selected year
   const isActivityCompleted = (activityId: string): boolean => {
     // Find form types that match this activity
     const matchingFormTypes = Object.entries(formTypeToActivityId)
@@ -380,7 +382,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       .map(([formType]) => formType);
     
     return completedActivities.some(
-      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === currentYear
+      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === selectedYear
     );
   };
 
@@ -391,7 +393,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       .map(([formType]) => formType);
     
     const completed = completedActivities.find(
-      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === currentYear
+      (ca) => matchingFormTypes.includes(ca.form_type) && ca.year === selectedYear
     );
     
     if (completed) {
@@ -465,7 +467,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
       await downloadAarshjulPdf(rows, {
         companyName: company?.name || "",
         orgNumber: (company as any)?.org_number ?? null,
-        year: currentYear,
+        year: selectedYear,
       });
       toast.success("Årshjulet er lastet ned");
     } catch (e) {
@@ -679,16 +681,51 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                   </p>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full sm:w-auto shrink-0"
-                onClick={handleDownloadAarshjul}
-                disabled={isDownloading}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                {isDownloading ? "Lager PDF..." : "Last ned årshjul"}
-              </Button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center border rounded-md">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setSelectedYear((y) => y - 1)}
+                    title="Forrige år"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm font-semibold min-w-[3.5rem] text-center select-none">
+                    {selectedYear}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setSelectedYear((y) => y + 1)}
+                    title="Neste år"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+                {selectedYear !== currentYear && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setSelectedYear(currentYear)}
+                  >
+                    I år
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 ml-auto sm:ml-0"
+                  onClick={handleDownloadAarshjul}
+                  disabled={isDownloading}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {isDownloading ? "Lager PDF..." : "Last ned årshjul"}
+                </Button>
+              </div>
             </div>
           </CardHeader>
 
@@ -734,7 +771,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                       const labelX = center + labelRadius * Math.cos(midAngle);
                       const labelY = center + labelRadius * Math.sin(midAngle);
 
-                      const isCurrentMonth = month.id === currentMonth;
+                      const isCurrentMonth = month.id === currentMonth && selectedYear === currentYear;
                       const isSelected = month.id === selectedMonth;
                       const isHovered = month.id === hoveredMonth;
                       const hasActivities = activitiesByMonth[month.id].length > 0;
@@ -804,7 +841,7 @@ const HmsAarshjul = ({ compact = false }: HmsAarshjulProps) => {
                       textAnchor="middle"
                       className="text-sm font-bold fill-foreground"
                     >
-                      {new Date().getFullYear()}
+                      {selectedYear}
                     </text>
                     <text
                       x={center}
