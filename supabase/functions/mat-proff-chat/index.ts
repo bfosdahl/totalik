@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_MAT } from "../_shared/faq-knowledge.ts";
+import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -702,6 +703,21 @@ serve(async (req) => {
     const profileName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email || 'MAT Proffen';
 
     const { message, history = [] } = await req.json();
+
+    // Deterministisk navigasjonssvar: "hvor finner jeg X" -> faktisk menyvei
+    if (typeof message === "string" && isNavigationQuestion(message)) {
+      const navHits = lookupNavigation(message);
+      if (navHits.length > 0) {
+        const reply = navHits
+          .map((h) => `Du finner det her: ${h.path}\n${h.description}`)
+          .join("\n\n");
+        return new Response(JSON.stringify({ reply }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -709,7 +725,7 @@ serve(async (req) => {
     }
 
     const messages = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: systemPrompt + "\n\n" + NAV_MAP },
       ...history.slice(-8),
       { role: "user", content: message }
     ];
