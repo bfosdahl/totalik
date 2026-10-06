@@ -49,7 +49,9 @@ Deretter, på slutten av meldingen, legg til EN JSON-blokk i nøyaktig dette for
 Tilpass innholdet til prosjekttypen (nybygg, totalrenovering, tilbygg, fagentreprise, etc.).
 Inkluder 4-8 sjekklister, 3-6 rutiner, 3-5 HMS-fokusområder og 4-6 milepæler i forslaget.
 
-Hvis brukeren bare hilser eller stiller generelle spørsmål, ikke generer JSON – still spørsmål for å lære mer om prosjektet først.`;
+Hvis brukeren bare hilser eller stiller generelle spørsmål, ikke generer JSON – still spørsmål for å lære mer om prosjektet først.
+
+Hvis brukeren spør hvor noe finnes i systemet, bruk disse navnene nøyaktig: prosjekter ligger under «KS Bygg» → «Mine prosjekter», maler og rutiner under «KS Bygg» → «IK/KS Grunnlag» («Sjekklistemaler», «Rutiner»), og selve arbeidet gjøres inne i prosjektet.`;
 }
 
 function buildSystemPrompt(projectContext?: any, setupMode?: boolean): string {
