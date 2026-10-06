@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_HMS } from "../_shared/faq-knowledge.ts";
-import { NAV_MAP } from "../_shared/nav-map.ts";
+import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -430,102 +430,11 @@ async function executeToolCall(
   try {
     switch (toolName) {
       case "get_navigation_help": {
-        const searchTerm = args.search_term.toLowerCase();
-        
-        // Navigation map with keywords and menu location
-        const H = "Menyen til venstre → «IK/HMS»";
-        const P = "Menyen til venstre → «Personaladministrasjon»";
-        const M = "Menyen til venstre → «Mitt arbeidsforhold»";
-        const KS = "Menyen til venstre → «KS Bygg»";
-        const PRJ = "Menyen → «KS Bygg» → «Mine prosjekter» → åpne prosjektet →";
-        const MAT = "Menyen til venstre → «IK/MAT»";
-        const ALK = "Menyen til venstre → «IK/Alkohol»";
-        const FDV = "Menyen til venstre → «IK/FDV»";
-        const navigationMap = [
-          { keywords: ["dashbord", "hjem", "oversikt", "forside", "start"], path: "/", name: "Dashbord", menuLocation: "Øverst i menyen til venstre", description: "Hovedoversikt med status, årshjul, varsler og snarveier" },
-          { keywords: ["brukerveiledning", "hjelp", "veiledning", "manual"], path: "/brukerveiledning", name: "Brukerveiledning", menuLocation: "Øverst i menyen til venstre", description: "Veiledning til hele systemet" },
-          { keywords: ["oppsett", "kom i gang", "ai-oppsett", "setup", "veiviser"], path: "/setup", name: "Oppsett (AI-veiviser)", menuLocation: `${H} → «Oppsett»`, description: "Lager mål, organisering, risiko og rutiner automatisk" },
-          { keywords: ["mål", "målsetting", "hms-mål"], path: "/maalsetting", name: "Målsetting", menuLocation: `${H} → «Målsetting»`, description: "HMS-mål for bedriften" },
-          { keywords: ["organisering", "organisasjon", "organisasjonskart", "roller", "ansvar", "verneombud", "amu"], path: "/organisering", name: "Organisering", menuLocation: `${H} → «Organisering»`, description: "Organisasjonskart, roller, verneombud og ansvar" },
-          { keywords: ["risiko", "risikovurdering", "risikoanalyse", "farekilde", "handlingsplan", "tiltak"], path: "/risikoanalyse", name: "Risikoanalyse", menuLocation: `${H} → «Risikoanalyse» → «Risikovurdering & Handlingsplan»`, description: "Risikovurderinger og tiltak med ansvarlig og frist" },
-          { keywords: ["oppfølging", "frister tiltak"], path: "/risikoanalyse?tab=oppfolging", name: "Oppfølging av tiltak", menuLocation: `${H} → «Risikoanalyse» → «Oppfølging»`, description: "Følg opp tiltak fra risikovurderingen" },
-          { keywords: ["sja", "sikker jobb", "jobbanalyse"], path: "/risikoanalyse?tab=sja", name: "SJA", menuLocation: `${H} → «Risikoanalyse» → «SJA» (på byggeprosjekt: inne i prosjektet → «SJA»)`, description: "Sikker jobbanalyse med signaturer" },
-          { keywords: ["rutine", "rutiner", "prosedyre"], path: "/rutiner", name: "Rutiner", menuLocation: `${H} → «Rutiner»`, description: "HMS-rutiner og prosedyrer" },
-          { keywords: ["stoff", "stoffkartotek", "kjemikalie", "sikkerhetsdatablad", "sds", "datablad"], path: "/stoffkartotek", name: "Stoffkartotek", menuLocation: `${H} → «Stoffkartotek»`, description: "Kjemikalier, sikkerhetsdatablad og risikovurdering" },
-          { keywords: ["lov", "lover", "forskrift", "regelverk"], path: "/lover-og-forskrifter", name: "Lover og forskrifter", menuLocation: `${H} → «Lover og forskrifter»`, description: "Regelverk som gjelder bedriften" },
-          { keywords: ["avvik", "ruh", "uønsket hendelse", "hendelse", "skade", "nestenulykke"], path: "/deviations", name: "Avvik", menuLocation: `${H} → «Avvik» (avvik på byggeprosjekt: inne i prosjektet → «Avvik»; IK/MAT har egne under «IK/MAT» → «Avvik»)`, description: "Trykk «Nytt avvik», fyll inn og lagre. Jeg kan også opprette avviket for deg her i chatten." },
-          { keywords: ["hms aktivitet", "hms-aktivitet", "vernerunde", "revisjon", "internrevisjon", "årshjul", "aktivitet"], path: "/audits", name: "HMS aktiviteter", menuLocation: `${H} → «HMS aktiviteter»`, description: "Vernerunder, internrevisjoner og årshjul (bla mellom år med ‹ ›)" },
-          { keywords: ["håndbok", "hms-håndbok", "handbok"], path: "/handbook", name: "Håndbok (HMS)", menuLocation: `${H} → «Håndbok»`, description: "Samlet HMS-håndbok, kan lastes ned som PDF" },
-          { keywords: ["dokument", "dokumenter", "dokumentsenter", "filer", "opplasting", "mappe"], path: "/dokumentsenter", name: "Dokumentsenter", menuLocation: `${H} → «Dokumentsenter» (KS Bygg, IK/MAT og IK/Alkohol har eget dokumentsenter i sin meny)`, description: "Last opp og finn bedriftens dokumenter" },
-          { keywords: ["hms assistent", "hms-chat", "assistent"], path: "/hms-chat", name: "HMS Assistent", menuLocation: `${H} → «HMS Assistent»`, description: "Chat for HMS-spørsmål" },
-          { keywords: ["ansatt", "ansatte", "ansattoversikt", "medarbeider", "kurs", "hms-kort", "invitere", "legg til ansatt"], path: "/employees", name: "Ansattoversikt", menuLocation: `${P} → «Ansattoversikt»`, description: "Ansatte, kurs, HMS-kort, invitasjoner og dokumenter" },
-          { keywords: ["kontrakt", "arbeidsavtale", "ansettelsesavtale"], path: "/hr/contracts", name: "Ansettelsesavtaler", menuLocation: `${P} → «Ansettelsesavtaler» (ansatt: ${M} → «Min arbeidsavtale»)`, description: "Lag og signer arbeidsavtaler" },
-          { keywords: ["fravær", "sykefravær", "sykemelding", "egenmelding"], path: "/hr/absence", name: "Fravær", menuLocation: `${P} → «Fravær» (ansatt: ${M} → «Mitt fravær»)`, description: "Registrering og oversikt over fravær" },
-          { keywords: ["utstyr", "klær", "arbeidsklær", "verneutstyr", "verktøy"], path: "/hr/utstyr", name: "Utstyr og klær", menuLocation: `${P} → «Utstyr og klær»`, description: "Utstyr, klær og verktøy per ansatt, med nedlasting PDF/Excel" },
-          { keywords: ["medarbeidersamtale", "samtale", "møte", "møter"], path: "/hr/meetings", name: "Medarbeidersamtaler", menuLocation: `${P} → «Medarbeidersamtaler»`, description: "Samtaler med maler og referat" },
-          { keywords: ["undersøkelse", "spørreundersøkelse", "trivsel"], path: "/hr/surveys", name: "Undersøkelser", menuLocation: `${P} → «Undersøkelser» (ansatt: ${M} → «Min respons»)`, description: "Medarbeiderundersøkelser" },
-          { keywords: ["ferie", "fri", "permisjon", "feriesøknad"], path: "/time-off", name: "Ferie", menuLocation: `Leder: ${P} → «Godkjenn ferie». Ansatt: ${M} → «Min ferie»`, description: "Søk og godkjenn ferie" },
-          { keywords: ["arbeidsplan", "vaktplan", "vakt", "turnus", "skift", "vaktbytte"], path: "/work-schedule", name: "Arbeidsplan", menuLocation: `${P} → «Arbeidsplan»`, description: "Vaktplaner, skifteønsker og vaktbytte" },
-          { keywords: ["søndag", "søndagsrapport", "søndagsarbeid"], path: "/hr/sondagsrapport", name: "Søndagsrapport", menuLocation: `${P} → «Søndagsrapport (AML §10-8)»`, description: "Kontroll av søndagsarbeid" },
-          { keywords: ["time", "timer", "timeregistrering", "timeføring", "timeliste", "godkjenn timer", "overtid"], path: "/time-registration", name: "Timeføring", menuLocation: `Leder: ${P} → «Godkjenn timer» / «Timeføring» / «Timeoversikt». Ansatt: ${M} → «Mine timer»`, description: "Før timer på prosjekt, godkjenn og last ned rapport" },
-          { keywords: ["stempl", "stemplingsur", "qr", "inn/ut", "innsjekk"], path: "/time-registration", name: "Stempling (QR)", menuLocation: `${M} → «Mine timer»`, description: "Stemple inn/ut med QR eller GPS/geogjerde" },
-          { keywords: ["personalliste", "skatteetaten"], path: "/personalliste", name: "Personalliste", menuLocation: `${P} → «Personalliste (Skatteetaten)»`, description: "Lovpålagt personalliste" },
-          { keywords: ["anonym", "varsling", "si fra", "melde fra", "varsle"], path: "/anonymous-messages", name: "Anonyme meldinger", menuLocation: `Les: ${P} → «Anonyme meldinger». Send: ${M} → «Send anonym melding»`, description: "Varsling uten avsender" },
-          { keywords: ["kjørebok", "kjøring", "km", "gps", "bil", "reiseregning", "utlegg", "kvittering"], path: "/my/driving-log", name: "Kjørebok", menuLocation: `${M} → «Kjørebok»`, description: "Kjørebok med GPS, utlegg og reiseregning" },
-          { keywords: ["ansattkort", "kursbevis", "mitt kort", "id-kort"], path: "/my/employee-card", name: "Mitt ansattkort", menuLocation: `${M} → «Mitt ansattkort»`, description: "Ditt ansattkort med kurs" },
-          { keywords: ["melding", "meldinger", "oppslagstavle", "kunngjøring", "beskjed"], path: "/my/messages", name: "Meldinger", menuLocation: `${M} → «Meldinger» (oppslagstavla ligger på dashbordet)`, description: "Interne meldinger og oppslag" },
-          { keywords: ["personalhåndbok"], path: "/personalhandbok", name: "Personalhåndbok", menuLocation: "Menyen til venstre → «Personalhåndbok»", description: "Bedriftens personalhåndbok" },
-          { keywords: ["ks", "ks bygg", "byggeprosjekt", "prosjekt", "prosjekter"], path: "/ks", name: "Mine prosjekter", menuLocation: `${KS} → «Mine prosjekter»`, description: "Alle byggeprosjekter. Åpne et prosjekt for sjekklister, dagsrapport, avvik, SJA, bilder m.m." },
-          { keywords: ["kunde", "kunder"], path: "/ks/kunder", name: "Kunder", menuLocation: `${KS} → «Kunder»`, description: "Kunderegister" },
-          { keywords: ["befaring"], path: "/ks/befaring", name: "Befaring", menuLocation: `${KS} → «Befaring»`, description: "Befaringer" },
-          { keywords: ["kalkyle", "kalkyler", "tilbud", "pris"], path: "/ks/kalkyler", name: "Kalkyler", menuLocation: `${KS} → «Kalkyler»`, description: "Kalkyler og tilbud" },
-          { keywords: ["utfylte sjekklister"], path: "/ks/utfylte-sjekklister", name: "Utfylte sjekklister", menuLocation: `${KS} → «Utfylte sjekklister»`, description: "Alle ferdige sjekklister samlet, med søk og nedlasting" },
-          { keywords: ["sjekkliste", "sjekklister", "egenkontroll", "sjekklistemal", "mal"], path: "/ks/ik-ks/sjekklister", name: "Sjekklistemaler", menuLocation: `Maler: ${KS} → «Sjekklistemaler». Fylle ut: ${PRJ} «Sjekklister»`, description: "Over 100 maler (våtrom, betong, tømrer, ansvar m.m.)" },
-          { keywords: ["ks-håndbok", "kvalitetshåndbok"], path: "/ks/ik-ks/handbok", name: "KS-håndbok", menuLocation: `${KS} → «KS-håndbok»`, description: "Kvalitetshåndbok for byggesak" },
-          { keywords: ["egenerklæring"], path: "/ks/ik-ks/egenerklaering", name: "Egenerklæring", menuLocation: `${KS} → «Egenerklæring»`, description: "Egenerklæring for ansvarsrett" },
-          { keywords: ["oppsett-hjelper", "ks oppsett", "prosjekthjelper"], path: "/ks/oppsett", name: "Oppsett-hjelper", menuLocation: `${KS} → «Oppsett-hjelper»`, description: "AI-hjelp til å sette opp KS" },
-          { keywords: ["dagsrapport", "dagbok", "dagrapport"], path: "/ks", name: "Dagsrapport", menuLocation: `${PRJ} «Dagsrapport»`, description: "Vær, bemanning, utført arbeid, plan for i morgen og bilder" },
-          { keywords: ["bilde", "bilder", "foto", "dokumentere jobb"], path: "/ks", name: "Prosjektbilder", menuLocation: `${PRJ} «Bilder» (bilder kan også tas i dagsrapport, sjekklister og avvik)`, description: "Bilder knyttet til prosjektet" },
-          { keywords: ["underleverandør", "ue", "underentreprenør"], path: "/ks", name: "Underleverandører", menuLocation: `${PRJ} «Underleverandører»`, description: "UE-register, dokumentasjon og evaluering" },
-          { keywords: ["sha", "sha-plan", "riggplan", "hms-plan"], path: "/ks", name: "SHA-plan / Riggplan", menuLocation: `${PRJ} «SHA-plan» / «Riggplan»`, description: "SHA-plan med KU/KP-signatur og riggplan" },
-          { keywords: ["økonomi", "budsjett", "faktura", "endringsmelding", "kostnad"], path: "/ks", name: "Økonomi og endringsmeldinger", menuLocation: `${PRJ} «Økonomi» / «Endringsmeldinger»`, description: "Kostnader, fakturaer og endringsmeldinger" },
-          { keywords: ["byggesak", "byggesøknad", "blankett", "ansvarsrett", "gjennomføringsplan", "sak10"], path: "/ks", name: "Byggesak", menuLocation: `${PRJ} «Byggesak»`, description: "Blanketter (5174, 5181, 5167 m.fl.) sendt som PDF" },
-          { keywords: ["geofence", "geogjerde"], path: "/ks", name: "Geogjerde", menuLocation: `${PRJ} prosjektinnstillinger/kart`, description: "Automatisk start/stopp av arbeidstid ved prosjektet" },
-          { keywords: ["sluttrapport", "prosjektrapport", "møtereferat", "reklamasjon"], path: "/ks", name: "Rapporter i prosjekt", menuLocation: `${PRJ} «Rapport» / «Møter» / «Reklamasjoner»`, description: "Sluttrapport, møter og reklamasjoner" },
-          { keywords: ["mat", "ik-mat", "ik/mat", "kjøkken", "restaurant", "næringsmiddel", "haccp"], path: "/ik-mat/handbok", name: "IK/MAT", menuLocation: MAT, description: "Oppsett, håndbok, mål, organisasjonskart, risiko & tiltak, rutiner, kontroll, sensorer, avvik, allergener, kjøkkenplan, faste avtaler, dokumentsenter" },
-          { keywords: ["temperatur", "kontroll mat", "renhold", "renholdsplan", "varemottak", "sporbarhet", "runde"], path: "/ik-mat/kontroll", name: "Kontroll (IK/MAT)", menuLocation: `${MAT} → «Kontroll»`, description: "Temperatur, renhold, varemottak, sporbarhet og daglige runder" },
-          { keywords: ["sensor", "sensorer", "temperaturmåler"], path: "/ik-mat/sensorer", name: "Sensorer", menuLocation: `${MAT} → «Sensorer»`, description: "Automatisk temperaturlogging" },
-          { keywords: ["allergen", "allergener", "allergi"], path: "/ik-mat/allergener", name: "Allergener", menuLocation: `${MAT} → «Allergener»`, description: "Allergenoversikt" },
-          { keywords: ["kjøkkenplan", "soner"], path: "/ik-mat/kjokkenplan", name: "Kjøkkenplan", menuLocation: `${MAT} → «Kjøkkenplan»`, description: "Tegning av kjøkkensoner" },
-          { keywords: ["alkohol", "skjenking", "bevilling", "ik-alkohol"], path: "/ik-alkohol", name: "IK/Alkohol", menuLocation: ALK, description: "Rutiner, organisering, mål, risikoanalyse, internkontroll, kontroll, hendelser, lovverk, dokumentsenter, håndbok" },
-          { keywords: ["fdv", "bygg og eiendom", "etasjeplan", "eiendom"], path: "/fdv", name: "IK/FDV", menuLocation: FDV, description: "Bygg og eiendommer, kontroller, risikovurdering, regelverk, etasjeplaner" },
-          { keywords: ["gdpr", "personvern"], path: "/gdpr/oversikt", name: "GDPR", menuLocation: "Menyen til venstre → «GDPR»", description: "Oversikt, dokumentasjon og sjekkliste" },
-          { keywords: ["åpenhetsloven", "aktsomhet", "redegjørelse"], path: "/apenhetsloven/oversikt", name: "Åpenhetsloven", menuLocation: "Menyen til venstre → «Åpenhetsloven»", description: "Aktsomhetsvurdering, innsyn og årlig redegjørelse" },
-          { keywords: ["innstilling", "innstillinger", "bedriftsinfo", "logo"], path: "/settings", name: "Innstillinger", menuLocation: "Øverst i menyen til venstre → «Innstillinger»", description: "Bedriftsinfo, brukere, avdelinger, varsler" },
-          { keywords: ["bruker", "brukere", "tilgang", "rettigheter", "rolle"], path: "/settings?tab=users", name: "Brukere", menuLocation: "«Innstillinger» → fanen «Brukere»", description: "Brukere og roller" },
-          { keywords: ["avdeling", "avdelinger", "filial"], path: "/settings?tab=departments", name: "Avdelinger", menuLocation: "«Innstillinger» → fanen «Avdelinger»", description: "Avdelinger og avdelingsledere" },
-          { keywords: ["varsel", "varsler", "påminnelse", "notifikasjon", "push"], path: "/settings?tab=notifications", name: "Varsler", menuLocation: "«Innstillinger» → fanen «Varsler»", description: "E-post- og push-varsler" },
-          { keywords: ["kjøpe modul", "flere moduler", "låst", "mangler modul"], path: "/", name: "Flere moduler", menuLocation: "Nederst i menyen → «Flere moduler»", description: "Moduler bedriften ikke har ennå – kan bestilles av admin" },
-          { keywords: ["installer", "app", "pwa", "mobil"], path: "/install-app", name: "Installer app", menuLocation: "Åpne totalik.no/install-app på telefonen", description: "Installer appen på telefonen" },
-        ];
-
-        // Find matching pages
-        const matches = navigationMap.filter(page => 
-          page.keywords.some(keyword => searchTerm.includes(keyword) || keyword.includes(searchTerm))
-        );
-
-        if (matches.length === 0) {
+        const answer = lookupNavigation(args.search_term || "");
+        if (!answer) {
           return `🔍 Jeg fant ikke noe som matcher "${args.search_term}". Prøv å beskrive hva du vil gjøre, så hjelper jeg deg å finne riktig sted!`;
         }
-
-        if (matches.length === 1) {
-          const match = matches[0];
-          return `📍 **${match.name}**\n\n👉 ${match.menuLocation}\n\n${match.description}`;
-        }
-
-        // Multiple matches
-        const list = matches.slice(0, 4).map(m => `• **${m.name}** — ${m.menuLocation}\n  _${m.description}_`).join("\n\n");
-        return `🔍 Jeg fant flere relevante steder:\n\n${list}\n\nHvilken av disse leter du etter?`;
+        return answer;
       }
 
       case "add_risk_with_action": {
