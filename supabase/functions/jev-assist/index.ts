@@ -240,11 +240,11 @@ Deno.serve(async (req) => {
     if (mode === "daily_report") {
       const t = body?.texts || {};
       const existing = clip(t.avvik, 3000).toLowerCase();
-      const sentences: string[] = [];
+      const sentences: { text: string; source: string }[] = [];
       for (const k of ["arbeid", "fremdrift", "hms", "merknader"]) {
         for (const s of clip(t[k], 3000).split(/(?<=[.!?])\s+|\n+/)) {
           const x = s.trim();
-          if (x.length >= 12 && !existing.includes(x.toLowerCase()) && !sentences.includes(x)) sentences.push(x);
+          if (x.length >= 12 && !existing.includes(x.toLowerCase()) && !sentences.some((y: any) => y.text === x)) sentences.push({ text: x, source: k });
         }
       }
       const list = sentences.slice(0, 25);
@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
       const state: Record<string, string> = {};
       const qs: Record<string, unknown> = {};
       list.forEach((s, i) => {
-        state[`s${i}`] = s;
+        state[`s${i}`] = s.text;
         qs[`q${i}`] = {
           type: "noul",
           instructions: `Beskriver setningen i \`s${i}\` fra en dagrapport på en byggeplass en hendelse eller et forhold som bør registreres som avvik (feil, skade, nestenulykke, farlig forhold, mangel, brudd på rutine)?`,
@@ -263,10 +263,72 @@ Deno.serve(async (req) => {
         };
       });
       const answers = await jev(state, qs);
-      const suggestions = list.map((text, i) => ({ text, noul: answers[`q${i}`]?.noul }))
+      const suggestions = list.map((s, i) => ({ text: s.text, source: s.source, noul: answers[`q${i}`]?.noul }))
         .filter((s) => typeof s.noul === "number" && s.noul >= 0.6)
         .sort((a, b) => b.noul - a.noul).slice(0, 5);
       return json({ suggestions });
+    }
+
+    // ---------------- VERNERUNDE → RADER + TILTAKSSJEKK ----------------
+    if (mode === "vernerunde_check") {
+      const summaryFields: Record<string, string> = {
+        avvik: clip(body?.avvik, 1500),
+        tiltak: clip(body?.tiltak, 1500),
+        ansvarlig: clip(body?.ansvarlig, 200),
+        frist: clip(body?.frist, 40),
+      };
+      const rows: { id: string; category: string; question: string; answer: string; comment: string }[] =
+        (Array.isArray(body?.rows) ? body.rows : []).slice(0, 15)
+          .map((r: any, i: number) => ({
+            id: clip(String(r?.id ?? i), 60),
+            category: clip(String(r?.category ?? ""), 80),
+            question: clip(String(r?.question ?? ""), 200),
+            answer: r?.answer === "ja" ? "ja" : "nei",
+            comment: clip(String(r?.comment ?? ""), 300),
+          }))
+          .filter((r: any) => r.question);
+      const state: Record<string, unknown> = { skjema: summaryFields };
+      const qs: Record<string, unknown> = {
+        match: {
+          type: "noul",
+          instructions: "Har hvert avvik i `skjema` et tilhørende tiltak?",
+          criteria: { true: "Ett eller flere avvik mangler tiltak.", false: "Tiltakene dekker avvikene, eller det er ingen avvik." },
+        },
+        concrete: {
+          type: "noul",
+          instructions: "Er tiltakene i `skjema` konkrete, med ansvarlig og frist når det er avvik?",
+          criteria: { true: "Vage tiltak, eller mangler ansvarlig eller frist.", false: "Konkrete tiltak med ansvar og frist, eller ingen avvik." },
+        },
+      };
+      rows.forEach((r, i) => {
+        state[`r${i}`] = { kategori: r.category, punkt: r.question, kommentar: r.comment };
+        qs[`p${i}`] = {
+          type: "noul",
+          instructions: `Bør sjekkpunktet i \`r${i}\` fra en vernerunde følges opp som avvik eller forhold som må korrigeres?`,
+          criteria: {
+            true: "Ja: punktet (eller kommentaren) beskriver et forhold som bør korrigeres, registreres eller utredes videre.",
+            false: "Nei: punktet er bare ikke sjekket ennå, eller kommentaren er banal og trenger ingen oppfølging.",
+          },
+        };
+      });
+      let answers: Record<string, any> = {};
+      try {
+        answers = await jev(state, qs);
+      } catch (err: any) {
+        if (err?.status === 402 || err?.status === 403) return json({ error: err.message }, err.status);
+        console.error("vernerunde check skipped", err);
+      }
+      const summary = ["match", "concrete"].map((id) => {
+        const p = answers[id]?.noul;
+        if (typeof p !== "number") return null;
+        return { ok: p < 0.5, text: p >= 0.5
+          ? (id === "match" ? "Noen avvik ser ut til å mangle tiltak." : "Tiltakene bør være konkrete og ha ansvarlig og frist.")
+          : (id === "match" ? "Tiltakene dekker avvikene." : "Tiltakene er konkrete med ansvar og frist.") };
+      }).filter(Boolean);
+      const rowFindings = rows
+        .map((r, i) => ({ ...r, noul: answers[`p${i}`]?.noul }))
+        .filter((r) => typeof r.noul === "number" && r.noul >= 0.5);
+      return json({ summary, rowFindings });
     }
 
     // ---------------- OPPSLAGSTAVLE ----------------
