@@ -44,8 +44,48 @@ export function Ks2ChecklistSmartCheck({ title, projectName, items, onRegisterDe
 
   const flagged = result && typeof result.noul === "number" && result.noul >= 0.5;
 
+  const t = (title || "").toLowerCase();
+  const ansvarKind = /ansvarlig\s+søk/.test(t) ? "ansvar_soker"
+    : /ansvarlig\s+prosjekter/.test(t) ? "ansvar_prosjekterende"
+    : /ansvarlig\s+kontroller/.test(t) ? "ansvar_kontrollerende" : null;
+  const [advice, setAdvice] = useState<{ ok: boolean; text: string }[] | null>(null);
+  const [adviceLoading, setAdviceLoading] = useState(false);
+
+  const runAdvice = async () => {
+    setAdviceLoading(true); setError(""); setAdvice(null);
+    try {
+      const fields: Record<string, string> = { prosjekt: projectName || "" };
+      items.slice(0, 29).forEach((i, n) => {
+        const v = i.value === true ? "ja" : i.value === false ? "nei" : i.value === "na" ? "ikke aktuelt" : String(i.value ?? "ubesvart");
+        fields[`p${n + 1}`] = `${String(i.label || i.title || i.name || "")}: ${v || "ubesvart"}${i.comment ? ` – ${i.comment}` : ""}`;
+      });
+      const { data, error } = await supabase.functions.invoke("jev-assist", { body: { mode: "form_check", kind: ansvarKind, fields } });
+      if (error) throw error;
+      setAdvice(data?.findings || []);
+    } catch {
+      setError("Kunne ikke sjekke nå. Prøv igjen.");
+    } finally {
+      setAdviceLoading(false);
+    }
+  };
+
   return (
     <div className="rounded-lg border bg-muted/40 p-3 space-y-2">
+      {ansvarKind && (
+        <div className="space-y-2">
+          <Button variant="outline" size="sm" onClick={runAdvice} disabled={adviceLoading || answered.length === 0} className="w-full sm:w-auto">
+            {adviceLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+            Sjekk ansvarsoppgavene
+          </Button>
+          {advice?.map((f, i) => (
+            <p key={i} className={`text-sm flex items-start gap-2 ${f.ok ? "text-muted-foreground" : ""}`}>
+              {f.ok ? <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" /> : <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-destructive" />}
+              {f.text}
+            </p>
+          ))}
+          {advice && <p className="text-xs text-muted-foreground">Råd, ikke juridisk vurdering. Lagrer ingenting.</p>}
+        </div>
+      )}
       <Button variant="outline" size="sm" onClick={run} disabled={loading || answered.length === 0} className="w-full sm:w-auto">
         {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
         Bør noe bli avvik?
