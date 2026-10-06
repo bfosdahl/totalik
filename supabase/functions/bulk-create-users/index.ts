@@ -151,7 +151,8 @@ Deno.serve(async (req) => {
         }
 
         const validRole = (user.role === "company_admin" || user.role === "user") ? user.role : "user";
-        const tempPassword = DEFAULT_PASSWORD;
+        const isPlaceholder = cleanEmail.endsWith("@placeholder.totalik.no");
+        const tempPassword = isPlaceholder ? crypto.randomUUID() + "Aa1!" : DEFAULT_PASSWORD;
 
         const { data: authData, error: createError } = await supabaseAdmin.auth.admin.createUser({
           email: cleanEmail,
@@ -197,7 +198,7 @@ Deno.serve(async (req) => {
         const roleVerified = !roleError;
         const resetLink = resetResult?.data?.properties?.action_link;
 
-        if (resend && resetLink) {
+        if (resend && resetLink && !isPlaceholder) {
           const companyName = companyMap.get(user.companyId) || "din bedrift";
           const displayName = user.firstName?.trim() || cleanEmail.split("@")[0];
           pendingEmails.push({
