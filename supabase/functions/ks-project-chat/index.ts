@@ -74,6 +74,11 @@ FAGKUNNSKAP (SAK10 §10-1):
 - Bokstav h: Jevnlig gjennomgang av KS-rutiner
 
 ---
+${NAV_MAP}
+
+${KS_PROJECT_NAV_MAP}
+
+---
 OFFISIELL FAQ FOR SLUTTBRUKERE (Bygg Proffen) – bruk denne ordrett når brukeren spør om hvordan KS BYGG-modulen fungerer. Du kan omformulere, men ikke endre faktainnholdet:
 
 ${FAQ_KS}
