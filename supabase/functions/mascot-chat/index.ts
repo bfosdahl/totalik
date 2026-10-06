@@ -797,11 +797,9 @@ serve(async (req) => {
 
     // "Hvor finner jeg X" must be answered from the menu map. Left to the model it
     // answers with general law text and "spør din leder" instead of the real path.
-    const NAV_INTENT = /\b(hvor|i hvilken meny|hvilken meny|hvor finner|hvor i menyen|hvor legger|hvor registrer|hvor ser|hvor laster|hvor godkjenner|hvor fører|hvor søker|hvor kan|hva heter modul|hvordan finner jeg|hvordan kommer jeg|kan jeg (se|finne|legge|registrere|laste|godkjenne|føre|søke)|how do i find|where is)\b/i;
-    const NAV_SKIP = /\bhvor (lenge|mye|mange|ofte|når|godt|vidt|langt|tidlig|sentralt|hyppig)\b|\bhvorfor\b/i;
-    if (typeof message === "string" && NAV_INTENT.test(message) && !NAV_SKIP.test(message)) {
-      const navAnswer = await executeToolCall(supabase, companyId, profile.id, "get_navigation_help", { search_term: message });
-      if (navAnswer && !navAnswer.startsWith("🔍 Jeg fant ikke")) {
+    if (isNavigationQuestion(message)) {
+      const navAnswer = lookupNavigation(message);
+      if (navAnswer) {
         return new Response(
           JSON.stringify({ reply: navAnswer, actions: [] }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
