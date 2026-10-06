@@ -62,7 +62,9 @@ export function VernerundeSmartCheck({ templateName, checkpoints, checklist, com
   };
 
   const handleCreate = async (r: RowFinding) => {
-    const today = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`;
+    const today = new Date();
+    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const due = frist.trim() || fmt(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14));
     const ok = await createDeviation({
       title: r.question.slice(0, 200),
       description: `Fra vernerunde «${templateName || "Vernerunde"}». Svar: ${r.answer === "ja" ? "Ja" : "Nei"}${r.comment ? `. Kommentar: ${r.comment}` : ""}`,
