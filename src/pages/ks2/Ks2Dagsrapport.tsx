@@ -479,6 +479,7 @@ function DailyReportForm({
       </div>
 
       <SmartDailyReportDeviations
+        projectId={projectId}
         texts={{
           arbeid: workDesc,
           fremdrift: [progressDesc, delayReason].filter(Boolean).join("\n"),
