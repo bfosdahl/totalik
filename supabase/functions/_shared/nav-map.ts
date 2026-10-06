@@ -123,7 +123,6 @@ const PRJ = "Menyen → «KS Bygg» → «Mine prosjekter» → åpne prosjektet
 const MAT = "Menyen til venstre → «IK/MAT»";
 const ALK = "Menyen til venstre → «IK/Alkohol»";
 const FDV = "Menyen til venstre → «IK/FDV»";
-const navigationMap = [
 
 export const NAVIGATION_ENTRIES: NavEntry[] = [
   { keywords: ["dashbord", "hjem", "oversikt", "forside", "start"], path: "/", name: "Dashbord", menuLocation: "Øverst i menyen til venstre", description: "Hovedoversikt med status, årshjul, varsler og snarveier" },
