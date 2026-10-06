@@ -72,8 +72,8 @@ export function VernerundeSmartCheck({ templateName, checkpoints, checklist, com
       priority: "medium",
       severity: "medium",
       assignee_name: ansvarlig || null,
-      due_date: frist.trim() || null,
-      incident_date: today,
+      due_date: due,
+      incident_date: fmt(today),
     });
     if (ok) setCreated((p) => ({ ...p, [r.id]: true }));
   };
