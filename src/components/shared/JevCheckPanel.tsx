@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { jevAssist } from "@/lib/jevAssist";
+import { toast } from "sonner";
 
 export interface JevFinding { ok: boolean; text: string }
 
@@ -19,13 +20,14 @@ export function JevCheckPanel({ label, disabled, hint, run }: Props) {
   const [findings, setFindings] = useState<JevFinding[] | null>(null);
 
   const go = async () => {
+    if (disabled) { toast.info(hint || "Fyll ut skjemaet litt mer først"); return; }
     setLoading(true); setFindings(null);
     try { setFindings(await run(jevAssist)); } finally { setLoading(false); }
   };
 
   return (
     <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
-      <Button type="button" variant="outline" onClick={go} disabled={loading || disabled} className="w-full sm:w-auto h-11 border-primary/50 bg-background text-primary font-semibold hover:bg-primary/10 hover:text-primary">
+      <Button type="button" variant="outline" onClick={go} disabled={loading} className="w-full sm:w-auto h-11 border-primary/50 bg-background text-primary font-semibold hover:bg-primary/10 hover:text-primary">
         {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
         {label}
       </Button>
