@@ -69,7 +69,7 @@ export function SmartDeviationSuggest({
         <div className="flex items-center gap-2 text-sm font-medium">
           <Sparkles className="h-4 w-4 text-primary" /> Smart avvik
         </div>
-        <Button type="button" size="sm" variant="outline" onClick={run} disabled={!canRun || loading}>
+        <Button type="button" size="sm" variant="outline" onClick={() => canRun ? run() : toast.info("Skriv navn og en kort beskrivelse av avviket først")} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
           {s ? "Foreslå på nytt" : "Foreslå kategori og prioritet"}
         </Button>
