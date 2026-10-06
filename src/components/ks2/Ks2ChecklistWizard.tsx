@@ -1092,11 +1092,8 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
             <Ks2ChecklistSmartCheck
               title={title}
               projectName={projectData?.name || projectData?.project_name}
+              projectId={projectId}
               items={items}
-              onRegisterDeviation={() => {
-                try { localStorage.setItem(`draft:ks-sjekkliste:${projectId}:${existingChecklist?.id || "ny"}:${profile?.user_id ?? "anon"}`, JSON.stringify({ data: draftData, savedAt: new Date().toISOString() })); } catch { /* */ }
-                window.location.href = `/ks/project/${projectId}/avvik`;
-              }}
             />
 
             <div className="flex gap-2 pt-4">
