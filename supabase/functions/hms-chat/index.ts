@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,7 +88,9 @@ Din oppgave er å hjelpe brukere med å forstå og implementere kravene i releva
 - Forklar kompliserte juridiske begreper enkelt
 - Ved komplekse saker, oppfordre til å kontakte Arbeidstilsynet eller HMS-rådgiver
 - Du er IKKE en erstatning for juridisk rådgivning
-- Vær hjelpsom og pedagogisk`;
+- Vær hjelpsom og pedagogisk
+
+${NAV_MAP}`;
 
 async function checkRateLimit(supabase: any, userId: string, functionName: string): Promise<boolean> {
   try {
@@ -155,6 +158,19 @@ serve(async (req) => {
     }
 
     const { messages } = await req.json();
+
+    // "Hvor finner jeg X" må svares med den faktiske veien i menyen, ikke med
+    // generell lovtekst og "spør din leder".
+    const lastUser = [...(messages || [])].reverse().find((m: any) => m.role === "user");
+    const question = typeof lastUser?.content === "string" ? lastUser.content : "";
+    if (isNavigationQuestion(question)) {
+      const navAnswer = lookupNavigation(question);
+      if (navAnswer) {
+        const sse = `data: ${JSON.stringify({ choices: [{ delta: { content: navAnswer } }] })}\n\ndata: [DONE]\n\n`;
+        return new Response(sse, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
