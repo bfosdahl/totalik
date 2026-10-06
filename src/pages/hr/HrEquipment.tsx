@@ -17,6 +17,7 @@ import { useCompanyUsers } from "@/hooks/useCompanyUsers";
 import { getLocalDateString } from "@/lib/dateUtils";
 import { safeFormatDate } from "@/utils/safeFormatDate";
 import { toast } from "sonner";
+import { JevFormCheck } from "@/components/shared/JevFormCheck";
 
 type Category = "clothing" | "ppe" | "tool" | "other";
 const CATS: Record<Category, { label: string; icon: typeof Shirt }> = {
@@ -345,6 +346,8 @@ export default function HrEquipment() {
             )}
             <div><Label>Notat</Label>
               <Textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+            <JevFormCheck kind="equipment" label="Sjekk utstyret" disabled={!form.item_name.trim()} hint="Skriv navn på utstyret først."
+              fields={{ type: form.category, utstyr: form.item_name, antall: form.quantity, storrelse: form.size, serienummer: form.serial_number, notat: form.notes }} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Avbryt</Button>

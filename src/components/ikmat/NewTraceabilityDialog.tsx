@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { getLocalDateString } from "@/lib/dateUtils";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
+import { JevFormCheck } from "@/components/shared/JevFormCheck";
 import { t } from "@/i18n/t";
 
 interface NewTraceabilityDialogProps {
@@ -793,6 +794,9 @@ export const NewTraceabilityDialog = ({ open, onOpenChange }: NewTraceabilityDia
               rows={3}
             />
           </div>
+
+          <JevFormCheck kind="traceability" label="Sjekk varemottaket" disabled={!formData.product_name} hint="Skriv produktnavn først."
+            fields={{ leverandor: formData.supplier_name, produkt: formData.product_name, batch: formData.batch_number, gtin: formData.gtin, holdbarhet: formData.expiry_date, mottakstemperatur: formData.receipt_temperature, produkttyper: formData.product_types, allergener: formData.allergens, egenproduksjon: formData.is_internal_production, merknad: formData.notes }} />
 
           <div className="flex justify-end gap-2 pt-4">
             <Button

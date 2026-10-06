@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useFormDraft } from "@/hooks/useFormDraft";
+import { JevFormCheck } from "@/components/shared/JevFormCheck";
 import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -510,6 +511,9 @@ const VernerundeForm = () => {
                     </div>
                   </div>
                 </div>
+
+                <JevFormCheck kind="vernerunde" label="Sjekk avvik og tiltak" disabled={!formData.avvik && !formData.tiltak} hint="Skriv avvik eller tiltak først."
+                  fields={{ avvik: formData.avvik, tiltak: formData.tiltak, ansvarlig: formData.ansvarligOppfolging, frist: formData.fristTiltak }} />
 
                 <Separator />
 

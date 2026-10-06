@@ -33,6 +33,7 @@ import { t } from "@/i18n/t";
 import { useLastUsed } from "@/hooks/useLastUsed";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
+import { JevFormCheck } from "@/components/shared/JevFormCheck";
 
 interface LogTemperatureDialogProps {
   open: boolean;
@@ -406,6 +407,8 @@ export function LogTemperatureDialog({
               rows={2}
             />
           </div>
+          <JevFormCheck kind="temperature" label="Sjekk loggføringen" disabled={!selectedEquip || !temperature} hint="Velg utstyr og skriv temperatur først."
+            fields={{ utstyr: selectedEquip?.name, utstyrstype: selectedEquip?.equipment_type, temperatur_c: Number(temperature), korrigerende_tiltak: correctiveAction, merknad: notes }} />
         </div>
 
         <DialogFooter>
