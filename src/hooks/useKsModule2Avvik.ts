@@ -147,6 +147,7 @@ export const useKsModule2Avvik = (projectId: string | null) => {
     avvikList,
     isLoading,
     createAvvik: createAvvik.mutate,
+    createAvvikAsync: createAvvik.mutateAsync,
     updateAvvik: updateAvvik.mutate,
     deleteAvvik: deleteAvvik.mutate,
     closeAvvik: closeAvvik.mutate,
