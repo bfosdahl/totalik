@@ -31,6 +31,7 @@ import { useEmployees } from "@/hooks/useEmployees";
 import { CreateAbsence } from "@/hooks/useEmployeeAbsence";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
+import { JevFormCheck } from "@/components/shared/JevFormCheck";
 import { t } from "@/i18n/t";
 
 interface RegisterAbsenceDialogProps {
@@ -246,6 +247,8 @@ export function RegisterAbsenceDialog({
               rows={3}
             />
           </div>
+          <JevFormCheck kind="absence" label="Sjekk fraværet" disabled={!absenceType || !startDate} hint="Velg type og startdato først."
+            fields={{ type: absenceType, fra: startDate ? format(startDate, "yyyy-MM-dd") : "", til: endDate ? format(endDate, "yyyy-MM-dd") : "", antall_dager: startDate && endDate ? Math.round((endDate.getTime() - startDate.getTime()) / 86400000) + 1 : 1, arsak: reason, notater: notes }} />
         </div>
 
         <div className="flex justify-end gap-2">

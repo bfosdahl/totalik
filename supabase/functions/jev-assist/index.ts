@@ -663,6 +663,51 @@ Deno.serve(async (req) => {
       return json({ lawful: n(answers.lawful), clear: n(answers.clear), outdated: n(answers.outdated) });
     }
 
+    // ---------------- GENERELL SKJEMASJEKK (IK MAT, fravær, utstyr, vernerunde) ----------------
+    if (mode === "form_check") {
+      type Q = { id: string; q: string; t: string; f: string; bad: string; good: string };
+      const KINDS: Record<string, { name: string; qs: Q[] }> = {
+        temperature: { name: "temperaturlogg i IK MAT", qs: [
+          { id: "action", q: "Er korrigerende tiltak i `skjema` tilstrekkelig for temperaturen og utstyrstypen (kjøl 0–4 °C, frys -18 °C eller kaldere, varmholding minst 60 °C)?", t: "Temperaturen er innenfor kravet, eller tiltaket beskriver konkret hva som er gjort med varene og utstyret.", f: "Temperaturen er utenfor kravet og tiltaket mangler eller er for vagt.", bad: "Temperaturen ser ut til å være utenfor kravet – beskriv hva som er gjort med varene og utstyret.", good: "Temperatur og tiltak henger sammen." },
+          { id: "plausible", q: "Er temperaturen i `skjema` en realistisk avlesning for utstyrstypen (ikke en tastefeil)?", t: "Realistisk.", f: "Trolig tastefeil, f.eks. manglende minus på fryser eller urealistisk tall.", bad: "Temperaturen ser ut som en mulig tastefeil – sjekk fortegn og tall.", good: "Avlesningen virker realistisk." },
+        ]},
+        traceability: { name: "varemottak og sporbarhet i IK MAT", qs: [
+          { id: "complete", q: "Har varemottaket i `skjema` nok informasjon for sporbarhet (leverandør, produkt, batch/lot eller GTIN, holdbarhet)?", t: "Nok til å spore varen ved tilbakekalling.", f: "Mangler batch/lot, holdbarhet eller leverandør.", bad: "Mangler info for sporbarhet – legg inn batch/lot, holdbarhet og leverandør.", good: "Sporbarhetsinfo er komplett." },
+          { id: "temp", q: "Er mottakstemperaturen i `skjema` akseptabel for produkttypene (kjølevare maks 4 °C, frysevare -18 °C eller kaldere)?", t: "Akseptabel eller ikke relevant for tørrvare.", f: "For varm for produkttypen, eller mangler for kjøle-/frysevare.", bad: "Mottakstemperaturen er for høy eller mangler for kjøle-/frysevare.", good: "Mottakstemperaturen er i orden." },
+          { id: "allergens", q: "Er det sannsynlig at produktet i `skjema` inneholder allergener som ikke er krysset av, ut fra produktnavnet?", t: "Produktnavnet tyder på allergener som mangler (f.eks. melk i ost, gluten i brød, fisk i laks).", f: "Allergenene virker riktige eller produktet er allergenfritt.", bad: "Produktnavnet tyder på allergener som ikke er krysset av – sjekk etiketten.", good: "Allergenene ser riktige ut." },
+        ]},
+        absence: { name: "fraværsregistrering", qs: [
+          { id: "type", q: "Passer fraværstypen i `skjema` med årsaken og lengden på fraværet (egenmelding maks 3 dager per gang, ellers sykmelding)?", t: "Typen passer med årsak og lengde.", f: "Typen passer trolig ikke, f.eks. egenmelding over 3 dager eller ferie registrert som sykdom.", bad: "Fraværstypen passer kanskje ikke med årsak eller lengde – sjekk typen.", good: "Fraværstype og lengde henger sammen." },
+          { id: "privacy", q: "Inneholder årsak eller notater i `skjema` helseopplysninger eller diagnoser som arbeidsgiver ikke trenger å vite?", t: "Inneholder diagnose eller detaljerte helseopplysninger.", f: "Ingen sensitive helseopplysninger.", bad: "Teksten ser ut til å ha helseopplysninger – arbeidsgiver trenger ikke diagnose. Vurder å fjerne den.", good: "Ingen unødvendige helseopplysninger." },
+        ]},
+        equipment: { name: "utlevering av utstyr og klær", qs: [
+          { id: "category", q: "Passer typen (klær, verneutstyr, verktøy, annet) i `skjema` med utstyrsnavnet?", t: "Typen passer.", f: "Feil type, f.eks. hjelm som klær eller vinkelsliper som annet.", bad: "Typen passer kanskje ikke med utstyret – sjekk valget.", good: "Typen passer med utstyret." },
+          { id: "details", q: "Mangler `skjema` en viktig detalj for denne typen utstyr (størrelse på klær/verneutstyr, serienummer på dyrt verktøy)?", t: "Mangler størrelse eller serienummer der det er naturlig.", f: "Detaljene er dekkende.", bad: "Legg gjerne inn størrelse eller serienummer så det er lett å spore.", good: "Detaljene er dekkende." },
+        ]},
+        vernerunde: { name: "vernerunde", qs: [
+          { id: "match", q: "Har hvert avvik i `skjema` et tilhørende tiltak?", t: "Tiltakene dekker avvikene, eller det er ingen avvik.", f: "Ett eller flere avvik mangler tiltak.", bad: "Noen avvik ser ut til å mangle tiltak.", good: "Tiltakene dekker avvikene." },
+          { id: "concrete", q: "Er tiltakene i `skjema` konkrete, med ansvarlig og frist når det er avvik?", t: "Konkrete tiltak med ansvarlig og frist, eller ingen avvik.", f: "Vage tiltak, eller mangler ansvarlig eller frist.", bad: "Tiltakene bør være konkrete og ha ansvarlig og frist.", good: "Tiltakene er konkrete med ansvar og frist." },
+        ]},
+      };
+      const kind = KINDS[String(body?.kind)];
+      if (!kind) return json({ error: "Ukjent skjema" }, 400);
+      const raw = body?.fields && typeof body.fields === "object" ? body.fields : {};
+      const fields: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(raw).slice(0, 30)) fields[clip(k, 40)] = Array.isArray(v) ? v.slice(0, 20).map((x) => clip(x, 80)) : typeof v === "number" || typeof v === "boolean" ? v : clip(v, 1500);
+      const questions: Record<string, unknown> = {};
+      for (const q of kind.qs) questions[q.id] = { type: "noul", instructions: q.q, criteria: { true: q.t, false: q.f } };
+      const answers = await jev({ skjematype: kind.name, skjema: fields }, questions);
+      const findings = kind.qs.map((q) => {
+        const p = answers[q.id]?.noul;
+        if (typeof p !== "number") return null;
+        // For «privacy», «allergens» og «details» betyr ja = problem
+        const inverted = ["privacy", "allergens", "details"].includes(q.id);
+        const ok = inverted ? p < 0.5 : p >= 0.5;
+        return { ok, text: ok ? q.good : q.bad };
+      }).filter(Boolean);
+      return json({ findings });
+    }
+
     return json({ error: "Ukjent modus" }, 400);
   } catch (e: any) {
     if (e?.status && e?.message) return json({ error: e.message }, e.status);
