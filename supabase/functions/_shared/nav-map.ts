@@ -192,11 +192,13 @@ export const NAVIGATION_ENTRIES: NavEntry[] = [
   { keywords: ["installer", "app", "pwa", "mobil"], path: "/install-app", name: "Installer app", menuLocation: "Åpne totalik.no/install-app på telefonen", description: "Installer appen på telefonen" }
 ];
 
-const NAV_INTENT = /\b(hvor|i hvilken meny|hvilken meny|hvor finner|hvor i menyen|hvor legger|hvor registrer|hvor ser|hvor laster|hvor godkjenner|hvor fører|hvor søker|hvor kan|hva heter modul|hvordan finner jeg|hvordan kommer jeg|kan jeg (se|finne|legge|registrere|laste|godkjenne|føre|søke)|how do i find|where is)\b/i;
-const NAV_SKIP = /\bhvor (lenge|mye|mange|ofte|når|godt|vidt|langt|tidlig|sentralt|hyppig)\b|\bhvorfor\b/i;
+// Must START with a navigation phrase — "hvor" mid-sentence ("der hvor gulvet var vått") is not a nav question.
+const NAV_INTENT = /^\s*(hei[,!.\s]+)?(i hvilken meny|hvilken meny|hvor (finner|i menyen|legger|registrerer|ser|laster|godkjenner|fører|søker|kan jeg|er|ligger)|hva heter modul|hvordan finner jeg|hvordan kommer jeg til|how do i find|where (is|can i find))\b/i;
+// Legal questions and action requests must reach the assistant.
+const NAV_SKIP = /\bhvor (lenge|mye|mange|ofte|når|godt|vidt|langt|tidlig|sentralt|hyppig)\b|\bhvorfor\b|\bhvor står det\b|\b(lov|loven|lovverk|paragraf|§|rett på|rett til|plikt|krav om|forskrift)\b|^\s*(registrer|opprett|lag|legg til|meld)\b/i;
 
 export function isNavigationQuestion(text: string): boolean {
-  return typeof text === "string" && NAV_INTENT.test(text) && !NAV_SKIP.test(text);
+  return typeof text === "string" && text.length < 160 && NAV_INTENT.test(text) && !NAV_SKIP.test(text);
 }
 
 function keywordHits(sentence: string, keyword: string): boolean {

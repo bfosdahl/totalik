@@ -706,11 +706,8 @@ serve(async (req) => {
 
     // Deterministisk navigasjonssvar: "hvor finner jeg X" -> faktisk menyvei
     if (typeof message === "string" && isNavigationQuestion(message)) {
-      const navHits = lookupNavigation(message);
-      if (navHits.length > 0) {
-        const reply = navHits
-          .map((h) => `Du finner det her: ${h.path}\n${h.description}`)
-          .join("\n\n");
+      const reply = lookupNavigation(message);
+      if (reply) {
         return new Response(JSON.stringify({ reply }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
