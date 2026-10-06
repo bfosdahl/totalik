@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_KS } from "../_shared/faq-knowledge.ts";
+import { NAV_MAP, KS_PROJECT_NAV_MAP } from "../_shared/nav-map.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
