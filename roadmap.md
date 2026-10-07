@@ -14,3 +14,5 @@
 - [ ] Tell reelle aktive bedrifter med HMS og KS Bygg i bruk (har data/brukere, ikke bare lisens)
 - [x] Testbedrifter slått av (suspended + brukere deaktivert)
 - [x] Tell aktive bedrifter HMS / KS Bygg (lisens vs. reell bruk siste 30 dager)
+
+- [ ] Fast gjennomgang av kundelagde sjekklister (gjenbruk som systemmaler)
