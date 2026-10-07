@@ -729,19 +729,12 @@ serve(async (req) => {
     ];
 
     // First API call with tools
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages,
-        tools,
-        tool_choice: "auto",
-        max_tokens: 1500,
-      }),
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: "google/gemini-2.5-flash",
+      messages,
+      tools,
+      tool_choice: "auto",
+      max_tokens: 1500,
     });
 
     if (!response.ok) {
