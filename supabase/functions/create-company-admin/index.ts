@@ -5,6 +5,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { DEFAULT_PASSWORD, defaultPasswordHtml, loginBlockHtml } from "../_shared/default-password.ts";
+import { insertProvisioningLog } from "../_shared/provisioning-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -362,7 +363,7 @@ serve(async (req) => {
     const allVerified = profileVerified && roleVerified && emailSent;
 
     // Log to provisioning table
-    await supabaseAdmin.from("user_provisioning_log").insert({
+    await insertProvisioningLog(supabaseAdmin, {
       email,
       company_id: companyId,
       role: "company_admin",
