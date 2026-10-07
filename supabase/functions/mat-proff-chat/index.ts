@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_MAT } from "../_shared/faq-knowledge.ts";
 import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
+import { callAiGateway } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
