@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_HMS } from "../_shared/faq-knowledge.ts";
 import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
+import { callAiGateway } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -814,19 +815,12 @@ serve(async (req) => {
     ];
 
     // First API call with tools
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages,
-        tools,
-        tool_choice: "auto",
-        max_tokens: 1000,
-      }),
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: "google/gemini-2.5-flash",
+      messages,
+      tools,
+      tool_choice: "auto",
+      max_tokens: 1000,
     });
 
     if (!response.ok) {
@@ -889,17 +883,10 @@ serve(async (req) => {
         { role: "user", content: `Handlinger utført:\n${combinedResult}\n\nGi en kort oppsummering til brukeren.` }
       ];
 
-      const summaryResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: summaryMessages,
-          max_tokens: 300,
-        }),
+      const summaryResponse = await callAiGateway(LOVABLE_API_KEY, {
+        model: "google/gemini-2.5-flash",
+        messages: summaryMessages,
+        max_tokens: 300,
       });
 
       if (summaryResponse.ok) {
