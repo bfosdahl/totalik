@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
+import { DEFAULT_PASSWORD } from "../_shared/default-password.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -163,7 +164,6 @@ serve(async (req) => {
     // NOTE: Bevisst valg — vi bruker et fast midlertidig passord fordi engangs-recovery-lenker
     // ofte blir forbrukt av Outlook/SafeLinks før mottakeren rekker å klikke. Admin/systemadmin
     // kan sette nytt passord fra Ansatte-siden ved behov. IKKE endre uten å avklare med Ben.
-    const DEFAULT_PASSWORD = "Abc_1234";
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: DEFAULT_PASSWORD,
