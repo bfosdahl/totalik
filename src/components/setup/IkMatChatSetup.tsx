@@ -216,6 +216,72 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         throw moduleError;
       }
 
+      // Sync kjøler/fryser from generatedContent into ik_mat_temperature_equipment
+      try {
+        const lokaler = (content.lokaler_og_utstyr || {}) as Record<string, any>;
+        type EquipmentItem = { name: string; location: string | null; equipment_type: 'fridge' | 'freezer' };
+        const newItems: EquipmentItem[] = [];
+
+        const collect = (list: unknown, equipment_type: 'fridge' | 'freezer') => {
+          if (!Array.isArray(list)) return;
+          for (const raw of list) {
+            let name = '';
+            let location: string | null = null;
+            if (typeof raw === 'string') {
+              name = raw.trim();
+            } else if (raw && typeof raw === 'object') {
+              const obj = raw as Record<string, any>;
+              name = String(obj.navn || obj.name || '').trim();
+              const loc = obj.lokasjon || obj.location || obj.plassering;
+              location = loc != null && String(loc).trim() !== '' ? String(loc) : null;
+            }
+            if (name) newItems.push({ name, location, equipment_type });
+          }
+        };
+        collect(lokaler.kjolere, 'fridge');
+        collect(lokaler.frysere, 'freezer');
+
+        if (newItems.length > 0) {
+          const { data: existingEquipment } = await supabase
+            .from('ik_mat_temperature_equipment')
+            .select('name, sort_order')
+            .eq('company_id', companyId);
+          const existingNames = new Set(
+            (existingEquipment || []).map((e: { name: string }) => e.name.trim().toLowerCase())
+          );
+          const seen = new Set<string>();
+          const toInsert = newItems.filter((item) => {
+            const key = item.name.toLowerCase();
+            if (existingNames.has(key) || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+
+          if (toInsert.length > 0) {
+            const maxSortOrder = (existingEquipment || []).reduce(
+              (max: number, e: { sort_order: number | null }) =>
+                e.sort_order != null && e.sort_order > max ? e.sort_order : max,
+              0
+            );
+            await supabase.from('ik_mat_temperature_equipment').insert(
+              toInsert.map((item, i) => ({
+                company_id: companyId,
+                name: item.name,
+                location: item.location,
+                equipment_type: item.equipment_type,
+                min_temp: item.equipment_type === 'fridge' ? 0 : -24,
+                max_temp: item.equipment_type === 'fridge' ? 4 : -18,
+                measurement_frequency: 'daily',
+                is_active: true,
+                sort_order: maxSortOrder + i + 1,
+              }))
+            );
+          }
+        }
+      } catch (equipmentError) {
+        console.error("Error syncing temperature equipment from setup:", equipmentError);
+      }
+
       toast.success(t("auto.ik_mat_oppsett_fullfoert"));
       onComplete();
     } catch (error) {
