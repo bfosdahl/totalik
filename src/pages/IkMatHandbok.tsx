@@ -289,7 +289,13 @@ const IkMatHandbok = () => {
           cleaningPlan: mergedCleaningPlan,
           allergens: pickArray<HandbokData['allergens'][number]>('allergens', 'allergener'),
           contracts: pickArray<HandbokData['contracts'][number]>('contracts', 'avtaler'),
-          setupAnswers: (settings?.setupAnswers || {}) as HandbokData['setupAnswers'],
+          setupAnswers: {
+            ...(settings?.setupAnswers || {}),
+            businessType: settings?.setupAnswers?.businessType ?? generatedContent.virksomhet?.type,
+            numberOfEmployees: settings?.setupAnswers?.numberOfEmployees ??
+              (generatedContent.virksomhet?.antallAnsatte != null ? String(generatedContent.virksomhet.antallAnsatte) : undefined),
+            hasCleanZone: settings?.setupAnswers?.hasCleanZone ?? generatedContent.lokaler_og_utstyr?.renUrenSone,
+          } as HandbokData['setupAnswers'],
         });
 
         // Fetch temperature logs (last 30 days)
