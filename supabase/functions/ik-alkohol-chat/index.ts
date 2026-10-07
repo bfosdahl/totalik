@@ -1,49 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  checkRateLimit,
+  isAffirmative,
+  createMessageHash,
+  createStreamWithFallback,
+  ChatMsg,
+} from "../_shared/ai-setup.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const RATE_LIMIT_MAX_REQUESTS = 10;
-const RATE_LIMIT_WINDOW_MINUTES = 1;
-
-async function checkRateLimit(supabase: any, userId: string, functionName: string): Promise<boolean> {
-  try {
-    const { data, error } = await supabase.rpc('check_rate_limit', {
-      p_user_id: userId,
-      p_function_name: functionName,
-      p_max_requests: RATE_LIMIT_MAX_REQUESTS,
-      p_window_minutes: RATE_LIMIT_WINDOW_MINUTES
-    });
-    if (error) { console.error("Rate limit check error:", error); return true; }
-    return data === true;
-  } catch (err) { console.error("Rate limit error:", err); return true; }
-}
-
-type ChatMsg = { role: "user" | "assistant" | "system"; content: string };
-
-function isAffirmative(text: string): boolean {
-  const t = text.toLowerCase().trim();
-  return ["ja","japp","jepp","yes","yep","ok","okei","oki","jada","joda","jo","mhm","mm"].includes(t) || t.includes("stemmer");
-}
-
-// Simple hash for message matching
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash).toString(36);
-}
-
-function createMessageHash(messages: ChatMsg[]): string {
-  const userMessages = messages.filter(m => m.role === 'user').map(m => m.content).join('|');
-  return simpleHash(userMessages + '|' + messages.length);
-}
 
 const systemPrompt = `Du er Alkohol-Proffen, en vennlig norsk rådgiver med dyp kunnskap om alkoholloven og internkontrollforskriften for alkohol. Du hjelper virksomheter å sette opp et internkontrollsystem etter alkoholloven.
 
