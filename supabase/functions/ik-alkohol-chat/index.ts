@@ -384,7 +384,7 @@ serve(async (req) => {
 
     // Stream with DB fallback - accumulate and save after completion
     const streamWithFallback = companyId && response.body
-      ? createStreamWithFallback(response.body, supabase, companyId, messageHash)
+      ? createStreamWithFallback(response.body, supabase, companyId, messageHash, 'ik-alkohol-chat')
       : response.body;
 
     return new Response(streamWithFallback, {
