@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { DEFAULT_PASSWORD, defaultPasswordHtml } from "../_shared/default-password.ts";
+import { insertProvisioningLog } from "../_shared/provisioning-log.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -219,9 +220,7 @@ serve(async (req) => {
 
     // Single bulk audit write
     if (provisioningLogs.length > 0) {
-      const { error: logError } = await supabaseAdmin
-        .from("user_provisioning_log")
-        .insert(provisioningLogs);
+      const { error: logError } = await insertProvisioningLog(supabaseAdmin, provisioningLogs);
       if (logError) {
         console.error("Error writing provisioning log batch:", logError);
       }
