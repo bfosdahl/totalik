@@ -4,6 +4,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { DEFAULT_PASSWORD, loginBlockHtml } from "../_shared/default-password.ts";
+import { insertProvisioningLog } from "../_shared/provisioning-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -272,7 +273,7 @@ Deno.serve(async (req) => {
         if (res) log.email_sent = Boolean(res.emailSent);
       });
 
-      await supabaseAdmin.from("user_provisioning_log").insert(provisioningLogs);
+      await insertProvisioningLog(supabaseAdmin, provisioningLogs);
     }
 
     const successCount = results.filter(r => r.success).length;
