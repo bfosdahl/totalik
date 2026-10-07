@@ -310,6 +310,32 @@ serve(async (req) => {
 
     // Handle Brreg lookup (after auth)
     if (lookupOrgNumber) {
+      // TEST DATA ONLY — midlertidig testhook, fjernes når testbedriften er slettet.
+      const TEST_FAKE_ORG_NUMBER = "999999990"; // fails the MOD11 check digit, so it can never be a real Norwegian org number
+      const TEST_COMPANY_ID = "efac813d-4038-4a81-8c4a-ffeca0094069"; // 'TEST Grok AS (slett meg)'
+      if (String(lookupOrgNumber).replace(/[\s.]/g, '') === TEST_FAKE_ORG_NUMBER) {
+        const { data: testProfile } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (testProfile?.company_id === TEST_COMPANY_ID) {
+          return new Response(JSON.stringify({
+            success: true,
+            data: {
+              name: "TEST Grok AS (slett meg)",
+              orgNumber: "999999990",
+              address: "Testveien 1, 0150 Oslo",
+              industry: "Bedriftsrådgivning og annen administrativ rådgivning",
+              industryCode: "70.220",
+              employees: 8,
+              organizationForm: "Aksjeselskap"
+            }
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
       const brregInfo = await fetchBrregInfo(lookupOrgNumber);
       return new Response(JSON.stringify(brregInfo ? { success: true, data: brregInfo } : { success: false, error: "Fant ikke bedriften" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
