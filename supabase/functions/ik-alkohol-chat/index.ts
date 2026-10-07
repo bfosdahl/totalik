@@ -7,6 +7,7 @@ import {
   createStreamWithFallback,
   ChatMsg,
 } from "../_shared/ai-setup.ts";
+import { callAiGateway } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
