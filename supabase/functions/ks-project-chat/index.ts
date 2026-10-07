@@ -271,20 +271,13 @@ serve(async (req) => {
     }
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages
-        ],
-        stream: true,
-      }),
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages
+      ],
+      stream: true,
     });
 
     if (!response.ok) {
