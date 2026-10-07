@@ -139,7 +139,7 @@ export function useKsModule2Meetings(projectId: string | null) {
           participants: JSON.parse(JSON.stringify(input.participants || [])),
           agenda: input.agenda || null,
           notes: input.notes || null,
-          created_by: profile.id,
+          created_by: profile.user_id,
           created_by_name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email,
         }])
         .select()
