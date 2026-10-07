@@ -481,7 +481,7 @@ serve(async (req) => {
     }
 
     const streamWithFallback = companyId && response.body
-      ? createStreamWithFallback(response.body, supabase, companyId, messageHash)
+      ? createStreamWithFallback(response.body, supabase, companyId, messageHash, 'ik-hms-chat')
       : response.body;
 
     return new Response(streamWithFallback, {
