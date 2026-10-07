@@ -76,7 +76,7 @@ export function ImportCompanyChecklistsDialog({ open, onOpenChange, onImport, is
           />
         </div>
 
-        <ScrollArea className="flex-1 min-h-0 pr-2">
+        <div className="flex-1 min-h-0 max-h-[60vh] overflow-y-auto overscroll-contain pr-2">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -118,7 +118,7 @@ export function ImportCompanyChecklistsDialog({ open, onOpenChange, onImport, is
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
           <span className="text-sm text-muted-foreground">{selected.size} valgt</span>
