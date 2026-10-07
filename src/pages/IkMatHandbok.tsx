@@ -214,7 +214,12 @@ const IkMatHandbok = () => {
               responsible: r.responsible || '',
             }))
           : [];
-        const generatedRoutines = pickArray<HandbokData['routines'][number]>('routines', 'rutiner');
+        const generatedRoutines = pickArray<any>('routines', 'rutiner').map((r: any) => ({
+          name: r.name || r.routine_name || '',
+          description: r.description || r.procedure || '',
+          frequency: r.frequency || '',
+          responsible: r.responsible || r.responsibility || '',
+        }));
 
         // For HACCP: manual takes priority
         const manualHaccp = Array.isArray(manualContent.haccp) && manualContent.haccp.length > 0

@@ -240,7 +240,15 @@ export const useIkMatContent = () => {
         haccp: manual.haccp?.length > 0 ? manual.haccp :
           (generated.haccp || []).map((h: Record<string, unknown>, i: number) => ({ id: `gen-${i}`, ...h })),
         routines: manual.routines?.length > 0 ? manual.routines :
-          (generated.routines || []).map((r: Record<string, unknown>, i: number) => ({ id: `gen-${i}`, ...r })),
+          (generated.routines || []).map((r: Record<string, unknown>, i: number) => ({
+            id: `gen-${i}`,
+            ...r,
+            name: r.name || r.routine_name || '',
+            description: r.description || r.procedure || '',
+            responsible: r.responsible || r.responsibility || '',
+            frequency: r.frequency || '',
+            routineNumber: r.routineNumber || r.routine_number,
+          })),
         actionPlan: (manual.actionPlan || []).map((a: { actionType?: string }) => ({
           ...a,
           actionType: a.actionType || 'corrective',
