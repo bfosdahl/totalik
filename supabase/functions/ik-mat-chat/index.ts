@@ -271,9 +271,8 @@ HUSK:
 - FORESLÅ konkrete løsninger - ikke bare still spørsmål!
 - Generer ALLE data - ikke bare delvis!`;
 
-type ChatMsg = { role: "user" | "assistant" | "system"; content: string };
-
 function isAffirmative(text: string): boolean {
+
   const t = text.toLowerCase().trim();
   return (
     t === "ja" || t === "japp" || t === "jepp" || t === "yes" || t === "yep" ||
@@ -333,28 +332,8 @@ function buildMatKnownFacts(messages: ChatMsg[] | undefined): string | null {
   return lines.join("\n");
 }
 
-async function checkRateLimit(supabase: any, userId: string, functionName: string): Promise<boolean> {
-  try {
-    const { data, error } = await supabase.rpc('check_rate_limit', {
-      p_user_id: userId,
-      p_function_name: functionName,
-      p_max_requests: RATE_LIMIT_MAX_REQUESTS,
-      p_window_minutes: RATE_LIMIT_WINDOW_MINUTES
-    });
-    
-    if (error) {
-      console.error("Rate limit check error:", error);
-      return true;
-    }
-    
-    return data === true;
-  } catch (err) {
-    console.error("Rate limit error:", err);
-    return true;
-  }
-}
-
 serve(async (req) => {
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -483,7 +462,7 @@ serve(async (req) => {
     }
 
     const streamWithFallback = companyId && response.body
-      ? createStreamWithFallback(response.body, supabase, companyId, messageHash)
+      ? createStreamWithFallback(response.body, supabase, companyId, messageHash, 'ik-mat-chat')
       : response.body;
 
     return new Response(streamWithFallback, {
