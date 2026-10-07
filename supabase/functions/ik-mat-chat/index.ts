@@ -271,7 +271,6 @@ HUSK:
 - Generer ALLE data - ikke bare delvis!`;
 
 function isAffirmative(text: string): boolean {
-
   const t = text.toLowerCase().trim();
   return (
     t === "ja" || t === "japp" || t === "jepp" || t === "yes" || t === "yep" ||
@@ -332,7 +331,6 @@ function buildMatKnownFacts(messages: ChatMsg[] | undefined): string | null {
 }
 
 serve(async (req) => {
-
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
