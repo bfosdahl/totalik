@@ -1,86 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { checkRateLimit, createMessageHash, createStreamWithFallback, ChatMsg } from "../_shared/ai-setup.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const RATE_LIMIT_MAX_REQUESTS = 10;
-const RATE_LIMIT_WINDOW_MINUTES = 1;
-
-// Simple hash for message matching
-function simpleHash(str: string): string {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(36);
-}
-
-function createMessageHash(messages: any[]): string {
-  const userMessages = messages.filter((m: any) => m.role === 'user').map((m: any) => m.content).join('|');
-  return simpleHash(userMessages + '|' + messages.length);
-}
-
-async function saveResponseToDb(supabase: any, companyId: string, messageHash: string, responseContent: string) {
-  try {
-    await supabase.from('ai_setup_responses').upsert({
-      company_id: companyId,
-      function_name: 'ik-hms-chat',
-      message_hash: messageHash,
-      response_content: responseContent,
-    }, { onConflict: 'company_id,function_name,message_hash' });
-  } catch (err) {
-    console.error("Error saving response to DB:", err);
-  }
-}
-
-function createStreamWithFallback(
-  originalBody: ReadableStream<Uint8Array>,
-  supabase: any,
-  companyId: string,
-  messageHash: string
-): ReadableStream<Uint8Array> {
-  const decoder = new TextDecoder();
-  let fullContent = "";
-
-  return new ReadableStream({
-    async start(controller) {
-      const reader = originalBody.getReader();
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          controller.enqueue(value);
-          const text = decoder.decode(value, { stream: true });
-          const lines = text.split('\n');
-          for (const line of lines) {
-            if (!line.startsWith('data: ') || line.trim() === '') continue;
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) fullContent += content;
-            } catch { /* skip */ }
-          }
-        }
-        controller.close();
-        if (fullContent.length > 0) {
-          await saveResponseToDb(supabase, companyId, messageHash, fullContent);
-        }
-      } catch (err) {
-        console.error("Stream processing error:", err);
-        controller.error(err);
-        if (fullContent.length > 0) {
-          await saveResponseToDb(supabase, companyId, messageHash, fullContent);
-        }
-      }
-    }
-  });
 }
 
 async function fetchBrregInfo(orgNumber: string) {
