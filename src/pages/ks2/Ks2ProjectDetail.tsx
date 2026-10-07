@@ -1,4 +1,4 @@
-import { useParams, useLocation, Routes, Route, Navigate } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState, lazy, Suspense } from "react";
 import { Loader2, CheckCircle2, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";

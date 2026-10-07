@@ -138,7 +138,7 @@ serve(async (req) => {
             console.log(`Updated employee: ${emp.email}`);
           }
         } else {
-          // Random unguessable password — user must use recovery link to set their own
+          // Shared default password from _shared/default-password.ts — user must use recovery link to set their own
           const tempPassword = DEFAULT_PASSWORD;
           
           const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({

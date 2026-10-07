@@ -120,7 +120,7 @@ serve(async (req) => {
       });
     }
 
-    // Random unguessable password — user receives recovery link to set their own
+    // Shared default password from _shared/default-password.ts — user receives recovery link to set their own
     const tempPassword = DEFAULT_PASSWORD;
 
     // Create the new user

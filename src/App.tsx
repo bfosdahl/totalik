@@ -70,7 +70,6 @@ const DepartmentAiSetup = lazy(() => import("./pages/department/DepartmentAiSetu
 const IkMatHandbok = lazy(() => import("./pages/IkMatHandbok"));
 const IkMatOppsett = lazy(() => import("./pages/IkMatOppsett"));
 const IkMatHaccp = lazy(() => import("./pages/IkMatHaccp"));
-const IkMatRisikovurdering = lazy(() => import("./pages/IkMatRisikovurdering"));
 const IkMatAllergener = lazy(() => import("./pages/IkMatAllergener"));
 const IkMatKjokkenplan = lazy(() => import("./pages/IkMatKjokkenplan"));
 const IkMatFasteAvtaler = lazy(() => import("./pages/IkMatFasteAvtaler"));
@@ -83,7 +82,6 @@ const IkMatRisikoOgTiltak = lazy(() => import("./pages/IkMatRisikoOgTiltak"));
 const IkMatDokumentsenter = lazy(() => import("./pages/IkMatDokumentsenter"));
 const IkMatSensorer = lazy(() => import("./pages/IkMatSensorer"));
 const IkMatAvvik = lazy(() => import("./pages/IkMatAvvik"));
-const IkMatTemperaturlogg = lazy(() => import("./pages/IkMatTemperaturlogg"));
 
 // IK Alkohol
 const IkAlkoholDashboard = lazy(() => import("./pages/ikalkohol/IkAlkoholDashboard"));
