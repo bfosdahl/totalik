@@ -185,11 +185,11 @@ async function jevPreassess(
   key: string,
   fastTrack = false,
   questionsAsked = 0,
-): Promise<{ hint: string; ready: boolean }> {
+): Promise<{ hint: string; ready: boolean; contractorKnown: boolean }> {
   const text = messages.filter((m) => m?.role === "user").map((m) =>
     Array.isArray(m.content) ? m.content.filter((p: any) => p?.type === "text").map((p: any) => p.text).join("\n") : String(m.content ?? "")
   ).join("\n---\n").slice(-6000).trim();
-  if (text.length < 8) return { hint: "", ready: false };
+  if (text.length < 8) return { hint: "", ready: false, contractorKnown: false };
   const TRADES: Record<string, string> = {
     grunnarbeid: "grunnarbeid/graving", betong: "betong/støp", tomrer: "tømrer/trearbeid", tak: "tak/taktekking",
     ror: "rør/sanitær", elektro: "elektro", vatrom: "våtrom/flis", riving: "riving", maling: "maling/overflate", ventilasjon: "ventilasjon",
@@ -214,7 +214,7 @@ async function jevPreassess(
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
     body: JSON.stringify({ model: "typesafe/jev-latest", state: { samtale: text }, questions }),
   });
-  if (!res.ok) { console.error("Jev", res.status, await res.text()); return { hint: "", ready: false }; }
+  if (!res.ok) { console.error("Jev", res.status, await res.text()); return { hint: "", ready: false, contractorKnown: false }; }
   const a = (await res.json())?.answers || {};
   const known: string[] = []; const missing: string[] = [];
   const conf = (x: any) => (x?.confidence ?? 0) >= 0.6;
@@ -230,7 +230,7 @@ async function jevPreassess(
   // kjøkken) teljer med – pluss evt. entrepriseform, held for at vi kan gi forslag.
   const typeKnown = !!a.kind?.choice && a.kind.choice !== "ukjent" && conf(a.kind);
   const contractorKnown = !!a.contractor?.choice && a.contractor.choice !== "ukjent" && conf(a.contractor);
-  const ready = jevReady || (fastTrack && (questionsAsked >= 2 || (typeKnown && contractorKnown)));
+  const ready = fastTrack ? (questionsAsked >= 2 || (typeKnown && contractorKnown)) : jevReady;
   console.log("Jev preassess", JSON.stringify({ known, missing, ready, jevReady, fastTrack, questionsAsked }));
   const hint = `\n\nFORHÅNDSVURDERING AV SAMTALEN (automatisk, ikke vis til brukeren):
 Allerede kjent – IKKE spør om dette igjen: ${known.join("; ") || "ingenting ennå"}.
@@ -239,7 +239,7 @@ ${ready
     ? "Brukeren har gitt nok informasjon. Gå RETT til forslag med JSON-blokken nå. Manglende navn/adresse/byggherre kan stå tomt eller få et fornuftig arbeidsnavn – ikke still flere spørsmål."
     : "Still NØYAKTIG ETT kort oppfølgingsspørsmål – ingen punktliste med flere spørsmål. Spør om det viktigste som mangler for å lage oppsettet (type/omfang, ellers entrepriseform). Spør IKKE om prosjektnavn, adresse eller byggherre – det kan fylles ut senere. Ikke spør om noe som allerede er kjent." +
       (fastTrack ? " Hvis prosjekttype er kjent men entrepriseform mangler, spør om entrepriseform; ellers spør om type/omfang." : "")}`;
-  return { hint, ready };
+  return { hint, ready, contractorKnown };
 }
 
 serve(async (req) => {
@@ -292,10 +292,10 @@ serve(async (req) => {
     }
     const fastTrack = !!setupMode && (isModelTestKey(user.id) || isModelTestKey(prof?.id) || isModelTestKey(prof?.company_id));
     let questionsAsked = 0;
-    let pre = { hint: "", ready: false };
+    let pre = { hint: "", ready: false, contractorKnown: false };
     if (setupMode && Array.isArray(messages)) {
       questionsAsked = messages.filter((m: any) => m?.role === "assistant").length;
-      pre = await jevPreassess(messages, LOVABLE_API_KEY, fastTrack, questionsAsked).catch((e) => { console.error("Jev preassess failed", e); return { hint: "", ready: false }; });
+      pre = await jevPreassess(messages, LOVABLE_API_KEY, fastTrack, questionsAsked).catch((e) => { console.error("Jev preassess failed", e); return { hint: "", ready: false, contractorKnown: false }; });
       if (pre.hint) systemPrompt += pre.hint;
     }
     // Kun modelltestbrukarar: tving fram forslag når vi faktisk har nok informasjon.
@@ -306,7 +306,9 @@ serve(async (req) => {
         : String(lastUserMsg.content ?? "");
     const askedForProposal = /forslag/i.test(lastUserText);
     const forceProposal = fastTrack && (questionsAsked >= 2 || askedForProposal);
+    const askContractor = fastTrack && !askedForProposal && questionsAsked < 2 && !pre.contractorKnown;
     console.log("ks-project-chat forceProposal", forceProposal);
+    console.log("ks-project-chat askContractor", askContractor);
     if (fastTrack) {
       // Legges til også når Jev feilet (tom hint) – tempoet skal gjelde uansett.
       systemPrompt += `\n\nTEMPO: Still maks 2 korte oppfølgingsspørsmål totalt i hele samtalen, ett om gangen. Spør aldri om prosjektnavn, adresse eller byggherre – de kan fylles ut senere (bruk et fornuftig arbeidsnavn, f.eks. "Totalrenovering bad"). Når prosjekttype og omfang er kjent, gi forslaget med JSON-blokken med en gang. Mangler entrepriseform etter 2 spørsmål, anta totalentreprise og si kort at det kan endres. I oppsummeringen skal du nevne de viktigste sjekklistene du foreslår med navn. project_name skal være et kort arbeidsnavn uten hakeparenteser eller plassholdere (f.eks. "Totalrenovering bad"). address og client_name skal være tom streng "" når de ikke er kjent – aldri plassholdertekst som 'Ikke oppgitt', 'Ukjent' eller '[adresse]. Finn ALDRI på prosjektnavn, adresse, byggherre, personnavn eller firmanavn. Er de ikke oppgitt av brukeren: address = "", client_name = "", og project_name = en nøytral beskrivelse av prosjekttypen (f.eks. "Nybygg enebolig", "Totalrenovering bad"), eller "Nytt prosjekt" hvis typen er ukjent – aldri ord som 'Typisk', 'Standard', 'Eksempel' eller 'AS'. Hver sjekkliste i recommended_checklists skal ha feltet "checkpoints": en liste med 5–10 korte, konkrete kontrollpunkter (strenger).`;
@@ -314,15 +316,17 @@ serve(async (req) => {
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
     let requestMessages = messages;
-    if (forceProposal && Array.isArray(messages)) {
+    if ((forceProposal || askContractor) && Array.isArray(messages)) {
       const FORCE = "\n\n(Systembeskjed, ikke vis til brukeren: Du har nok informasjon. Svar NÅ med forslaget: 2–4 korte setninger som nevner 3–5 av sjekklistene med navn, og deretter JSON-blokken mellom |||JSON_START||| og |||JSON_END|||. Ikke still flere spørsmål. Ikke finn på navn, adresse eller byggherre – bruk tom streng når de ikke er oppgitt. Ta med checkpoints (5–10) for hver sjekkliste.)";
+      const ASK = "\n\n(Systembeskjed, ikke vis til brukeren: Før du lager forslag, still ETT kort spørsmål om entrepriseform – totalentreprise, hovedentreprise eller under-/fagentreprise. Ikke lag forslag og ikke JSON i dette svaret.)";
+      const NOTE = forceProposal ? FORCE : ASK;
       requestMessages = [...messages];
       for (let i = requestMessages.length - 1; i >= 0; i--) {
         const m: any = requestMessages[i];
         if (m?.role !== "user") continue;
         requestMessages[i] = Array.isArray(m.content)
-          ? { ...m, content: [...m.content, { type: "text", text: FORCE }] }
-          : { ...m, content: String(m.content ?? "") + FORCE };
+          ? { ...m, content: [...m.content, { type: "text", text: NOTE }] }
+          : { ...m, content: String(m.content ?? "") + NOTE };
         break;
       }
     }
