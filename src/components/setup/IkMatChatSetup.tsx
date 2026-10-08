@@ -32,6 +32,7 @@ interface ChatState {
   messages: Message[];
   lastUserMessage?: string;
   wasStreaming?: boolean;
+  savedAt?: string;
 }
 
 function loadChatState(companyId: string): ChatState | null {
@@ -48,7 +49,10 @@ function loadChatState(companyId: string): ChatState | null {
 
 function saveChatState(companyId: string, state: ChatState) {
   try {
-    sessionStorage.setItem(getStorageKey(companyId), JSON.stringify(state));
+    sessionStorage.setItem(
+      getStorageKey(companyId),
+      JSON.stringify({ ...state, savedAt: new Date().toISOString() })
+    );
   } catch (e) {
     console.error('Failed to save chat state:', e);
   }
@@ -62,9 +66,16 @@ export function clearChatState(companyId: string) {
   }
 }
 
-export function hasInProgressChatState(companyId: string): boolean {
+export function hasInProgressChatState(companyId: string, setupCompletedAt?: string | null): boolean {
   const state = loadChatState(companyId);
-  return !!state?.messages?.some((m) => m.role === 'user');
+  if (!state) return false;
+  const hasUserMessage = !!state.messages?.some((m) => m.role === 'user');
+  const isNewerThanCompletion =
+    !setupCompletedAt || (!!state.savedAt && state.savedAt > setupCompletedAt);
+  if (hasUserMessage && isNewerThanCompletion) return true;
+  // Stale state (from before this fix, or left over after completion) is removed.
+  clearChatState(companyId);
+  return false;
 }
 
 // Helper to strip JSON from display content
