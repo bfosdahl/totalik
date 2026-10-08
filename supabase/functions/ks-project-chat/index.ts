@@ -280,22 +280,47 @@ serve(async (req) => {
     let systemPrompt = buildSystemPrompt(projectContext, setupMode);
     // Kun modelltestbrukarar får raskare tempo i oppsettet.
     const fastTrack = !!setupMode && isModelTestKey(user.id);
+    let questionsAsked = 0;
+    let pre = { hint: "", ready: false };
     if (setupMode && Array.isArray(messages)) {
-      const questionsAsked = messages.filter((m: any) => m?.role === "assistant").length;
-      const hint = await jevPreassess(messages, LOVABLE_API_KEY, fastTrack, questionsAsked).catch((e) => { console.error("Jev preassess failed", e); return ""; });
-      if (hint) systemPrompt += hint;
+      questionsAsked = messages.filter((m: any) => m?.role === "assistant").length;
+      pre = await jevPreassess(messages, LOVABLE_API_KEY, fastTrack, questionsAsked).catch((e) => { console.error("Jev preassess failed", e); return { hint: "", ready: false }; });
+      if (pre.hint) systemPrompt += pre.hint;
     }
+    // Kun modelltestbrukarar: tving fram forslag når vi faktisk har nok informasjon.
+    const lastUserMsg = Array.isArray(messages) ? [...messages].reverse().find((m: any) => m?.role === "user") : undefined;
+    const lastUserText = !lastUserMsg ? ""
+      : Array.isArray(lastUserMsg.content)
+        ? lastUserMsg.content.filter((p: any) => p?.type === "text").map((p: any) => p.text).join("\n")
+        : String(lastUserMsg.content ?? "");
+    const askedForProposal = /forslag/i.test(lastUserText);
+    const forceProposal = fastTrack && (pre.ready || questionsAsked >= 3 || askedForProposal);
+    console.log("ks-project-chat forceProposal", forceProposal);
     if (fastTrack) {
       // Legges til også når Jev feilet (tom hint) – tempoet skal gjelde uansett.
-      systemPrompt += `\n\nTEMPO: Still maks 2 korte oppfølgingsspørsmål totalt i hele samtalen, ett om gangen. Spør aldri om prosjektnavn, adresse eller byggherre – de kan fylles ut senere (bruk et fornuftig arbeidsnavn, f.eks. "Totalrenovering bad"). Når prosjekttype og omfang er kjent, gi forslaget med JSON-blokken med en gang. Mangler entrepriseform etter 2 spørsmål, anta totalentreprise og si kort at det kan endres. I oppsummeringen skal du nevne de viktigste sjekklistene du foreslår med navn.`;
+      systemPrompt += `\n\nTEMPO: Still maks 2 korte oppfølgingsspørsmål totalt i hele samtalen, ett om gangen. Spør aldri om prosjektnavn, adresse eller byggherre – de kan fylles ut senere (bruk et fornuftig arbeidsnavn, f.eks. "Totalrenovering bad"). Når prosjekttype og omfang er kjent, gi forslaget med JSON-blokken med en gang. Mangler entrepriseform etter 2 spørsmål, anta totalentreprise og si kort at det kan endres. I oppsummeringen skal du nevne de viktigste sjekklistene du foreslår med navn. project_name skal være et kort arbeidsnavn uten hakeparenteser eller plassholdere (f.eks. "Totalrenovering bad"). address og client_name skal være tom streng "" når de ikke er kjent – aldri plassholdertekst som 'Ikke oppgitt', 'Ukjent' eller '[adresse]'.`;
     }
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
+
+    let requestMessages = messages;
+    if (forceProposal && Array.isArray(messages)) {
+      const FORCE = "\n\n(Systembeskjed, ikke vis til brukeren: Du har nok informasjon. Svar NÅ med forslaget: 2–4 korte setninger som nevner 3–5 av sjekklistene med navn, og deretter JSON-blokken mellom |||JSON_START||| og |||JSON_END|||. Ikke still flere spørsmål.)";
+      requestMessages = [...messages];
+      for (let i = requestMessages.length - 1; i >= 0; i--) {
+        const m: any = requestMessages[i];
+        if (m?.role !== "user") continue;
+        requestMessages[i] = Array.isArray(m.content)
+          ? { ...m, content: [...m.content, { type: "text", text: FORCE }] }
+          : { ...m, content: String(m.content ?? "") + FORCE };
+        break;
+      }
+    }
 
     const response = await callAiGateway(LOVABLE_API_KEY, {
       model: AI_CHAT_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
-        ...messages
+        ...requestMessages
       ],
       stream: true,
     }, user.id);
