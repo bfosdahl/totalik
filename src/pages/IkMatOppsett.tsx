@@ -38,7 +38,7 @@ const IkMatOppsett = () => {
     // Check if setup is already completed (only if not restarting)
     if (modules.length > 0 && !isRestarting) {
       const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
-      const setupCompletedAt = (ikMatModule.settings as any).setupCompletedAt as string | undefined;
+      const setupCompletedAt = (ikMatModule?.settings as any)?.setupCompletedAt as string | undefined;
       if (setupCompletedAt && !hasInProgressChatState(company.id, setupCompletedAt)) {
         setSetupCompleted(true);
       }
