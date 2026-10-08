@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { format, parseISO } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -781,7 +782,7 @@ const IkMatAvvik = () => {
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {deviation.due_date}
+                          {safeFormatDate(deviation.due_date, "dd.MM.yyyy")}
                         </span>
                       </div>
                     </div>

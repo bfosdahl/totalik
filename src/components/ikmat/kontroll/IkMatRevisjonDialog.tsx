@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import {
   Dialog,
   DialogContent,
@@ -396,7 +397,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("auto.dato")}</span>
-                  <span className="font-medium">{state.scheduled_date}</span>
+                  <span className="font-medium">{safeFormatDate(state.scheduled_date, "dd.MM.yyyy")}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t("auto.sjekkpunkter_fullfoert")}</span>

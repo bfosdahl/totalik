@@ -1,4 +1,5 @@
 import { useState } from "react"; // Vernerunde wizard
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Drawer,
@@ -325,7 +326,7 @@ export default function Ks2VernerundeWizard({
                     <p className="font-medium">{finding.description}</p>
                     <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
                       {finding.responsible && <span>Ansvarlig: {finding.responsible}</span>}
-                      {finding.deadline && <span>Frist: {finding.deadline}</span>}
+                      {finding.deadline && <span>Frist: {safeFormatDate(finding.deadline, "dd.MM.yyyy")}</span>}
                     </div>
                     {finding.escalate_to_avvik && (
                       <Badge variant="destructive" className="mt-2">
@@ -393,7 +394,7 @@ export default function Ks2VernerundeWizard({
             </div>
             <div className="flex justify-between">
               <span>{t("auto.planlagt_dato")}</span>
-              <span className="font-medium">{vernerunde.scheduled_date}</span>
+              <span className="font-medium">{safeFormatDate(vernerunde.scheduled_date, "dd.MM.yyyy")}</span>
             </div>
             <div className="flex justify-between">
               <span>{t("auto.mal_2")}</span>

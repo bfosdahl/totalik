@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
@@ -602,7 +603,7 @@ const Deviations = () => {
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {deviation.due_date}
+                          {safeFormatDate(deviation.due_date, "dd.MM.yyyy")}
                         </span>
                         <span
                           className={cn(

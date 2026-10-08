@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import {
   Dialog,
   DialogContent,
@@ -150,7 +151,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
         <DialogHeader>
           <DialogTitle>{t("auto.rediger_timeregistrering")}</DialogTitle>
           <DialogDescription>
-            {entry ? `${entry.user_name} – ${entry.entry_date}` : ""}
+            {entry ? `${entry.user_name} – ${safeFormatDate(entry.entry_date, "dd.MM.yyyy")}` : ""}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { AlertTriangle, ChevronRight, Clock, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -106,7 +107,7 @@ export function RecentDeviations() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {deviation.due_date}
+                      {safeFormatDate(deviation.due_date, "dd.MM.yyyy")}
                     </span>
                   </div>
                 </div>
