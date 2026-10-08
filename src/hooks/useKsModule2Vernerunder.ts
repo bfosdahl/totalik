@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -173,7 +174,7 @@ export function useKsModule2Vernerunder(projectId: string | undefined) {
         .from("ks_module2_vernerunder")
         .update({
           status: "completed",
-          completed_date: new Date().toISOString().split('T')[0],
+          completed_date: getLocalDateString(),
           completed_by_name: fullName,
           completed_by_id: profile?.id,
           findings: JSON.parse(JSON.stringify(findings || [])) as Json,

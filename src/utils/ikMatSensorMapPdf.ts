@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -114,6 +115,6 @@ export function generateSensorMapPdf(data: SensorMapPdfData) {
     },
   });
 
-  const fileName = `sensorkart_${new Date().toISOString().slice(0, 10)}.pdf`;
+  const fileName = `sensorkart_${getLocalDateString()}.pdf`;
   doc.save(fileName);
 }

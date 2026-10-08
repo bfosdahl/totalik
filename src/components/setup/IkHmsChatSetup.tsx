@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -804,7 +805,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         })) || [];
 
         const ensureFutureDeadline = (raw: unknown, months: number): string => {
-          const today = new Date().toISOString().slice(0, 10);
+          const today = getLocalDateString();
           if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw) && raw > today) return raw;
           const d = new Date();
           d.setMonth(d.getMonth() + months);

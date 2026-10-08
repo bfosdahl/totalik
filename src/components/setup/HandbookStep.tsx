@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -1267,7 +1268,7 @@ export function HandbookStep({
       }
 
       // Output
-      const filename = `IK-Handbok_${companyName.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
+      const filename = `IK-Handbok_${companyName.replace(/\s+/g, "_")}_${getLocalDateString()}.pdf`;
       
       if (preview) {
         const pdfBlob = doc.output("blob");

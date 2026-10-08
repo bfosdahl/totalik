@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 /**
  * Apply parsed handbook data to a company's HMS system.
  * Imports goals, organization, risks, action plans, routines, and historical deviations.
@@ -206,7 +207,7 @@ export async function applyHandbookImport(
     if (data.avvik?.length > 0) {
       for (const avvik of data.avvik) {
         const createdAt = avvik.dato ? new Date(avvik.dato).toISOString() : new Date().toISOString();
-        const dueDate = avvik.dato || new Date().toISOString().split('T')[0];
+        const dueDate = avvik.dato || getLocalDateString();
 
         const insertData: any = {
           company_id: companyId,

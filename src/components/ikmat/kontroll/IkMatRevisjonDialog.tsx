@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useState, useEffect } from "react";
 import { safeFormatDate } from "@/utils/safeFormatDate";
 import {
@@ -86,7 +87,7 @@ interface RevisjonState {
 
 const emptyState = (): RevisjonState => ({
   title: `Intern revisjon IK MAT ${new Date().getFullYear()}`,
-  scheduled_date: new Date().toISOString().slice(0, 10),
+  scheduled_date: getLocalDateString(),
   responsible_id: "",
   participants: "",
   scope: "Hele IK MAT-systemet (rutiner, sjekklister, temperaturlogg, renhold, sporbarhet, avvik)",
@@ -130,7 +131,7 @@ export function IkMatRevisjonDialog({ open, onOpenChange, onSaved, existingAudit
       }
       setState({
         title: data.title || "",
-        scheduled_date: data.scheduled_date || new Date().toISOString().slice(0, 10),
+        scheduled_date: data.scheduled_date || getLocalDateString(),
         responsible_id: data.responsible_id || "",
         participants: parsed.participants || "",
         scope: parsed.scope || "",

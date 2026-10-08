@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -242,7 +243,7 @@ export default function Ks2AvvikIntegrated() {
       severity: newAvvik.severity,
       status: "open",
       location: newAvvik.location || null,
-      discovered_date: new Date().toISOString().split("T")[0],
+      discovered_date: getLocalDateString(),
       deadline: newAvvik.deadline || null,
       responsible_name: newAvvik.responsible_name || null,
       responsible_user_id: null,

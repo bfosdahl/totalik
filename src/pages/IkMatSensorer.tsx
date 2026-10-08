@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -210,7 +211,7 @@ export default function IkMatSensorer() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sensorvarsler_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `sensorvarsler_${getLocalDateString()}.csv`;
     document.body.appendChild(a);
     a.click();
     a.remove();

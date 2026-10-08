@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -234,7 +235,7 @@ export function VerneombudAgreementDialog({
         verneombud_name: verneombudName,
         verneombud_email: verneombudEmail || null,
         verneombud_phone: verneombudPhone || null,
-        election_date: new Date().toISOString().split("T")[0],
+        election_date: getLocalDateString(),
         election_method: electionMethod || null,
         term_start: termStart || null,
         term_end: termEnd || null,

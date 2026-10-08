@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -322,7 +323,7 @@ export function useEmploymentContracts() {
         
         if (bothSigned) {
           updates.status = 'active';
-          updates.signed_date = new Date().toISOString().split('T')[0];
+          updates.signed_date = getLocalDateString();
         } else {
           updates.status = 'pending_signature';
         }

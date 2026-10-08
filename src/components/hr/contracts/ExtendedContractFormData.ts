@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 // Extended contract form data matching Arbeidsmiljøloven § 14-6 requirements
 
 export interface ExtendedContractFormData {
@@ -81,7 +82,7 @@ export const defaultExtendedFormData: ExtendedContractFormData = {
   position: '',
   work_description: '',
   employment_percentage: 100,
-  start_date: new Date().toISOString().split('T')[0],
+  start_date: getLocalDateString(),
   end_date: null,
   probation_period_months: 6,
   
