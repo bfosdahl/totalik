@@ -65,6 +65,8 @@ function clearChatState(companyId: string) {
 function getDisplayContent(content: string): string {
   // Remove JSON blocks marked with our special markers
   let cleaned = content.replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, '');
+  const jsonStartIndex = cleaned.indexOf('|||JSON_START|||');
+  if (jsonStartIndex !== -1) cleaned = cleaned.slice(0, jsonStartIndex);
   
   // Also remove any raw JSON that might slip through
   cleaned = cleaned.replace(/```json[\s\S]*?```/g, '');
