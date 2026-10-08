@@ -19,6 +19,7 @@ const IkMatOppsett = () => {
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
   const [restartKey, setRestartKey] = useState(0);
+  const [completionChecked, setCompletionChecked] = useState(false);
 
   // Combined loading state - wait for both auth and modules to load
   const isLoading = authLoading || modulesLoading;
@@ -43,6 +44,7 @@ const IkMatOppsett = () => {
         setSetupCompleted(true);
       }
     }
+    setCompletionChecked(true);
   }, [hasModule, isLoading, navigate, modules, isRestarting, company?.id]);
 
   if (isLoading) {
