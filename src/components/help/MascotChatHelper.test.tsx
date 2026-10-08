@@ -58,6 +58,7 @@ const renderHelper = () =>
 describe("MascotChatHelper scoped history", () => {
   beforeEach(() => {
     sessionStorage.clear();
+    sessionStorage.setItem("mascot-chat:isOpen", "1");
     authState.user = { id: "user-1" };
     authState.company = { id: "comp-A" };
     authState.profile = { company_id: "comp-A" };
