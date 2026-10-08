@@ -1,4 +1,5 @@
 import { getChecklistItemText } from "@/lib/checklistItemText";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,7 +68,7 @@ export function Ks2SmartPanel({
   const runPriorities = async () => {
     const items: PriorityItem[] = [
       ...overdue.map((c) => ({ id: c.id, type: "forfalt kontroll", title: c.title, detail: `Forfalt for ${differenceInDays(new Date(), parseISO(c.deadline_date!))} dager siden` })),
-      ...upcoming.map((c) => ({ id: c.id, type: "frist", title: c.title, detail: `Frist ${c.deadline_date}` })),
+      ...upcoming.map((c) => ({ id: c.id, type: "frist", title: c.title, detail: `Frist ${safeFormatDate(c.deadline_date, "dd.MM.yyyy")}` })),
       ...openAvvik.map((a) => ({ id: a.id, type: "åpent avvik", title: a.title, detail: `Alvorlighet: ${SEV_LABEL[a.severity || ""] || a.severity || "ukjent"}` })),
     ].slice(0, 25);
     if (!items.length) return;

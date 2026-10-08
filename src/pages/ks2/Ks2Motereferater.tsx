@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { DateInput } from "@/components/ui/date-input";
+import { TimeInput24 } from "@/components/ui/time-input-24";
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -565,11 +567,28 @@ export default function Ks2Motereferater() {
               </div>
               <div className="space-y-2">
                 <Label>{t("auto.dato_og_tid")}</Label>
-                <Input
-                  type="datetime-local"
-                  value={formData.meeting_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, meeting_date: e.target.value }))}
-                />
+                <div className="flex gap-2">
+                  <DateInput
+                    value={(formData.meeting_date || "").slice(0, 10)}
+                    onChange={(e) => {
+                      const d = e.target.value;
+                      setFormData(prev => {
+                        const time = (prev.meeting_date || "").slice(11, 16) || "00:00";
+                        return { ...prev, meeting_date: d ? `${d}T${time}` : "" };
+                      });
+                    }}
+                  />
+                  <TimeInput24
+                    className="w-24 shrink-0"
+                    value={(formData.meeting_date || "").slice(11, 16)}
+                    onChange={(time) => {
+                      setFormData(prev => {
+                        const d = (prev.meeting_date || "").slice(0, 10);
+                        return d ? { ...prev, meeting_date: `${d}T${time || "00:00"}` } : prev;
+                      });
+                    }}
+                  />
+                </div>
               </div>
             </div>
 

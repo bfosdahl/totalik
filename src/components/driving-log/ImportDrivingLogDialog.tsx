@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -127,7 +128,7 @@ export function ImportDrivingLogDialog({ open, onOpenChange, onImport, isPending
                 <TableBody>
                   {rows.map((row, i) => (
                     <TableRow key={i}>
-                      <TableCell className="whitespace-nowrap">{row.trip_date}</TableCell>
+                      <TableCell className="whitespace-nowrap">{/^\d{4}-\d{2}-\d{2}$/.test(row.trip_date) ? safeFormatDate(row.trip_date, "dd.MM.yyyy") : row.trip_date}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{tripTypeLabels[row.trip_type] || row.trip_type}</Badge>
                       </TableCell>
