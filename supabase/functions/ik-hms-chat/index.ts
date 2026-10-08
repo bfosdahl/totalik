@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { checkRateLimit, createMessageHash, createStreamWithFallback, ChatMsg } from "../_shared/ai-setup.ts";
-import { callAiGateway } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -486,10 +486,10 @@ serve(async (req) => {
     const messageHash = createMessageHash(messages);
 
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: "google/gemini-2.5-flash",
+      model: AI_CHAT_MODEL,
       messages: [...systemMessages, ...messages],
       stream: true,
-    });
+    }, companyId);
 
     if (!response.ok) {
       if (response.status === 429) return new Response(JSON.stringify({ error: "For mange forespørsler." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
