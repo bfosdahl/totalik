@@ -963,8 +963,8 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
               >
                 <Card>
                   <CardHeader className="py-3 px-4">
-                    <div className="flex items-center justify-between">
-                      <CollapsibleTrigger className="flex items-center gap-2 flex-1 text-left">
+                    <div className="flex items-center justify-between gap-2">
+                      <CollapsibleTrigger className="flex items-center gap-2 flex-1 min-w-0 text-left">
                         {expandedRoutines.has(routine.id) ? (
                           <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                         ) : (
@@ -979,9 +979,9 @@ export const RoutinesStep = forwardRef<RoutinesStepRef, RoutinesStepProps>(
                           </p>
                         </div>
                       </CollapsibleTrigger>
-                      <div className="flex items-center gap-1 ml-2">
+                      <div className="flex items-center gap-1 ml-2 shrink-0">
                         {routine.is_predefined && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
                             {t("auto.forhaandsdefinert")}
                           </Badge>
                         )}
