@@ -485,7 +485,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       // Check for JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
-        await saveSetupData(jsonContent);
+        await saveSetupData(jsonContent, stepNumber === 9);
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -614,7 +614,30 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
     const stepNumber = currentStep + 1;
     
     // Check if user confirmation means we should advance
-    const isConfirmation = /^(ja|ok|okei|fint|bra|stemmer|japp|jepp|supert)$/i.test(userInput);
+    const normalizedInput = userInput.toLowerCase().trim().replace(/[\s\p{P}\p{Extended_Pictographic}]+$/u, "");
+    const isNegativeConfirmation = /^(nei|nope|feil)$/i.test(normalizedInput)
+      || normalizedInput.includes('stemmer ikke')
+      || normalizedInput.includes('er feil')
+      || normalizedInput.includes('ikke riktig')
+      || normalizedInput.includes('ikke bra')
+      || normalizedInput.includes('ikke ok');
+    const hasChangeRequest = normalizedInput.includes(' men ')
+      || normalizedInput.includes('legg til')
+      || normalizedInput.includes('endre')
+      || normalizedInput.includes('bytt')
+      || normalizedInput.includes('fjern');
+    const isConfirmation = !isNegativeConfirmation && !hasChangeRequest && (
+      /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)$/i.test(normalizedInput)
+      || /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)[,\s]/i.test(normalizedInput)
+      || normalizedInput.includes('stemmer')
+      || normalizedInput.includes('det er riktig')
+      || normalizedInput.includes('ser bra ut')
+      || normalizedInput.includes('ser fint ut')
+      || normalizedInput.includes('godkjent')
+      || normalizedInput.includes('godkjenner')
+      || normalizedInput.includes('gå videre')
+      || normalizedInput.includes('neste')
+    );
     
     let stepAdvanceContext = "";
     if (isConfirmation) {
@@ -649,12 +672,14 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
   };
 
   // Step 9: Auto-generate laws
+  const STEP9_MESSAGE = "**Steg 9: Lover og forskrifter** ✅\n\nJeg har automatisk lagt til relevante lover og forskrifter basert på bransjen og bedriftsinformasjonen. Du finner oversikten under «Lover og forskrifter» i systemet.\n\n🎉 **Oppsettet er nå fullført!** HMS-systemet ditt er klart til bruk. Du kan se alt i Håndboken og gjøre endringer når som helst.";
+
   const handleAutoGenerateLaws = async () => {
     completeStep("lover");
-    
+
     setMessages(prev => [...prev, {
       role: "assistant",
-      content: "**Steg 9: Lover og forskrifter** ✅\n\nJeg har automatisk lagt til relevante lover og forskrifter basert på bransjen og bedriftsinformasjonen. Du finner oversikten under «Lover og forskrifter» i systemet.\n\n🎉 **Oppsettet er nå fullført!** HMS-systemet ditt er klart til bruk. Du kan se alt i Håndboken og gjøre endringer når som helst.",
+      content: STEP9_MESSAGE,
     }]);
     
     // The laws will be generated as part of saveSetupData
@@ -669,7 +694,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
   };
 
   // Save setup data - reuse existing logic
-  const saveSetupData = async (jsonContent: string) => {
+  const saveSetupData = async (jsonContent: string, fromStep9 = false): Promise<boolean> => {
     setIsSaving(true);
     const maxRetries = 3;
     let lastError: Error | null = null;
@@ -773,11 +798,16 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           queryClient.invalidateQueries({ queryKey: ["department-action-plans"] });
           queryClient.invalidateQueries({ queryKey: ["department-routines"] });
           queryClient.invalidateQueries({ queryKey: ["company-modules"] });
+          HMS_SETUP_STEPS.forEach(step => completeStep(step.id));
+          setCurrentStep(HMS_SETUP_STEPS.length - 1);
+          if (!fromStep9) {
+            setMessages(prev => [...prev, { role: "assistant", content: STEP9_MESSAGE }]);
+          }
           toast.success(t("auto.hms_oppsett_for_avdelingen_fullfoert"));
           setIsSaving(false);
           clearChatState(companyId, departmentId);
           onComplete();
-          return;
+          return true;
         }
 
         // Company setup
@@ -1078,11 +1108,16 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           console.error("Failed to track suggestion stats (non-critical):", statsError);
         }
 
+        HMS_SETUP_STEPS.forEach(step => completeStep(step.id));
+        setCurrentStep(HMS_SETUP_STEPS.length - 1);
+        if (!fromStep9) {
+          setMessages(prev => [...prev, { role: "assistant", content: STEP9_MESSAGE }]);
+        }
         toast.success(t("auto.hms_oppsett_fullfoert"));
         setIsSaving(false);
         clearChatState(companyId, departmentId);
         onComplete();
-        return;
+        return true;
 
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
@@ -1093,6 +1128,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
 
     toast.error(lastError?.message || "Kunne ikke lagre oppsettdata.");
     setIsSaving(false);
+    return false;
   };
 
   const retryLastMessage = useCallback(async () => {
