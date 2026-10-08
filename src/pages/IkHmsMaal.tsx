@@ -19,6 +19,11 @@ interface CompanyGoal {
   sort_order: number;
 }
 
+type GoalTextMap = Record<string, string>;
+
+const toGoalTextMap = (list: { id: string; goal_text: string }[]): GoalTextMap =>
+  Object.fromEntries(list.map((g) => [g.id, g.goal_text]));
+
 const IkHmsMaal = () => {
   const { profile } = useAuth();
   const { filterDepartmentId } = useDepartmentContext();
@@ -27,6 +32,7 @@ const IkHmsMaal = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [originalTexts, setOriginalTexts] = useState<GoalTextMap>({});
 
   // Refresh when an AI assistant (HMS/MAT Proffen) changed data
   useEffect(() => {
@@ -52,6 +58,7 @@ const IkHmsMaal = () => {
 
         if (error) throw error;
         setGoals(data || []);
+        setOriginalTexts(toGoalTextMap(data || []));
       } catch (error) {
         console.error("Error fetching goals:", error);
         toast.error(t("auto.kunne_ikke_laste_maalsettinger"));
@@ -64,8 +71,9 @@ const IkHmsMaal = () => {
   }, [profile?.company_id, filterDepartmentId, refreshKey]);
 
   const handleUpdateGoal = (id: string, text: string) => {
-    setGoals(goals.map(g => g.id === id ? { ...g, goal_text: text } : g));
-    setHasChanges(true);
+    const updated = goals.map(g => (g.id === id ? { ...g, goal_text: text } : g));
+    setGoals(updated);
+    setHasChanges(updated.some(g => g.goal_text !== originalTexts[g.id]));
   };
 
   const handleSave = async () => {
@@ -83,6 +91,7 @@ const IkHmsMaal = () => {
         if (error) throw error;
       }
 
+      setOriginalTexts(toGoalTextMap(goals));
       toast.success(t("auto.maalsettinger_lagret"));
       setHasChanges(false);
     } catch (error) {
