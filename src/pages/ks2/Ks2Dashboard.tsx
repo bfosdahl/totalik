@@ -31,7 +31,7 @@ export default function Ks2Dashboard() {
 
   // Fremdrift per prosjekt basert på egenkontroller/sjekklister (samme tall som inne i prosjektet)
   const refreshChecklistProgress = useCallback(async () => {
-    if (!profile?.company_id || projects.length === 0 || isNewProjectOpen) return;
+    if (!profile?.company_id || projects.length === 0) return;
 
     const projectIds = projects.map((p) => p.id);
     const { data, error } = await supabase
@@ -55,11 +55,12 @@ export default function Ks2Dashboard() {
       v.percent = v.total > 0 ? Math.round((v.completed / v.total) * 100) : 0;
     });
     setProjectChecklistProgress(acc);
-  }, [projects, profile?.company_id, isNewProjectOpen]);
+  }, [projects, profile?.company_id]);
 
   useEffect(() => {
+    if (isNewProjectOpen) return;
     refreshChecklistProgress();
-  }, [refreshChecklistProgress]);
+  }, [refreshChecklistProgress, isNewProjectOpen]);
 
   const archivedCount = useMemo(
     () => projects.filter((p) => p.status === "completed").length,
