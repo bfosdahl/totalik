@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,10 +35,25 @@ Du skal returnere en JSON-struktur med følgende felt:
 
 Analyser H-setninger (faresetninger) og P-setninger (sikkerhetssetninger) for å bestemme riktige fareklasser og risikovurdering.
 
+I tillegg til feltene over skal du ta med disse feltene. Bruk tom streng eller tom liste når opplysningen ikke står i dokumentet. ALDRI finn på verdier, og ALDRI legg til verneutstyr (required_ppe) som ikke er nevnt i dokumentet:
+
+- cas_numbers: liste, ett objekt per komponent/stoff som er oppgitt. Hvert objekt har "name" (komponentnavn), "cas" (CAS-nummer), "ec" (EC-/EC/NLP-nummer) og "percentage" (mengde/prosent slik det står). Utelat en nøkkel eller bruk tom streng når den ikke står.
+- hazard_statements: liste over faresetninger. Hvert objekt har "code" (f.eks. "H225" eller, når dokumentet bare har gamle R-setninger, "R11") og "text" (setningsteksten slik den står).
+- signal_word: varselsord slik det står, f.eks. "Fare" eller "Advarsel". Tom streng hvis det ikke står.
+- revision_date: revisjonsdato eller utgivelsesdato på ISO-format YYYY-MM-DD. Tom streng hvis det ikke står.
+- emergency_phone: nødtelefonnummer slik det står, inkludert eventuelt navn på tjenesten. Tom streng hvis det ikke står.
+- pictograms: liste over farepiktogrammer som faktisk vises, med kode og/eller navn (f.eks. "GHS02" eller "flamme"). Tom liste hvis ingen vises.
+
 VIKTIG: Returner KUN gyldig JSON, ingen annen tekst. Eksempel:
 {
   "product_name": "Aceton",
   "manufacturer": "Jotun AS",
+  "cas_numbers": [{"name": "Aceton", "cas": "67-64-1", "ec": "200-662-2", "percentage": "100 %"}],
+  "hazard_statements": [{"code": "H225", "text": "Meget brannfarlig væske og damp."}, {"code": "H319", "text": "Gir alvorlig øyeirritasjon."}],
+  "signal_word": "Fare",
+  "revision_date": "2020-02-27",
+  "emergency_phone": "Giftinformasjonen: +47 22 59 13 00",
+  "pictograms": ["GHS02", "GHS07"],
   "danger_classes": ["Brannfarlig", "Irriterende"],
   "notes": "Bruk vernehansker og vernebriller. Oppbevares utilgjengelig for barn.",
   "risk_assessment": {
@@ -54,6 +70,23 @@ VIKTIG: Returner KUN gyldig JSON, ingen annen tekst. Eksempel:
     "conclusion": "Aceton er brannfarlig og kan irritere hud og øyne. Bruk alltid verneutstyr og sørg for god ventilasjon. Unngå langvarig hudkontakt."
   }
 }`;
+
+// Accepts YYYY-MM-DD or DD.MM.YYYY (also / or -) and returns YYYY-MM-DD, otherwise "".
+function toIsoDate(value: unknown): string {
+  if (typeof value !== "string") return "";
+  const v = value.trim();
+  let y: number, m: number, d: number;
+  let match = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (match) { y = +match[1]; m = +match[2]; d = +match[3]; }
+  else {
+    match = v.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+    if (!match) return "";
+    d = +match[1]; m = +match[2]; y = +match[3];
+  }
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return "";
+  return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -108,16 +141,10 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Use Gemini with PDF/image support
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
+    // 3.8 (low) first, automatic fallback to 2.5 on error or after 45 s.
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: AI_CHAT_MODEL,
+      messages: [
           { role: "system", content: systemPrompt },
           { 
             role: "user", 
@@ -135,8 +162,7 @@ serve(async (req) => {
             ]
           }
         ],
-      }),
-    });
+    }, null, { reasoningEffort: "low", totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -198,6 +224,20 @@ serve(async (req) => {
       data: {
         product_name: parsedData.product_name || "",
         manufacturer: parsedData.manufacturer || "",
+        cas_numbers: Array.isArray(parsedData.cas_numbers) ? parsedData.cas_numbers.filter((c: any) => c && typeof c === "object").map((c: any) => ({
+          name: typeof c.name === "string" ? c.name : "",
+          cas: typeof c.cas === "string" ? c.cas : "",
+          ec: typeof c.ec === "string" ? c.ec : "",
+          percentage: typeof c.percentage === "string" ? c.percentage : "",
+        })) : [],
+        hazard_statements: Array.isArray(parsedData.hazard_statements) ? parsedData.hazard_statements.filter((h: any) => h && typeof h === "object").map((h: any) => ({
+          code: typeof h.code === "string" ? h.code : "",
+          text: typeof h.text === "string" ? h.text : "",
+        })) : [],
+        signal_word: typeof parsedData.signal_word === "string" ? parsedData.signal_word : "",
+        revision_date: toIsoDate(parsedData.revision_date),
+        emergency_phone: typeof parsedData.emergency_phone === "string" ? parsedData.emergency_phone : "",
+        pictograms: Array.isArray(parsedData.pictograms) ? parsedData.pictograms.filter((p: unknown) => typeof p === "string") : [],
         danger_classes: Array.isArray(parsedData.danger_classes) ? parsedData.danger_classes : [],
         notes: parsedData.notes || "",
         risk_assessment: {
