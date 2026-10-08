@@ -1,4 +1,5 @@
 import { SelfDeclarationDialog, type SelfDeclarationDialogProps } from "@/components/declarations/SelfDeclarationDialog";
+import { t } from "@/i18n/t";
 
 export interface HmsSelfDeclarationDialogProps extends SelfDeclarationDialogProps {}
 
@@ -14,7 +15,7 @@ export function HmsSelfDeclarationDialog(props: HmsSelfDeclarationDialogProps) {
           employee_rep_signature: null,
           employee_rep_signed_at: null,
         },
-        title: "Egenerklæring om HMS",
+        title: t("auto.egenerklaering_om_hms"),
         infoDescription: "Bekreftelse på systematisk HMS-arbeid",
         declarationText: (
           <>
@@ -37,9 +38,9 @@ export function HmsSelfDeclarationDialog(props: HmsSelfDeclarationDialogProps) {
             </div>
           </>
         ),
-        signerHint: "Daglig leder eller den som setter opp systemet",
-        successToast: "Egenerklæring om HMS er signert og lagret",
-        completeText: "Egenerklæringen om HMS er nå lagret i systemet",
+        signerHint: t("auto.daglig_leder_eller_den_som_setter_opp_sy"),
+        successToast: t("auto.egenerklaering_om_hms_er_signert_og_lagr"),
+        completeText: t("auto.egenerklaering_om_hms_er_naa_lagret_i_sy"),
         allowSkip: true,
         logLabel: "HMS",
       }}

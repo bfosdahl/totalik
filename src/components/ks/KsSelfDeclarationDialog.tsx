@@ -10,7 +10,7 @@ export function KsSelfDeclarationDialog(props: KsSelfDeclarationDialogProps) {
       config={{
         table: "ks_self_declarations",
         companyLevelOnly: false,
-        title: "Egenerklæring om kvalitetssikringssystem",
+        title: t("auto.egenerklaering_om_kvalitetssikringssyste"),
         infoDescription: "Bekreftelse på at bedriften har et velfungerende KS-system",
         declarationText: (
           <>
@@ -42,9 +42,9 @@ export function KsSelfDeclarationDialog(props: KsSelfDeclarationDialogProps) {
             </div>
           </>
         ),
-        signerHint: "Daglig leder eller den som er ansvarlig for kvalitetssikringssystemet",
-        successToast: "Egenerklæring om kvalitetssikringssystem er signert og lagret",
-        completeText: "Egenerklæringen om kvalitetssikringssystemet er nå lagret i systemet",
+        signerHint: t("auto.daglig_leder_eller_den_som_er_ansvarlig_"),
+        successToast: t("auto.egenerklaering_om_kvalitetssikringssyste_2"),
+        completeText: t("auto.egenerklaering_om_kvalitetssikringssyste"),
         allowSkip: false,
         logLabel: "KS",
       }}
