@@ -26,12 +26,6 @@ const getFileIcon = (fileType: string | null) => {
   return File;
 };
 
-const formatFileSize = (bytes: number | null) => {
-  if (!bytes) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
 
 // Component to display attachment with async URL loading
 function AttachmentItem({ 

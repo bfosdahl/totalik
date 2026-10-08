@@ -152,12 +152,6 @@ export default function IkHmsDokumentsenter() {
     }
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "Ukjent størrelse";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const getFileIcon = (fileType: string | null) => {
     if (!fileType) return <File className="h-8 w-8 text-muted-foreground" />;
