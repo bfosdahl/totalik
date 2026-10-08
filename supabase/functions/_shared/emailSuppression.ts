@@ -29,13 +29,18 @@ export async function suppressedEmails(
   if (list.length === 0) return out;
   const db = client ?? serviceClient();
 
-  // recipient_email may be stored with mixed case, so match both the
-  // lowercased address and the original spellings that were passed in.
-  const originals = [...new Set((emails || []).filter((e) => typeof e === "string" && e.trim()).map((e) => e.trim()))];
-  const candidates = [...new Set([...list, ...originals])];
-
-  for (let i = 0; i < candidates.length; i += CHUNK) {
-    const chunk = candidates.slice(i, i + CHUNK);
+  // Case-insensitive lookup via the suppressed_emails RPC (uses the lower()
+  // index). Falls back to the exact-match query if the RPC fails.
+  for (let i = 0; i < list.length; i += CHUNK) {
+    const chunk = list.slice(i, i + CHUNK);
+    const { data: rpcData, error: rpcError } = await db.rpc("suppressed_emails", { p_emails: chunk });
+    if (!rpcError) {
+      for (const v of rpcData ?? []) {
+        if (v) out.add(String(v).trim().toLowerCase());
+      }
+      continue;
+    }
+    console.error("[emailSuppression] rpc failed, falling back to exact match:", rpcError.message);
     let from = 0;
     while (true) {
       const { data, error } = await db
