@@ -279,7 +279,18 @@ serve(async (req) => {
 
     let systemPrompt = buildSystemPrompt(projectContext, setupMode);
     // Kun modelltestbrukarar får raskare tempo i oppsettet.
-    const fastTrack = !!setupMode && isModelTestKey(user.id);
+    // MODEL_TEST_KEYS inneheld bedrift-id og profilet-id (profiles.id), ikkje auth-user-id,
+    // difor slår vi opp profilet for å kjenne att testbrukarane.
+    let prof: { id: string; company_id: string | null } | null = null;
+    if (setupMode) {
+      try {
+        const { data } = await supabase.from("profiles").select("id, company_id").eq("user_id", user.id).maybeSingle();
+        prof = data ?? null;
+      } catch (_) {
+        prof = null;
+      }
+    }
+    const fastTrack = !!setupMode && (isModelTestKey(user.id) || isModelTestKey(prof?.id) || isModelTestKey(prof?.company_id));
     let questionsAsked = 0;
     let pre = { hint: "", ready: false };
     if (setupMode && Array.isArray(messages)) {
