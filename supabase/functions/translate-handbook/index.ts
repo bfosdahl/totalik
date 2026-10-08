@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,21 +95,15 @@ The content is from an Internal Control (HMS) Handbook containing:
 
     console.log("Calling AI gateway...");
     
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: contentToTranslate }
-        ],
-        temperature: 0.3,
-      }),
-    });
+    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: AI_CHAT_MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: contentToTranslate }
+      ],
+      temperature: 0.3,
+    }, null, { totalTimeoutMs: 60_000 });
 
     console.log("AI gateway response status:", response.status);
 
