@@ -58,28 +58,29 @@ const statusConfig: Record<DeviationStatus, { label: string; color: string }> = 
 // Use the shared DeviationCategory type from useDeviations
 import type { DeviationCategory } from "@/hooks/useDeviations";
 import { t } from "@/i18n/t";
+import { getDeviationCategoryLabel } from "@/lib/deviationCategoryLabels";
 
 const categoryConfig: Record<DeviationCategory, { label: string; color: string }> = {
-  safety: { label: t("auto.hms_sikkerhet"), color: "bg-primary/10 text-primary" },
-  quality: { label: t("auto.kvalitet"), color: "bg-blue-500/10 text-blue-600" },
-  environment: { label: t("auto.miljoe"), color: "bg-green-500/10 text-green-600" },
-  process: { label: t("auto.prosess"), color: "bg-purple-500/10 text-purple-600" },
-  equipment: { label: t("auto.utstyr"), color: "bg-orange-500/10 text-orange-600" },
-  personnel: { label: t("auto.personell"), color: "bg-pink-500/10 text-pink-600" },
-  documentation: { label: t("auto.dokumentasjon"), color: "bg-slate-500/10 text-slate-600" },
-  other: { label: t("auto.annet"), color: "bg-muted text-muted-foreground" },
-  temperature: { label: t("auto.temperaturavvik"), color: "bg-red-500/10 text-red-600" },
-  cleaning: { label: t("auto.renhold"), color: "bg-yellow-500/10 text-yellow-600" },
-  pest_control: { label: t("auto.skadedyr"), color: "bg-orange-500/10 text-orange-600" },
-  allergen: { label: t("auto.allergenhaandtering"), color: "bg-purple-500/10 text-purple-600" },
-  traceability: { label: t("auto.sporbarhet"), color: "bg-cyan-500/10 text-cyan-600" },
-  hygiene: { label: t("auto.hygiene"), color: "bg-pink-500/10 text-pink-600" },
-  storage: { label: t("auto.lagring"), color: "bg-blue-500/10 text-blue-600" },
-  pests: { label: t("auto.skadedyr"), color: "bg-orange-500/10 text-orange-600" },
-  expiry: { label: t("auto.utgaatt_holdbarhet"), color: "bg-amber-500/10 text-amber-600" },
-  contamination: { label: t("auto.krysskontaminering"), color: "bg-rose-500/10 text-rose-600" },
-  receiving: { label: t("auto.varemottak"), color: "bg-teal-500/10 text-teal-600" },
-  other_food: { label: t("auto.annet_matsikkerhet"), color: "bg-muted text-muted-foreground" },
+  safety: { get label() { return getDeviationCategoryLabel("safety"); }, color: "bg-primary/10 text-primary" },
+  quality: { get label() { return getDeviationCategoryLabel("quality"); }, color: "bg-blue-500/10 text-blue-600" },
+  environment: { get label() { return getDeviationCategoryLabel("environment"); }, color: "bg-green-500/10 text-green-600" },
+  process: { get label() { return getDeviationCategoryLabel("process"); }, color: "bg-purple-500/10 text-purple-600" },
+  equipment: { get label() { return getDeviationCategoryLabel("equipment"); }, color: "bg-orange-500/10 text-orange-600" },
+  personnel: { get label() { return getDeviationCategoryLabel("personnel"); }, color: "bg-pink-500/10 text-pink-600" },
+  documentation: { get label() { return getDeviationCategoryLabel("documentation"); }, color: "bg-slate-500/10 text-slate-600" },
+  other: { get label() { return getDeviationCategoryLabel("other"); }, color: "bg-muted text-muted-foreground" },
+  temperature: { get label() { return getDeviationCategoryLabel("temperature"); }, color: "bg-red-500/10 text-red-600" },
+  cleaning: { get label() { return getDeviationCategoryLabel("cleaning"); }, color: "bg-yellow-500/10 text-yellow-600" },
+  pest_control: { get label() { return getDeviationCategoryLabel("pest_control"); }, color: "bg-orange-500/10 text-orange-600" },
+  allergen: { get label() { return getDeviationCategoryLabel("allergen"); }, color: "bg-purple-500/10 text-purple-600" },
+  traceability: { get label() { return getDeviationCategoryLabel("traceability"); }, color: "bg-cyan-500/10 text-cyan-600" },
+  hygiene: { get label() { return getDeviationCategoryLabel("hygiene"); }, color: "bg-pink-500/10 text-pink-600" },
+  storage: { get label() { return getDeviationCategoryLabel("storage"); }, color: "bg-blue-500/10 text-blue-600" },
+  pests: { get label() { return getDeviationCategoryLabel("pests"); }, color: "bg-orange-500/10 text-orange-600" },
+  expiry: { get label() { return getDeviationCategoryLabel("expiry"); }, color: "bg-amber-500/10 text-amber-600" },
+  contamination: { get label() { return getDeviationCategoryLabel("contamination"); }, color: "bg-rose-500/10 text-rose-600" },
+  receiving: { get label() { return getDeviationCategoryLabel("receiving"); }, color: "bg-teal-500/10 text-teal-600" },
+  other_food: { get label() { return getDeviationCategoryLabel("other_food"); }, color: "bg-muted text-muted-foreground" },
 };
 
 // Helper type for the detail dialog - includes all RUH fields
@@ -586,7 +587,7 @@ const Deviations = () => {
                       {/* Badges */}
                       <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                         <Badge className={cn("text-[10px]", (categoryConfig[deviation.category] || { color: "bg-muted text-muted-foreground" }).color)}>
-                          {(categoryConfig[deviation.category] || { label: deviation.category }).label}
+                          {getDeviationCategoryLabel(deviation.category)}
                         </Badge>
                         <Badge className={cn("text-[10px]", priorityConfig[deviation.priority].color)}>
                           {priorityConfig[deviation.priority].label}

@@ -43,7 +43,7 @@ export function QuickActions() {
       labelKey: "dashboard.newRoutine",
       descriptionKey: "dashboard.addProcedure",
       variant: "secondary",
-      path: "/setup?step=routines",
+      path: "/setup?step=4",
     },
     {
       icon: Download,

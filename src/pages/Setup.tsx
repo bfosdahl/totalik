@@ -45,6 +45,7 @@ import { SubscriptionAcceptDialog } from "@/components/setup/SubscriptionAcceptD
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
+import { useHmsDeclarations } from "@/hooks/useHmsDeclarations";
 import { t } from "@/i18n/t";
 
 const VERNEOMBUD_REQUIRED_EMPLOYEE_COUNT = 5;
@@ -151,6 +152,7 @@ const Setup = () => {
     saveRoutines,
     completeStep
   } = useSetupWizard();
+  const { hasSelfDeclaration } = useHmsDeclarations();
 
   const getUiStateKey = (cid?: string | null) => (cid ? `setup_wizard_ui_state:${cid}` : null);
 
@@ -396,6 +398,7 @@ const Setup = () => {
   };
 
   const isStepCompleted = (stepId: string) => {
+    if (stepId === "handbook" && hasSelfDeclaration) return true;
     return progress.completed_steps.includes(stepId);
   };
 
