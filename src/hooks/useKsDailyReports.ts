@@ -89,6 +89,7 @@ export function useKsDailyReports(projectId?: string) {
         .from("ks_daily_reports" as any)
         .select("*")
         .eq("company_id", companyId)
+        .eq("is_deleted", false)
         .order("report_date", { ascending: false });
 
       if (projectId) {
@@ -108,7 +109,7 @@ export function useKsDailyReports(projectId?: string) {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (report: CreateDailyReport) => {
+    mutationFn: async ({ report }: { report: CreateDailyReport; silent?: boolean }) => {
       const userName = `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() || profile?.email || "Ukjent";
       const { data, error } = await supabase
         .from("ks_daily_reports" as any)
@@ -122,20 +123,20 @@ export function useKsDailyReports(projectId?: string) {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as unknown as DailyReport;
     },
-    onSuccess: () => {
+    onSuccess: (_d, vars) => {
       queryClient.invalidateQueries({ queryKey });
-      toast.success("Dagsrapport opprettet");
+      if (!vars.silent) toast.success("Dagsrapport opprettet");
     },
-    onError: (error) => {
+    onError: (error, vars) => {
       console.error("Error creating daily report:", error);
-      toast.error("Kunne ikke opprette dagsrapport");
+      if (!vars.silent) toast.error("Kunne ikke opprette dagsrapport");
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<CreateDailyReport> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<CreateDailyReport> & { submitted_at?: string | null }; silent?: boolean }) => {
       const { data, error } = await supabase
         .from("ks_daily_reports" as any)
         .update(updates)
@@ -144,15 +145,15 @@ export function useKsDailyReports(projectId?: string) {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as unknown as DailyReport;
     },
-    onSuccess: () => {
+    onSuccess: (_d, vars) => {
       queryClient.invalidateQueries({ queryKey });
-      toast.success("Dagsrapport oppdatert");
+      if (!vars.silent) toast.success("Dagsrapport oppdatert");
     },
-    onError: (error) => {
+    onError: (error, vars) => {
       console.error("Error updating daily report:", error);
-      toast.error("Kunne ikke oppdatere dagsrapport");
+      if (!vars.silent) toast.error("Kunne ikke oppdatere dagsrapport");
     },
   });
 
@@ -178,14 +179,18 @@ export function useKsDailyReports(projectId?: string) {
   const submitReport = async (id: string) => {
     await updateMutation.mutateAsync({
       id,
-      updates: { status: "submitted", submitted_at: new Date().toISOString() } as any,
+      updates: { status: "submitted", submitted_at: new Date().toISOString() },
+      silent: true,
     });
+    toast.success("Dagsrapport sendt inn");
   };
 
   return {
     reports,
     isLoading,
-    createReport: createMutation.mutateAsync,
+    /** Oppretter rapport. `silent` skjuler toasts (brukes av autolagring). */
+    createReport: (report: CreateDailyReport, opts?: { silent?: boolean }) =>
+      createMutation.mutateAsync({ report, silent: opts?.silent }),
     updateReport: updateMutation.mutateAsync,
     deleteReport: deleteMutation.mutateAsync,
     submitReport,
