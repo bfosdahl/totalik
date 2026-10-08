@@ -30,7 +30,7 @@ const IkHmsOppsett = () => {
   };
 
   // Check if setup was previously completed
-  const previouslyCompleted = !isRestarting && modules.some(m => 
+  const previouslyCompleted = !isRestarting && !(companyId && hasInProgressHmsChat(companyId)) && modules.some(m => 
     m.module_type === 'IK_HMS' && 
     (m.settings as any)?.setupCompletedAt
   );
