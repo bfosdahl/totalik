@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 
 const corsHeaders = {
@@ -80,18 +81,15 @@ Svar BARE med gyldig JSON (ingen markdown, ingen forklaring) med denne strukture
 
 Sørg for at rutinen er praktisk, konkret og følger norsk lovgivning. Skriv på norsk (bokmål).`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      }),
-    });
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // 3.8 (low) first, automatic fallback to 2.5 on error or after 45 s.
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: AI_CHAT_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    }, null, { totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       const errText = await response.text();
