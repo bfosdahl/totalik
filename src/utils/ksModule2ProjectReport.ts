@@ -369,13 +369,6 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
     // Footer
     doc.setFillColor(...COLORS.darkBlue);
     doc.rect(0, pageHeight - 12, pageWidth, 12, 'F');
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...COLORS.white);
-    doc.text(data.companyName, 15, pageHeight - 4.5);
-    doc.text(`${data.project.project_number} – ${data.project.project_name}`, pageWidth / 2, pageHeight - 4.5, { align: "center" });
-    doc.text(`Side ${doc.getNumberOfPages()}`, pageWidth - 15, pageHeight - 4.5, { align: "right" });
-    doc.setTextColor(...COLORS.textDark);
   };
 
   const addNewPage = () => {
@@ -631,7 +624,7 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
 
     // Detailed checkpoint responses if enabled
     if (sections.includeChecklistDetails) {
-      const completedChecklists = data.checklists.filter(c => c.status === "completed" && c.checkpoints?.length);
+      const completedChecklists = data.checklists.filter(c => c.checkpoints?.length);
       
       for (const checklist of completedChecklists) {
         doc.addPage();
@@ -644,7 +637,10 @@ export const generateProjectReportPdf = async (data: ProjectReportData, sections
         
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
-        doc.text(`Mal: ${checklist.template_name} | Fullført: ${checklist.completed_at ? format(new Date(checklist.completed_at), "d. MMM yyyy", { locale: nb }) : "-"} | Av: ${checklist.completed_by_name || "-"}`, 20, yPos);
+        const checklistSubHeader = checklist.status === "completed"
+          ? `Mal: ${checklist.template_name} | Fullført: ${checklist.completed_at ? format(new Date(checklist.completed_at), "d. MMM yyyy", { locale: nb }) : "-"} | Av: ${checklist.completed_by_name || "-"}`
+          : `Mal: ${checklist.template_name} | Status: ${STATUS_LABELS[checklist.status] || checklist.status} – ikke utfylt`;
+        doc.text(checklistSubHeader, 20, yPos);
         yPos += 10;
 
         if (checklist.checkpoints && checklist.checkpoints.length > 0) {
