@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { SmartDailyReportDeviations } from "@/components/ks2/SmartDailyReportDeviations";
 import { format } from "date-fns";
@@ -39,7 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -67,6 +67,7 @@ import { toast } from "sonner";
 import { t } from "@/i18n/t";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { DraftRestoreBanner } from "@/components/shared/DraftRestoreBanner";
+import { getLocalDateString } from "@/lib/dateUtils";
 
 const weatherIcons: Record<string, React.ReactNode> = {
   sol: <Sun className="h-4 w-4 text-amber-500" />,
@@ -76,23 +77,77 @@ const weatherIcons: Record<string, React.ReactNode> = {
   vind: <Wind className="h-4 w-4 text-teal-500" />,
 };
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline"; icon: React.ReactNode }> = {
-  draft: { label: t("auto.utkast"), variant: "secondary", icon: <Clock className="h-3 w-3" /> },
-  submitted: { label: t("auto.innsendt"), variant: "default", icon: <CheckCircle2 className="h-3 w-3" /> },
+const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
+  draft: { label: t("auto.utkast"), className: "bg-warning text-warning-foreground border-transparent hover:bg-warning", icon: <Clock className="h-3 w-3" /> },
+  submitted: { label: t("auto.innsendt"), className: "bg-success text-success-foreground border-transparent hover:bg-success", icon: <CheckCircle2 className="h-3 w-3" /> },
 };
 
+const PHOTO_BUCKET = "daily-report-photos";
+
+type ReportsApi = ReturnType<typeof useKsDailyReports>;
+type DbPayload = Partial<CreateDailyReport> & { submitted_at?: string | null };
+
+/** Tomme felt sendes som null, slik at tømte felt også lagres. */
+function toDbPayload(data: CreateDailyReport): DbPayload {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(data)) out[k] = v === undefined || v === "" ? null : v;
+  return out as DbPayload;
+}
+
+function photoStoragePaths(list: DailyReportPhoto[]): string[] {
+  return list.flatMap((p) => [p.path, p.thumb_path].filter(Boolean) as string[]);
+}
+
+function reportToInitial(r: DailyReport): CreateDailyReport {
+  return {
+    project_id: r.project_id,
+    report_date: r.report_date,
+    weather_conditions: r.weather_conditions || undefined,
+    temperature_celsius: r.temperature_celsius ?? undefined,
+    wind_conditions: r.wind_conditions || undefined,
+    precipitation: r.precipitation || undefined,
+    own_crew_count: r.own_crew_count,
+    total_crew_count: r.total_crew_count,
+    work_description: r.work_description || undefined,
+    work_areas: r.work_areas || undefined,
+    plan_tomorrow: r.plan_tomorrow || undefined,
+    work_start_time: r.work_start_time || undefined,
+    work_end_time: r.work_end_time || undefined,
+    equipment_used: r.equipment_used || [],
+    materials_received: r.materials_received || [],
+    progress_description: r.progress_description || undefined,
+    progress_percentage: r.progress_percentage ?? 0,
+    on_schedule: r.on_schedule,
+    delay_reason: r.delay_reason || undefined,
+    quality_controls: r.quality_controls || [],
+    hms_incidents: r.hms_incidents || [],
+    hms_observations: r.hms_observations || undefined,
+    safety_meeting_held: r.safety_meeting_held,
+    subcontractor_attendance: r.subcontractor_attendance || [],
+    deviations_today: r.deviations_today || [],
+    photos: r.photos || [],
+    notes: r.notes || undefined,
+    status: r.status,
+  };
+}
+
 function DailyReportForm({
-  onSubmit,
+  initialReport,
   onClose,
-  isSubmitting,
-  initialData,
+  closeRef,
+  createReport,
+  updateReport,
+  onSaved,
 }: {
-  onSubmit: (data: CreateDailyReport, asDraft: boolean) => void;
+  initialReport: DailyReport | null;
   onClose: () => void;
-  isSubmitting: boolean;
-  initialData?: CreateDailyReport;
+  closeRef: React.MutableRefObject<(() => void) | null>;
+  createReport: ReportsApi["createReport"];
+  updateReport: ReportsApi["updateReport"];
+  onSaved?: (r: DailyReport) => void;
 }) {
   const { projectId } = useParams();
+  const initialData = initialReport ? reportToInitial(initialReport) : undefined;
   const [date, setDate] = useState<Date>(initialData?.report_date ? new Date(initialData.report_date) : new Date());
   const [weather, setWeather] = useState(initialData?.weather_conditions || "");
   const [temp, setTemp] = useState(initialData?.temperature_celsius?.toString() || "");
@@ -131,6 +186,23 @@ function DailyReportForm({
   const [notes, setNotes] = useState(initialData?.notes || "");
   const [photos, setPhotos] = useState<DailyReportPhoto[]>((initialData?.photos as any) || []);
 
+  // Autolagring gjelder nye rapporter og utkast – ikke allerede innsendte.
+  const isSubmittedEdit = initialReport?.status === "submitted";
+  const autosave = !isSubmittedEdit;
+  const [reportId, setReportId] = useState<string | null>(initialReport?.id ?? null);
+  const reportIdRef = useRef<string | null>(initialReport?.id ?? null);
+  const [removedPaths, setRemovedPaths] = useState<string[]>([]);
+  const sessionUploadedRef = useRef<Set<string>>(new Set());
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [busy, setBusy] = useState(false);
+  const chainRef = useRef<Promise<void>>(Promise.resolve());
+  const queuedRef = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const photoSaveRef = useRef(false);
+  const lastSavedSigRef = useRef<string | null>(null);
+
   // Universal utkast: tar vare på feltene hvis dialogen lukkes før lagring (kun nye rapporter)
   const isDirty = !!weather || !!temp || !!windCond || !!precip || ownCrew !== "0" ||
     !!workDesc || !!workAreas || !!planTomorrow || !!workStartTime || !!workEndTime || !!equipmentText ||
@@ -145,7 +217,7 @@ function DailyReportForm({
   const { draft, clear: clearDraft, dismiss: dismissDraft } = useFormDraft(
     `ks-dagsrapport:${projectId}`,
     draftData,
-    { enabled: !initialData && isDirty },
+    { enabled: !initialReport && !reportId && isDirty },
   );
 
   const restoreDraft = () => {
@@ -237,14 +309,129 @@ function DailyReportForm({
     photos: photos,
   });
 
-  const submitForm = async (asDraft: boolean) => {
+  const buildRef = useRef(buildData);
+  buildRef.current = buildData;
+  const fieldSig = JSON.stringify(buildData());
+  if (lastSavedSigRef.current === null) lastSavedSigRef.current = fieldSig;
+
+  const clearTimers = () => {
+    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; }
+    if (retryRef.current) { clearTimeout(retryRef.current); retryRef.current = null; }
+  };
+
+  /** Lagrer til samme rad; oppretter kun én gang (kallene er seriekoblet). */
+  const persist = async (payload: DbPayload, silent: boolean): Promise<DailyReport> => {
+    const id = reportIdRef.current;
+    if (id) {
+      const r = await updateReport({ id, updates: payload, silent });
+      onSaved?.(r);
+      return r;
+    }
+    const r = await createReport({ ...payload, status: payload.status ?? "draft" } as CreateDailyReport, { silent });
+    reportIdRef.current = r.id;
+    setReportId(r.id);
+    clearDraft();
+    onSaved?.(r);
+    return r;
+  };
+
+  // Autolagring: sender aldri status eller submitted_at, kun feltverdier.
+  const runAutosave = (): Promise<void> => {
+    if (!autosave) return chainRef.current;
+    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; }
+    if (queuedRef.current) return chainRef.current;
+    queuedRef.current = true;
+    chainRef.current = chainRef.current.then(async () => {
+      queuedRef.current = false;
+      const data = buildRef.current();
+      const sig = JSON.stringify(data);
+      if (sig === lastSavedSigRef.current && reportIdRef.current) return;
+      const { status: _s, ...fields } = toDbPayload(data);
+      setSaveState("saving");
+      try {
+        await persist(fields, true);
+        lastSavedSigRef.current = sig;
+        setSaveState("saved");
+        setSavedAt(new Date());
+      } catch (e) {
+        console.error("Autolagring av dagsrapport feilet", e);
+        setSaveState("error");
+        if (retryRef.current) clearTimeout(retryRef.current);
+        retryRef.current = setTimeout(() => { retryRef.current = null; void runAutosave(); }, 5000);
+      }
+    });
+    return chainRef.current;
+  };
+
+  const hasContent = isDirty || photos.length > 0;
+  useEffect(() => {
+    if (!autosave || fieldSig === lastSavedSigRef.current) return;
+    if (!reportIdRef.current && !hasContent) return;
+    if (photoSaveRef.current || !reportIdRef.current) {
+      photoSaveRef.current = false;
+      void runAutosave();
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => { debounceRef.current = null; void runAutosave(); }, 2500);
+  }, [fieldSig]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => clearTimers(), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handlePhotosChange = (next: DailyReportPhoto[]) => {
+    for (const p of next) {
+      if (!photos.some((o) => o.path === p.path)) sessionUploadedRef.current.add(p.path);
+    }
+    photoSaveRef.current = true;
+    setPhotos(next);
+  };
+
+  const explicitSave = async (mode: "draft" | "submit" | "update") => {
+    setBusy(true);
+    clearTimers();
     try {
-      await onSubmit(buildData(), asDraft);
+      await chainRef.current;
+      const removed = new Set(removedPaths);
+      const kept = photos.filter((p) => !removed.has(p.path));
+      const removedPhotos = photos.filter((p) => removed.has(p.path));
+      const { status: _s, ...fields } = toDbPayload({ ...buildData(), photos: kept });
+      const payload: DbPayload = { ...fields };
+      if (mode === "draft") payload.status = "draft";
+      if (mode === "submit") {
+        payload.status = "submitted";
+        payload.submitted_at = initialReport?.submitted_at || new Date().toISOString();
+      }
+      await persist(payload, true);
+      lastSavedSigRef.current = JSON.stringify({ ...buildData(), photos: kept });
+      if (removedPhotos.length) {
+        const { error } = await supabase.storage.from(PHOTO_BUCKET).remove(photoStoragePaths(removedPhotos));
+        if (error) console.warn("Kunne ikke slette fjernede bilder", error);
+      }
+      sessionUploadedRef.current.clear();
       clearDraft();
-    } catch {
-      /* lar brukeren prøve igjen */
+      toast.success(mode === "draft" ? "Utkast lagret" : mode === "submit" ? "Dagsrapport sendt inn" : "Dagsrapport oppdatert");
+      onClose();
+    } catch (e) {
+      console.error("Lagring av dagsrapport feilet", e);
+      toast.error("Kunne ikke lagre dagsrapporten");
+    } finally {
+      setBusy(false);
     }
   };
+
+  // Lukking (Lukk, X, klikk utenfor, Escape): lagre ventende endringer straks.
+  const handleClose = () => {
+    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; }
+    if (autosave) {
+      if (fieldSig !== lastSavedSigRef.current && (reportIdRef.current || hasContent)) void runAutosave();
+    } else {
+      const saved = new Set(((initialReport?.photos || []) as DailyReportPhoto[]).map((p) => p.path));
+      const orphans = photos.filter((p) => sessionUploadedRef.current.has(p.path) && !saved.has(p.path));
+      if (orphans.length) void supabase.storage.from(PHOTO_BUCKET).remove(photoStoragePaths(orphans));
+    }
+    onClose();
+  };
+  closeRef.current = handleClose;
 
   const SectionHeader = ({ id, label, icon }: { id: string; label: string; icon: React.ReactNode }) => (
     <button
@@ -262,7 +449,7 @@ function DailyReportForm({
 
   return (
     <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-      {!initialData && draft && !isDirty && (
+      {!initialReport && !reportId && draft && !isDirty && (
         <DraftRestoreBanner savedAt={draft.savedAt} onRestore={restoreDraft} onDiscard={clearDraft} />
       )}
       {/* Date */}
@@ -463,7 +650,13 @@ function DailyReportForm({
             <p className="text-xs text-muted-foreground mb-2">
               {t("auto.ta_bilde_eller_last_opp_filer_bilder_foe")}
             </p>
-            <DailyReportPhotoUploader photos={photos} onChange={setPhotos} />
+            <DailyReportPhotoUploader
+              photos={photos}
+              onChange={handlePhotosChange}
+              removedPaths={removedPaths}
+              onRemove={(p) => setRemovedPaths((prev) => (prev.includes(p.path) ? prev : [...prev, p.path]))}
+              onUndoRemove={(p) => setRemovedPaths((prev) => prev.filter((x) => x !== p.path))}
+            />
           </div>
         )}
       </div>
@@ -494,18 +687,36 @@ function DailyReportForm({
       />
 
       {/* Action Buttons */}
-      <div className="flex gap-2 pt-4 border-t sticky bottom-0 bg-background pb-2">
-        <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
-          {t("auto.avbryt")}
-        </Button>
-        <Button variant="secondary" onClick={() => submitForm(true)} disabled={isSubmitting} className="flex-1">
-          <Clock className="h-4 w-4 mr-1" />
-          {t("auto.lagre_utkast")}
-        </Button>
-        <Button onClick={() => submitForm(false)} disabled={isSubmitting} className="flex-1">
-          <Send className="h-4 w-4 mr-1" />
-          {t("auto.send_inn")}
-        </Button>
+      <div className="sticky bottom-0 bg-background border-t pt-3 pb-2 space-y-2">
+        {autosave && saveState !== "idle" && (
+          <p className={cn("text-xs", saveState === "error" ? "text-destructive" : "text-muted-foreground")} aria-live="polite">
+            {saveState === "saving"
+              ? "Lagrer…"
+              : saveState === "saved" && savedAt
+                ? `Lagret ${format(savedAt, "HH:mm")}`
+                : "Ikke lagret – prøver igjen"}
+          </p>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleClose} className="flex-auto min-w-0 px-3" disabled={busy}>
+            {autosave ? "Lukk" : t("auto.avbryt")}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => explicitSave(isSubmittedEdit ? "update" : "draft")}
+            disabled={busy}
+            className="flex-auto min-w-0 px-3"
+          >
+            <Clock className="h-4 w-4 mr-1 shrink-0" />
+            {isSubmittedEdit ? "Lagre endringer" : t("auto.lagre_utkast")}
+          </Button>
+          {!isSubmittedEdit && (
+            <Button onClick={() => explicitSave("submit")} disabled={busy} className="flex-auto min-w-0 px-3">
+              <Send className="h-4 w-4 mr-1 shrink-0" />
+              {t("auto.send_inn")}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -583,47 +794,44 @@ function generateReportEmailHtml(report: DailyReport): string {
 
 export default function Ks2Dagsrapport() {
   const { projectId } = useParams();
-  const { reports, isLoading, createReport, updateReport, deleteReport, submitReport, isCreating, isUpdating } = useKsDailyReports(projectId);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingReport, setEditingReport] = useState<DailyReport | null>(null);
+  const { reports, isLoading, createReport, updateReport, deleteReport, submitReport } = useKsDailyReports(projectId);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formReport, setFormReport] = useState<DailyReport | null>(null);
+  const [formNumber, setFormNumber] = useState<string | null>(null);
+  const [formKey, setFormKey] = useState(0);
+  const closeRef = useRef<(() => void) | null>(null);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
   const [emailAttachment, setEmailAttachment] = useState<{ filename: string; content: string; contentType: string } | null>(null);
   const [preparingEmail, setPreparingEmail] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { users } = useCompanyUsers();
-  const { profile } = useAuth();
+  const { user, isCompanyAdmin, isSystemAdmin } = useAuth();
+  const canDelete = isCompanyAdmin || isSystemAdmin;
 
-  const reportToInitial = (r: DailyReport): CreateDailyReport => ({
-    project_id: r.project_id,
-    report_date: r.report_date,
-    weather_conditions: r.weather_conditions || undefined,
-    temperature_celsius: r.temperature_celsius ?? undefined,
-    wind_conditions: r.wind_conditions || undefined,
-    precipitation: r.precipitation || undefined,
-    own_crew_count: r.own_crew_count,
-    total_crew_count: r.total_crew_count,
-    work_description: r.work_description || undefined,
-    work_areas: r.work_areas || undefined,
-    plan_tomorrow: r.plan_tomorrow || undefined,
-    work_start_time: r.work_start_time || undefined,
-    work_end_time: r.work_end_time || undefined,
-    equipment_used: r.equipment_used || [],
-    materials_received: r.materials_received || [],
-    progress_description: r.progress_description || undefined,
-    progress_percentage: r.progress_percentage ?? 0,
-    on_schedule: r.on_schedule,
-    delay_reason: r.delay_reason || undefined,
-    quality_controls: r.quality_controls || [],
-    hms_incidents: r.hms_incidents || [],
-    hms_observations: r.hms_observations || undefined,
-    safety_meeting_held: r.safety_meeting_held,
-    subcontractor_attendance: r.subcontractor_attendance || [],
-    deviations_today: r.deviations_today || [],
-    photos: r.photos || [],
-    notes: r.notes || undefined,
-    status: r.status,
-  });
+  const today = getLocalDateString();
+  const todaysDraft =
+    reports.find(
+      (r) => r.status === "draft" && r.report_date === today && r.user_id === user?.id && (!projectId || r.project_id === projectId),
+    ) ?? null;
+
+  const openForm = (r: DailyReport | null) => {
+    setFormReport(r);
+    setFormNumber(r?.report_number ?? null);
+    setFormKey((k) => k + 1);
+    setFormOpen(true);
+  };
+  const openNew = () => openForm(todaysDraft);
+  const closeForm = () => {
+    closeRef.current = null;
+    setFormOpen(false);
+  };
+  const formTitle =
+    formReport?.status === "submitted"
+      ? `Rediger dagsrapport ${formNumber ?? ""}`
+      : formNumber
+        ? `Dagsrapport ${formNumber} (utkast)`
+        : t("auto.ny_dagsrapport");
 
   const handleDownloadPdf = async (report: DailyReport) => {
     setDownloadingId(report.id);
@@ -689,26 +897,6 @@ export default function Ks2Dagsrapport() {
   };
 
 
-  const handleSubmit = async (data: CreateDailyReport, asDraft: boolean) => {
-    await createReport({
-      ...data,
-      status: asDraft ? "draft" : "submitted",
-    } as any);
-    setIsFormOpen(false);
-  };
-
-  const handleUpdate = async (data: CreateDailyReport, asDraft: boolean) => {
-    if (!editingReport) return;
-    await updateReport({
-      id: editingReport.id,
-      updates: {
-        ...data,
-        status: asDraft ? "draft" : "submitted",
-      } as any,
-    });
-    setEditingReport(null);
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -720,44 +908,59 @@ export default function Ks2Dagsrapport() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h2 className="text-xl font-semibold">{t("auto.dagsrapporter")}</h2>
           <p className="text-sm text-muted-foreground">{t("auto.daglige_rapporter_for_arbeid_mannskap_va")}</p>
         </div>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              {t("auto.ny_dagsrapport")}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle>{t("auto.ny_dagsrapport")}</DialogTitle>
-            </DialogHeader>
-            <DailyReportForm onSubmit={handleSubmit} onClose={() => setIsFormOpen(false)} isSubmitting={isCreating} />
-          </DialogContent>
-        </Dialog>
+        <Button onClick={openNew}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t("auto.ny_dagsrapport")}
+        </Button>
       </div>
 
-      {/* Edit dialog */}
-      <Dialog open={!!editingReport} onOpenChange={(o) => !o && setEditingReport(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh]">
+      {/* Ett skjema for ny rapport, utkast og redigering */}
+      <Dialog
+        open={formOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            if (closeRef.current) closeRef.current();
+            else closeForm();
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh]" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>Rediger dagsrapport {editingReport?.report_number}</DialogTitle>
+            <DialogTitle>{formTitle}</DialogTitle>
           </DialogHeader>
-          {editingReport && (
+          {formOpen && (
             <DailyReportForm
-              key={editingReport.id}
-              onSubmit={handleUpdate}
-              onClose={() => setEditingReport(null)}
-              isSubmitting={isUpdating}
-              initialData={reportToInitial(editingReport)}
+              key={formKey}
+              initialReport={formReport}
+              onClose={closeForm}
+              closeRef={closeRef}
+              createReport={createReport}
+              updateReport={updateReport}
+              onSaved={(r) => setFormNumber(r.report_number)}
             />
           )}
         </DialogContent>
       </Dialog>
+
+      {todaysDraft && (
+        <Card className="border-warning bg-warning/10">
+          <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-medium">Du har en påbegynt dagsrapport for i dag</p>
+              <p className="text-sm text-muted-foreground whitespace-nowrap">{todaysDraft.report_number} · utkast</p>
+            </div>
+            <Button onClick={() => openForm(todaysDraft)} className="shrink-0">
+              <Camera className="h-4 w-4 mr-2" />
+              Fortsett dagens rapport ({todaysDraft.photos?.length || 0} bilder)
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Reports list */}
       {reports.length === 0 ? (
@@ -766,7 +969,7 @@ export default function Ks2Dagsrapport() {
             <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
             <h3 className="text-lg font-medium mb-1">{t("auto.ingen_dagsrapporter_ennaa")}</h3>
             <p className="text-sm text-muted-foreground mb-4">{t("auto.opprett_din_foerste_dagsrapport_for_aa_k")}</p>
-            <Button onClick={() => setIsFormOpen(true)}>
+            <Button onClick={openNew}>
               <Plus className="h-4 w-4 mr-2" />
               {t("auto.opprett_dagsrapport")}
             </Button>
@@ -785,22 +988,22 @@ export default function Ks2Dagsrapport() {
                   onClick={() => setExpandedReport(isExpanded ? null : report.id)}
                 >
                   <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 text-sm font-mono text-muted-foreground">
-                          {report.report_number}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono text-muted-foreground whitespace-nowrap">
+                            {report.report_number}
+                          </span>
+                          <Badge variant="outline" className={cn("gap-1 shrink-0", status.className)}>
+                            {status.icon}
+                            {status.label}
+                          </Badge>
                         </div>
-                        <Badge variant={status.variant} className="gap-1">
-                          {status.icon}
-                          {status.label}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
                           {format(new Date(report.report_date), "EEEE d. MMMM yyyy", { locale: nb })}
                         </span>
-                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
+                      {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0 mt-0.5" /> : <ChevronDown className="h-4 w-4 shrink-0 mt-0.5" />}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                       <span>{report.user_name}</span>
@@ -986,7 +1189,7 @@ export default function Ks2Dagsrapport() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setEditingReport(report)}
+                        onClick={() => openForm(report)}
                       >
                         <Pencil className="h-3.5 w-3.5 mr-1" />
                         {t("auto.rediger")}
@@ -1009,6 +1212,7 @@ export default function Ks2Dagsrapport() {
                         <Mail className="h-3.5 w-3.5 mr-1" />
                         {preparingEmail === report.id ? "Klargjør PDF..." : "Send på e-post"}
                       </Button>
+                      {canDelete && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button size="sm" variant="ghost" className="text-destructive">
@@ -1029,6 +1233,7 @@ export default function Ks2Dagsrapport() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+                      )}
                     </div>
                   </CardContent>
                 )}
