@@ -182,7 +182,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   useEffect(() => {
     if (document.hidden) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, currentStep]);
+  }, [messages, currentStep, isSaving, isGeneratingSetup]);
 
   // Warn before leaving the page while the setup is being generated or saved
   useEffect(() => {
@@ -438,6 +438,11 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
   // AI chat for steps 4-8
   const continueWithAIChat = async (contextMessage: string, stepNumber: number) => {
     const messagesForAI: Message[] = [...messages, { role: "user", content: contextMessage }];
+
+    // For the final step there is no assistant bubble to show, so keep the
+    // "Setter opp HMS-systemet ditt..." box visible for the whole wait.
+    if (stepNumber === 9) setIsGeneratingSetup(true);
+
     
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-hms-chat`;
