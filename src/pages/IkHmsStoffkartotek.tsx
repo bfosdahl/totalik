@@ -32,8 +32,10 @@ import { EditIkHmsChemicalDialog } from "@/components/stoffkartotek/EditIkHmsChe
 import { ChemicalRiskBadge } from "@/components/stoffkartotek/ChemicalRiskBadge";
 import { IkHmsChemicalRiskDialog } from "@/components/stoffkartotek/IkHmsChemicalRiskDialog";
 import { t } from "@/i18n/t";
+import { emptySdsExtra, sdsExtraFromParse, sdsExtraFromRow, sdsExtraToDb, type SdsExtra } from "@/lib/sdsFields";
+import { SdsExtraForm, SdsExtraView } from "@/components/stoffkartotek/SdsExtraFields";
 
-interface IkHmsStoffkartotek {
+interface IkHmsStoffkartotek extends SdsExtra {
   id: string;
   company_id: string;
   product_name: string;
@@ -95,6 +97,7 @@ export default function IkHmsStoffkartotek() {
     danger_classes: [] as string[],
     location: "",
     notes: "",
+    ...emptySdsExtra(),
   });
   const [sdsFile, setSdsFile] = useState<File | null>(null);
 
@@ -130,6 +133,7 @@ export default function IkHmsStoffkartotek() {
           location: input.location || null,
           sds_file_path: input.sds_file_path || null,
           notes: input.notes || null,
+          ...sdsExtraToDb(input),
           last_updated: new Date().toISOString(),
         } as any)
         .select()
@@ -156,6 +160,7 @@ export default function IkHmsStoffkartotek() {
           notes: data.notes,
           last_updated: data.last_updated,
           created_at: data.created_at,
+          ...sdsExtraFromRow(data),
         };
         setRiskAssessmentProduct(newProduct);
         toast.info(t("auto.ai_risikovurdering_er_forhaandsutfylt_gj"));
@@ -218,6 +223,7 @@ export default function IkHmsStoffkartotek() {
       danger_classes: [],
       location: "",
       notes: "",
+      ...emptySdsExtra(),
     });
     setSdsFile(null);
     setIsParsing(false);
@@ -286,6 +292,7 @@ export default function IkHmsStoffkartotek() {
           ? result.data.danger_classes.filter((dc: string) => DANGER_CLASSES.includes(dc))
           : prev.danger_classes,
         notes: result.data.notes || prev.notes,
+        ...sdsExtraFromParse(result.data),
       }));
 
       // Store AI risk assessment suggestion
@@ -555,6 +562,7 @@ export default function IkHmsStoffkartotek() {
                     rows={3}
                   />
                 </div>
+                <SdsExtraForm value={formData} onChange={(extra) => setFormData((prev) => ({ ...prev, ...extra }))} />
                 <Button
                   onClick={handleCreate}
                   disabled={createMutation.isPending || isUploading}
@@ -714,9 +722,10 @@ export default function IkHmsStoffkartotek() {
                 {selectedProduct.notes && (
                   <div>
                     <Label className="text-muted-foreground">{t("auto.notater")}</Label>
-                    <p className="whitespace-pre-wrap">{selectedProduct.notes}</p>
+                    <p className="whitespace-pre-wrap break-words">{selectedProduct.notes}</p>
                   </div>
                 )}
+                <SdsExtraView value={sdsExtraFromRow(selectedProduct)} />
 
                 {/* SDS Section */}
                 <div className="border-t pt-4">

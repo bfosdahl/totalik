@@ -188,6 +188,7 @@ export const useGlobalChemicalRegistry = (projectId: string | null) => {
       casNumber,
       dangerClasses,
       notes,
+      sdsExtra,
       sdsFile,
       location,
       customNotes,
@@ -198,6 +199,7 @@ export const useGlobalChemicalRegistry = (projectId: string | null) => {
       casNumber?: string;
       dangerClasses: string[];
       notes?: string;
+      sdsExtra?: import("@/lib/sdsFields").SdsExtra;
       sdsFile?: File;
       location?: string;
       customNotes?: string;
@@ -211,6 +213,7 @@ export const useGlobalChemicalRegistry = (projectId: string | null) => {
         casNumber,
         dangerClasses,
         notes,
+        sdsExtra,
         sdsFile,
       });
 

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { firstCas, sdsExtraToDb, type SdsExtra } from "@/lib/sdsFields";
 
 // Sanitize a file name for use as a storage key: drop diacritics, map æøå to
 // ae/o/a and replace anything outside a-zA-Z0-9.- with an underscore.
@@ -18,6 +19,7 @@ export interface GlobalChemicalSdsInput {
   casNumber?: string;
   dangerClasses: string[];
   notes?: string;
+  sdsExtra?: SdsExtra;
   sdsFile?: File;
 }
 
@@ -27,8 +29,11 @@ export interface GlobalChemicalSdsInput {
 export async function createGlobalChemicalWithSds(
   input: GlobalChemicalSdsInput,
 ): Promise<any> {
-  const { productName, manufacturer, casNumber, dangerClasses, notes, sdsFile } =
+  const { productName, manufacturer, casNumber, dangerClasses, notes, sdsExtra, sdsFile } =
     input;
+
+  const extra = sdsExtra ? sdsExtraToDb(sdsExtra) : null;
+  const first = sdsExtra ? firstCas(sdsExtra.cas_numbers) : "";
 
   // 1. Create global chemical
   const { data: globalChemical, error: chemError } = await supabase
@@ -36,9 +41,10 @@ export async function createGlobalChemicalWithSds(
     .insert({
       product_name: productName,
       manufacturer: manufacturer || null,
-      cas_number: casNumber || null,
+      cas_number: (casNumber || first) || null,
       danger_classes: dangerClasses,
       notes: notes || null,
+      ...(extra ?? {}),
     } as any)
     .select()
     .single();

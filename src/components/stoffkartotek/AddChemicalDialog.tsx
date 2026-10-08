@@ -24,6 +24,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
+import { emptySdsExtra, firstCas, sdsExtraFromParse, sdsExtraFromRow, type SdsExtra } from "@/lib/sdsFields";
+import { SdsExtraForm, SdsExtraView } from "@/components/stoffkartotek/SdsExtraFields";
 
 interface AddChemicalDialogProps {
   open: boolean;
@@ -77,6 +79,7 @@ export const AddChemicalDialog = ({
   const [casNumber, setCasNumber] = useState("");
   const [dangerClasses, setDangerClasses] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
+  const [sdsExtra, setSdsExtra] = useState<SdsExtra>(emptySdsExtra());
   const [sdsFile, setSdsFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,6 +106,7 @@ export const AddChemicalDialog = ({
     setCasNumber("");
     setDangerClasses([]);
     setNotes("");
+    setSdsExtra(emptySdsExtra());
     setSdsFile(null);
   };
 
@@ -135,9 +139,10 @@ export const AddChemicalDialog = ({
     createNewChemical({
       productName: productName.trim(),
       manufacturer: manufacturer.trim() || undefined,
-      casNumber: casNumber.trim() || undefined,
+      casNumber: casNumber.trim() || firstCas(sdsExtra.cas_numbers) || undefined,
       dangerClasses,
       notes: notes.trim() || undefined,
+      sdsExtra,
       sdsFile: sdsFile || undefined,
       location: location.trim() || undefined,
       customNotes: customNotes.trim() || undefined,
@@ -196,6 +201,10 @@ export const AddChemicalDialog = ({
           if (parsed.manufacturer) setManufacturer(parsed.manufacturer);
           if (parsed.danger_classes?.length) setDangerClasses(parsed.danger_classes);
           if (parsed.notes) setNotes(parsed.notes);
+          const extra = sdsExtraFromParse(parsed);
+          setSdsExtra(extra);
+          const cas = firstCas(extra.cas_numbers);
+          if (cas) setCasNumber(cas);
           toast.success(t("auto.sikkerhetsdatablad_analysert"));
         }
         setIsParsing(false);
@@ -259,6 +268,8 @@ export const AddChemicalDialog = ({
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
+
+                    <div className="mt-3"><SdsExtraView value={sdsExtraFromRow(selectedChemical)} /></div>
 
                     {selectedChemical.danger_classes?.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-3">
@@ -459,6 +470,8 @@ export const AddChemicalDialog = ({
                   rows={3}
                 />
               </div>
+
+              <SdsExtraForm value={sdsExtra} onChange={setSdsExtra} />
 
               <div className="border-t pt-4 mt-2">
                 <h4 className="font-medium text-sm mb-3">Bedriftsspesifikk informasjon (valgfritt)</h4>
