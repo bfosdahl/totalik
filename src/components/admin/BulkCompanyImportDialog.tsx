@@ -174,7 +174,6 @@ export function BulkCompanyImportDialog({
           const seenOrgNumbers = new Set<string>();
           const companies: ParsedCompany[] = [];
 
-
           for (const row of jsonData as any[]) {
             let orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || row.OrgNr || row["Org.nr"] || "").replace(/\s/g, "");
             if (orgNumber.length > 0 && orgNumber.length < 9) {
