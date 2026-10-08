@@ -185,11 +185,11 @@ async function jevPreassess(
   key: string,
   fastTrack = false,
   questionsAsked = 0,
-): Promise<string> {
+): Promise<{ hint: string; ready: boolean }> {
   const text = messages.filter((m) => m?.role === "user").map((m) =>
     Array.isArray(m.content) ? m.content.filter((p: any) => p?.type === "text").map((p: any) => p.text).join("\n") : String(m.content ?? "")
   ).join("\n---\n").slice(-6000).trim();
-  if (text.length < 8) return "";
+  if (text.length < 8) return { hint: "", ready: false };
   const TRADES: Record<string, string> = {
     grunnarbeid: "grunnarbeid/graving", betong: "betong/støp", tomrer: "tømrer/trearbeid", tak: "tak/taktekking",
     ror: "rør/sanitær", elektro: "elektro", vatrom: "våtrom/flis", riving: "riving", maling: "maling/overflate", ventilasjon: "ventilasjon",
@@ -214,7 +214,7 @@ async function jevPreassess(
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
     body: JSON.stringify({ model: "typesafe/jev-latest", state: { samtale: text }, questions }),
   });
-  if (!res.ok) { console.error("Jev", res.status, await res.text()); return ""; }
+  if (!res.ok) { console.error("Jev", res.status, await res.text()); return { hint: "", ready: false }; }
   const a = (await res.json())?.answers || {};
   const known: string[] = []; const missing: string[] = [];
   const conf = (x: any) => (x?.confidence ?? 0) >= 0.6;
@@ -232,13 +232,14 @@ async function jevPreassess(
   const contractorKnown = !!a.contractor?.choice && a.contractor.choice !== "ukjent" && conf(a.contractor);
   const ready = jevReady || (fastTrack && (questionsAsked >= 2 || (typeKnown && (contractorKnown || questionsAsked >= 1))));
   console.log("Jev preassess", JSON.stringify({ known, missing, ready, jevReady, fastTrack, questionsAsked }));
-  return `\n\nFORHÅNDSVURDERING AV SAMTALEN (automatisk, ikke vis til brukeren):
+  const hint = `\n\nFORHÅNDSVURDERING AV SAMTALEN (automatisk, ikke vis til brukeren):
 Allerede kjent – IKKE spør om dette igjen: ${known.join("; ") || "ingenting ennå"}.
 Mangler: ${missing.join(", ") || "ingenting viktig"}.
 ${ready
     ? "Brukeren har gitt nok informasjon. Gå RETT til forslag med JSON-blokken nå. Manglende navn/adresse/byggherre kan stå tomt eller få et fornuftig arbeidsnavn – ikke still flere spørsmål."
     : "Still NØYAKTIG ETT kort oppfølgingsspørsmål – ingen punktliste med flere spørsmål. Spør om det viktigste som mangler for å lage oppsettet (type/omfang, ellers entrepriseform). Spør IKKE om prosjektnavn, adresse eller byggherre – det kan fylles ut senere. Ikke spør om noe som allerede er kjent." +
       (fastTrack ? " Hvis prosjekttype er kjent men entrepriseform mangler, spør om entrepriseform; ellers spør om type/omfang." : "")}`;
+  return { hint, ready };
 }
 
 serve(async (req) => {
