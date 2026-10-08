@@ -33,6 +33,7 @@ interface ChatState {
   lastUserMessage?: string;
   wasStreaming?: boolean;
   savedAt?: string;
+  startedAt?: string;
 }
 
 function loadChatState(companyId: string): ChatState | null {
@@ -70,9 +71,15 @@ export function hasInProgressChatState(companyId: string, setupCompletedAt?: str
   const state = loadChatState(companyId);
   if (!state) return false;
   const hasUserMessage = !!state.messages?.some((m) => m.role === 'user');
-  const isNewerThanCompletion =
-    !setupCompletedAt || (!!state.savedAt && state.savedAt > setupCompletedAt);
-  if (hasUserMessage && isNewerThanCompletion) return true;
+  if (!hasUserMessage) {
+    clearChatState(companyId);
+    return false;
+  }
+  if (!setupCompletedAt) return true;
+  const reachedProposal = state.messages.some(
+    (m) => m.role === 'assistant' && m.content.includes('|||JSON_START|||')
+  );
+  if (state.startedAt && state.startedAt > setupCompletedAt && !reachedProposal) return true;
   // Stale state (from before this fix, or left over after completion) is removed.
   clearChatState(companyId);
   return false;
@@ -148,6 +155,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   const abortControllerRef = useRef<AbortController | null>(null);
   const isStreamingRef = useRef(false);
   const completedRef = useRef(false);
+  const startedAtRef = useRef(initialState?.startedAt ?? new Date().toISOString());
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-mat-chat`;
 
   // Persist chat state to sessionStorage whenever relevant state changes
@@ -159,6 +167,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       messages,
       lastUserMessage,
       wasStreaming: isStreamingRef.current,
+      startedAt: startedAtRef.current,
     });
   }, [messages, lastUserMessage, companyId]);
 
@@ -172,6 +181,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
           messages,
           lastUserMessage,
           wasStreaming: isStreamingRef.current,
+          startedAt: startedAtRef.current,
         });
       }
     };
