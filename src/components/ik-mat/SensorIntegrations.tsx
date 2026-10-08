@@ -104,7 +104,7 @@ export function SensorIntegrations({
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4">
           <div>
             <CardTitle className="flex items-center gap-2">
               <Plug className="h-5 w-5" /> {t("auto.leverandoerintegrasjoner")}
@@ -113,7 +113,7 @@ export function SensorIntegrations({
               {t("auto.koble_til_sensorleverandoeren_din_enten_")}
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => syncNow.mutate(undefined)} disabled={syncNow.isPending}>
               <RefreshCw className={`h-4 w-4 mr-2 ${syncNow.isPending ? 'animate-spin' : ''}`} />
               {t("auto.hent_naa")}
