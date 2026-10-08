@@ -1,451 +1,158 @@
-import { formatFileSize } from "@/utils/formatFileSize";
-import { useState } from "react";
-import { FileText, Download, FolderOpen, Search, File, FileSpreadsheet, FileImage, ChevronDown, ChevronRight, ArrowLeft, ExternalLink, BookOpen, Scale, GraduationCap, ShieldCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { MyDocumentsTab } from "@/components/documents/MyDocumentsTab";
+import { ExternalLink, BookOpen, Scale, GraduationCap, ShieldCheck } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ModuleDokumentsenter } from "@/components/documents/ModuleDokumentsenter";
 import { t } from "@/i18n/t";
 
-interface AdminDocument {
-  id: string;
-  document_name: string;
-  file_path: string;
-  file_type: string | null;
-  file_size: number | null;
-  description: string | null;
-  folder_id: string | null;
-  folder_name?: string;
-}
+function IkAlkoholResources() {
+  return (
+    <div className="space-y-6">
+      {/* Lovverk */}
+      <div>
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
+          <Scale className="h-5 w-5 text-amber-600" />
+          Lovverk og forskrifter
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[
+            { title: t("auto.alkoholloven"), desc: "Lov om omsetning av alkoholholdig drikk m.v.", url: "https://lovdata.no/dokument/NL/lov/1989-06-02-27" },
+            { title: t("auto.alkoholforskriften"), desc: "Forskrift om omsetning av alkoholholdig drikk mv.", url: "https://lovdata.no/dokument/SF/forskrift/2005-06-08-538" },
+            { title: t("auto.serveringsloven"), desc: "Lov om serveringsvirksomhet", url: "https://lovdata.no/dokument/NL/lov/1997-06-13-55" },
+            { title: t("auto.internkontrollforskriften"), desc: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid", url: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
+          ].map((item) => (
+            <Card key={item.title} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
+                  <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 shrink-0 mt-0.5">
+                    <Scale className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors flex items-center gap-1">
+                      {item.title}
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
+                </a>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
 
-interface AdminFolder {
-  id: string;
-  name: string;
-  description: string | null;
-  icon: string;
-  color: string;
-  parent_folder_id: string | null;
+      {/* Veiledninger */}
+      <div>
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
+          <BookOpen className="h-5 w-5 text-blue-600" />
+          Veiledninger og retningslinjer
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[
+            { title: t("auto.helsedirektoratets_veileder"), desc: "Veileder til alkoholloven og tilhørende forskrifter", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+            { title: t("auto.kommunens_ansvar"), desc: "Om kommunens kontroll med salgs- og skjenkebevillinger", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+            { title: t("auto.ansvarlig_vertskap"), desc: "Kurs og opplæring for ansatte i serveringsbransjen", url: "https://www.helsedirektoratet.no/tema/alkohol" },
+            { title: t("auto.akan_arbeidslivets_kompetansesenter"), desc: "Forebygging av rus og avhengighet i arbeidslivet", url: "https://akan.no" },
+          ].map((item) => (
+            <Card key={item.title} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
+                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 shrink-0 mt-0.5">
+                    <BookOpen className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1">
+                      {item.title}
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
+                </a>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Opplæring */}
+      <div>
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
+          <GraduationCap className="h-5 w-5 text-emerald-600" />
+          {t("auto.opplaering_og_kunnskapsproeve")}
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[
+            { title: t("auto.kunnskapsproeven"), desc: "Informasjon om kunnskapsprøve i alkoholloven", url: "https://www.helsedirektoratet.no/tema/alkohol/kunnskapsproven" },
+            { title: t("auto.etablererproeven"), desc: "Prøve for serveringsbevillinger", url: "https://www.mattilsynet.no" },
+          ].map((item) => (
+            <Card key={item.title} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
+                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0 mt-0.5">
+                    <GraduationCap className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors flex items-center gap-1">
+                      {item.title}
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
+                </a>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Tilsyn */}
+      <div>
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
+          <ShieldCheck className="h-5 w-5 text-purple-600" />
+          Tilsyn og kontroll
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[
+            { title: t("auto.prikksystemet"), desc: "Informasjon om prikktildeling ved brudd på alkoholloven", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+            { title: t("auto.skjenkekontroll"), desc: "Hva kommunen ser etter ved tilsyn", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
+          ].map((item) => (
+            <Card key={item.title} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
+                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 shrink-0 mt-0.5">
+                    <ShieldCheck className="h-4 w-4 text-purple-700 dark:text-purple-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors flex items-center gap-1">
+                      {item.title}
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
+                </a>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function IkAlkoholDokumentsenter() {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState("maler");
-
-  // Fetch folders for IK-Alkohol module
-  const { data: folders = [], isLoading: foldersLoading } = useQuery({
-    queryKey: ["admin-ik-alkohol-folders"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("admin_document_folders")
-        .select("*")
-        .eq("module_type", "ik-alkohol")
-        .order("sort_order", { ascending: true });
-
-      if (error) throw error;
-      return (data || []) as AdminFolder[];
-    },
-  });
-
-  // Fetch documents for IK-Alkohol module folders
-  const { data: documents = [], isLoading: documentsLoading } = useQuery({
-    queryKey: ["admin-ik-alkohol-documents", folders],
-    queryFn: async () => {
-      if (folders.length === 0) return [];
-
-      const folderIds = folders.map(f => f.id);
-      const { data, error } = await supabase
-        .from("admin_documents")
-        .select("*")
-        .in("folder_id", folderIds)
-        .order("document_name");
-
-      if (error) throw error;
-      return (data || []) as AdminDocument[];
-    },
-    enabled: folders.length > 0,
-  });
-
-  const toggleFolder = (folderId: string) => {
-    setExpandedFolders(prev =>
-      prev.includes(folderId)
-        ? prev.filter(id => id !== folderId)
-        : [...prev, folderId]
-    );
-  };
-
-  const getDocumentsByFolder = (folderId: string) => {
-    return documents.filter(doc => doc.folder_id === folderId);
-  };
-
-  const handleDownload = async (filePath: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("admin-documents")
-        .createSignedUrl(filePath, 3600);
-
-      if (error) throw error;
-      window.open(data.signedUrl, "_blank");
-    } catch (error) {
-      console.error("Download error:", error);
-      toast.error(t("auto.kunne_ikke_aapne_dokument"));
-    }
-  };
-
-
-  const getFileIcon = (fileType: string | null) => {
-    if (!fileType) return <File className="h-8 w-8 text-muted-foreground" />;
-    if (fileType.includes("pdf")) return <FileText className="h-8 w-8 text-red-500" />;
-    if (fileType.includes("spreadsheet") || fileType.includes("excel")) return <FileSpreadsheet className="h-8 w-8 text-green-500" />;
-    if (fileType.includes("image")) return <FileImage className="h-8 w-8 text-blue-500" />;
-    if (fileType.includes("word") || fileType.includes("document")) return <FileText className="h-8 w-8 text-blue-600" />;
-    return <File className="h-8 w-8 text-muted-foreground" />;
-  };
-
-  const getColorClass = (color: string) => {
-    const colorMap: Record<string, string> = {
-      blue: "bg-blue-500",
-      emerald: "bg-emerald-500",
-      amber: "bg-amber-500",
-      purple: "bg-purple-500",
-      cyan: "bg-cyan-500",
-      orange: "bg-orange-500",
-      red: "bg-red-500",
-      gray: "bg-gray-500",
-    };
-    return colorMap[color] || "bg-amber-500";
-  };
-
-  // Filter folders and documents by search
-  const filteredFolders = folders.filter(folder => {
-    const folderDocs = getDocumentsByFolder(folder.id);
-    const matchesSearch = folder.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      folderDocs.some(doc =>
-        doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    return matchesSearch;
-  });
-
-  const isLoading = foldersLoading || documentsLoading;
-
-  // Build folder tree
-  const buildFolderTree = () => {
-    const rootFolders = filteredFolders.filter(f => !f.parent_folder_id);
-    const getChildren = (parentId: string) => filteredFolders.filter(f => f.parent_folder_id === parentId);
-
-    return rootFolders.map(folder => ({
-      ...folder,
-      children: getChildren(folder.id),
-    }));
-  };
-
-  const folderTree = buildFolderTree();
-
-  const renderFolder = (folder: AdminFolder & { children?: AdminFolder[] }, depth: number = 0) => {
-    const folderDocs = getDocumentsByFolder(folder.id);
-    const isExpanded = expandedFolders.includes(folder.id);
-    const hasChildren = folder.children && folder.children.length > 0;
-
-    // Filter docs by search
-    const filteredDocs = folderDocs.filter(doc =>
-      !searchQuery ||
-      doc.document_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    // Skip if no docs match search and no matching folder name
-    if (searchQuery && filteredDocs.length === 0 && !folder.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return null;
-    }
-
-    return (
-      <Collapsible
-        key={folder.id}
-        open={isExpanded}
-        onOpenChange={() => toggleFolder(folder.id)}
-      >
-        <Card className="overflow-hidden" style={{ marginLeft: depth * 16 }}>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${getColorClass(folder.color)}`}>
-                  <FolderOpen className="h-5 w-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    {folder.name}
-                    <Badge variant="secondary" className="ml-2">
-                      {folderDocs.length} dokumenter
-                    </Badge>
-                  </CardTitle>
-                  {folder.description && (
-                    <p className="text-sm text-muted-foreground mt-0.5">{folder.description}</p>
-                  )}
-                </div>
-                {isExpanded ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent className="pt-0 pb-4">
-              {filteredDocs.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-2">{t("auto.ingen_dokumenter_i_denne_mappen")}</p>
-              ) : (
-                <div className="grid gap-2">
-                  {filteredDocs.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      {getFileIcon(doc.file_type)}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{doc.document_name}</h4>
-                        {doc.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {formatFileSize(doc.file_size, "Ukjent størrelse")}
-                        </span>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(doc.file_path)}
-                        className="shrink-0"
-                      >
-                        <Download className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">{t("auto.last_ned")}</span>
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Render child folders */}
-              {hasChildren && (
-                <div className="mt-4 space-y-2">
-                  {folder.children!.map(child => renderFolder(child as AdminFolder & { children?: AdminFolder[] }, 1))}
-                </div>
-              )}
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
-    );
-  };
-
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="mb-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t("auto.tilbake")}
-          </Button>
-          <h1 className="text-2xl sm:text-3xl font-bold">{t("auto.dokumentsenter")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t("auto.maler_og_egne_dokumenter_for_ik_alkohol")}
-          </p>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
-            <TabsTrigger value="maler">{t("auto.maler")}</TabsTrigger>
-            <TabsTrigger value="mine">{t("auto.mine_dokumenter")}</TabsTrigger>
-            <TabsTrigger value="ressurser">{t("auto.ressurser")}</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="maler" className="mt-6">
-            <div className="flex flex-col sm:flex-row gap-2 mb-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t("auto.soek_i_dokumenter")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500 mx-auto mb-2" />
-                Laster dokumenter...
-              </div>
-            ) : folderTree.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <FolderOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-                  <h3 className="font-medium text-lg">{t("auto.ingen_maler_tilgjengelig_ennaa")}</h3>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    {t("auto.dokumentmaler_vil_bli_lagt_til_av_system")}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {folderTree.map(folder => renderFolder(folder))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="mine" className="mt-6">
-            <MyDocumentsTab moduleType="ik-alkohol" accentColor="amber" />
-          </TabsContent>
-
-          <TabsContent value="ressurser" className="mt-6">
-            <div className="space-y-6">
-              {/* Lovverk */}
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
-                  <Scale className="h-5 w-5 text-amber-600" />
-                  Lovverk og forskrifter
-                </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    { title: t("auto.alkoholloven"), desc: "Lov om omsetning av alkoholholdig drikk m.v.", url: "https://lovdata.no/dokument/NL/lov/1989-06-02-27" },
-                    { title: t("auto.alkoholforskriften"), desc: "Forskrift om omsetning av alkoholholdig drikk mv.", url: "https://lovdata.no/dokument/SF/forskrift/2005-06-08-538" },
-                    { title: t("auto.serveringsloven"), desc: "Lov om serveringsvirksomhet", url: "https://lovdata.no/dokument/NL/lov/1997-06-13-55" },
-                    { title: t("auto.internkontrollforskriften"), desc: "Forskrift om systematisk helse-, miljø- og sikkerhetsarbeid", url: "https://lovdata.no/dokument/SF/forskrift/1996-12-06-1127" },
-                  ].map((item) => (
-                    <Card key={item.title} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
-                          <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 shrink-0 mt-0.5">
-                            <Scale className="h-4 w-4 text-amber-700 dark:text-amber-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors flex items-center gap-1">
-                              {item.title}
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </h4>
-                            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                          </div>
-                        </a>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Veiledninger */}
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
-                  <BookOpen className="h-5 w-5 text-blue-600" />
-                  Veiledninger og retningslinjer
-                </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    { title: t("auto.helsedirektoratets_veileder"), desc: "Veileder til alkoholloven og tilhørende forskrifter", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
-                    { title: t("auto.kommunens_ansvar"), desc: "Om kommunens kontroll med salgs- og skjenkebevillinger", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
-                    { title: t("auto.ansvarlig_vertskap"), desc: "Kurs og opplæring for ansatte i serveringsbransjen", url: "https://www.helsedirektoratet.no/tema/alkohol" },
-                    { title: t("auto.akan_arbeidslivets_kompetansesenter"), desc: "Forebygging av rus og avhengighet i arbeidslivet", url: "https://akan.no" },
-                  ].map((item) => (
-                    <Card key={item.title} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
-                          <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 shrink-0 mt-0.5">
-                            <BookOpen className="h-4 w-4 text-blue-700 dark:text-blue-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1">
-                              {item.title}
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </h4>
-                            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                          </div>
-                        </a>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Opplæring */}
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
-                  <GraduationCap className="h-5 w-5 text-emerald-600" />
-                  {t("auto.opplaering_og_kunnskapsproeve")}
-                </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    { title: t("auto.kunnskapsproeven"), desc: "Informasjon om kunnskapsprøve i alkoholloven", url: "https://www.helsedirektoratet.no/tema/alkohol/kunnskapsproven" },
-                    { title: t("auto.etablererproeven"), desc: "Prøve for serveringsbevillinger", url: "https://www.mattilsynet.no" },
-                  ].map((item) => (
-                    <Card key={item.title} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
-                          <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 shrink-0 mt-0.5">
-                            <GraduationCap className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors flex items-center gap-1">
-                              {item.title}
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </h4>
-                            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                          </div>
-                        </a>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Tilsyn */}
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
-                  <ShieldCheck className="h-5 w-5 text-purple-600" />
-                  Tilsyn og kontroll
-                </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    { title: t("auto.prikksystemet"), desc: "Informasjon om prikktildeling ved brudd på alkoholloven", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
-                    { title: t("auto.skjenkekontroll"), desc: "Hva kommunen ser etter ved tilsyn", url: "https://www.helsedirektoratet.no/veiledere/alkoholloven" },
-                  ].map((item) => (
-                    <Card key={item.title} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
-                          <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 shrink-0 mt-0.5">
-                            <ShieldCheck className="h-4 w-4 text-purple-700 dark:text-purple-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors flex items-center gap-1">
-                              {item.title}
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </h4>
-                            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                          </div>
-                        </a>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </AppLayout>
+    <ModuleDokumentsenter
+      config={{
+        moduleType: "ik-alkohol",
+        subtitle: t("auto.maler_og_egne_dokumenter_for_ik_alkohol"),
+        accentColor: "amber",
+        spinnerClass: "border-amber-500",
+        defaultFolderColorClass: "bg-amber-500",
+        templatesTabLabel: t("auto.maler"),
+        extraTab: {
+          value: "ressurser",
+          label: t("auto.ressurser"),
+          content: <IkAlkoholResources />,
+        },
+      }}
+    />
   );
 }
