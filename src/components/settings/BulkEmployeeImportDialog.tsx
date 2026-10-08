@@ -11,15 +11,12 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 
-interface Row { email: string; firstName: string; lastName: string; admin: boolean; status?: string }
+import {
+  type ImportedEmployee, parseEmployeeRows, validateEmployees, decodeCsvBytes, MISSING_EMAIL,
+} from "@/utils/employeeImport";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[^a-z]/g, "");
-
-function pick(obj: Record<string, unknown>, keys: string[]) {
-  for (const [k, v] of Object.entries(obj)) if (keys.includes(norm(k))) return String(v ?? "").trim();
-  return "";
-}
+type Row = ImportedEmployee;
+const ADDED = "Lagt til";
 
 export function BulkEmployeeImportDialog({
   open, onOpenChange, existingEmails, onDone,
@@ -30,10 +27,18 @@ export function BulkEmployeeImportDialog({
 
   const reset = () => { setRows([]); setSendNow(false); };
 
+  // Re-check e-post status for every row not yet imported (duplicates depend on the other rows).
+  const revalidate = (rs: Row[]) => {
+    const done = rs.filter((r) => r.status === ADDED);
+    const checked = validateEmployees(rs.filter((r) => r.status !== ADDED), [...existingEmails, ...done.map((r) => r.email)]);
+    let k = 0;
+    return rs.map((r) => (r.status === ADDED ? r : checked[k++]));
+  };
+
   const [parsing, setParsing] = useState(false);
   const handleFile = async (file: File) => {
     try {
-      let data: Record<string, unknown>[];
+      let parsed: Row[];
       if (file.name.toLowerCase().endsWith(".pdf")) {
         if (file.size > 10 * 1024 * 1024) { toast.error("PDF er for stor (maks 10 MB)"); return; }
         setParsing(true);
@@ -42,35 +47,26 @@ export function BulkEmployeeImportDialog({
         const { data: res, error } = await supabase.functions.invoke("parse-employee-file", { body: { base64: btoa(bin) } });
         setParsing(false);
         if (error || res?.error) { toast.error(res?.error || "Kunne ikke lese PDF"); return; }
-        data = (res.employees || []).map((e: any) => ({ fornavn: e.firstName, etternavn: e.lastName, epost: e.email, rolle: e.admin ? "admin" : "" }));
+        const found: { firstName?: unknown; lastName?: unknown; email?: unknown; admin?: unknown }[] = res.employees || [];
+        parsed = found
+          .map((e) => ({
+            firstName: String(e.firstName ?? "").trim(),
+            lastName: String(e.lastName ?? "").trim(),
+            email: String(e.email ?? "").trim().toLowerCase(),
+            admin: e.admin === true,
+          }))
+          .filter((e: Row) => e.firstName || e.lastName || e.email);
       } else {
-        const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
-        data = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+        const buf = await file.arrayBuffer();
+        // CSV: decode ourselves (UTF-8 with/without BOM, else Windows-1252) and keep cells as text (no date conversion).
+        const wb = file.name.toLowerCase().endsWith(".csv")
+          ? XLSX.read(decodeCsvBytes(new Uint8Array(buf)), { type: "string", raw: true })
+          : XLSX.read(buf, { type: "array" });
+        const sheetRows = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "", raw: false });
+        parsed = parseEmployeeRows(sheetRows);
       }
-      const existing = new Set(existingEmails.map((e) => e.toLowerCase()));
-      const seen = new Set<string>();
-      const parsed: Row[] = [];
-      for (const r of data) {
-        let email = pick(r, ["epost", "email", "mail", "epostadresse"]).toLowerCase();
-        let firstName = pick(r, ["fornavn", "firstname", "first"]);
-        let lastName = pick(r, ["etternavn", "lastname", "last"]);
-        const full = pick(r, ["navn", "name", "fulltnavn"]);
-        if (!firstName && full) { const p = full.split(/\s+/); firstName = p.shift() || ""; lastName = p.join(" "); }
-        if (!email) {
-          const found = Object.values(r).map(String).find((v) => EMAIL_RE.test(v.trim()));
-          if (found) email = found.trim().toLowerCase();
-        }
-        if (!email && !firstName) continue;
-        const role = norm(pick(r, ["rolle", "role"]));
-        const row: Row = { email, firstName, lastName, admin: role.startsWith("admin") };
-        if (!EMAIL_RE.test(email)) row.status = "Ugyldig e-post";
-        else if (existing.has(email)) row.status = "Finnes allerede";
-        else if (seen.has(email)) row.status = "Duplikat i filen";
-        seen.add(email);
-        parsed.push(row);
-      }
-      if (!parsed.length) toast.error("Fant ingen ansatte i filen");
-      setRows(parsed);
+      if (!parsed.length) toast.error("Fant ingen ansatte i filen. Sjekk at den har en overskriftsrad med f.eks. Navn/Fornavn og E-post.");
+      setRows(validateEmployees(parsed, existingEmails));
     } catch {
       setParsing(false);
       toast.error("Kunne ikke lese filen. Bruk Excel, CSV eller PDF.");
@@ -78,16 +74,19 @@ export function BulkEmployeeImportDialog({
   };
 
   const downloadTemplate = () => {
-    const ws = XLSX.utils.aoa_to_sheet([["Fornavn", "Etternavn", "E-post", "Rolle"], ["Ola", "Nordmann", "ola@firma.no", "Ansatt"]]);
+    const ws = XLSX.utils.aoa_to_sheet([["Fornavn", "Etternavn", "E-post", "Stilling", "Rolle"], ["Ola", "Nordmann", "ola@firma.no", "Tømrer", "Ansatt"]]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Ansatte");
     XLSX.writeFile(wb, "ansatte-mal.xlsx");
   };
 
   const update = (i: number, patch: Partial<Row>) =>
-    setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...patch, status: patch.email !== undefined ? (EMAIL_RE.test(patch.email) ? undefined : "Ugyldig e-post") : r.status } : r)));
+    setRows((rs) => revalidate(rs.map((r, j) => (j === i ? { ...r, ...patch } : r))));
+
+  const remove = (i: number) => setRows((rs) => revalidate(rs.filter((_, j) => j !== i)));
 
   const valid = rows.filter((r) => !r.status);
+  const missingEmail = rows.filter((r) => r.status === MISSING_EMAIL).length;
 
   const handleImport = async () => {
     setBusy(true);
@@ -100,7 +99,7 @@ export function BulkEmployeeImportDialog({
         body: { email: r.email, firstName: r.firstName, lastName: r.lastName, role: r.admin ? "company_admin" : "user", sendEmail: sendNow },
       });
       if (error || data?.error) { fail++; next[i] = { ...r, status: data?.error || "Feilet" }; }
-      else { ok++; next[i] = { ...r, status: "Lagt til" }; }
+      else { ok++; next[i] = { ...r, status: ADDED }; }
       setRows([...next]);
     }
     setBusy(false);
@@ -111,10 +110,10 @@ export function BulkEmployeeImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!busy) { onOpenChange(o); if (!o) reset(); } }}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Importer ansatte</DialogTitle>
-          <DialogDescription>Last opp Excel, CSV eller PDF med fornavn, etternavn og e-post. Du ser listen før noe lagres.</DialogDescription>
+          <DialogDescription>Last opp Excel, CSV eller PDF med navn og e-post (gjerne stilling). Overskriftsraden finnes automatisk, også under titler. Du ser listen før noe lagres.</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-wrap gap-2">
@@ -131,18 +130,25 @@ export function BulkEmployeeImportDialog({
         {rows.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">{valid.length} av {rows.length} klare til import</p>
+            {missingEmail > 0 && (
+              <p className="text-sm text-destructive">
+                {missingEmail} {missingEmail === 1 ? "ansatt mangler" : "ansatte mangler"} e-post. Fyll inn e-post for å importere, eller fjern raden.
+              </p>
+            )}
             <div className="border rounded-lg divide-y">
               {rows.map((r, i) => (
-                <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1.5fr_auto_auto] gap-2 p-2 items-center">
+                <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1.5fr_auto_10rem] gap-2 p-2 items-center">
                   <Input value={r.firstName} placeholder="Fornavn" disabled={busy} onChange={(e) => update(i, { firstName: e.target.value })} />
                   <Input value={r.lastName} placeholder="Etternavn" disabled={busy} onChange={(e) => update(i, { lastName: e.target.value })} />
-                  <Input value={r.email} placeholder="E-post" disabled={busy} onChange={(e) => update(i, { email: e.target.value.trim().toLowerCase() })} />
+                  <Input value={r.email} placeholder="E-post" aria-invalid={r.status === MISSING_EMAIL || undefined} disabled={busy} onChange={(e) => update(i, { email: e.target.value.trim().toLowerCase() })} />
                   <label className="flex items-center gap-1 text-xs whitespace-nowrap">
                     <Checkbox checked={r.admin} disabled={busy} onCheckedChange={(v) => update(i, { admin: v === true })} />Admin
                   </label>
-                  <div className="flex items-center gap-1">
-                    {r.status && <span className={`text-xs ${r.status === "Lagt til" ? "text-primary" : "text-destructive"}`}>{r.status}</span>}
-                    <Button size="icon" variant="ghost" disabled={busy} onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}>
+                  <div className="flex items-center gap-1 min-w-0">
+                    {r.status
+                      ? <span className={`text-xs leading-tight ${r.status === ADDED ? "text-primary" : "text-destructive"}`}>{r.status}</span>
+                      : r.title && <span className="text-xs text-muted-foreground truncate" title={r.title}>{r.title}</span>}
+                    <Button size="icon" variant="ghost" className="ml-auto shrink-0" disabled={busy} aria-label="Fjern rad" onClick={() => remove(i)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
