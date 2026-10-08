@@ -86,6 +86,7 @@ export const MascotChatHelper = () => {
   const pendingTranscriptRef = useRef<string | null>(null);
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
+  const messagesKeyRef = useRef<string | null>(null);
 
   // Speech hook with auto-send on final result
   const speech = useSpeech({
@@ -109,7 +110,7 @@ export const MascotChatHelper = () => {
 
   // Persist messages per user+company+proff so tab/route switches don't wipe history
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey || messagesKeyRef.current !== storageKey) return;
     try {
       sessionStorage.setItem(storageKey, JSON.stringify(messages));
     } catch { /* ignore */ }
@@ -128,6 +129,7 @@ export const MascotChatHelper = () => {
         ? persisted
         : [{ id: "welcome", content: newConfig.welcomeMessage, isBot: true }]
     );
+    messagesKeyRef.current = key;
   }, [location.pathname, proffConfig.id, scopeKey]);
 
   // Auto-scroll to bottom when new messages arrive
