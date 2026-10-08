@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,21 +28,18 @@ Deno.serve(async (req) => {
 
     const key = Deno.env.get("LOVABLE_API_KEY");
     if (!key) return json({ error: "AI er ikke satt opp" }, 500);
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: 'Hent ut alle ansatte fra dokumentet. Returner KUN JSON: {"employees":[{"firstName":"","lastName":"","email":"","admin":false}]}. admin=true kun hvis rollen tydelig er administrator/daglig leder. Ikke finn på e-poster; la feltet være tomt hvis det mangler.' },
-          { role: "user", content: [
-            { type: "text", text: "Ansattliste:" },
-            { type: "file", file: { filename: "ansatte.pdf", file_data: `data:application/pdf;base64,${base64}` } },
-          ] },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
+    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    const res = await callAiGateway(key, {
+      model: AI_CHAT_MODEL,
+      messages: [
+        { role: "system", content: 'Hent ut alle ansatte fra dokumentet. Returner KUN JSON: {"employees":[{"firstName":"","lastName":"","email":"","admin":false}]}. admin=true kun for daglig leder, eier/innehaver eller administrerende direktør. Systemadministrator, IT-administrator og andre IT-roller er IKKE admin (admin=false). Ikke finn på e-poster; la feltet være tomt hvis det mangler.' },
+        { role: "user", content: [
+          { type: "text", text: "Ansattliste:" },
+          { type: "file", file: { filename: "ansatte.pdf", file_data: `data:application/pdf;base64,${base64}` } },
+        ] },
+      ],
+      response_format: { type: "json_object" },
+    }, null, { totalTimeoutMs: 45_000 });
     if (!res.ok) {
       const t = await res.text();
       console.error("AI error", res.status, t);
