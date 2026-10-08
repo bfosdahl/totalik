@@ -146,6 +146,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   const [verneombudName, setVerneombudName] = useState(initialState?.verneombudName ?? "");
   const [hasVerneombudExemption, setHasVerneombudExemption] = useState(initialState?.hasVerneombudExemption ?? false);
   const [wasInterrupted, setWasInterrupted] = useState(false);
+  const [streamCutOff, setStreamCutOff] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>();
   const [showPasteMode, setShowPasteMode] = useState(false);
   const [pasteText, setPasteText] = useState("");
@@ -443,11 +444,13 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       if (response.status === 402) { toast.error(t("auto.kreditter_oppbrukt")); setIsLoading(false); return; }
       if (!response.ok || !response.body) throw new Error("Failed to start stream");
 
+      setStreamCutOff(false);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
       let assistantMessage = "";
       let streamDone = false;
+      let lastFinishReason: string | null = null;
 
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
@@ -466,6 +469,8 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
           if (jsonStr === "[DONE]") { streamDone = true; break; }
           try {
             const parsed = JSON.parse(jsonStr);
+            const finishReason = parsed.choices?.[0]?.finish_reason as string | null | undefined;
+            if (finishReason) lastFinishReason = finishReason;
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantMessage += content;
@@ -482,6 +487,9 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
 
       isStreamingRef.current = false;
       setWasInterrupted(false);
+      if (!streamDone || (lastFinishReason && lastFinishReason.toLowerCase() !== 'stop')) {
+        setStreamCutOff(true);
+      }
 
       // Check for JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
@@ -1284,6 +1292,12 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
                 <Button variant="outline" size="sm" onClick={retryLastMessage} className="gap-2">
                   <RefreshCcw className="h-4 w-4" /> {t("auto.proev_igjen")}
                 </Button>
+              </div>
+            )}
+
+            {streamCutOff && !isLoading && (
+              <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-400 font-medium text-center">{t("auto.svaret_ble_avbrutt_skriv_fortsett")}</p>
               </div>
             )}
 

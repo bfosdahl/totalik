@@ -87,6 +87,7 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
+  const [streamCutOff, setStreamCutOff] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Persist messages to sessionStorage
@@ -136,12 +137,15 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
         throw new Error(errorData.error || "Feil ved kommunikasjon med AI");
       }
 
+      setStreamCutOff(false);
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No reader");
 
       const decoder = new TextDecoder();
       let fullContent = "";
       let textBuffer = "";
+      let streamDone = false;
+      let lastFinishReason: string | null = null;
 
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
@@ -161,10 +165,12 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
+          if (jsonStr === "[DONE]") { streamDone = true; break; }
 
           try {
             const parsed = JSON.parse(jsonStr);
+            const finishReason = parsed.choices?.[0]?.finish_reason as string | null | undefined;
+            if (finishReason) lastFinishReason = finishReason;
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
               fullContent += content;
@@ -183,6 +189,10 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
             break;
           }
         }
+      }
+
+      if (!streamDone || (lastFinishReason && lastFinishReason.toLowerCase() !== 'stop')) {
+        setStreamCutOff(true);
       }
 
       // Check for JSON result
@@ -266,6 +276,12 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
               <Card className="p-3 bg-muted/50">
                 <Loader2 className="w-4 h-4 animate-spin" />
               </Card>
+            </div>
+          )}
+
+          {streamCutOff && !isLoading && (
+            <div className="flex items-center justify-center gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+              <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-400 font-medium text-center">{t("auto.svaret_ble_avbrutt_skriv_fortsett")}</p>
             </div>
           )}
         </div>
