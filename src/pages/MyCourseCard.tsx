@@ -18,6 +18,7 @@ import { nb } from "date-fns/locale";
 import { EmployeeCourse } from "@/hooks/useEmployees";
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n/t";
+import { getInitials } from "@/lib/getInitials";
 
 interface HmsCardInfo {
   hms_card_obtained: boolean | null;
@@ -61,11 +62,6 @@ export default function MyCourseCard() {
     fetchMyCourses();
   }, [profile?.id]);
 
-  const getInitials = () => {
-    const first = profile?.first_name?.[0] || "";
-    const last = profile?.last_name?.[0] || "";
-    return (first + last).toUpperCase() || "?";
-  };
 
   const getCourseStatus = (course: EmployeeCourse) => {
     if (!course.expiry_date) {
@@ -145,7 +141,7 @@ export default function MyCourseCard() {
               <Avatar className="h-24 w-20 rounded-lg border-2 border-border shadow-md">
                 <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
                 <AvatarFallback className="rounded-lg bg-muted text-xl font-bold">
-                  {getInitials()}
+                  {getInitials(profile?.first_name, profile?.last_name)}
                 </AvatarFallback>
               </Avatar>
             </div>

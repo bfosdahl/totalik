@@ -16,6 +16,7 @@ import { Mail, Send, Inbox, ArrowUpFromLine, Clock, Check, CheckCheck, Trash2, P
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
+import { getInitials } from "@/lib/getInitials";
 
 export default function MyMessages() {
   const { profile } = useAuth();
@@ -58,14 +59,6 @@ export default function MyMessages() {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const MessageCard = ({ msg, isSent }: { msg: any; isSent: boolean }) => (
     <Card

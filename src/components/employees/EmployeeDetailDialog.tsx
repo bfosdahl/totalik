@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 import { setAdminUserPassword } from "@/lib/setAdminUserPassword";
+import { getInitials } from "@/lib/getInitials";
 import {
   Dialog,
   DialogContent,
@@ -214,11 +215,6 @@ export function EmployeeDetailDialog({
     }
   }, [employee.id, open]);
 
-  const getInitials = () => {
-    const first = employee.first_name?.charAt(0) || "";
-    const last = employee.last_name?.charAt(0) || "";
-    return (first + last).toUpperCase() || "?";
-  };
 
   const handleSave = async () => {
     if (employee.company_id) {
@@ -283,7 +279,7 @@ export function EmployeeDetailDialog({
               <Avatar className="w-16 h-16">
                 <AvatarImage src={employee.avatar_url || undefined} />
                 <AvatarFallback className="text-xl bg-primary/10 text-primary">
-                  {getInitials()}
+                  {getInitials(employee.first_name, employee.last_name)}
                 </AvatarFallback>
               </Avatar>
               <div>
