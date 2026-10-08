@@ -8,6 +8,9 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     if (type === "date") {
       return <DateInput {...(props as any)} className={className} ref={ref} />;
     }
+    if (type === "file" && !/(^|\s)(hidden|sr-only)(\s|$)/.test(className ?? "") && (props.style as React.CSSProperties | undefined)?.display !== "none") {
+      return <FileInput {...props} className={className} ref={ref} />;
+    }
     return (
       <input
         type={type}
