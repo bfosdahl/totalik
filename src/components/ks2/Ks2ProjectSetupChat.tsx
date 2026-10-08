@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Loader2, Send, Bot, User, Sparkles, CheckCircle, Paperclip, FileText } from "lucide-react";
@@ -74,9 +75,18 @@ const PLACEHOLDER_VALUES = [
 /** Tommer AI-felt som berre inneheld plasshaldartekst ("Ikke oppgitt" osv.). */
 function cleanPlaceholder(value: unknown): string {
   if (typeof value !== "string") return "";
-  const text = value.trim();
+  const text = value
+    .replace(/\[[^\]]*\]/g, "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\{[^}]*\}/g, "")
+    .replace(/^[\s\-–—:,/|]+|[\s\-–—:,/|]+$/g, "")
+    .trim();
   if (!text) return "";
   return PLACEHOLDER_VALUES.includes(text.toLowerCase()) ? "" : text;
+}
+
+function cleanProjectName(value: unknown): string {
+  return cleanPlaceholder(value);
 }
 
 type MessageContent = string | any[];
@@ -86,13 +96,15 @@ interface Message {
   content: MessageContent;
 }
 
+type ProposalData = Partial<NewKsModule2ProjectInput> & {
+  recommended_checklists?: any[];
+  recommended_routines?: any[];
+  hms_focus?: any[];
+  milestones?: any[];
+};
+
 interface Ks2ProjectSetupChatProps {
-  onComplete: (data: Partial<NewKsModule2ProjectInput> & { 
-    recommended_checklists?: any[]; 
-    recommended_routines?: any[];
-    hms_focus?: any[];
-    milestones?: any[];
-  }) => void;
+  onComplete: (data: ProposalData) => void;
   onCancel: () => void;
 }
 
@@ -121,6 +133,7 @@ function getDisplayContent(content: MessageContent): string {
     : content;
   return String(text ?? "")
     .replace(/\|\|\|JSON_START\|\|\|[\s\S]*?\|\|\|JSON_END\|\|\|/g, "")
+    .replace(/\|\|\|JSON_START\|\|\|[\s\S]*$/, "")
     .replace(/--- DOKUMENTINNHOLD ---[\s\S]*$/, "")
     .trim();
 }
@@ -140,6 +153,10 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
+  const [proposal, setProposal] = useState<ProposalData | null>(null);
+  const [proposalName, setProposalName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const creatingRef = useRef(false);
   const [parsingFile, setParsingFile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -242,15 +259,9 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
         try {
           const parsed = JSON.parse(jsonContent);
           console.log("Parsed project data:", parsed);
-          setSetupComplete(true);
-          
-          const projectData: Partial<NewKsModule2ProjectInput> & {
-            recommended_checklists?: any[];
-            recommended_routines?: any[];
-            hms_focus?: any[];
-            milestones?: any[];
-          } = {
-            project_name: parsed.project_info?.project_name || "",
+
+          const projectData: ProposalData = {
+            project_name: cleanProjectName(parsed.project_info?.project_name),
             description: cleanPlaceholder(parsed.project_info?.description),
             address: cleanPlaceholder(parsed.project_info?.address),
             client_name: cleanPlaceholder(parsed.project_info?.client_name),
@@ -294,12 +305,17 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             console.warn("Kontrollsjekk hoppet over:", e);
           }
 
-          setTimeout(() => {
-            onComplete(projectData);
-          }, 600);
+          setProposal(projectData);
+          setProposalName(projectData.project_name || "");
+          setSetupComplete(true);
         } catch (e) {
           console.error("Error parsing JSON:", e, jsonContent);
+          setSetupComplete(false);
+          toast.error("Forslaget ble ikke fullført – prøv igjen eller trykk «Lag et forslag for meg».");
         }
+      } else if (fullContent.includes("|||JSON_START|||")) {
+        setSetupComplete(false);
+        toast.error("Forslaget ble ikke fullført – prøv igjen eller trykk «Lag et forslag for meg».");
       }
 
     } catch (error) {
@@ -311,7 +327,17 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, onComplete]);
+  }, [isLoading]);
+
+  const handleCreate = () => {
+    if (!proposal || creatingRef.current) return;
+    const name = proposalName.trim();
+    if (!name) return;
+    creatingRef.current = true;
+    setCreating(true);
+    onComplete({ ...proposal, project_name: name });
+  };
+
 
   const handleSend = () => {
     sendMessage(input.trim());
@@ -385,7 +411,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           <h3 className="font-medium">{t("auto.prosjekt_hjelperen")}</h3>
           <p className="text-xs text-muted-foreground">{t("auto.ai_assistent_for_prosjektoppsett")}</p>
         </div>
-        {setupComplete && (
+        {proposal && (
           <div className="ml-auto flex items-center gap-2 text-green-600">
             <CheckCircle className="w-4 h-4" />
             <span className="text-sm">{t("auto.forslag_klart")}</span>
@@ -437,6 +463,70 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
               </Card>
             </div>
           )}
+
+          {proposal && (() => {
+            const sections: { label: string; items: any[] }[] = [
+              { label: "Sjekklister", items: proposal.recommended_checklists || [] },
+              { label: "Rutiner", items: proposal.recommended_routines || [] },
+              { label: "HMS-fokus", items: proposal.hms_focus || [] },
+              { label: "Milepæler", items: proposal.milestones || [] },
+            ].filter(s => s.items.length > 0);
+            const itemTitle = (x: any) =>
+              typeof x === "string" ? x : String(x?.title || x?.name || x?.area || "");
+            return (
+              <Card className="p-4 space-y-4 border-primary/40">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium" htmlFor="proposal-name">Prosjektnavn</label>
+                  <Input
+                    id="proposal-name"
+                    value={proposalName}
+                    onChange={(e) => setProposalName(e.target.value)}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    placeholder="Prosjektnavn"
+                  />
+                </div>
+                {sections.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Forslaget inneholdt ingen sjekklister eller rutiner – du kan be om et nytt forslag.
+                  </p>
+                ) : (
+                  sections.map(s => (
+                    <div key={s.label} className="space-y-1">
+                      <h4 className="text-sm font-medium">{s.label} ({s.items.length})</h4>
+                      <ul className="list-disc pl-5 space-y-1 text-sm">
+                        {s.items.map((x, idx) => (
+                          <li key={idx}>
+                            {itemTitle(x)}
+                            {typeof x === "object" && x?.description ? (
+                              <span className="text-muted-foreground"> – {String(x.description)}</span>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))
+                )}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    disabled={creating || !proposalName.trim()}
+                    onClick={handleCreate}
+                  >
+                    {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Opprett prosjekt
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={creating}
+                    onClick={() => { setProposal(null); setSetupComplete(false); }}
+                  >
+                    Endre forslaget
+                  </Button>
+                </div>
+              </Card>
+            );
+          })()}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
