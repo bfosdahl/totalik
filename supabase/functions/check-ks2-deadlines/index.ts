@@ -72,6 +72,11 @@ const handler = async (req: Request): Promise<Response> => {
     const cutoff = new Date(String((body as any)?.asOf ?? "2026-10-09") + "T00:00:00Z");
     const dryRun = Boolean((body as any)?.dryRun);
     const onlyCompany = (body as any)?.companyId ? String((body as any).companyId) : null;
+    // Dry-run only: simulate another "today" for testing. Ignored for real runs.
+    if (dryRun && (body as any)?.simulateToday) {
+      const sim = new Date(String((body as any).simulateToday) + "T00:00:00");
+      if (!isNaN(sim.getTime())) { today.setTime(sim.getTime()); today.setHours(0, 0, 0, 0); }
+    }
 
     // Get all incomplete checklists with deadlines and responsible users
     let checklistsQuery = supabase
