@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -194,7 +195,15 @@ export function useKsModule2Checklists(projectId: string) {
         .order("created_at", { ascending: false }) as any);
 
       if (error) throw error;
-      setChecklists((data as KsModule2Checklist[]) || []);
+      setChecklists(((data as KsModule2Checklist[]) || []).map((c) => ({
+        ...c,
+        checklist_items: Array.isArray(c.checklist_items)
+          ? c.checklist_items.map((item: any) =>
+              item && typeof item === "object" && !(typeof item.text === "string" && item.text.trim())
+                ? { ...item, text: getChecklistItemText(item) }
+                : item)
+          : c.checklist_items,
+      })));
     } catch (error) {
       console.error("Error fetching checklists:", error);
     } finally {

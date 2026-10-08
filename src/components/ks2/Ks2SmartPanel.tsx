@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,7 +106,7 @@ export function Ks2SmartPanel({
         id: c.id,
         title: c.title,
         items: (c.checklist_items || []).slice(0, 30).map((i: any) => ({
-          label: String(i.label || i.title || i.text || "Punkt"),
+          label: getChecklistItemText(i, "Punkt"),
           value: i.value == null ? "" : String(i.value),
           comment: String(i.comment || ""),
         })),

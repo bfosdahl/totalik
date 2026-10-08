@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -229,7 +230,7 @@ export default function Ks2Prosjektrapport() {
           completed_by_name: c.responsible_user_name,
           checkpoints: (sections.includeChecklistDetails || sections.includeChecklistPhotos) && c.checklist_items?.length 
             ? await Promise.all(c.checklist_items.map(async (item: any) => ({
-                label: item.text || "Sjekkpunkt",
+                label: getChecklistItemText(item, "Sjekkpunkt"),
                 response: item.value === true ? "OK" : item.value === false ? "Nei" : item.value?.toString() || "-",
                 comment: item.comment,
                 photos: sections.includeChecklistPhotos ? await reSignPhotos(item.photos || []) : [],

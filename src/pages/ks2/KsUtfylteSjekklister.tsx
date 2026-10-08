@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useState, useEffect, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -234,7 +235,7 @@ export default function KsUtfylteSjekklister() {
             <div className="pt-3 flex justify-end">
               <TranslateContentButton
                 contentType="ks-checklist"
-                texts={(checklist.checklist_items || []).map((i: any) => i.text || "")}
+                texts={(checklist.checklist_items || []).map((i: any) => getChecklistItemText(i))}
                 onResult={(result) =>
                   setTranslations((prev) => ({ ...prev, [checklist.id]: result }))
                 }
@@ -244,7 +245,7 @@ export default function KsUtfylteSjekklister() {
               {(checklist.checklist_items || []).map((item: any, idx: number) => {
                 const isOk = item.value === true || item.value === "yes";
                 const isNotOk = item.value === false || item.value === "no";
-                const shownText = translations[checklist.id]?.[idx] ?? item.text;
+                const shownText = translations[checklist.id]?.[idx] ?? getChecklistItemText(item);
                 return (
                   <div key={idx} className="flex items-start gap-2 py-1.5 px-2 rounded hover:bg-muted/30">
                     <span className="text-xs text-muted-foreground w-5 shrink-0 mt-0.5">{idx + 1}.</span>

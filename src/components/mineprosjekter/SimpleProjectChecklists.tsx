@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -421,7 +422,7 @@ export function SimpleProjectChecklists({ projectId }: SimpleProjectChecklistsPr
                 <div className="space-y-2">
                   {Array.isArray(viewingChecklist.checklist_items) && viewingChecklist.checklist_items.map((item: any, idx: number) => (
                     <div key={idx} className="flex items-start justify-between gap-2 p-2 bg-muted/50 rounded">
-                      <span className="text-sm">{item.text}</span>
+                      <span className="text-sm">{getChecklistItemText(item)}</span>
                       <span className="text-sm font-medium">
                         {item.value === true ? "✓ Ja" : item.value === false ? "✗ Nei" : item.value ?? "-"}
                       </span>

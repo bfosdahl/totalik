@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -519,7 +520,7 @@ export default function Ks2Sjekklister() {
                       <div key={idx} className="flex items-start gap-2 p-2 bg-muted/50 rounded">
                         <span className="text-muted-foreground text-sm">{idx + 1}.</span>
                         <div className="flex-1">
-                          <span className="text-sm">{item.text}</span>
+                          <span className="text-sm">{getChecklistItemText(item)}</span>
                           {item.value !== null && item.value !== undefined && (
                             <Badge variant="outline" className="ml-2">
                               {item.value === true ? 'OK' : item.value === false ? 'Ikke OK' : item.value}

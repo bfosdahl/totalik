@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
@@ -85,7 +86,7 @@ export async function generateFilledChecklistPdf(
     let statusText = "-";
     if (item.value === true || item.value === "yes") statusText = "✓ OK";
     else if (item.value === false || item.value === "no") statusText = "✗ Avvik";
-    return [`${i + 1}. ${item.text}`, statusText, item.comment || ""];
+    return [`${i + 1}. ${getChecklistItemText(item)}`, statusText, item.comment || ""];
   });
 
   autoTable(doc, {
@@ -143,7 +144,7 @@ export async function generateFilledChecklistPdf(
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(100);
-        doc.text(`${idx + 1}. ${item.text}`, 15, y);
+        doc.text(`${idx + 1}. ${getChecklistItemText(item)}`, 15, y);
         doc.setTextColor(0);
         y += 5;
 

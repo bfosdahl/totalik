@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -136,7 +137,7 @@ export function ContinueChecklistDialog({ open, onOpenChange, checklist, onSaved
           {items.map((item, index) => (
             <div key={index} className="border rounded-lg p-3 space-y-2">
               <Label className="text-sm font-medium">
-                {index + 1}. {item.text}
+                {index + 1}. {getChecklistItemText(item)}
               </Label>
 
               <RadioGroup
