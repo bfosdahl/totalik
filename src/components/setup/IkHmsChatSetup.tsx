@@ -733,7 +733,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           const seed = defaultActions.find(d => d.id === a.id);
           return !!seed && stableStringify(a) === stableStringify(seed);
         };
-        const numberAiRoutines = (kept: Array<Record<string, unknown>>, aiRoutines: Array<Record<string, unknown>>) => {
+        const numberAiRoutines = <T extends { routine_number?: unknown }>(kept: Array<Record<string, unknown>>, aiRoutines: T[]): T[] => {
           const maxExisting = kept.reduce((max, r) => {
             const m = /^R(\d+)$/.exec(String(r.routine_number || ''));
             return m ? Math.max(max, parseInt(m[1], 10)) : max;
