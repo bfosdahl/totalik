@@ -789,22 +789,34 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           is_ai_generated: true,
         })) || [];
 
+        const ensureFutureDeadline = (raw: unknown, months: number): string => {
+          const today = new Date().toISOString().slice(0, 10);
+          if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw) && raw > today) return raw;
+          const d = new Date();
+          d.setMonth(d.getMonth() + months);
+          return d.toISOString().slice(0, 10);
+        };
         const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => {
           const riskId = `ai-${crypto.randomUUID()}`;
           if (risk.id) riskIdMap.set(String(risk.id), riskId);
           const hasNewFormat = risk.hazard_source && Array.isArray(risk.events) && (risk.events as Array<Record<string, unknown>>).length > 0;
           
           if (hasNewFormat) {
-            const events = (risk.events as Array<Record<string, unknown>>).map((event) => ({
-              id: (event.id as string) || crypto.randomUUID(),
-              description: (event.description as string) || '',
-              consequence: typeof event.consequence === 'number' && event.consequence >= 1 && event.consequence <= 5 ? event.consequence : 3,
-              probability: typeof event.probability === 'number' && event.probability >= 1 && event.probability <= 5 ? event.probability : 3,
-              measures: (event.measures as string) || '',
-              responsible: (event.responsible as string) || '',
-              deadline: (event.deadline as string) || '',
-              status: (event.status as string) || 'planlagt',
-            }));
+            const events = (risk.events as Array<Record<string, unknown>>).map((event) => {
+              const consequence = typeof event.consequence === 'number' && event.consequence >= 1 && event.consequence <= 5 ? event.consequence : 3;
+              const probability = typeof event.probability === 'number' && event.probability >= 1 && event.probability <= 5 ? event.probability : 3;
+              const score = consequence * probability;
+              return {
+                id: (event.id as string) || crypto.randomUUID(),
+                description: (event.description as string) || '',
+                consequence,
+                probability,
+                measures: (event.measures as string) || '',
+                responsible: (event.responsible as string) || '',
+                deadline: ensureFutureDeadline(event.deadline, score >= 11 ? 1 : score >= 6 ? 3 : 6),
+                status: (event.status as string) || 'planlagt',
+              };
+            });
             const rawHazard = (risk.hazard_source as string) || 'annet';
             const hazardAllowed = ALLOWED_HAZARD_SOURCES.includes(rawHazard);
             return { id: riskId, hazard_source: hazardAllowed ? rawHazard : 'annet', hazard_source_custom: hazardAllowed ? ((risk.hazard_source_custom as string) || '') : ((risk.hazard_source_custom as string) || rawHazard), events, created_at: new Date().toISOString(), created_by: 'Oppsett-hjelperen', is_ai_generated: true };
@@ -818,7 +830,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         }) || [];
 
         const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({
-          ...action, id: `ai-${crypto.randomUUID()}`, ...(action.risk_id != null && riskIdMap.has(String(action.risk_id)) ? { risk_id: riskIdMap.get(String(action.risk_id)) } : {}), is_ai_generated: true,
+          ...action, id: `ai-${crypto.randomUUID()}`, ...(action.risk_id != null && riskIdMap.has(String(action.risk_id)) ? { risk_id: riskIdMap.get(String(action.risk_id)) } : {}), deadline: ensureFutureDeadline(action.deadline, ({ kritisk: 1, 'høy': 1, medium: 3, lav: 6 } as Record<string, number>)[String(action.priority)] ?? 3), is_ai_generated: true,
         })) || [];
 
         const newSettings = {
