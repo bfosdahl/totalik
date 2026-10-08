@@ -54,12 +54,17 @@ function saveChatState(companyId: string, state: ChatState) {
   }
 }
 
-function clearChatState(companyId: string) {
+export function clearChatState(companyId: string) {
   try {
     sessionStorage.removeItem(getStorageKey(companyId));
   } catch (e) {
     console.error('Failed to clear chat state:', e);
   }
+}
+
+export function hasInProgressChatState(companyId: string): boolean {
+  const state = loadChatState(companyId);
+  return !!state?.messages?.some((m) => m.role === 'user');
 }
 
 // Helper to strip JSON from display content
@@ -131,12 +136,14 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isStreamingRef = useRef(false);
+  const completedRef = useRef(false);
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ik-mat-chat`;
 
   // Persist chat state to sessionStorage whenever relevant state changes
   useEffect(() => {
     if (messages.length === 0) return;
-    
+    if (completedRef.current) return;
+
     saveChatState(companyId, {
       messages,
       lastUserMessage,
@@ -148,6 +155,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        if (completedRef.current) return;
         // Save state when user switches away, but let stream continue in background
         saveChatState(companyId, {
           messages,
@@ -303,6 +311,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       }
 
       toast.success(t("auto.ik_mat_oppsett_fullfoert"));
+      clearChatState(companyId);
       onComplete();
     } catch (error) {
       console.error("Error saving generated content:", error);
@@ -335,6 +344,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         
         const jsonContent = extractJsonFromContent(fallbackContent);
         if (jsonContent) {
+          completedRef.current = true;
           clearChatState(companyId);
           await saveGeneratedContent(jsonContent);
         }
@@ -492,6 +502,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       // Check if the message contains JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
+        completedRef.current = true;
         clearChatState(companyId); // Clear state on successful completion
         await saveGeneratedContent(jsonContent);
       }
