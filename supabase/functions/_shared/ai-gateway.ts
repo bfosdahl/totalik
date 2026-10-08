@@ -15,6 +15,10 @@ const MODEL_TEST_KEYS = new Set<string>([
   "4c9f2da2-458a-4c02-b8d5-0c0611cce5d5", "8b746c7a-9cbb-4330-ae4e-04955fb80aff", "bfb728e5-5ec8-4d71-ae1e-8621406ddd07", // users of that company
 ]);
 
+export function isModelTestKey(key?: string | null): boolean {
+  return !!key && MODEL_TEST_KEYS.has(key);
+}
+
 function callGateway(apiKey: string, body: unknown): Promise<Response> {
   return fetch(AI_GATEWAY_URL, {
     method: "POST",
