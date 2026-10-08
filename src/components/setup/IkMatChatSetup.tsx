@@ -242,10 +242,11 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         collect(lokaler.frysere, 'freezer');
 
         if (newItems.length > 0) {
-          const { data: existingEquipment } = await supabase
+          const { data: existingEquipment, error: equipmentFetchError } = await supabase
             .from('ik_mat_temperature_equipment')
             .select('name, sort_order')
             .eq('company_id', companyId);
+          if (equipmentFetchError) throw equipmentFetchError;
           const existingNames = new Set(
             (existingEquipment || []).map((e: { name: string }) => e.name.trim().toLowerCase())
           );
@@ -263,7 +264,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                 e.sort_order != null && e.sort_order > max ? e.sort_order : max,
               0
             );
-            await supabase.from('ik_mat_temperature_equipment').insert(
+            const { error: equipmentInsertError } = await supabase.from('ik_mat_temperature_equipment').insert(
               toInsert.map((item, i) => ({
                 company_id: companyId,
                 name: item.name,
@@ -276,6 +277,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                 sort_order: maxSortOrder + i + 1,
               }))
             );
+            if (equipmentInsertError) throw equipmentInsertError;
           }
         }
       } catch (equipmentError) {
