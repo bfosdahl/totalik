@@ -5,7 +5,7 @@ DO $mig$
 DECLARE
   r record; nq text; nw text; stmt text; n int := 0;
   fnre constant text := '\m(get_user_company_id|is_system_admin|is_company_admin|is_hms_responsible|is_leader_or_verneombud|check_company_admin_role|is_any_department_admin)\(\(SELECT auth\.uid\(\)\)\)';
-  hrre constant text := '\mhas_role\(\(SELECT auth\.uid\(\), (''[a-z_]+''::app_role)\)';
+  hrre constant text := '\mhas_role\(\(SELECT auth\.uid\(\)\), (''[a-z_]+''::app_role)\)';
 BEGIN
   FOR r IN
     SELECT schemaname, tablename, policyname, qual, with_check
