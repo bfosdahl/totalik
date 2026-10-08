@@ -460,6 +460,8 @@ export const MascotChatHelper = () => {
                 size="icon"
                 onClick={() => setIsOpen(false)}
                 className={`${headerTextClass} hover:bg-white/20 h-8 w-8 shrink-0`}
+              >
+                <X className="h-5 w-5" />
               </Button>
             </div>
 
