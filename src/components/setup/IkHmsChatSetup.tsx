@@ -831,7 +831,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         }) || [];
 
         const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({
-          ...action, id: `ai-${crypto.randomUUID()}`, ...(action.risk_id != null && riskIdMap.has(String(action.risk_id)) ? { risk_id: riskIdMap.get(String(action.risk_id)) } : {}), deadline: ensureFutureDeadline(action.deadline, ({ kritisk: 1, 'høy': 1, medium: 3, lav: 6 } as Record<string, number>)[String(action.priority)] ?? 3), is_ai_generated: true,
+          ...action, id: `ai-${crypto.randomUUID()}`, ...(action.risk_id != null && riskIdMap.has(String(action.risk_id)) ? { risk_id: riskIdMap.get(String(action.risk_id)) } : {}), ...(typeof action.risk_source === 'string' && action.risk_source.trim() ? { risk_source: formatHazardName(action.risk_source as string) } : {}), deadline: ensureFutureDeadline(action.deadline, ({ kritisk: 1, 'høy': 1, medium: 3, lav: 6 } as Record<string, number>)[String(action.priority)] ?? 3), is_ai_generated: true,
         })) || [];
 
         const newSettings = {
