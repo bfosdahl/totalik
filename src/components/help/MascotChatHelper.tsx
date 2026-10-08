@@ -413,30 +413,30 @@ export const MascotChatHelper = () => {
           >
             {/* Header - drag handle */}
             <div 
-              className={`${headerBgClass} ${headerTextClass} p-4 flex items-center gap-3 cursor-grab active:cursor-grabbing touch-none`}
+              className={`${headerBgClass} ${headerTextClass} px-3 py-3 flex items-center gap-2 cursor-grab active:cursor-grabbing touch-none`}
               onPointerDown={(e) => dragControls.start(e)}
             >
               <GripVertical className="h-5 w-5 opacity-50 shrink-0" />
               <img
                 src={proffConfig.mascotImage}
                 alt={proffConfig.name}
-                className="w-12 h-12 rounded-full border-2 border-white/30 object-cover bg-white"
+                className="w-12 h-12 rounded-full border-2 border-white/30 object-cover bg-white shrink-0"
               />
-              <div className="flex-1">
-                <h3 className="font-semibold">{proffConfig.name}</h3>
-                <p className="text-xs opacity-80">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold whitespace-nowrap truncate">{proffConfig.name}</h3>
+                <p className="text-xs opacity-80 whitespace-nowrap truncate">
                   {speech.isListening ? '🎤 Lytter...' : speech.isSpeaking ? '🔊 Snakker...' : 'Dra for å flytte'}
                 </p>
               </div>
               
               {/* Voice controls */}
               {speech.isSupported && (
-                <div className="flex gap-1">
+                <div className="flex gap-1 shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={toggleAutoSpeak}
-                    className={`${headerTextClass} hover:bg-white/20 h-8 w-8`}
+                    className={`${headerTextClass} hover:bg-white/20 h-8 w-8 shrink-0`}
                     title={autoSpeak ? 'Skru av tale' : 'Skru på tale'}
                   >
                     {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
@@ -452,18 +452,14 @@ export const MascotChatHelper = () => {
                   title="Vis tips"
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={showTipsAgain}
-                  className={`${headerTextClass} hover:bg-white/20`}
-                >
-                  <Lightbulb className="h-5 w-5" />
+                  className={`${headerTextClass} hover:bg-white/20 h-8 w-8 shrink-0`}
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
-                className={`${headerTextClass} hover:bg-white/20`}
-              >
-                <X className="h-5 w-5" />
+                className={`${headerTextClass} hover:bg-white/20 h-8 w-8 shrink-0`}
               </Button>
             </div>
 
