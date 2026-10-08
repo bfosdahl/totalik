@@ -230,12 +230,12 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-foreground">{stats.progressPercent}%</span>
+                <span className="text-3xl font-bold text-foreground">{isLoading ? "–" : `${stats.progressPercent}%`}</span>
                 <span className="text-xs text-muted-foreground">{t("auto.fullfoert_2")}</span>
               </div>
             </div>
             <p className="mt-3 text-sm font-medium text-foreground text-center">
-              {stats.completed} av {stats.total} egenkontroller
+              {isLoading ? "Laster egenkontroller…" : `${stats.completed} av ${stats.total} egenkontroller`}
             </p>
           </CardContent>
         </Card>

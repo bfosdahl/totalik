@@ -32,7 +32,7 @@ export default function Ks2Dashboard() {
   // Fremdrift per prosjekt basert på egenkontroller/sjekklister (samme tall som inne i prosjektet)
   useEffect(() => {
     const fetchChecklistProgress = async () => {
-      if (!profile?.company_id || projects.length === 0) return;
+      if (!profile?.company_id || projects.length === 0 || isNewProjectOpen) return;
 
       const projectIds = projects.map((p) => p.id);
       const { data, error } = await supabase
@@ -59,7 +59,7 @@ export default function Ks2Dashboard() {
     };
 
     fetchChecklistProgress();
-  }, [projects, profile?.company_id]);
+  }, [projects, profile?.company_id, isNewProjectOpen]);
 
   const archivedCount = useMemo(
     () => projects.filter((p) => p.status === "completed").length,
