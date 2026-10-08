@@ -186,18 +186,12 @@ serve(async (req) => {
 
     console.log('Parsing handbook with AI...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages,
-        temperature: 0.1,
-      }),
-    });
+    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: AI_CHAT_MODEL,
+      messages,
+      temperature: 0.1,
+    }, null, { totalTimeoutMs: 90_000 });
 
     if (!response.ok) {
       const errorText = await response.text();
