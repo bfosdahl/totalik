@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
@@ -109,7 +110,7 @@ export async function generateKsModule2ChecklistPdf(options: GenerateChecklistPd
     else if (item.value !== null && item.value !== undefined) statusText = String(item.value);
 
     return [
-      `${index + 1}. ${item.text}`,
+      `${index + 1}. ${getChecklistItemText(item)}`,
       statusText,
       item.comment || "-",
     ];
@@ -190,7 +191,7 @@ export async function generateKsModule2ChecklistPdf(options: GenerateChecklistPd
           doc.setFontSize(9);
           doc.setFont("helvetica", "normal");
           doc.setTextColor(100, 116, 139);
-          doc.text(`${idx + 1}. ${item.text}`, 15, yPos);
+          doc.text(`${idx + 1}. ${getChecklistItemText(item)}`, 15, yPos);
           doc.setTextColor(0, 0, 0);
           yPos += 5;
 

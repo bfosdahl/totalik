@@ -219,6 +219,11 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const abortRef = useRef<AbortController | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearIdle = () => { if (idleTimerRef.current) { clearTimeout(idleTimerRef.current); idleTimerRef.current = null; } };
+  useEffect(() => () => { clearIdle(); abortRef.current?.abort(); }, []);
+
   const sendMessage = useCallback(async (userMessage: MessageContent) => {
     const isEmpty = typeof userMessage === "string" ? !userMessage.trim() : !userMessage.length;
     if (isEmpty || isLoading) return;
@@ -227,6 +232,16 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     setInput("");
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    let timedOut = false;
+    let receivedAny = false;
+    const resetIdle = () => {
+      clearIdle();
+      idleTimerRef.current = setTimeout(() => { timedOut = true; controller.abort(); }, 100_000);
+    };
+    resetIdle();
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -249,6 +264,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
               content: m.content
             }))
           }),
+          signal: controller.signal,
         }
       );
 
@@ -269,6 +285,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        resetIdle();
 
         textBuffer += decoder.decode(value, { stream: true });
 
@@ -288,6 +305,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             const json = JSON.parse(jsonStr);
             const content = json.choices?.[0]?.delta?.content;
             if (content) {
+              receivedAny = true;
               fullContent += content;
               setMessages(prev => {
                 const newMessages = [...prev];
@@ -371,12 +389,25 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
       }
 
     } catch (error) {
+      if (timedOut || controller.signal.aborted) {
+        if (timedOut) {
+          setMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (!receivedAny && last?.role === "assistant" && !last.content) next.pop();
+            return [...next, { role: "assistant", content: "Svaret tok for lang tid og ble avbrutt. Prøv igjen – eller trykk «Lag et forslag for meg»." }];
+          });
+        }
+        return;
+      }
       console.error("Chat error:", error);
       setMessages(prev => [...prev, { 
         role: "assistant", 
         content: t("auto.beklager_det_oppsto_en_feil_proev_igjen") 
       }]);
     } finally {
+      clearIdle();
+      if (abortRef.current === controller) abortRef.current = null;
       setIsLoading(false);
     }
   }, [isLoading]);

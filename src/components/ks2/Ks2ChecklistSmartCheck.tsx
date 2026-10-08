@@ -1,3 +1,4 @@
+import { getChecklistItemText } from "@/lib/checklistItemText";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,7 @@ export function Ks2ChecklistSmartCheck({ title, projectName, projectId, items }:
   const candidates = items
     .map((i, n) => ({
       key: String(i.id ?? n),
-      label: String(i.label || i.title || i.name || `Punkt ${n + 1}`),
+      label: getChecklistItemText(i, `Punkt ${n + 1}`),
       answer: i.value === false || i.value === "nei" ? "Nei" : i.value === true ? "Ja" : String(i.value ?? ""),
       comment: String(i.comment || ""),
       isNo: i.value === false || i.value === "nei" || i.value === "no",
@@ -72,7 +73,7 @@ export function Ks2ChecklistSmartCheck({ title, projectName, projectId, items }:
     setLoading(true); setError(""); setResult(null);
     try {
       const payload = answered.map((i) => ({
-        label: String(i.label || i.title || i.name || ""),
+        label: getChecklistItemText(i),
         value: i.value === true ? "ja" : i.value === false ? "nei" : i.value === "na" ? "ikke aktuelt" : String(i.value ?? ""),
         comment: String(i.comment || ""),
       }));
@@ -105,7 +106,7 @@ export function Ks2ChecklistSmartCheck({ title, projectName, projectId, items }:
       const fields: Record<string, string> = { prosjekt: projectName || "" };
       items.slice(0, 29).forEach((i, n) => {
         const v = i.value === true ? "ja" : i.value === false ? "nei" : i.value === "na" ? "ikke aktuelt" : String(i.value ?? "ubesvart");
-        fields[`p${n + 1}`] = `${String(i.label || i.title || i.name || "")}: ${v || "ubesvart"}${i.comment ? ` – ${i.comment}` : ""}`;
+        fields[`p${n + 1}`] = `${getChecklistItemText(i)}: ${v || "ubesvart"}${i.comment ? ` – ${i.comment}` : ""}`;
       });
       const { data, error } = await supabase.functions.invoke("jev-assist", { body: { mode: "form_check", kind: ansvarKind, fields } });
       if (error) throw error;
