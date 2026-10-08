@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search, FolderKanban, Loader2, Settings, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,11 +29,20 @@ export default function Ks2Dashboard() {
     Record<string, { completed: number; total: number; percent: number }>
   >({});
 
+  // Siste prosjektliste (lesast i refreshChecklistProgress slik at ein kald frå
+  // NewProjectDialog får med seg det nyoppretta prosjektet)
+  const projectsRef = useRef<KsModule2Project[]>(projects);
+  projectsRef.current = projects;
+  // Berre det siste starta requestet får skrive progresjonskartet
+  const progressRequestRef = useRef(0);
+
   // Fremdrift per prosjekt basert på egenkontroller/sjekklister (samme tall som inne i prosjektet)
   const refreshChecklistProgress = useCallback(async () => {
-    if (!profile?.company_id || projects.length === 0) return;
+    const currentProjects = projectsRef.current;
+    if (!profile?.company_id || currentProjects.length === 0) return;
 
-    const projectIds = projects.map((p) => p.id);
+    const requestId = ++progressRequestRef.current;
+    const projectIds = currentProjects.map((p) => p.id);
     const { data, error } = await supabase
       .from("ks_module2_checklists")
       .select("project_id, status")
@@ -43,6 +52,9 @@ export default function Ks2Dashboard() {
       console.error("Error fetching checklist progress:", error);
       return;
     }
+
+    // Ignorer respons frå utdaterte request
+    if (requestId !== progressRequestRef.current) return;
 
     const acc: Record<string, { completed: number; total: number; percent: number }> = {};
     (data || []).forEach((row: any) => {
@@ -55,12 +67,12 @@ export default function Ks2Dashboard() {
       v.percent = v.total > 0 ? Math.round((v.completed / v.total) * 100) : 0;
     });
     setProjectChecklistProgress(acc);
-  }, [projects, profile?.company_id]);
+  }, [profile?.company_id]);
 
   useEffect(() => {
     if (isNewProjectOpen) return;
     refreshChecklistProgress();
-  }, [refreshChecklistProgress, isNewProjectOpen]);
+  }, [refreshChecklistProgress, isNewProjectOpen, projects]);
 
   const archivedCount = useMemo(
     () => projects.filter((p) => p.status === "completed").length,
