@@ -1458,7 +1458,7 @@ export function RisikovurderingOgHandlingsplan() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium">{action.action_description}</p>
                             <p className="text-xs text-muted-foreground">
-                              {action.risk_source}: {action.event_description}
+                              {formatHazardName(action.risk_source)}: {action.event_description}
                             </p>
                           </div>
                           <Select value={action.status} onValueChange={(v: any) => updateAction(action.id, { status: v })}>
