@@ -7,7 +7,7 @@ import {
   createStreamWithFallback,
   ChatMsg,
 } from "../_shared/ai-setup.ts";
-import { callAiGateway } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -359,13 +359,14 @@ serve(async (req) => {
     const messageHash = createMessageHash(messages);
 
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: "google/gemini-2.5-flash",
+      model: AI_CHAT_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         ...(buildKnownFactsMessage(messages) ? [{ role: "system", content: buildKnownFactsMessage(messages)! }] : []),
         ...messages
       ],
-      stream: true,
+      stream: true,,
+    companyId
     });
 
     if (!response.ok) {

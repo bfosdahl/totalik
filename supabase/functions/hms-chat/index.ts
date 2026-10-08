@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
-import { callAiGateway } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -181,12 +181,13 @@ serve(async (req) => {
     console.log(`User ${user.id} making hms-chat request`);
 
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: "google/gemini-2.5-flash",
+      model: AI_CHAT_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,
       ],
-      stream: true,
+      stream: true,,
+    user.id
     });
 
     if (!response.ok) {
