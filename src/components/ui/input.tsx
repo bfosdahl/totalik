@@ -2,11 +2,15 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { DateInput } from "@/components/ui/date-input";
+import { FileInput } from "@/components/ui/file-input";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
     if (type === "date") {
       return <DateInput {...(props as any)} className={className} ref={ref} />;
+    }
+    if (type === "file" && !/(^|\s)(hidden|sr-only)(\s|$)/.test(className ?? "") && (props.style as React.CSSProperties | undefined)?.display !== "none") {
+      return <FileInput {...props} className={className} ref={ref} />;
     }
     return (
       <input
