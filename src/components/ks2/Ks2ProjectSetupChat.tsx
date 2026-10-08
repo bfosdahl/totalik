@@ -70,12 +70,23 @@ const PLACEHOLDER_VALUES = [
   "tbd",
   "adresse hvis kjent",
   "byggherre / oppdragsgiver hvis kjent",
+  "oppdater senere",
+  "fylles ut senere",
+  "legges inn senere",
+  "ikke spesifisert",
+  "ikke avklart",
+  "ukjent adresse",
+  "ukjent byggherre",
+  "ukjent kunde",
+  "null",
+  "undefined",
 ];
 
 /** Tommer AI-felt som berre inneheld plasshaldartekst ("Ikke oppgitt" osv.). */
 function cleanPlaceholder(value: unknown): string {
   if (typeof value !== "string") return "";
   const text = value
+    .replace(/\((foreslått|forslag|arbeidsnavn|midlertidig)\)/gi, "")
     .replace(/\[[^\]]*\]/g, "")
     .replace(/<[^>]*>/g, "")
     .replace(/\{[^}]*\}/g, "")
@@ -104,7 +115,7 @@ type ProposalData = Partial<NewKsModule2ProjectInput> & {
 };
 
 interface Ks2ProjectSetupChatProps {
-  onComplete: (data: ProposalData) => void;
+  onComplete: (data: ProposalData) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -335,7 +346,10 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
     if (!name) return;
     creatingRef.current = true;
     setCreating(true);
-    onComplete({ ...proposal, project_name: name });
+    Promise.resolve(onComplete({ ...proposal, project_name: name })).finally(() => {
+      creatingRef.current = false;
+      setCreating(false);
+    });
   };
 
 
