@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { getProffConfig, ProffConfig } from "./proffConfig";
 import { useSpeech } from "@/hooks/useSpeech";
 import { t } from "@/i18n/t";
@@ -20,12 +21,13 @@ interface Message {
 }
 
 const STORAGE_PREFIX = "mascot-chat:";
+const SCOPED_PREFIX = "mascot-chat:v2:";
 const OPEN_STORAGE_KEY = "mascot-chat:isOpen";
 
-const loadPersistedMessages = (proffId: string): Message[] | null => {
-  if (typeof window === "undefined") return null;
+const loadPersistedMessages = (storageKey: string | null): Message[] | null => {
+  if (typeof window === "undefined" || !storageKey) return null;
   try {
-    const raw = sessionStorage.getItem(`${STORAGE_PREFIX}${proffId}`);
+    const raw = sessionStorage.getItem(storageKey);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : null;
@@ -36,16 +38,35 @@ const loadPersistedMessages = (proffId: string): Message[] | null => {
 
 export const MascotChatHelper = () => {
   const location = useLocation();
+  const { user, company, profile } = useAuth();
   const [proffConfig, setProffConfig] = useState<ProffConfig>(() => getProffConfig(location.pathname));
+  const scopeKey = user
+    ? `${user.id}:${company?.id ?? profile?.company_id ?? "none"}`
+    : null;
+  const storageKey = scopeKey ? `${SCOPED_PREFIX}${scopeKey}:${proffConfig.id}` : null;
   const [isOpen, setIsOpen] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(OPEN_STORAGE_KEY) === "1";
   });
   const [messages, setMessages] = useState<Message[]>(() => {
-    const persisted = loadPersistedMessages(proffConfig.id);
+    const persisted = loadPersistedMessages(storageKey);
     if (persisted && persisted.length > 0) return persisted;
     return [{ id: "welcome", content: proffConfig.welcomeMessage, isBot: true }];
   });
+
+  // Remove legacy unscoped history keys (privacy: they were shared across users)
+  useEffect(() => {
+    try {
+      const toRemove: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith(STORAGE_PREFIX) && !key.startsWith(SCOPED_PREFIX) && key !== OPEN_STORAGE_KEY) {
+          toRemove.push(key);
+        }
+      }
+      toRemove.forEach((key) => sessionStorage.removeItem(key));
+    } catch { /* ignore */ }
+  }, []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -86,26 +107,28 @@ export const MascotChatHelper = () => {
     } catch { /* ignore */ }
   }, [isOpen]);
 
-  // Persist messages per proff id so tab/route switches don't wipe history
+  // Persist messages per user+company+proff so tab/route switches don't wipe history
   useEffect(() => {
+    if (!storageKey) return;
     try {
-      sessionStorage.setItem(`${STORAGE_PREFIX}${proffConfig.id}`, JSON.stringify(messages));
+      sessionStorage.setItem(storageKey, JSON.stringify(messages));
     } catch { /* ignore */ }
-  }, [messages, proffConfig.id]);
+  }, [messages, storageKey]);
 
-  // Update proff config when route changes; load that proff's history
+  // Update proff config when route or user/company scope changes; load that scope's history
   useEffect(() => {
     const newConfig = getProffConfig(location.pathname);
+    const key = scopeKey ? `${SCOPED_PREFIX}${scopeKey}:${newConfig.id}` : null;
     if (newConfig.id !== proffConfig.id) {
       setProffConfig(newConfig);
-      const persisted = loadPersistedMessages(newConfig.id);
-      setMessages(
-        persisted && persisted.length > 0
-          ? persisted
-          : [{ id: "welcome", content: newConfig.welcomeMessage, isBot: true }]
-      );
     }
-  }, [location.pathname, proffConfig.id]);
+    const persisted = loadPersistedMessages(key);
+    setMessages(
+      persisted && persisted.length > 0
+        ? persisted
+        : [{ id: "welcome", content: newConfig.welcomeMessage, isBot: true }]
+    );
+  }, [location.pathname, proffConfig.id, scopeKey]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

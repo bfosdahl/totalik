@@ -301,12 +301,14 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
             company_id: companyId,
             title: name,
             template_name: name,
-            checklist_items: (cl.checkpoints || []).map((cp: string, idx: number) => ({
-              id: `item-${idx}`,
-              checkpoint: cp,
-              value: null,
-              comment: "",
-            })),
+            checklist_items: (cl.checkpoints || [])
+              .map((cp: any, idx: number) => {
+                const text = typeof cp === "string"
+                  ? cp
+                  : (cp?.text || cp?.label || cp?.title || cp?.checkpoint || cp?.description || "");
+                return { id: `item-${idx}`, text, checkpoint: text, type: "yes_no", required: true, value: null, comment: "" };
+              })
+              .filter((item: any) => item.text.trim() !== ""),
             status: "planned",
             progress_percent: 0,
           };
