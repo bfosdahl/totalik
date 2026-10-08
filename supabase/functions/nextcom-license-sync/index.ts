@@ -3,6 +3,7 @@
 // (ordrens opprettelsesdato + lisenslengde 12/24/36 mnd).
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { recordJobRun } from "../_shared/jobRun.ts";
+import { fetchAllRows } from "../_shared/fetchAll.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -265,11 +266,16 @@ Deno.serve(async (req) => {
 
     console.log(`[license-sync] ${terminatedOrders.length} ordre med avsluttet kundeforhold`);
 
-    const { data: companies } = await supabase
+    type Row = {
+      id: string; name: string; org_number: string | null; email: string | null;
+      license_months: number | null; license_months_manual: boolean | null;
+      scheduled_termination_date: string | null; terminated_at: string | null;
+    };
+    const companies = await fetchAllRows<Row>(() => supabase
       .from("companies")
-      .select("id, name, org_number, email, license_months, license_months_manual, scheduled_termination_date, terminated_at");
+      .select("id, name, org_number, email, license_months, license_months_manual, scheduled_termination_date, terminated_at")
+      .order("id"));
 
-    type Row = NonNullable<typeof companies>[number];
     const byOrg = new Map<string, Row>();
     const byEmail = new Map<string, Row>();
     for (const c of companies || []) {

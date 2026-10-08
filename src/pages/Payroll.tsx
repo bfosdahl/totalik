@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { fetchAllRows, fetchAllIn } from "@/lib/fetchAll";
 import {
   exportPayrollGeneric,
   exportPayrollTripletex,
@@ -162,16 +163,21 @@ export default function Payroll() {
     if (!profile?.company_id) return;
     setIsLoading(true);
     (async () => {
-      let query = supabase
-        .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, project_id, description, status, approved_by_name, approved_at, hour_type, overtime_segments, customer_name, project_number, subproject, tags")
-        .eq("company_id", profile.company_id)
-        .gte("entry_date", fmt(period.start))
-        .lte("entry_date", fmt(period.end));
-      if (statusFilter === "approved") query = query.eq("status", "approved");
-      else if (statusFilter === "submitted") query = query.eq("status", "submitted");
-      else query = query.in("status", ["approved", "submitted", "draft", "rejected"]);
-      const { data: entries, error } = await query.order("entry_date", { ascending: true });
+      const buildQuery = () => {
+        let query = supabase
+          .from("time_entries")
+          .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, project_id, description, status, approved_by_name, approved_at, hour_type, overtime_segments, customer_name, project_number, subproject, tags")
+          .eq("company_id", profile.company_id)
+          .gte("entry_date", fmt(period.start))
+          .lte("entry_date", fmt(period.end));
+        if (statusFilter === "approved") query = query.eq("status", "approved");
+        else if (statusFilter === "submitted") query = query.eq("status", "submitted");
+        else query = query.in("status", ["approved", "submitted", "draft", "rejected"]);
+        return query.order("entry_date", { ascending: true }).order("id");
+      };
+      let entries: any[] | null = null;
+      let error: unknown = null;
+      try { entries = await fetchAllRows<any>(buildQuery); } catch (e) { error = e; }
       if (error) {
         console.error(error);
         toast.error(t("auto.kunne_ikke_hente_timer"));
@@ -187,20 +193,24 @@ export default function Payroll() {
       // Fetch allowances for these entries
       if (list.length > 0) {
         const ids = list.map((r) => r.id);
-        const { data: allowData } = await supabase
+        const allowData = await fetchAllIn<AllowanceRow>(ids, (chunk) => supabase
           .from("time_entry_allowances")
           .select("time_entry_id, amount, type_name, unit, quantity, rate_snapshot, notes")
-          .in("time_entry_id", ids);
+          .in("time_entry_id", chunk)
+          .order("time_entry_id")
+          .order("id")).catch(() => null);
         const map = new Map<string, number>();
         (allowData as AllowanceRow[] | null)?.forEach((a) => {
           const cur = map.get(a.time_entry_id) || 0;
           map.set(a.time_entry_id, cur + (Number(a.amount) || 0));
         });
         setAllowanceMap(map);
-        const { data: matData } = await supabase
+        const matData = await fetchAllIn<any>(ids, (chunk) => supabase
           .from("time_entry_materials")
           .select("time_entry_id, name, unit, quantity, unit_price, amount, notes")
-          .in("time_entry_id", ids);
+          .in("time_entry_id", chunk)
+          .order("time_entry_id")
+          .order("id")).catch(() => null);
         const matRows: AllowanceRow[] = ((matData as any[]) || []).map((m) => ({
           time_entry_id: m.time_entry_id,
           amount: Number(m.amount) || 0,

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { fetchAllRows, fetchAllIn } from "@/lib/fetchAll";
 import { t } from "@/i18n/t";
 
 /**
@@ -38,20 +39,22 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       const endISO = endOfDay(new Date(endDate)).toISOString();
 
       // 1) Timelister m/ pauser
-      const { data: entries = [], error: entErr } = await supabase
+      const entries = await fetchAllRows<any>(() => supabase
         .from("time_clock_entries")
         .select("id, user_name, guest_name, guest_employer, guest_national_id, is_guest_worker, clock_in, clock_out, break_start, break_end, total_break_minutes, hours_worked, status, notes")
         .eq("company_id", companyId)
         .gte("clock_in", startISO)
         .lte("clock_in", endISO)
-        .order("clock_in");
-      if (entErr) throw entErr;
+        .order("clock_in")
+        .order("id"));
 
       const entryIds = (entries || []).map((e: any) => e.id);
-      const { data: breaks = [] } = await supabase
+      const breaks = await fetchAllIn<any>(entryIds, (chunk) => supabase
         .from("time_clock_breaks")
         .select("entry_id, break_start, break_end, is_paid")
-        .in("entry_id", entryIds.length ? entryIds : ["00000000-0000-0000-0000-000000000000"]);
+        .in("entry_id", chunk)
+        .order("entry_id")
+        .order("id")).catch(() => [] as any[]);
       const breakMap = new Map<string, any[]>();
       (breaks || []).forEach((b: any) => {
         const arr = breakMap.get(b.entry_id) || [];
@@ -60,22 +63,24 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       });
 
       // Fallback til time_entries (manuelle timer) for perioden
-      const { data: manualHours = [] } = await supabase
+      const manualHours = await fetchAllRows<any>(() => supabase
         .from("time_entries")
         .select("user_name, entry_date, start_time, end_time, hours, description, status, hour_type")
         .eq("company_id", companyId)
         .gte("entry_date", startDate)
         .lte("entry_date", endDate)
-        .order("entry_date");
+        .order("entry_date")
+        .order("id")).catch(() => [] as any[]);
 
       // 2) Arbeidsplan
-      const { data: schedules = [] } = await supabase
+      const schedules = await fetchAllRows<any>(() => supabase
         .from("work_schedules")
         .select("employee_name, schedule_date, start_time, end_time, break_minutes, notes")
         .eq("company_id", companyId)
         .gte("schedule_date", startDate)
         .lte("schedule_date", endDate)
-        .order("schedule_date");
+        .order("schedule_date")
+        .order("id")).catch(() => [] as any[]);
 
       // 3) Ansatte
       const { data: profilesSafe = [] } = await supabase
@@ -90,17 +95,19 @@ export function ArbeidstilsynExport({ companyId, companyName }: { companyId: str
       });
 
       const ids = (profiles || []).map((p) => p.id);
-      const { data: nids = [] } = await supabase
+      const nids = await fetchAllIn<{ profile_id: string; id_type: string | null }>(ids, (chunk) => supabase
         .from("profiles_national_id")
         .select("profile_id, id_type")
-        .in("profile_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
+        .in("profile_id", chunk)
+        .order("profile_id")).catch(() => [] as { profile_id: string; id_type: string | null }[]);
       const nidMap = new Map((nids || []).map((n) => [n.profile_id, n]));
 
       // 4) Kontrakter (referanse)
-      const { data: contracts = [] } = await supabase
+      const contracts = await fetchAllRows<any>(() => supabase
         .from("employment_contracts")
         .select("employee_id, contract_type, start_date, end_date, position, working_hours_per_week, salary_amount, salary_type, employment_percentage, status")
-        .eq("company_id", companyId);
+        .eq("company_id", companyId)
+        .order("id")).catch(() => [] as any[]);
       const nameMap = new Map(
         (profiles || []).map((p: any) => [p.id, `${p.first_name || ""} ${p.last_name || ""}`.trim() || p.email || ""])
       );
@@ -268,11 +275,12 @@ Ved arbeidstid på 8 timer eller mer skal pausene til sammen være minst en halv
 `;
 
       // ─── Live personalliste ──────────────────────────────────────────────
-      const { data: liveNow = [] } = await supabase
+      const liveNow = await fetchAllRows<any>(() => supabase
         .from("time_clock_entries")
         .select("user_name, guest_name, guest_employer, is_guest_worker, clock_in, break_start, break_end")
         .eq("company_id", companyId)
-        .eq("status", "active");
+        .eq("status", "active")
+        .order("id")).catch(() => [] as any[]);
       const liveRows = (liveNow || []).map((e: any) => ({
         Navn: e.user_name || e.guest_name,
         Type: e.is_guest_worker ? "Innleid" : "Ansatt",

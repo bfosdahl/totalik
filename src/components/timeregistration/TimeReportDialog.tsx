@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateTimeReportPdf } from "@/utils/timeReportPdf";
 import { useDepartmentMembership } from "@/hooks/useDepartmentMembership";
@@ -68,22 +69,23 @@ export function TimeReportDialog({ open, onOpenChange, ksProjectId }: TimeReport
     }
     setIsGenerating(true);
     try {
-      let query = supabase
-        .from("time_entries")
-        .select(
-          "id, entry_date, user_name, user_id, hours, start_time, end_time, customer_name, project_name, project_number, subproject, tags, hour_type, overtime_segments, description"
-        )
-        .eq("company_id", profile.company_id)
-        .gte("entry_date", fromDate)
-        .lte("entry_date", toDate)
-        .order("entry_date", { ascending: true });
-
-      if (!canSeeAll) query = query.eq("user_id", user?.id ?? "");
       const pid = ksProjectId || (projectId !== "all" ? projectId : null);
-      if (pid) query = query.eq("ks_project_id", pid);
+      const raw = await fetchAllRows<any>(() => {
+        let query = supabase
+          .from("time_entries")
+          .select(
+            "id, entry_date, user_name, user_id, hours, start_time, end_time, customer_name, project_name, project_number, subproject, tags, hour_type, overtime_segments, description"
+          )
+          .eq("company_id", profile.company_id)
+          .gte("entry_date", fromDate)
+          .lte("entry_date", toDate)
+          .order("entry_date", { ascending: true })
+          .order("id");
 
-      const { data: raw, error } = await query;
-      if (error) throw error;
+        if (!canSeeAll) query = query.eq("user_id", user?.id ?? "");
+        if (pid) query = query.eq("ks_project_id", pid);
+        return query;
+      });
       const data = (raw || []).filter(
         (e: any) =>
           deptId === "all"
