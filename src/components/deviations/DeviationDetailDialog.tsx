@@ -13,8 +13,7 @@ import {
   Save,
   Loader2,
   Trash2,
-  Pencil,
-  X
+  Pencil
 } from "lucide-react";
 import {
   Dialog,
@@ -497,7 +496,7 @@ export function DeviationDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 pr-8">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 flex-wrap">
               <span className="font-mono text-xs">{deviation.deviation_number || deviation.id}</span>
               {!isEditing && deviation.priority && priorityConfig[deviation.priority] && (
@@ -529,7 +528,7 @@ export function DeviationDetailDialog({
                   setEditDescription(deviation.description || "");
                   setEditPriority(deviation.priority);
                 }}>
-                  <X className="w-3.5 h-3.5" />
+                  Avbryt
                 </Button>
                 <Button size="sm" onClick={handleSaveEdit} disabled={isSavingEdit} className="gap-1.5">
                   {isSavingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}

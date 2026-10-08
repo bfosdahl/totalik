@@ -76,12 +76,12 @@ const IkAlkoholMaal = () => {
   return (
     <AppLayout>
       <div className="container max-w-6xl mx-auto py-6 px-4">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
             <h1 className="text-2xl font-bold">{t("auto.maalsetting")}</h1>
             <p className="text-muted-foreground">{t("auto.maal_og_kpi_er_for_alkoholkontroll")}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {goals.length === 0 && (
               <Button variant="outline" onClick={() => initializeDefaultGoals.mutate()} disabled={initializeDefaultGoals.isPending}>
                 <Sparkles className="h-4 w-4 mr-2" />{t("auto.legg_til_standardmaal")}

@@ -66,7 +66,7 @@ const IkMatMaal = () => {
   return (
     <AppLayout>
       <div className="container max-w-4xl mx-auto py-8 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Target className="h-8 w-8 text-primary" />
@@ -76,7 +76,7 @@ const IkMatMaal = () => {
               {t("auto.bedriftens_maalsetting_for_matsikkerhet")}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={handleAddGoal}>
               <Plus className="h-4 w-4 mr-2" />
               {t("auto.legg_til_maal")}

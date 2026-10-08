@@ -279,9 +279,9 @@ const LoverOgForskrifterCalculator = () => {
                     key={law.id}
                     className="flex items-start justify-between gap-4 p-3 rounded-lg bg-muted/50"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-sm">{law.law_name}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <p className="font-medium text-sm break-words">{law.law_name}</p>
                         <Badge variant="secondary" className="text-xs">
                           {law.category || "Generelt"}
                         </Badge>
@@ -298,7 +298,7 @@ const LoverOgForskrifterCalculator = () => {
                         <p className="text-sm text-muted-foreground">{law.description}</p>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       {law.link && (
                         <Button
                           variant="ghost"
@@ -592,9 +592,9 @@ const LoverOgForskrifterCalculator = () => {
                     key={index}
                     className="flex items-start justify-between gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium">{lov.tittel}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <p className="font-medium break-words">{lov.tittel}</p>
                         <Badge variant="secondary" className="text-xs">
                           {lov.kategori}
                         </Badge>

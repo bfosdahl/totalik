@@ -641,8 +641,8 @@ export const RutinerTab = () => {
               >
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         {expandedRoutines.has(routine.id) ? (
                           <ChevronDown className="h-5 w-5 text-muted-foreground" />
                         ) : (
@@ -670,7 +670,7 @@ export const RutinerTab = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-2 shrink-0 ml-auto" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="sm"

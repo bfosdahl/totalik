@@ -278,7 +278,7 @@ export default function TimeOversikt() {
             </h1>
             <p className="text-muted-foreground mt-1">{t("auto.alle_timer_paa_tvers_av_prosjekter_loenn")}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => navigate("/time-registration")}>{t("auto.til_timefoering")}</Button>
             <Button variant="outline" onClick={() => setReportOpen(true)}>
               <FileText className="h-4 w-4 mr-2" />

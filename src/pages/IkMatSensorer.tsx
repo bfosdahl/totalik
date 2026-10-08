@@ -235,7 +235,7 @@ export default function IkMatSensorer() {
         {/* Live driftsstatus */}
         {sensors.length > 0 && (
           <Card>
-            <CardHeader className="flex flex-row items-start justify-between gap-4">
+            <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4">
               <div>
                 <CardTitle>{t("auto.driftsstatus")}</CardTitle>
                 <CardDescription>{t("auto.oppdateres_automatisk_hvert_minutt")}</CardDescription>
@@ -351,7 +351,7 @@ export default function IkMatSensorer() {
 
         {/* Sensors */}
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4">
             <div>
               <CardTitle>{t("auto.sensorer")}</CardTitle>
               <CardDescription>

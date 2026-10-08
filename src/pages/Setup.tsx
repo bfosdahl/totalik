@@ -781,7 +781,7 @@ const Setup = () => {
           transition={{ delay: 0.1 }}
           className="bg-card rounded-xl border border-border p-4 shadow-card"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-1 overflow-x-auto">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <button

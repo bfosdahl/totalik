@@ -109,7 +109,7 @@ const IkAlkoholOrganisering = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 h-auto flex-wrap justify-start">
             <TabsTrigger value="roles"><Users className="h-4 w-4 mr-2" />Roller og ansvar</TabsTrigger>
             <TabsTrigger value="shifts"><Calendar className="h-4 w-4 mr-2" />Vaktplan</TabsTrigger>
             <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" />{t("auto.opplaering")}</TabsTrigger>

@@ -193,7 +193,7 @@ const IkMatOrganisasjon = () => {
   return (
     <AppLayout>
       <div className="container max-w-4xl mx-auto py-8 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <Users className="h-8 w-8 text-primary" />
@@ -203,7 +203,7 @@ const IkMatOrganisasjon = () => {
               {t("auto.ik_mat_organisasjonsstruktur_med_roller_")}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={handleSave}
               disabled={!hasChanges || isSaving}
