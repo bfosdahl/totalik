@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState } from "react";
 import { FileText, Download, FolderOpen, Search, File, FileSpreadsheet, FileImage, ChevronDown, ChevronRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";

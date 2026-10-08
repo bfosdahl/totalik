@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

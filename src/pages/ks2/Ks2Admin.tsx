@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef } from "react";
 import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

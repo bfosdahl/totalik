@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef } from "react";
 import { FileText, Upload, Download, Trash2, FolderOpen, Search, Plus, File, FileSpreadsheet, FileImage, Filter, Shield, UserCheck, AlertTriangle, ClipboardList, GraduationCap, FlaskConical, HeartPulse, FolderPlus, ChevronDown, ChevronRight, FileCheck, Clock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";

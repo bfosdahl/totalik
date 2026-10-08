@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef, useMemo } from "react";
 import {
   FileText,
