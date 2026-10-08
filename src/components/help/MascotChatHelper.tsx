@@ -453,6 +453,8 @@ export const MascotChatHelper = () => {
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={showTipsAgain}
                   className={`${headerTextClass} hover:bg-white/20 h-8 w-8 shrink-0`}
+                >
+                  <Lightbulb className="h-5 w-5" />
                 </Button>
               )}
               <Button
