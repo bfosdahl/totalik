@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_KS } from "../_shared/faq-knowledge.ts";
 import { NAV_MAP, KS_PROJECT_NAV_MAP } from "../_shared/nav-map.ts";
-import { callAiGateway, AI_CHAT_MODEL, isModelTestKey } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -229,7 +229,7 @@ async function jevPreassess(
   if ((a.address?.noul ?? 0) >= 0.6) known.push("Adresse er oppgitt"); else missing.push("adresse");
   if ((a.client?.noul ?? 0) >= 0.6) known.push("Byggherre er oppgitt"); else missing.push("byggherre");
   const jevReady = (a.ready?.noul ?? 0) >= 0.6;
-  // Fast-track (kun modelltestbrukarar): kjent prosjekttype – «mindre» (bad,
+  // Fast-track (alle brukarar i oppsettsmodus): kjent prosjekttype – «mindre» (bad,
   // kjøkken) teljer med – pluss evt. entrepriseform, held for at vi kan gi forslag.
   const typeKnown = !!a.kind?.choice && a.kind.choice !== "ukjent" && conf(a.kind);
   const contractorKnown = !!a.contractor?.choice && a.contractor.choice !== "ukjent" && conf(a.contractor);
@@ -281,19 +281,8 @@ serve(async (req) => {
     }
 
     let systemPrompt = buildSystemPrompt(projectContext, setupMode);
-    // Kun modelltestbrukarar får raskare tempo i oppsettet.
-    // MODEL_TEST_KEYS inneheld bedrift-id og profilet-id (profiles.id), ikkje auth-user-id,
-    // difor slår vi opp profilet for å kjenne att testbrukarane.
-    let prof: { id: string; company_id: string | null } | null = null;
-    if (setupMode) {
-      try {
-        const { data } = await supabase.from("profiles").select("id, company_id").eq("user_id", user.id).maybeSingle();
-        prof = data ?? null;
-      } catch (_) {
-        prof = null;
-      }
-    }
-    const fastTrack = !!setupMode && (isModelTestKey(user.id) || isModelTestKey(prof?.id) || isModelTestKey(prof?.company_id));
+    // Raskare oppsett-tempo gjeld no alle brukarar i oppsettsmodus.
+    const fastTrack = !!setupMode;
     let questionsAsked = 0;
     let pre = { hint: "", ready: false, contractorKnown: false };
     if (setupMode && Array.isArray(messages)) {
@@ -303,7 +292,7 @@ serve(async (req) => {
       // Gjeld for alle bedrifter i oppsettsmodus: aldri oppdikta namn/adressar.
       systemPrompt += NO_INVENTED_DATA;
     }
-    // Kun modelltestbrukarar: tving fram forslag når vi faktisk har nok informasjon.
+    // Tving fram forslag når vi faktisk har nok informasjon.
     const lastUserMsg = Array.isArray(messages) ? [...messages].reverse().find((m: any) => m?.role === "user") : undefined;
     const lastUserText = !lastUserMsg ? ""
       : Array.isArray(lastUserMsg.content)
