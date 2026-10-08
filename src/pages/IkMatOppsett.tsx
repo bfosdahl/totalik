@@ -60,6 +60,19 @@ const IkMatOppsett = () => {
     );
   }
 
+  if (!completionChecked) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">{t("auto.laster")}</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (!company?.id) {
     return (
       <AppLayout>
@@ -127,6 +140,35 @@ const IkMatOppsett = () => {
           </div>
         ) : (
           <div className="space-y-6">
+            {(() => {
+              const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
+              const setupCompletedAt = (ikMatModule?.settings as any)?.setupCompletedAt as string | undefined;
+              if (setupCompletedAt) {
+                return (
+                  <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="space-y-3">
+                      <p>{t("auto.ik_mat_oppsettet_er_allerede_fullfoert_du_kan_starte_samtalen_paa_nytt")}</p>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button size="sm" onClick={() => setShowRestartDialog(true)}>
+                          {t("auto.start_samtalen_paa_nytt")}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => { setIsRestarting(false); setSetupCompleted(true); }}>
+                          {t("auto.tilbake_til_oversikten")}
+                        </Button>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                );
+              }
+              return (
+                <div className="flex justify-end">
+                  <Button size="sm" variant="outline" onClick={() => setShowRestartDialog(true)}>
+                    {t("auto.start_samtalen_paa_nytt")}
+                  </Button>
+                </div>
+              );
+            })()}
             <IkMatHandbookImportUploader
               companyId={company.id}
               onImportComplete={() => {
