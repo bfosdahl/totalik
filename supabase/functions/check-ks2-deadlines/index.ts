@@ -68,6 +68,11 @@ const handler = async (req: Request): Promise<Response> => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const body = await req.clone().json().catch(() => ({} as Record<string, unknown>));
+    const cutoff = new Date(String((body as any)?.asOf ?? "2026-10-09") + "T00:00:00Z");
+    const dryRun = Boolean((body as any)?.dryRun);
+    const onlyCompany = (body as any)?.companyId ? String((body as any).companyId) : null;
+
     // Get all incomplete checklists with deadlines and responsible users
     let checklistsQuery = supabase
       .from("ks_module2_checklists")
