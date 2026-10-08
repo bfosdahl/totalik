@@ -297,6 +297,8 @@ serve(async (req) => {
       questionsAsked = messages.filter((m: any) => m?.role === "assistant").length;
       pre = await jevPreassess(messages, LOVABLE_API_KEY, fastTrack, questionsAsked).catch((e) => { console.error("Jev preassess failed", e); return { hint: "", ready: false, contractorKnown: false }; });
       if (pre.hint) systemPrompt += pre.hint;
+      // Gjeld for alle bedrifter i oppsettsmodus: aldri oppdikta namn/adressar.
+      systemPrompt += NO_INVENTED_DATA;
     }
     // Kun modelltestbrukarar: tving fram forslag når vi faktisk har nok informasjon.
     const lastUserMsg = Array.isArray(messages) ? [...messages].reverse().find((m: any) => m?.role === "user") : undefined;
@@ -311,7 +313,7 @@ serve(async (req) => {
     console.log("ks-project-chat askContractor", askContractor);
     if (fastTrack) {
       // Legges til også når Jev feilet (tom hint) – tempoet skal gjelde uansett.
-      systemPrompt += `\n\nTEMPO: Still maks 2 korte oppfølgingsspørsmål totalt i hele samtalen, ett om gangen. Spør aldri om prosjektnavn, adresse eller byggherre – de kan fylles ut senere (bruk et fornuftig arbeidsnavn, f.eks. "Totalrenovering bad"). Når prosjekttype og omfang er kjent, gi forslaget med JSON-blokken med en gang. Mangler entrepriseform etter 2 spørsmål, anta totalentreprise og si kort at det kan endres. I oppsummeringen skal du nevne de viktigste sjekklistene du foreslår med navn. project_name skal være et kort arbeidsnavn uten hakeparenteser eller plassholdere (f.eks. "Totalrenovering bad"). address og client_name skal være tom streng "" når de ikke er kjent – aldri plassholdertekst som 'Ikke oppgitt', 'Ukjent' eller '[adresse]. Finn ALDRI på prosjektnavn, adresse, byggherre, personnavn eller firmanavn. Er de ikke oppgitt av brukeren: address = "", client_name = "", og project_name = en nøytral beskrivelse av prosjekttypen (f.eks. "Nybygg enebolig", "Totalrenovering bad"), eller "Nytt prosjekt" hvis typen er ukjent – aldri ord som 'Typisk', 'Standard', 'Eksempel' eller 'AS'. Hver sjekkliste i recommended_checklists skal ha feltet "checkpoints": en liste med 5–10 korte, konkrete kontrollpunkter (strenger).`;
+      systemPrompt += `\n\nTEMPO: Still maks 2 korte oppfølgingsspørsmål totalt i hele samtalen, ett om gangen. Spør aldri om prosjektnavn, adresse eller byggherre – de kan fylles ut senere (bruk et fornuftig arbeidsnavn, f.eks. "Totalrenovering bad"). Når prosjekttype og omfang er kjent, gi forslaget med JSON-blokken med en gang. Mangler entrepriseform etter 2 spørsmål, anta totalentreprise og si kort at det kan endres. I oppsummeringen skal du nevne de viktigste sjekklistene du foreslår med navn. Hver sjekkliste i recommended_checklists skal ha feltet "checkpoints": en liste med 5–10 korte, konkrete kontrollpunkter (strenger).`;
     }
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
