@@ -145,7 +145,7 @@ export default function Ks2Underleverandorer() {
           <h2 className="text-xl font-bold">{t("auto.underleverandoerer")}</h2>
           <p className="text-sm text-muted-foreground">{t("auto.registrer_og_foelg_opp_ue_med_gjestetilg")}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowLogDialog(true)}>
             <Shield className="h-4 w-4 mr-2" />
             Tilgangslogg

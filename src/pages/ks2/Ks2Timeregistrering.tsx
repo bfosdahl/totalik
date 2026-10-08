@@ -350,7 +350,7 @@ export default function Ks2Timeregistrering() {
         </Card>
       ) : isCompanyAdmin ? (
         <Tabs defaultValue="all" className="space-y-4">
-          <TabsList>
+          <TabsList className="h-auto flex-wrap justify-start">
             <TabsTrigger value="all">
               <Users className="h-4 w-4 mr-1" />
               {t("auto.alle")}
