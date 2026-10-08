@@ -111,7 +111,7 @@ interface ProjectRowProps {
 
 function ProjectRow({ project, onSelect, onToggleFavorite, compact, hasDraft }: ProjectRowProps) {
   return (
-    <button onClick={onSelect} className="w-full text-left">
+    <div role="button" tabIndex={0} onClick={onSelect} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(); } }} className="w-full text-left">
       <Card className={cn("hover:bg-accent transition-colors active:scale-[0.99]", compact ? "p-2.5" : "p-3")}>
         <div className="flex items-center gap-3">
           <div className={cn("rounded-lg bg-primary/10 flex items-center justify-center shrink-0", compact ? "h-8 w-8" : "h-10 w-10")}>
@@ -150,7 +150,7 @@ function ProjectRow({ project, onSelect, onToggleFavorite, compact, hasDraft }: 
           <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
         </div>
       </Card>
-    </button>
+    </div>
   );
 }
 
@@ -582,7 +582,7 @@ export default function ProsjektHub() {
               {/* Project switcher */}
               <Sheet open={switcherOpen} onOpenChange={setSwitcherOpen}>
                 <SheetTrigger asChild>
-                  <button className="w-full text-left">
+                  <div role="button" tabIndex={0} className="w-full text-left">
                     <Card className="p-3 bg-gradient-to-br from-primary/5 to-transparent hover:bg-accent transition-colors active:scale-[0.99]">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -611,7 +611,7 @@ export default function ProsjektHub() {
                         </div>
                       </div>
                     </Card>
-                  </button>
+                  </div>
                 </SheetTrigger>
                 <SheetContent
                   side="bottom"
