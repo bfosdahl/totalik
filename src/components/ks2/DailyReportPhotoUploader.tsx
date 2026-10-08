@@ -17,6 +17,10 @@ export interface DailyReportPhoto {
 interface Props {
   photos: DailyReportPhoto[];
   onChange: (photos: DailyReportPhoto[]) => void;
+  /** Stier som er merket for fjerning (slettes først ved eksplisitt lagring). */
+  removedPaths?: string[];
+  onRemove?: (photo: DailyReportPhoto) => void;
+  onUndoRemove?: (photo: DailyReportPhoto) => void;
 }
 
 const BUCKET = "daily-report-photos";
@@ -49,7 +53,7 @@ function dataUrlToBlob(dataUrl: string): Blob {
   return new Blob([arr], { type: mime });
 }
 
-export function DailyReportPhotoUploader({ photos, onChange }: Props) {
+export function DailyReportPhotoUploader({ photos, onChange, removedPaths = [], onRemove, onUndoRemove }: Props) {
   const { profile } = useAuth();
   const fileInput = useRef<HTMLInputElement>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
@@ -138,15 +142,10 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
     }
   };
 
-  const removePhoto = async (photo: DailyReportPhoto) => {
-    const toRemove = [photo.path];
-    if (photo.thumb_path) toRemove.push(photo.thumb_path);
-    try {
-      await supabase.storage.from(BUCKET).remove(toRemove);
-    } catch (e) {
-      console.warn("Storage remove failed:", e);
-    }
-    onChange(photos.filter((p) => p.path !== photo.path));
+  // Sletter aldri fra lagring her – skjemaet merker bildet og sletter filen først etter vellykket lagring.
+  const removePhoto = (photo: DailyReportPhoto) => {
+    if (onRemove) onRemove(photo);
+    else onChange(photos.filter((p) => p.path !== photo.path));
   };
 
   return (
@@ -176,25 +175,45 @@ export function DailyReportPhotoUploader({ photos, onChange }: Props) {
 
       {photos.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {photos.map((photo) => (
-            <div key={photo.path} className="relative group aspect-square rounded-md overflow-hidden border bg-muted">
-              {previews[photo.path] ? (
-                <img src={previews[photo.path]} alt={photo.name} loading="lazy" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
+          {photos.map((photo) => {
+            const removed = removedPaths.includes(photo.path);
+            return (
+              <div key={photo.path} className="space-y-1">
+                <div className="relative aspect-square rounded-md overflow-hidden border bg-muted">
+                  <div className={removed ? "w-full h-full opacity-40" : "w-full h-full"}>
+                    {previews[photo.path] ? (
+                      <img src={previews[photo.path]} alt={photo.name} loading="lazy" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  {removed ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      className="absolute inset-x-1 bottom-1 h-7 px-2 text-xs"
+                      onClick={() => onUndoRemove?.(photo)}
+                    >
+                      Angre
+                    </Button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(photo)}
+                      className="absolute top-1 right-1 h-7 w-7 flex items-center justify-center bg-destructive text-destructive-foreground rounded-full shadow"
+                      aria-label={t("auto.fjern_bilde")}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-              )}
-              <button
-                type="button"
-                onClick={() => removePhoto(photo)}
-                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-label={t("auto.fjern_bilde")}
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          ))}
+                {removed && <p className="text-[11px] leading-tight text-muted-foreground">Fjernes når du lagrer</p>}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
