@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { checkRateLimit, createMessageHash, createStreamWithFallback, ChatMsg } from "../_shared/ai-setup.ts";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL, isModelTestKey } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -221,6 +221,29 @@ Når brukeren limer inn tekster med krav/forskrifter:
 4. GENERER KOMPLETT JSON med ALT inkludert
 
 KRITISK: JSON MÅ ALLTID genereres ved avslutning. Uten JSON mister brukeren alt!`;
+
+// Fristene må følge lagringsregelen i IkHmsChatSetup.tsx (ensureFutureDeadline):
+// kritisk/høy og risikoscore >= 11 = 1 mnd, medium og score 6-10 = 3 mnd, lav og score <= 5 = 6 mnd.
+function buildDeadlinePrompt(): string {
+  const fmt = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Oslo" });
+  const today = new Date();
+  const plus = (months: number): string => {
+    const d = new Date(today);
+    d.setMonth(d.getMonth() + months);
+    return fmt.format(d);
+  };
+  const todayStr = fmt.format(today);
+  const plus1 = plus(1);
+  const plus3 = plus(3);
+  const plus6 = plus(6);
+  return `===== FRISTER =====
+Dagens dato er ${todayStr}.
+Bruk KUN disse standardfristene, både i teksten til brukeren og i JSON:
+- Tiltak med prioritet kritisk eller høy, og hendelser med risikoscore (konsekvens × sannsynlighet) 11 eller høyere: 1 måned (${plus1}).
+- Prioritet medium, og risikoscore 6–10: 3 måneder (${plus3}).
+- Prioritet lav, og risikoscore 5 eller lavere: 6 måneder (${plus6}).
+Nevn aldri andre frister som «om 2 uker» eller «2 måneder». Når du nevner en frist i chatten, skriv den som «1 måned», «3 måneder» eller «6 måneder». I JSON skal hvert deadline-felt være den tilsvarende datoen over (YYYY-MM-DD), og hvert tiltak skal ha priority satt slik at den stemmer med fristen.`;
+}
 
 function buildKnownFactsMessage(messages: ChatMsg[] | undefined): string | null {
   if (!messages?.length) return null;
@@ -477,6 +500,11 @@ serve(async (req) => {
       { role: "system", content: baseSystemPrompt + employeeListPrompt + popularSuggestionsPrompt },
       { role: "system", content: stepPrompt },
     ];
+
+    // Kun modelltestbedriften får datoene i prompten ennå (samme key som ai-gateway.ts).
+    if (isModelTestKey(companyId)) {
+      systemMessages.push({ role: "system", content: buildDeadlinePrompt() });
+    }
 
     const knownFacts = buildKnownFactsMessage(messages);
     if (knownFacts) {
