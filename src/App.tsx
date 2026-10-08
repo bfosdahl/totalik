@@ -210,7 +210,6 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
 
-                  <Route path="/setup-admin" element={<SetupSystemAdmin />} />
                   <Route path="/install" element={<InstallApp />} />
                   <Route path="/install/avvik" element={<InstallAvvikApp />} />
                   <Route path="/stemple" element={<TimeClock />} />
