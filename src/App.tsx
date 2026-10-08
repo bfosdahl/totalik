@@ -105,7 +105,6 @@ const Ks2Befaring = lazy(() => import("./pages/ks2/Ks2Befaring"));
 const Ks2Kunder = lazy(() => import("./pages/ks2/Ks2Kunder"));
 const KsKalkyler = lazy(() => import("./pages/ks2/KsKalkyler"));
 const IkKsRutiner = lazy(() => import("./pages/ks2/IkKsRutiner"));
-const IkKsMaal = lazy(() => import("./pages/ks2/IkKsMaal"));
 const IkKsDokumenter = lazy(() => import("./pages/ks2/IkKsDokumenter"));
 const IkKsSjekklister = lazy(() => import("./pages/ks2/IkKsSjekklister"));
 const IkKsMaalsetting = lazy(() => import("./pages/ks2/IkKsMaalsetting"));
