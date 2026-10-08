@@ -48,7 +48,7 @@ const IkHmsMaal = () => {
         q = filterDepartmentId
           ? q.eq("department_id", filterDepartmentId)
           : q.is("department_id", null);
-        const { data, error } = await q.order("sort_order", { ascending: true });
+        const { data, error } = await q.order("sort_order", { ascending: true }).order("created_at", { ascending: true });
 
         if (error) throw error;
         setGoals(data || []);
