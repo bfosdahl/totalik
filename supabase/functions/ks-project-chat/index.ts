@@ -234,7 +234,6 @@ async function jevPreassess(
   const typeKnown = !!a.kind?.choice && a.kind.choice !== "ukjent" && conf(a.kind);
   const contractorKnown = !!a.contractor?.choice && a.contractor.choice !== "ukjent" && conf(a.contractor);
   const ready = fastTrack ? (questionsAsked >= 2 || (typeKnown && contractorKnown)) : jevReady;
-  console.log("Jev preassess", JSON.stringify({ known, missing, ready, jevReady, fastTrack, questionsAsked }));
   const hint = `\n\nFORHÅNDSVURDERING AV SAMTALEN (automatisk, ikke vis til brukeren):
 Allerede kjent – IKKE spør om dette igjen: ${known.join("; ") || "ingenting ennå"}.
 Mangler: ${missing.join(", ") || "ingenting viktig"}.
@@ -301,8 +300,6 @@ serve(async (req) => {
     const askedForProposal = /forslag/i.test(lastUserText);
     const forceProposal = fastTrack && (questionsAsked >= 2 || askedForProposal);
     const askContractor = fastTrack && !askedForProposal && questionsAsked < 2 && !pre.contractorKnown;
-    console.log("ks-project-chat forceProposal", forceProposal);
-    console.log("ks-project-chat askContractor", askContractor);
     if (fastTrack) {
       // Legges til også når Jev feilet (tom hint) – tempoet skal gjelde uansett.
       systemPrompt += `\n\nTEMPO: Still maks 2 korte oppfølgingsspørsmål totalt i hele samtalen, ett om gangen. Spør aldri om prosjektnavn, adresse eller byggherre – de kan fylles ut senere (bruk et fornuftig arbeidsnavn, f.eks. "Totalrenovering bad"). Når prosjekttype og omfang er kjent, gi forslaget med JSON-blokken med en gang. Mangler entrepriseform etter 2 spørsmål, anta totalentreprise og si kort at det kan endres. I oppsummeringen skal du nevne de viktigste sjekklistene du foreslår med navn. Hver sjekkliste i recommended_checklists skal ha feltet "checkpoints": en liste med 5–10 korte, konkrete kontrollpunkter (strenger).`;
