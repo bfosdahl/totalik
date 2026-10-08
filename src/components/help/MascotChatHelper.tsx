@@ -38,16 +38,35 @@ const loadPersistedMessages = (storageKey: string | null): Message[] | null => {
 
 export const MascotChatHelper = () => {
   const location = useLocation();
+  const { user, company, profile } = useAuth();
   const [proffConfig, setProffConfig] = useState<ProffConfig>(() => getProffConfig(location.pathname));
+  const scopeKey = user
+    ? `${user.id}:${company?.id ?? profile?.company_id ?? "none"}`
+    : null;
+  const storageKey = scopeKey ? `${SCOPED_PREFIX}${scopeKey}:${proffConfig.id}` : null;
   const [isOpen, setIsOpen] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(OPEN_STORAGE_KEY) === "1";
   });
   const [messages, setMessages] = useState<Message[]>(() => {
-    const persisted = loadPersistedMessages(proffConfig.id);
+    const persisted = loadPersistedMessages(storageKey);
     if (persisted && persisted.length > 0) return persisted;
     return [{ id: "welcome", content: proffConfig.welcomeMessage, isBot: true }];
   });
+
+  // Remove legacy unscoped history keys (privacy: they were shared across users)
+  useEffect(() => {
+    try {
+      const toRemove: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith(STORAGE_PREFIX) && !key.startsWith(SCOPED_PREFIX) && key !== OPEN_STORAGE_KEY) {
+          toRemove.push(key);
+        }
+      }
+      toRemove.forEach((key) => sessionStorage.removeItem(key));
+    } catch { /* ignore */ }
+  }, []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
