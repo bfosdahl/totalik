@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { useDeviations } from "@/hooks/useDeviations";
 import { useTranslate } from "@/hooks/useTranslate";
+import { getDeviationCategoryLabel } from "@/lib/deviationCategoryLabels";
 
 export function RecentDeviations() {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ export function RecentDeviations() {
                     <Badge variant={priorityConfig[deviation.priority as string]?.variant || "muted"} className="text-xs">
                       {t(priorityConfig[deviation.priority as string]?.labelKey || "deviations.priorities.low")}
                     </Badge>
-                    <Badge variant="outline" className="text-xs hidden sm:inline-flex">{deviation.category}</Badge>
+                    <Badge variant="outline" className="text-xs hidden sm:inline-flex">{getDeviationCategoryLabel(deviation.category)}</Badge>
                   </div>
                   <h4 className="font-medium text-xs md:text-sm group-hover:text-primary transition-colors truncate">
                     {deviation.title}
