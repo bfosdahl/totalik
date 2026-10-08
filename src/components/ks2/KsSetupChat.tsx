@@ -200,7 +200,6 @@ export function KsSetupChat({ companyId, onComplete }: KsSetupChatProps) {
       if (jsonContent) {
         try {
           const parsed = JSON.parse(jsonContent) as KsSetupResult;
-          console.log("KS setup data:", parsed);
           setSetupComplete(true);
           setTimeout(() => onComplete(parsed), 1000);
         } catch (e) {

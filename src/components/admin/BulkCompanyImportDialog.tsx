@@ -174,12 +174,6 @@ export function BulkCompanyImportDialog({
           const seenOrgNumbers = new Set<string>();
           const companies: ParsedCompany[] = [];
 
-          // Log first row keys for debugging column names
-          if ((jsonData as any[]).length > 0) {
-            console.log('Excel column names:', Object.keys((jsonData as any[])[0]));
-            console.log('First row data:', (jsonData as any[])[0]);
-          }
-
           for (const row of jsonData as any[]) {
             let orgNumber = String(row.Customer_OrgNumber || row["Customer_OrgNumber"] || row.OrgNr || row["Org.nr"] || "").replace(/\s/g, "");
             if (orgNumber.length > 0 && orgNumber.length < 9) {
@@ -209,8 +203,6 @@ export function BulkCompanyImportDialog({
             const orgInfo = orgProductMap.get(orgNumber);
             const productName = orgInfo?.allProducts.join(", ") || "";
             const hasIkProduct = orgInfo?.hasIkProduct || false;
-            
-            console.log(`Row: ${name} | OrgNr: ${orgNumber} | Products: "${productName}" | HasIK: ${hasIkProduct}`);
 
             const isDuplicate = existingOrgs.has(orgNumber);
             const isKurslisensOnly = !hasIkProduct;

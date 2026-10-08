@@ -272,7 +272,6 @@ export default function AdminCompanies() {
       if (createdModules.includes("IK_HMS")) {
         const currentImportedData = getImportedHmsData();
         if (currentImportedData) {
-          console.log('[AdminCompanies] Using imported PDF data for HMS setup');
           postSetupPromises.push(
             applyImportedHmsSetup(newCompany.id, currentImportedData)
               .then((result) => {
@@ -283,7 +282,6 @@ export default function AdminCompanies() {
               .catch((err) => console.error("Error in imported HMS setup:", err))
           );
         } else {
-          console.log('[AdminCompanies] Using default HMS setup');
           postSetupPromises.push(
             applyDefaultHmsSetup(newCompany.id)
               .then((result) => {

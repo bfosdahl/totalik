@@ -117,7 +117,6 @@ export function AiChecklistDialog({ trigger, onSaved }: AiChecklistDialogProps) 
         if (!created) throw new Error("Kunne ikke lagre i bedriftens malbibliotek");
         savedId = created.id;
       }
-      console.log("[AiChecklistDialog] Saved template id:", savedId, "category:", finalCategory);
       toast.success(t("auto.sjekkliste_mal_lagret"), {
         description: isSystemAdmin
           ? "Finn den under Admin → Sjekklistemaler"
