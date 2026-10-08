@@ -413,17 +413,17 @@ export const MascotChatHelper = () => {
           >
             {/* Header - drag handle */}
             <div 
-              className={`${headerBgClass} ${headerTextClass} px-3 py-3 flex items-center gap-2 cursor-grab active:cursor-grabbing touch-none`}
+              className={`${headerBgClass} ${headerTextClass} px-3 py-3 flex items-center gap-2 max-[379px]:px-2 max-[379px]:gap-1 cursor-grab active:cursor-grabbing touch-none`}
               onPointerDown={(e) => dragControls.start(e)}
             >
               <GripVertical className="h-5 w-5 opacity-50 shrink-0" />
               <img
                 src={proffConfig.mascotImage}
                 alt={proffConfig.name}
-                className="w-12 h-12 rounded-full border-2 border-white/30 object-cover bg-white shrink-0"
+                className="w-12 h-12 rounded-full border-2 border-white/30 object-cover bg-white shrink-0 max-[379px]:w-10 max-[379px]:h-10"
               />
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold whitespace-nowrap truncate">{proffConfig.name}</h3>
+                <h3 className="font-semibold whitespace-nowrap">{proffConfig.name}</h3>
                 <p className="text-xs opacity-80 whitespace-nowrap truncate">
                   {speech.isListening ? '🎤 Lytter...' : speech.isSpeaking ? '🔊 Snakker...' : 'Dra for å flytte'}
                 </p>
