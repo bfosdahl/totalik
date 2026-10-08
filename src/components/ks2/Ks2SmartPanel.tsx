@@ -137,7 +137,6 @@ export function Ks2SmartPanel({
     setLoading(null);
   };
 
-  const goChecklists = () => navigate(`/ks/project/${projectId}/egenkontroller`);
   const goChecklist = (id: string) => navigate(`/ks/project/${projectId}/egenkontroller?checklistId=${encodeURIComponent(id)}`);
   const goCrew = () => navigate(`/ks/project/${projectId}/mannskap`);
   const onKey = (fn: () => void) => (e: React.KeyboardEvent) => {
