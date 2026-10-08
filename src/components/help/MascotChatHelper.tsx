@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
-import { X, Send, Sparkles, Lightbulb, Loader2, GripVertical, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { X, Send, Lightbulb, Loader2, GripVertical, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -80,6 +80,52 @@ export const MascotChatHelper = () => {
     }
   }, [queryClient]);
   const [currentTip, setCurrentTip] = useState(0);
+  const tipsDismissedKey = user ? `mascot-chat:tipsDismissed:${user.id}` : null;
+  const [tipsDismissed, setTipsDismissed] = useState<boolean>(() => {
+    if (typeof window === "undefined" || !tipsDismissedKey) return false;
+    try {
+      return localStorage.getItem(tipsDismissedKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [tipsMobileShown, setTipsMobileShown] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+    return window.matchMedia("(max-width: 639px)").matches;
+  });
+
+  // Track viewport width; treat missing matchMedia as desktop
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mql = window.matchMedia("(max-width: 639px)");
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  const showTips = tipsMobileShown || (!isMobile && !tipsDismissed);
+
+  const dismissTips = () => {
+    if (tipsDismissedKey) {
+      try {
+        localStorage.setItem(tipsDismissedKey, "1");
+      } catch { /* ignore */ }
+    }
+    setTipsDismissed(true);
+    setTipsMobileShown(false);
+  };
+
+  const showTipsAgain = () => {
+    if (tipsDismissedKey) {
+      try {
+        localStorage.removeItem(tipsDismissedKey);
+      } catch { /* ignore */ }
+    }
+    setTipsDismissed(false);
+    setTipsMobileShown(true);
+  };
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [interimText, setInterimText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -122,6 +168,7 @@ export const MascotChatHelper = () => {
     const key = scopeKey ? `${SCOPED_PREFIX}${scopeKey}:${newConfig.id}` : null;
     if (newConfig.id !== proffConfig.id) {
       setProffConfig(newConfig);
+      setCurrentTip(0);
     }
     const persisted = loadPersistedMessages(key);
     setMessages(
@@ -397,6 +444,19 @@ export const MascotChatHelper = () => {
                 </div>
               )}
               
+              {!showTips && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Vis tips"
+                  title="Vis tips"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={showTipsAgain}
+                  className={`${headerTextClass} hover:bg-white/20`}
+                >
+                  <Lightbulb className="h-5 w-5" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -408,7 +468,7 @@ export const MascotChatHelper = () => {
             </div>
 
             {/* Chat messages */}
-            <ScrollArea className="h-[300px] p-4" ref={scrollRef}>
+            <ScrollArea className={`${isMobile && !showTips ? "h-[380px]" : "h-[300px]"} p-4`} ref={scrollRef}>
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -439,24 +499,34 @@ export const MascotChatHelper = () => {
             </ScrollArea>
 
             {/* Tips section */}
-            <div className={`border-t border-b ${tipsBgClass} p-3`}>
-              <div className="flex items-start gap-2">
-                <Lightbulb className={`h-5 w-5 ${tipsIconClass} shrink-0 mt-0.5`} />
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground mb-1">{t("auto.dagens_tips")}</p>
-                  <p className="text-sm">{proffConfig.tips[currentTip]}</p>
+            {showTips && (
+              <div className={`border-t border-b ${tipsBgClass} p-3`}>
+                <div className="flex items-start gap-2 min-w-0">
+                  <Lightbulb className={`h-5 w-5 ${tipsIconClass} shrink-0 mt-0.5`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1">{t("auto.dagens_tips")}</p>
+                    <p className="text-sm break-words">{proffConfig.tips[currentTip % proffConfig.tips.length]}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={nextTip}
+                    className="shrink-0 text-xs h-7"
+                  >
+                    {t("auto.neste")}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Skjul tips"
+                    onClick={dismissTips}
+                    className="shrink-0 h-7 w-7"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={nextTip}
-                  className="shrink-0 text-xs"
-                >
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  {t("auto.neste")}
-                </Button>
               </div>
-            </div>
+            )}
 
             {/* Input */}
             <div className="p-3 flex gap-2">
