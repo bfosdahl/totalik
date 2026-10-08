@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,15 +53,9 @@ serve(async (req) => {
     console.log("Calling Lovable AI for image analysis...");
     console.log("Image base64 length:", imageBase64.length);
 
-    // Use Lovable AI to analyze the shipping label image - using gemini-2.5-pro for better image understanding
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+        model: AI_CHAT_MODEL,
         messages: [
           {
             role: "system",
@@ -106,8 +101,7 @@ Svar KUN med JSON-objektet, ingen annen tekst.`
           }
         ],
         temperature: 0.1,
-      }),
-    });
+    }, null, { totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       const errorText = await response.text();
