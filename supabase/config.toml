@@ -36,9 +36,6 @@ verify_jwt = true
 [functions.hms-chat]
 verify_jwt = true
 
-[functions.generate-ik-mat-content]
-verify_jwt = true
-
 [functions.ik-mat-chat]
 verify_jwt = true
 
@@ -65,9 +62,6 @@ verify_jwt = false
 
 [functions.sync-to-kurs]
 verify_jwt = false
-
-[functions.send-bulk-welcome-emails]
-verify_jwt = true
 
 [functions.send-welcome-email]
 verify_jwt = false
@@ -116,27 +110,11 @@ verify_jwt = true
 [functions.admin-send-revision]
 verify_jwt = false
 
-[functions.admin-send-recovery-oneoff]
-verify_jwt = false
-
-[functions.admin-set-password-oneoff]
-verify_jwt = false
-
 [functions.notify-e2e-failure]
-verify_jwt = false
-
-[functions.send-mascot-oneoff]
-verify_jwt = false
-
-[functions.report-never-logged-in]
 verify_jwt = false
 
 [functions.submit-nybygg-lead]
 verify_jwt = false
 
 [functions.nextcom-order-api]
-verify_jwt = false
-
-
-[functions.admin-send-credentials-oneoff]
 verify_jwt = false
