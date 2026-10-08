@@ -118,7 +118,7 @@ function saveChatState(companyId: string, departmentId: string | undefined, stat
   catch (e) { console.error('Failed to save chat state:', e); }
 }
 
-function clearChatState(companyId: string, departmentId?: string) {
+export function clearChatState(companyId: string, departmentId?: string) {
   try { sessionStorage.removeItem(getStorageKey(companyId, departmentId)); }
   catch (e) { /* ignore */ }
 }
