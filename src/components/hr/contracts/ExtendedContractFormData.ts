@@ -1,3 +1,4 @@
+import { getLocalDateString } from "@/lib/dateUtils";
 // Extended contract form data matching Arbeidsmiljøloven § 14-6 requirements
 
 export interface ExtendedContractFormData {
