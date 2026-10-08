@@ -34,11 +34,9 @@ const exactRoutes: Record<string, Importer> = {
   "/settings": () => import("@/pages/Settings"),
 
   // IK Mat
-  "/ik-mat": () => import("@/pages/IkMatHandbok"),
   "/ik-mat/handbok": () => import("@/pages/IkMatHandbok"),
   "/ik-mat/oppsett": () => import("@/pages/IkMatOppsett"),
   "/ik-mat/haccp": () => import("@/pages/IkMatHaccp"),
-  "/ik-mat/risikovurdering": () => import("@/pages/IkMatRisikovurdering"),
   "/ik-mat/risiko-og-tiltak": () => import("@/pages/IkMatRisikoOgTiltak"),
   "/ik-mat/allergener": () => import("@/pages/IkMatAllergener"),
   "/ik-mat/kjokkenplan": () => import("@/pages/IkMatKjokkenplan"),
@@ -49,7 +47,6 @@ const exactRoutes: Record<string, Importer> = {
   "/ik-mat/rutiner": () => import("@/pages/IkMatRutiner"),
   "/ik-mat/dokumentsenter": () => import("@/pages/IkMatDokumentsenter"),
   "/ik-mat/avvik": () => import("@/pages/IkMatAvvik"),
-  "/ik-mat/temperaturlogg": () => import("@/pages/IkMatTemperaturlogg"),
 
   // IK Alkohol
   "/ik-alkohol": () => import("@/pages/ikalkohol/IkAlkoholDashboard"),
@@ -65,38 +62,37 @@ const exactRoutes: Record<string, Importer> = {
   "/ik-alkohol/lovverk": () => import("@/pages/ikalkohol/IkAlkoholLovverk"),
 
   // KS Bygg
-  "/ks-bygg": () => import("@/pages/ks2/Ks2Dashboard"),
-  "/ks-bygg/statistikk": () => import("@/pages/ks2/Ks2Statistikk"),
-  "/ks-bygg/befaring": () => import("@/pages/ks2/Ks2Befaring"),
-  "/ks-bygg/kalkyler": () => import("@/pages/ks2/KsKalkyler"),
-  "/ks-bygg/rutiner": () => import("@/pages/ks2/IkKsRutiner"),
-  "/ks-bygg/maal": () => import("@/pages/ks2/IkKsMaal"),
-  "/ks-bygg/dokumenter": () => import("@/pages/ks2/IkKsDokumenter"),
-  "/ks-bygg/sjekklister": () => import("@/pages/ks2/IkKsSjekklister"),
-  "/ks-bygg/utfylte-sjekklister": () => import("@/pages/ks2/KsUtfylteSjekklister"),
-  "/ks-bygg/maalsetting": () => import("@/pages/ks2/IkKsMaalsetting"),
-  "/ks-bygg/organisering": () => import("@/pages/ks2/IkKsOrganisering"),
-  "/ks-bygg/egenerklaering": () => import("@/pages/ks2/IkKsEgenerklaering"),
-  "/ks-bygg/handbok": () => import("@/pages/ks2/IkKsHandbok"),
-  "/ks-bygg/oppsett": () => import("@/pages/ks2/KsOppsett"),
+  "/ks": () => import("@/pages/ks2/Ks2Dashboard"),
+  "/ks/statistikk": () => import("@/pages/ks2/Ks2Statistikk"),
+  "/ks/befaring": () => import("@/pages/ks2/Ks2Befaring"),
+  "/ks/kalkyler": () => import("@/pages/ks2/KsKalkyler"),
+  "/ks/ik-ks/rutiner": () => import("@/pages/ks2/IkKsRutiner"),
+  "/ks/ik-ks/dokumenter": () => import("@/pages/ks2/IkKsDokumenter"),
+  "/ks/ik-ks/sjekklister": () => import("@/pages/ks2/IkKsSjekklister"),
+  "/ks/utfylte-sjekklister": () => import("@/pages/ks2/KsUtfylteSjekklister"),
+  "/ks/ik-ks/maalsetting": () => import("@/pages/ks2/IkKsMaalsetting"),
+  "/ks/ik-ks/organisering": () => import("@/pages/ks2/IkKsOrganisering"),
+  "/ks/ik-ks/egenerklaering": () => import("@/pages/ks2/IkKsEgenerklaering"),
+  "/ks/ik-ks/handbok": () => import("@/pages/ks2/IkKsHandbok"),
+  "/ks/oppsett": () => import("@/pages/ks2/KsOppsett"),
 
   // Mine prosjekter
-  "/mine-prosjekter": () => import("@/pages/mineprosjekter/MineProsjekterDashboard"),
+  "/ks/smaaprosjekter": () => import("@/pages/mineprosjekter/MineProsjekterDashboard"),
 
   // FDV
   "/fdv": () => import("@/pages/fdv/FdvDashboard"),
-  "/fdv/buildings": () => import("@/pages/fdv/FdvBuildings"),
-  "/fdv/controls": () => import("@/pages/fdv/FdvControls"),
-  "/fdv/risks": () => import("@/pages/fdv/FdvRisks"),
-  "/fdv/regulations": () => import("@/pages/fdv/FdvRegulations"),
-  "/fdv/floor-plans": () => import("@/pages/fdv/FdvFloorPlans"),
+  "/fdv/bygg": () => import("@/pages/fdv/FdvBuildings"),
+  "/fdv/kontroller": () => import("@/pages/fdv/FdvControls"),
+  "/fdv/risiko": () => import("@/pages/fdv/FdvRisks"),
+  "/fdv/regelverk": () => import("@/pages/fdv/FdvRegulations"),
+  "/fdv/etasjeplaner": () => import("@/pages/fdv/FdvFloorPlans"),
 
   // HR
   "/hr/contracts": () => import("@/pages/hr/HrContracts"),
   "/hr/absence": () => import("@/pages/hr/HrAbsence"),
   "/hr/meetings": () => import("@/pages/hr/HrMeetings"),
   "/hr/surveys": () => import("@/pages/hr/HrSurveys"),
-  "/hr/my-contract": () => import("@/pages/hr/MyContract"),
+  "/my/contract": () => import("@/pages/hr/MyContract"),
 
   // My pages
   "/my/absence": () => import("@/pages/my/MyAbsence"),
@@ -123,7 +119,7 @@ const exactRoutes: Record<string, Importer> = {
   "/admin/email-log": () => import("@/pages/admin/AdminEmailLog"),
   "/admin/monitoring": () => import("@/pages/admin/AdminMonitoring"),
   "/admin/sellers": () => import("@/pages/admin/AdminSellers"),
-  "/admin/trash-bin": () => import("@/pages/admin/AdminTrashBin"),
+  "/admin/trash": () => import("@/pages/admin/AdminTrashBin"),
 };
 
 // Prefix-baserte routes (dynamiske parametre)
@@ -133,8 +129,8 @@ const prefixRoutes: Array<[RegExp, Importer]> = [
   [/^\/avdeling\/[^/]+\/rutiner$/, () => import("@/pages/department/DepartmentRoutines")],
   [/^\/avdeling\/[^/]+\/oppsett\/ai$/, () => import("@/pages/department/DepartmentAiSetup")],
   [/^\/avdeling\/[^/]+$/, () => import("@/pages/DepartmentDashboard")],
-  [/^\/ks-bygg\/prosjekt\/[^/]+/, () => import("@/pages/ks2/Ks2ProjectDetail")],
-  [/^\/mine-prosjekter\/[^/]+/, () => import("@/pages/mineprosjekter/SimpleProjectDetail")],
+  [/^\/ks\/project\/[^/]+/, () => import("@/pages/ks2/Ks2ProjectDetail")],
+  [/^\/ks\/smaaprosjekter\/[^/]+/, () => import("@/pages/mineprosjekter/SimpleProjectDetail")],
 ];
 
 // Cache: only run each importer once
