@@ -740,7 +740,7 @@ export default function Ks2Admin() {
                           <div className="space-y-2">
                             <FileText className="h-10 w-10 mx-auto text-primary" />
                             <p className="font-medium">{uploadFile.name}</p>
-                            <p className="text-sm text-muted-foreground">{formatFileSize(uploadFile.size)}</p>
+                            <p className="text-sm text-muted-foreground">{formatFileSize(uploadFile.size, "Ukjent størrelse")}</p>
                             <Button variant="outline" size="sm" onClick={() => setUploadFile(null)}>
                               {t("auto.fjern")}
                             </Button>
@@ -840,7 +840,7 @@ export default function Ks2Admin() {
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-base truncate">{doc.title}</CardTitle>
                           <CardDescription className="text-xs">
-                            {doc.file_name} • {formatFileSize(doc.file_size)}
+                            {doc.file_name} • {formatFileSize(doc.file_size, "Ukjent størrelse")}
                           </CardDescription>
                         </div>
                       </div>

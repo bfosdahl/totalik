@@ -448,7 +448,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                       <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
                     )}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                      <span>{formatFileSize(doc.file_size)}</span>
+                      <span>{formatFileSize(doc.file_size, "Ukjent størrelse")}</span>
                       <span>•</span>
                       <span>{format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}</span>
                       <span>•</span>

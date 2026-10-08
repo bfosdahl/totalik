@@ -305,7 +305,7 @@ export default function IkHmsDokumentsenter() {
                                       <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
                                     )}
                                     <span className="text-xs text-muted-foreground">
-                                      {formatFileSize(doc.file_size)}
+                                      {formatFileSize(doc.file_size, "Ukjent størrelse")}
                                     </span>
                                   </div>
                                   <Button
@@ -374,7 +374,7 @@ export default function IkHmsDokumentsenter() {
                                               <div className="flex-1 min-w-0">
                                                 <h4 className="font-medium text-sm truncate">{doc.document_name}</h4>
                                                 <span className="text-xs text-muted-foreground">
-                                                  {formatFileSize(doc.file_size)}
+                                                  {formatFileSize(doc.file_size, "Ukjent størrelse")}
                                                 </span>
                                               </div>
                                               <Button
@@ -434,7 +434,7 @@ export default function IkHmsDokumentsenter() {
                         <div className="text-left">
                           <p className="font-medium">{selectedFile.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {formatFileSize(selectedFile.size)}
+                            {formatFileSize(selectedFile.size, "Ukjent størrelse")}
                           </p>
                         </div>
                       </div>
@@ -657,7 +657,7 @@ export default function IkHmsDokumentsenter() {
                                     )}
                                     <div className="flex flex-wrap items-center gap-1 mt-1">
                                       <span className="text-xs text-muted-foreground">
-                                        {formatFileSize(doc.file_size)}
+                                        {formatFileSize(doc.file_size, "Ukjent størrelse")}
                                       </span>
                                       <span className="text-xs text-muted-foreground">
                                         • {format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}

@@ -77,7 +77,7 @@ function AttachmentItem({
           {attachment.file_name}
         </p>
         <p className="text-xs text-muted-foreground">
-          {formatFileSize(attachment.file_size)} • {attachment.uploaded_by_name} • {format(new Date(attachment.created_at), "d. MMM yyyy", { locale: nb })}
+          {formatFileSize(attachment.file_size, "")} • {attachment.uploaded_by_name} • {format(new Date(attachment.created_at), "d. MMM yyyy", { locale: nb })}
         </p>
       </div>
       

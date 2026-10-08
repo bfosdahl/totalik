@@ -224,7 +224,7 @@ export default function IkMatDokumentsenter() {
                           <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
                         )}
                         <span className="text-xs text-muted-foreground">
-                          {formatFileSize(doc.file_size)}
+                          {formatFileSize(doc.file_size, "Ukjent størrelse")}
                         </span>
                       </div>
                       <Button

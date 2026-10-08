@@ -376,7 +376,7 @@ function FolderItem({
   onDownload: (doc: CompanyKsDocument) => void;
   onDelete: (id: string) => void;
   onDeleteFolder: () => void;
-  formatFileSize: (bytes: number | null) => string;
+  formatFileSize: (bytes: number | null, emptyText?: string) => string;
   isSaving: boolean;
 }) {
   return (
@@ -448,7 +448,7 @@ function DocumentRow({
   doc: CompanyKsDocument;
   onDownload: () => void;
   onDelete: () => void;
-  formatFileSize: (bytes: number | null) => string;
+  formatFileSize: (bytes: number | null, emptyText?: string) => string;
   isSaving: boolean;
 }) {
   return (
@@ -458,7 +458,7 @@ function DocumentRow({
         <div className="min-w-0">
           <p className="text-sm font-medium truncate">{doc.document_name}</p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{formatFileSize(doc.file_size)}</span>
+            <span>{formatFileSize(doc.file_size, "")}</span>
             {doc.project && (
               <>
                 <span>•</span>
