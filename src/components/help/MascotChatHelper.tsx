@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { getProffConfig, ProffConfig } from "./proffConfig";
 import { useSpeech } from "@/hooks/useSpeech";
 import { t } from "@/i18n/t";
@@ -20,12 +21,13 @@ interface Message {
 }
 
 const STORAGE_PREFIX = "mascot-chat:";
+const SCOPED_PREFIX = "mascot-chat:v2:";
 const OPEN_STORAGE_KEY = "mascot-chat:isOpen";
 
-const loadPersistedMessages = (proffId: string): Message[] | null => {
-  if (typeof window === "undefined") return null;
+const loadPersistedMessages = (storageKey: string | null): Message[] | null => {
+  if (typeof window === "undefined" || !storageKey) return null;
   try {
-    const raw = sessionStorage.getItem(`${STORAGE_PREFIX}${proffId}`);
+    const raw = sessionStorage.getItem(storageKey);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : null;
