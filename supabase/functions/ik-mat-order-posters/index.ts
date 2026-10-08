@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireAuth } from "../_shared/auth-guard.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,7 +57,7 @@ ${message ? `<h3>Melding fra kunde:</h3><p>${esc(message)}</p>` : ''}
 <p style="color:#666;font-size:12px">Denne bestillingen ble sendt automatisk fra Total-IK systemet.</p>
     `.trim();
 
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await guardedResendFetch(null, "ik-mat-order-posters", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

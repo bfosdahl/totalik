@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { recordJobRun } from "../_shared/jobRun.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -177,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
         const employeeName = `${employee.first_name || ""} ${employee.last_name || ""}`.trim() || "Ansatt";
 
         try {
-          await resend.emails.send({
+          await guardedResendSend(supabase, "check-course-expiry", resend, {
             from: "Total-IK <noreply@totalik.no>",
             to: recipients,
             subject: `Kurs utløper snart: ${course.course_name} - ${employeeName}`,

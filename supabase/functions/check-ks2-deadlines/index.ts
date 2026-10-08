@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { recordJobRun } from "../_shared/jobRun.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -188,7 +189,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       try {
-        const emailResponse = await resend.emails.send({
+        const emailResponse = await guardedResendSend(supabase, "check-ks2-deadlines", resend, {
           from: `${companyName} <noreply@totalik.no>`,
           to: [profile.email],
           subject: subject,

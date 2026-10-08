@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -89,7 +90,7 @@ serve(async (req) => {
       .single();
 
     try {
-      await resend.emails.send({
+      await guardedResendSend(supabase, "check-annual-audits", resend, {
         from: "Total-IK <noreply@totalik.no>",
         to: [toEmail],
         bcc: ["ben@athenahms.no"],
@@ -137,7 +138,7 @@ serve(async (req) => {
     if (!toEmail) continue;
 
     try {
-      await resend.emails.send({
+      await guardedResendSend(supabase, "check-annual-audits", resend, {
         from: "Total-IK <noreply@totalik.no>",
         to: [toEmail],
         bcc: ["ben@athenahms.no"],

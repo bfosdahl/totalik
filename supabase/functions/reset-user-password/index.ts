@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -213,7 +214,7 @@ Deno.serve(async (req) => {
               <hr style="border:none;border-top:1px solid #eee;margin:30px 0;">
               <p style="color:#999;font-size:12px;text-align:center;">Automatisk e-post fra Total-IK.</p>
             </div>`;
-            const sendRes = await resend.emails.send({
+            const sendRes = await guardedResendSend(supabaseAdmin, "reset-user-password", resend, {
               from: "Total-IK <noreply@totalik.no>",
               to: [targetUser.user.email!],
               subject: "Nytt passord til Total-IK",
@@ -280,7 +281,7 @@ Deno.serve(async (req) => {
             ? `${profile.first_name}${profile.last_name ? ' ' + profile.last_name : ''}`
             : "bruker";
 
-          const emailResponse = await resend.emails.send({
+          const emailResponse = await guardedResendSend(supabaseAdmin, "reset-user-password", resend, {
             from: "Total-IK <noreply@totalik.no>",
             to: [targetUser.user.email],
             subject: "Tilbakestill passord",

@@ -1,4 +1,5 @@
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,7 +50,7 @@ Deno.serve(async (req) => {
     });
 
     // Send notification to Gard
-    const adminEmailResponse = await resend.emails.send({
+    const adminEmailResponse = await guardedResendSend(null, "notify-new-company", resend, {
       from: "Total-IK <noreply@totalik.no>",
       to: ["gard@athenahms.no"],
       subject: `🎉 Ny bedrift registrert: ${companyName}`,

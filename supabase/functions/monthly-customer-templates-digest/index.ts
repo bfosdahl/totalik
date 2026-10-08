@@ -5,6 +5,7 @@ import { Resend } from "npm:resend@4";
 import { brandedEmail } from "../_shared/email-brand.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { recordJobRun } from "../_shared/jobRun.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const RECIPIENTS = ["ben@athenahms.no", "joe@athenahms.no"];
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret" };
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
     });
 
     const resend = new Resend(Deno.env.get("RESEND_API_KEY")!);
-    const r = await resend.emails.send({
+    const r = await guardedResendSend(db, "monthly-customer-templates-digest", resend, {
       from: "Total-IK <noreply@totalik.no>",
       to: RECIPIENTS,
       subject: `Kundelagde sjekklister – ${rows.length} nye siste måned`,

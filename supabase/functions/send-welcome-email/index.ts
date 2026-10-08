@@ -6,6 +6,7 @@ import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { requireAuth } from "../_shared/auth-guard.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { loginBlockHtml } from "../_shared/default-password.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -150,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
         `;
 
-    const emailResponse = await resend.emails.send({
+    const emailResponse = await guardedResendSend(supabase, "send-welcome-email", resend, {
       from: `Total-IK <noreply@totalik.no>`,
       to: [recipientEmail],
       subject: `Velkommen til ${companyName} - Konto opprettet`,

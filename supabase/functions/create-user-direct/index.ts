@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { DEFAULT_PASSWORD } from "../_shared/default-password.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -236,7 +237,7 @@ serve(async (req) => {
 
         const companyName = company?.name || "Total-IK";
 
-        await resend.emails.send({
+        await guardedResendSend(supabaseAdmin, "create-user-direct", resend, {
           from: `${companyName} <noreply@totalik.no>`,
           to: [email],
           subject: `Velkommen til ${companyName} - Innloggingsinfo`,

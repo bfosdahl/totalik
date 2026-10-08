@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 import {
   SERVICE_TEMPLATES,
   detectServiceTemplates,
@@ -537,7 +538,7 @@ async function sendServiceEmails(
     let errorMessage: string | null = null;
 
     try {
-      const res = await fetch("https://api.resend.com/emails", {
+      const res = await guardedResendFetch(supabase, "process-nextcom-orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

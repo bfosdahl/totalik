@@ -5,6 +5,7 @@
 //  - a job suddenly sends an abnormal number of notifications (runaway alerts)
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -146,7 +147,7 @@ Deno.serve(async (req) => {
           )
           .join("");
 
-        const res = await fetch("https://api.resend.com/emails", {
+        const res = await guardedResendFetch(supabase, "monitor-job-health", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${resendKey}`,

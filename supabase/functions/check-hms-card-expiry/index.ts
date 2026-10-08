@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { recordJobRun } from "../_shared/jobRun.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -166,7 +167,7 @@ Deno.serve(async (req) => {
         // Send to employee if they have email
         if (profile.email) {
           try {
-            await fetch('https://api.resend.com/emails', {
+            await guardedResendFetch(supabase, "check-hms-card-expiry", {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${resendApiKey}`,
@@ -203,7 +204,7 @@ Deno.serve(async (req) => {
           if (!admin.user_id || !adminUserIds.has(admin.user_id)) continue;
           if (admin.email && admin.email !== profile.email) {
             try {
-              await fetch('https://api.resend.com/emails', {
+              await guardedResendFetch(supabase, "check-hms-card-expiry", {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${resendApiKey}`,

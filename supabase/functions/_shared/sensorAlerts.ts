@@ -1,3 +1,4 @@
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "./emailSuppression.ts";
 // Delt varslingslogikk for IK-Mat sensorer (webhook + vakthund).
 
 export interface AlertInput {
@@ -62,7 +63,7 @@ export async function sendSensorAlert(supabase: any, input: AlertInput): Promise
       emailStatus = 'missing_api_key';
     } else {
       try {
-        const res = await fetch('https://api.resend.com/emails', {
+        const res = await guardedResendFetch(supabase, "sensorAlerts", {
           method: 'POST',
           headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({

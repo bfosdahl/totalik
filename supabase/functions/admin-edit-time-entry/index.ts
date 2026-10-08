@@ -2,6 +2,7 @@
 // Lar company_admin/system_admin justere ansattes timer, logger årsak,
 // og varsler ansatt via in-app + e-post + push.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -268,7 +269,7 @@ Deno.serve(async (req) => {
                 Dette er en automatisk melding fra Total-IK. Spørsmål? Kontakt din leder.
               </p>
             </div>`;
-          const emailResponse = await fetch("https://api.resend.com/emails", {
+          const emailResponse = await guardedResendFetch(admin, "admin-edit-time-entry", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireAuth } from "../_shared/auth-guard.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -91,7 +92,7 @@ serve(async (req) => {
       const formattedStart = new Date(startDate).toLocaleDateString('nb-NO');
       const formattedEnd = new Date(endDate).toLocaleDateString('nb-NO');
 
-      const res = await fetch('https://api.resend.com/emails', {
+      const res = await guardedResendFetch(supabase, "notify-time-off-request", {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendApiKey}`,

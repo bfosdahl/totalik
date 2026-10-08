@@ -6,6 +6,7 @@
 // kan varsle dersom denne jobben selv slutter å kjøre.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -191,7 +192,7 @@ Deno.serve(async (req) => {
           )
           .join("");
 
-        const res = await fetch("https://api.resend.com/emails", {
+        const res = await guardedResendFetch(supabase, "check-signature-health", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${resendKey}`,

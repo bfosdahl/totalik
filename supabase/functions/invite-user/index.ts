@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { DEFAULT_PASSWORD, defaultPasswordHtml, loginBlockHtml } from "../_shared/default-password.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -196,7 +197,7 @@ serve(async (req) => {
         if (resend && sendEmail) {
           try {
             const companyName = company?.name || "din bedrift";
-            await resend.emails.send({
+            await guardedResendSend(supabaseAdmin, "invite-user", resend, {
               from: "Total-IK <noreply@totalik.no>",
               to: [email],
               subject: `Du har fått tilgang igjen til ${companyName}`,
@@ -345,7 +346,7 @@ serve(async (req) => {
         const userName = firstName ? firstName : "bruker";
         const roleName = role === "company_admin" ? "Administrator" : "Bruker";
 
-        const emailResponse = await resend.emails.send({
+        const emailResponse = await guardedResendSend(supabaseAdmin, "invite-user", resend, {
           from: "Total-IK <noreply@totalik.no>",
           to: [email],
           subject: `Velkommen til ${companyName} - Din konto er opprettet`,
