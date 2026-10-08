@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { checkRateLimit, createMessageHash, createStreamWithFallback, ChatMsg } from "../_shared/ai-setup.ts";
-import { callAiGateway, AI_CHAT_MODEL, isModelTestKey } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -501,10 +501,8 @@ serve(async (req) => {
       { role: "system", content: stepPrompt },
     ];
 
-    // Kun modelltestbedriften får datoene i prompten ennå (samme key som ai-gateway.ts).
-    if (isModelTestKey(companyId)) {
-      systemMessages.push({ role: "system", content: buildDeadlinePrompt() });
-    }
+    // Fristreglane med konkrete datoar gjeld for alle bedrifter.
+    systemMessages.push({ role: "system", content: buildDeadlinePrompt() });
 
     const knownFacts = buildKnownFactsMessage(messages);
     if (knownFacts) {

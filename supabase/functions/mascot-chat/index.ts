@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_HMS } from "../_shared/faq-knowledge.ts";
 import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
-import { callAiGateway, AI_CHAT_MODEL, isModelTestKey } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -286,7 +286,7 @@ const tools = [
           category: {
             type: "string",
             enum: ["sikkerhet", "kvalitet", "miljø", "dokumentasjon", "prosess", "utstyr", "personell", "annet"],
-            description: "Kategori for avviket (sikkerhet, kvalitet, miljø, dokumentasjon, prosess, utstyr, personell, annet)"
+            description: "Velg den kategorien som passer best ut fra beskrivelsen. Bruk 'annet' KUN hvis ingen av de andre passer. Veiledning: sikkerhet = skade/nesten-ulykke, brann, nødutgang, nødlys, verneutstyr, fall, kjemikalier; utstyr = maskin/verktøy/kjøleskap/utstyr som er ødelagt eller mangler service; kvalitet = feil på produkt/leveranse/arbeid; miljø = utslipp, avfall, søl, støy; dokumentasjon = manglende/feil rutiner, skjema, opplæringsbevis; prosess = rutine ikke fulgt, arbeidsflyt; personell = bemanning, opplæring, arbeidstid, konflikt. Ikke spør brukeren om kategori – velg selv."
           },
           priority: {
             type: "string",
@@ -788,24 +788,6 @@ serve(async (req) => {
     }
 
     const companyId = profile.company_id;
-    const useCandidateBudget = isModelTestKey(companyId);
-
-    // Kun for modelltestbedrifter: tydelegare kategori-skildring slik at
-    // "annet" berre brukast når inga anna kategori faktisk passar.
-    const requestTools = useCandidateBudget
-      ? (() => {
-          const copy: any[] = JSON.parse(JSON.stringify(tools));
-          const deviationTool = copy.find(
-            (t: any) => t?.function?.name === "create_deviation"
-          );
-          if (deviationTool) {
-            deviationTool.function.parameters.properties.category.description =
-              "Velg den kategorien som passer best ut fra beskrivelsen. Bruk 'annet' KUN hvis ingen av de andre passer. Veiledning: sikkerhet = skade/nesten-ulykke, brann, nødutgang, nødlys, verneutstyr, fall, kjemikalier; utstyr = maskin/verktøy/kjøleskap/utstyr som er ødelagt eller mangler service; kvalitet = feil på produkt/leveranse/arbeid; miljø = utslipp, avfall, søl, støy; dokumentasjon = manglende/feil rutiner, skjema, opplæringsbevis; prosess = rutine ikke fulgt, arbeidsflyt; personell = bemanning, opplæring, arbeidstid, konflikt. Ikke spør brukeren om kategori – velg selv.";
-          }
-          return copy;
-        })()
-      : tools;
-
 
     const { message, history = [] } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -836,9 +818,9 @@ serve(async (req) => {
     const response = await callAiGateway(LOVABLE_API_KEY, {
       model: AI_CHAT_MODEL,
       messages,
-      tools: requestTools,
+      tools: tools,
       tool_choice: "auto",
-      max_tokens: useCandidateBudget ? 4000 : 1000,
+      max_tokens: 4000,
     }, companyId);
 
     if (!response.ok) {
@@ -909,7 +891,7 @@ serve(async (req) => {
       const summaryResponse = await callAiGateway(LOVABLE_API_KEY, {
         model: AI_CHAT_MODEL,
         messages: summaryMessages,
-        max_tokens: useCandidateBudget ? 2000 : 300,
+        max_tokens: 2000,
       }, companyId);
 
       if (summaryResponse.ok) {
