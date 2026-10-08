@@ -366,7 +366,7 @@ export const useAdminKsTemplates = () => {
           category: category || "Annet",
           is_mandatory: isMandatory ?? false,
           version: version || "2025.1",
-          valid_from: new Date().toISOString().split("T")[0],
+          valid_from: getLocalDateString(),
         })
         .select()
         .single();

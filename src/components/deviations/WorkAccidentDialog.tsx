@@ -68,7 +68,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [incidentDate, setIncidentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [incidentDate, setIncidentDate] = useState(getLocalDateString());
   const [incidentTime, setIncidentTime] = useState("");
   const [incidentLocation, setIncidentLocation] = useState("");
   const [severity, setSeverity] = useState("");
@@ -81,7 +81,7 @@ export function WorkAccidentDialog({ open, onOpenChange, onSubmit }: WorkAcciden
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setIncidentDate(new Date().toISOString().split("T")[0]);
+    setIncidentDate(getLocalDateString());
     setIncidentTime("");
     setIncidentLocation("");
     setSeverity("");

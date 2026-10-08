@@ -25,7 +25,7 @@ export function ExpiryAlerts() {
         return { expiredCourses: 0, expiredHmsCards: 0, expiringCoursesSoon: 0, expiringHmsCardsSoon: 0 };
       }
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateString();
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
       const thirtyDaysDate = thirtyDaysFromNow.toISOString().split('T')[0];

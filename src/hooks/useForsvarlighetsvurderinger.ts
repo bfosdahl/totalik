@@ -109,7 +109,7 @@ export function useForsvarlighetsvurderinger() {
       const insertData = {
         company_id: companyId,
         assessment_number: "", // Will be auto-generated
-        assessment_date: data.assessment_date || new Date().toISOString().split("T")[0],
+        assessment_date: data.assessment_date || getLocalDateString(),
         assessment_type: data.assessment_type || "kortere_opplaring",
         title: data.title || "Ny forsvarlighetsvurdering",
         description: data.description || null,

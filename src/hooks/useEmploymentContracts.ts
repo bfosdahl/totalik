@@ -322,7 +322,7 @@ export function useEmploymentContracts() {
         
         if (bothSigned) {
           updates.status = 'active';
-          updates.signed_date = new Date().toISOString().split('T')[0];
+          updates.signed_date = getLocalDateString();
         } else {
           updates.status = 'pending_signature';
         }

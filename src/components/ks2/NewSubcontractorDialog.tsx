@@ -366,7 +366,7 @@ export function NewSubcontractorDialog({
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={getLocalDateString()}
                   />
                   <p className="text-xs text-muted-foreground">
                     {t("auto.la_staa_tom_for_ingen_utloepsdato")}

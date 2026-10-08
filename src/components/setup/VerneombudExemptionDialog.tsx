@@ -239,7 +239,7 @@ export function VerneombudExemptionDialog({
         employer_signed_at: new Date().toISOString(),
         employee_signatures: employeeSignatures,
         status: "active",
-        agreement_date: new Date().toISOString().split("T")[0],
+        agreement_date: getLocalDateString(),
       };
 
       let error;

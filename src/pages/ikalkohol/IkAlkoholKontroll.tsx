@@ -60,7 +60,7 @@ export default function IkAlkoholKontroll() {
       company_id: companyId,
       control_type: selectedType,
       control_category: selectedCategory,
-      control_date: new Date().toISOString().split('T')[0],
+      control_date: getLocalDateString(),
       checklist_items: checklistItems as any,
       notes: notes || null,
       completed_by_id: profile?.id || null,

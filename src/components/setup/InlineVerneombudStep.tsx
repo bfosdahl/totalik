@@ -49,7 +49,7 @@ export function InlineVerneombudStep({
   const [alreadyHasExemption, setAlreadyHasExemption] = useState(false);
   const [signedExternally, setSignedExternally] = useState(false);
   const [externalFile, setExternalFile] = useState<File | null>(null);
-  const [externalSignedDate, setExternalSignedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [externalSignedDate, setExternalSignedDate] = useState(getLocalDateString());
   const sigRef = useRef<SignatureCanvas | null>(null);
   useSignatureCanvasResize(sigRef as any, [mode]);
 
@@ -154,7 +154,7 @@ export function InlineVerneombudStep({
         status: "active",
         agreement_date: signedExternally && externalSignedDate
           ? externalSignedDate
-          : new Date().toISOString().split("T")[0],
+          : getLocalDateString(),
         signed_externally: signedExternally,
         external_document_path: externalPath,
         external_document_name: signedExternally ? externalFile?.name ?? null : null,
@@ -184,7 +184,7 @@ export function InlineVerneombudStep({
       const { error } = await supabase.from("verneombud_agreements").insert({
         company_id: companyId,
         verneombud_name: verneombudName,
-        election_date: new Date().toISOString().split("T")[0],
+        election_date: getLocalDateString(),
         election_method: "appointment",
         employer_name: "",
         employer_signature: "",

@@ -110,7 +110,7 @@ export function DataExportSettings({ onBack }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    const date = new Date().toISOString().split("T")[0];
+    const date = getLocalDateString();
     a.download = `totalik-eksport-${date}.json`;
     document.body.appendChild(a);
     a.click();

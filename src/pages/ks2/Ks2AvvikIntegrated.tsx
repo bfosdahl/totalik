@@ -242,7 +242,7 @@ export default function Ks2AvvikIntegrated() {
       severity: newAvvik.severity,
       status: "open",
       location: newAvvik.location || null,
-      discovered_date: new Date().toISOString().split("T")[0],
+      discovered_date: getLocalDateString(),
       deadline: newAvvik.deadline || null,
       responsible_name: newAvvik.responsible_name || null,
       responsible_user_id: null,

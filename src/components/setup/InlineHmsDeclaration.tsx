@@ -111,7 +111,7 @@ export function InlineHmsDeclaration({
         postal_code: postalCode || null,
         city: city || null,
         country: "Norge",
-        declaration_date: new Date().toISOString().split("T")[0],
+        declaration_date: getLocalDateString(),
         manager_name: managerName,
         manager_signature: sig,
         manager_signed_at: new Date().toISOString(),

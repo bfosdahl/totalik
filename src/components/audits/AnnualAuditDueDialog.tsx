@@ -30,7 +30,7 @@ export function AnnualAuditDueDialog() {
         .maybeSingle();
       if (!profile?.company_id) return null;
 
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalDateString();
       const { data } = await supabase
         .from("audits")
         .select("id, audit_number, title, scheduled_date, trigger_source, assistance_status, dismissed_until")
