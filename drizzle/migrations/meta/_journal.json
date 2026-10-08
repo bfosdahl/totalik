@@ -29,6 +29,13 @@
       "when": 1791490455397,
       "tag": "0003_fix_cleanup_old_logs",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791492490570,
+      "tag": "0004_email_suppression_rpc_refine",
+      "breakpoints": true
     }
   ]
 }
