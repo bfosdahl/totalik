@@ -90,6 +90,10 @@ export function createStreamWithFallback(
             if (jsonStr === '[DONE]') continue;
             try {
               const parsed = JSON.parse(jsonStr);
+              const finishReason = parsed.choices?.[0]?.finish_reason;
+              if (finishReason && String(finishReason).toLowerCase() !== 'stop') {
+                console.warn(`[${functionName}] finish_reason=${finishReason}`);
+              }
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) fullContent += content;
             } catch { /* skip unparseable chunks */ }
