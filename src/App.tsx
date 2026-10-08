@@ -167,7 +167,6 @@ const AdminSellers = lazy(() => import("./pages/admin/AdminSellers"));
 const AdminLicenses = lazy(() => import("./pages/admin/AdminLicenses"));
 const AdminWelcomePackages = lazy(() => import("./pages/admin/AdminWelcomePackages"));
 const AdminTrashBin = lazy(() => import("./pages/admin/AdminTrashBin"));
-const SetupSystemAdmin = lazy(() => import("./pages/admin/SetupSystemAdmin"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
