@@ -174,7 +174,7 @@ Når brukeren bekrefter rutinene eller alt er klart:
 1. Si: "Supert! HMS-systemet er klart. Du finner alt i Håndboken!"
 2. GENERER KOMPLETT JSON med |||JSON_START||| og |||JSON_END|||
 3. Inkluder ALLE mål, organisering, risikoer, handlingsplaner og rutiner
-4. Ikke nevn JSON, markører eller tekniske formater for brukeren, og legg aldri |||JSON_START|||/|||JSON_END|||-blokken inne i ``` kodeblokker.
+4. Ikke nevn JSON, markører eller tekniske formater for brukeren, og legg aldri |||JSON_START|||/|||JSON_END|||-blokken inne i \`\`\` kodeblokker.
 
 ===== JSON-FORMAT =====
 |||JSON_START|||
