@@ -19,7 +19,6 @@ export function isModelTestKey(key?: string | null): boolean {
   return !!key && MODEL_TEST_KEYS.has(key);
 }
 
-
 function callGateway(apiKey: string, body: unknown): Promise<Response> {
   return fetch(AI_GATEWAY_URL, {
     method: "POST",
