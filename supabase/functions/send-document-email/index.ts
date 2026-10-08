@@ -155,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
       }));
     }
 
-    const res = await guardedResendFetch(admin, "send-document-email", {
+    const res = await guardedResendFetch(null, "send-document-email", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

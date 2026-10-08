@@ -76,7 +76,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     // Send confirmation email to customer
-    const res = await guardedResendFetch(supabaseAdmin, "send-module-order-confirmation", {
+    const res = await guardedResendFetch(null, "send-module-order-confirmation", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -177,7 +177,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Customer confirmation email sent successfully:", emailResponse);
 
     // Send notification email to Gard Fosdahl about the new order
-    const adminNotificationRes = await guardedResendFetch(supabaseAdmin, "send-module-order-confirmation", {
+    const adminNotificationRes = await guardedResendFetch(null, "send-module-order-confirmation", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

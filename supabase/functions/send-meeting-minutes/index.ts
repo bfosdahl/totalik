@@ -219,7 +219,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const html = generateEmailHtml({ ...data, recipients: cleanRecipients });
 
-    const res = await guardedResendFetch(admin, "send-meeting-minutes", {
+    const res = await guardedResendFetch(null, "send-meeting-minutes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
