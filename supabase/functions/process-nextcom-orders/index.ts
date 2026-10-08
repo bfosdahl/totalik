@@ -1,11 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 import {
   SERVICE_TEMPLATES,
   detectServiceTemplates,
   type ServiceTemplateKey,
 } from "../_shared/service-email-templates/index.ts";
 import {
-import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
   cleanText,
   loadPriceBook,
   normalizeProductName,
