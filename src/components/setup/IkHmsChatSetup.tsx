@@ -733,13 +733,12 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           const seed = defaultActions.find(d => d.id === a.id);
           return !!seed && stableStringify(a) === stableStringify(seed);
         };
-        const numberAiRoutines = <T extends { routine_number?: unknown }>(kept: Array<Record<string, unknown>>, aiRoutines: T[]): T[] => {
+        const numberAiRoutines = (kept: Array<Record<string, unknown>>, aiRoutines: Array<{ routine_number: unknown }>): void => {
           const maxExisting = kept.reduce((max, r) => {
             const m = /^R(\d+)$/.exec(String(r.routine_number || ''));
             return m ? Math.max(max, parseInt(m[1], 10)) : max;
           }, 0);
           aiRoutines.forEach((r, i) => { r.routine_number = `R${(maxExisting + i + 1).toString().padStart(3, '0')}`; });
-          return aiRoutines;
         };
 
         const transformedRoutines = data.routines?.map((routine: Record<string, unknown>, index: number) => ({
@@ -831,7 +830,8 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           if (data.routines?.length > 0) {
             const { data: existing } = await supabase.from("department_routines").select("routines").eq("department_id", departmentId).single();
             const userRoutines = (existing?.routines as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated);
-            await supabase.from("department_routines").upsert({ department_id: departmentId, routines: [...userRoutines, ...numberAiRoutines(userRoutines, transformedRoutines)] });
+            numberAiRoutines(userRoutines, transformedRoutines);
+            await supabase.from("department_routines").upsert({ department_id: departmentId, routines: [...userRoutines, ...transformedRoutines] });
           }
 
           queryClient.invalidateQueries({ queryKey: ["department-goals"] });
@@ -991,7 +991,8 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         if (data.routines?.length > 0) {
           const { data: existing } = await supabase.from("company_routines").select("routines").eq("company_id", companyId).maybeSingle();
           const userRoutines = (existing?.routines as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated && !isUntouchedStandardRoutine(r));
-          await assertSaved("company_routines", await supabase.from("company_routines").upsert({ company_id: companyId, routines: [...userRoutines, ...numberAiRoutines(userRoutines, transformedRoutines)] }, { onConflict: "company_id,department_id" }));
+          numberAiRoutines(userRoutines, transformedRoutines);
+          await assertSaved("company_routines", await supabase.from("company_routines").upsert({ company_id: companyId, routines: [...userRoutines, ...transformedRoutines] }, { onConflict: "company_id,department_id" }));
         }
 
         // Auto-generate laws (Step 9)
