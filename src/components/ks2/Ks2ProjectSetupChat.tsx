@@ -124,6 +124,7 @@ function isInventedValue(text: string): boolean {
   if (/^(bygge?prosjekt|prosjekt|firma|bedrift|entreprenør|byggherre|kunde|oppdragsgiver)( as)?$/.test(lower)) return true;
   if (/\b(bygg|bygge|test|prosjekt|adresse|gatenavn|veinavn|eksempel)(veien|vegen|vei|veg|gata|gaten|gate)\b/.test(lower)) return true;
   if (/\b0000\b/.test(lower) || lower.includes("poststed")) return true;
+  if (/^standard\b|\bstandard$/.test(lower) || lower.includes("nordmann") || lower.includes("normann") || lower.includes("eksmepel")) return true;
   return false;
 }
 
