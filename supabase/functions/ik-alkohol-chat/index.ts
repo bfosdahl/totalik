@@ -365,9 +365,8 @@ serve(async (req) => {
         ...(buildKnownFactsMessage(messages) ? [{ role: "system", content: buildKnownFactsMessage(messages)! }] : []),
         ...messages
       ],
-      stream: true,,
-    companyId
-    });
+      stream: true,
+    }, companyId);
 
     if (!response.ok) {
       if (response.status === 429) return new Response(JSON.stringify({ error: "For mange forespørsler." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });

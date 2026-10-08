@@ -488,9 +488,8 @@ serve(async (req) => {
     const response = await callAiGateway(LOVABLE_API_KEY, {
       model: AI_CHAT_MODEL,
       messages: [...systemMessages, ...messages],
-      stream: true,,
-    companyId
-    });
+      stream: true,
+    }, companyId);
 
     if (!response.ok) {
       if (response.status === 429) return new Response(JSON.stringify({ error: "For mange forespørsler." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });

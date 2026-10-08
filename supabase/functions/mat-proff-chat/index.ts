@@ -734,9 +734,8 @@ serve(async (req) => {
       messages,
       tools,
       tool_choice: "auto",
-      max_tokens: 1500,,
-    companyId
-    });
+      max_tokens: 1500,
+    }, companyId);
 
     if (!response.ok) {
       if (response.status === 429) {

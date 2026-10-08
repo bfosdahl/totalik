@@ -428,9 +428,8 @@ serve(async (req) => {
         ...(buildMatKnownFacts(messages) ? [{ role: "system", content: buildMatKnownFacts(messages)! }] : []),
         ...messages
       ],
-      stream: true,,
-    companyId
-    });
+      stream: true,
+    }, companyId);
 
     if (!response.ok) {
       if (response.status === 429) {

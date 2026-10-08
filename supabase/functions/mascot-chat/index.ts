@@ -820,9 +820,8 @@ serve(async (req) => {
       messages,
       tools,
       tool_choice: "auto",
-      max_tokens: 1000,,
-    companyId
-    });
+      max_tokens: 1000,
+    }, companyId);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -887,9 +886,8 @@ serve(async (req) => {
       const summaryResponse = await callAiGateway(LOVABLE_API_KEY, {
         model: AI_CHAT_MODEL,
         messages: summaryMessages,
-        max_tokens: 300,,
-      companyId
-      });
+        max_tokens: 300,
+      }, companyId);
 
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();

@@ -278,9 +278,8 @@ serve(async (req) => {
         { role: "system", content: systemPrompt },
         ...messages
       ],
-      stream: true,,
-    user.id
-    });
+      stream: true,
+    }, user.id);
 
     if (!response.ok) {
       if (response.status === 429) {
