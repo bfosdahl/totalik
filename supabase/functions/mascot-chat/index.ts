@@ -790,6 +790,23 @@ serve(async (req) => {
     const companyId = profile.company_id;
     const useCandidateBudget = isModelTestKey(companyId);
 
+    // Kun for modelltestbedrifter: tydelegare kategori-skildring slik at
+    // "annet" berre brukast når inga anna kategori faktisk passar.
+    const requestTools = useCandidateBudget
+      ? (() => {
+          const copy: any[] = JSON.parse(JSON.stringify(tools));
+          const deviationTool = copy.find(
+            (t: any) => t?.function?.name === "create_deviation"
+          );
+          if (deviationTool) {
+            deviationTool.function.parameters.properties.category.description =
+              "Velg den kategorien som passer best ut fra beskrivelsen. Bruk 'annet' KUN hvis ingen av de andre passer. Veiledning: sikkerhet = skade/nesten-ulykke, brann, nødutgang, nødlys, verneutstyr, fall, kjemikalier; utstyr = maskin/verktøy/kjøleskap/utstyr som er ødelagt eller mangler service; kvalitet = feil på produkt/leveranse/arbeid; miljø = utslipp, avfall, søl, støy; dokumentasjon = manglende/feil rutiner, skjema, opplæringsbevis; prosess = rutine ikke fulgt, arbeidsflyt; personell = bemanning, opplæring, arbeidstid, konflikt. Ikke spør brukeren om kategori – velg selv.";
+          }
+          return copy;
+        })()
+      : tools;
+
+
     const { message, history = [] } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
@@ -819,7 +836,7 @@ serve(async (req) => {
     const response = await callAiGateway(LOVABLE_API_KEY, {
       model: AI_CHAT_MODEL,
       messages,
-      tools,
+      tools: requestTools,
       tool_choice: "auto",
       max_tokens: useCandidateBudget ? 4000 : 1000,
     }, companyId);
