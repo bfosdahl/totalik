@@ -183,7 +183,7 @@ export function Ks2ChecklistWizard({ projectId, onClose, preSelectedTemplate, ex
       const normalizedItems = (existingChecklist.checklist_items || []).map((item: any, idx) => ({
         ...item,
         id: item.id && String(item.id).trim() !== "" ? String(item.id) : `item-${idx + 1}`,
-        text: coerceText(item.text ?? item.checkpoint_text ?? item.label, idx),
+        text: coerceText(item.text ?? item.checkpoint_text ?? item.label ?? item.checkpoint, idx),
         // Sikre at type alltid er satt — ellers vil ikke Ja/Nei/N/A-valgene rendres
         type: (item.type as ChecklistItem["type"]) || "yes_no",
         required: item.required !== false,

@@ -366,6 +366,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Clear per-user chat state so the next user in this tab never sees it
+    try {
+      const prefixes = ["mascot-chat:", "ik-hms-chat-setup-v2", "ik-mat-chat-setup-state", "ik-alkohol-chat-setup-state", "ks-setup-chat-"];
+      const toRemove: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && prefixes.some((p) => key.startsWith(p))) toRemove.push(key);
+      }
+      toRemove.forEach((key) => sessionStorage.removeItem(key));
+    } catch { /* ignore */ }
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
