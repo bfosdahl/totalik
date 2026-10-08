@@ -502,6 +502,9 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             ].filter(s => s.items.length > 0);
             const itemTitle = (x: any) =>
               typeof x === "string" ? x : String(x?.title || x?.name || x?.area || "");
+            const proposalAddress = typeof proposal.address === "string" ? proposal.address.trim() : "";
+            const proposalClient =
+              typeof proposal.client_name === "string" ? proposal.client_name.trim() : "";
             return (
               <Card className="p-4 space-y-4 border-primary/40">
                 <div className="space-y-1">
@@ -513,6 +516,12 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Prosjektnavn"
                   />
+                  {(proposalAddress || proposalClient) && (
+                    <div className="space-y-0.5 pt-1 text-xs text-muted-foreground">
+                      {proposalAddress && <p>Adresse: {proposalAddress}</p>}
+                      {proposalClient && <p>Byggherre: {proposalClient}</p>}
+                    </div>
+                  )}
                 </div>
                 {sections.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
