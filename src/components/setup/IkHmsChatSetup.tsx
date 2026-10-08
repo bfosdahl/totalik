@@ -485,7 +485,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       // Check for JSON (setup complete)
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
-        await saveSetupData(jsonContent);
+        await saveSetupData(jsonContent, stepNumber === 9);
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -694,7 +694,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
   };
 
   // Save setup data - reuse existing logic
-  const saveSetupData = async (jsonContent: string) => {
+  const saveSetupData = async (jsonContent: string, fromStep9 = false): Promise<boolean> => {
     setIsSaving(true);
     const maxRetries = 3;
     let lastError: Error | null = null;
@@ -798,11 +798,16 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           queryClient.invalidateQueries({ queryKey: ["department-action-plans"] });
           queryClient.invalidateQueries({ queryKey: ["department-routines"] });
           queryClient.invalidateQueries({ queryKey: ["company-modules"] });
+          HMS_SETUP_STEPS.forEach(step => completeStep(step.id));
+          setCurrentStep(HMS_SETUP_STEPS.length - 1);
+          if (!fromStep9) {
+            setMessages(prev => [...prev, { role: "assistant", content: STEP9_MESSAGE }]);
+          }
           toast.success(t("auto.hms_oppsett_for_avdelingen_fullfoert"));
           setIsSaving(false);
           clearChatState(companyId, departmentId);
           onComplete();
-          return;
+          return true;
         }
 
         // Company setup
@@ -1103,11 +1108,16 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           console.error("Failed to track suggestion stats (non-critical):", statsError);
         }
 
+        HMS_SETUP_STEPS.forEach(step => completeStep(step.id));
+        setCurrentStep(HMS_SETUP_STEPS.length - 1);
+        if (!fromStep9) {
+          setMessages(prev => [...prev, { role: "assistant", content: STEP9_MESSAGE }]);
+        }
         toast.success(t("auto.hms_oppsett_fullfoert"));
         setIsSaving(false);
         clearChatState(companyId, departmentId);
         onComplete();
-        return;
+        return true;
 
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
@@ -1118,6 +1128,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
 
     toast.error(lastError?.message || "Kunne ikke lagre oppsettdata.");
     setIsSaving(false);
+    return false;
   };
 
   const retryLastMessage = useCallback(async () => {
