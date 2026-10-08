@@ -230,7 +230,7 @@ async function jevPreassess(
   // kjøkken) teljer med – pluss evt. entrepriseform, held for at vi kan gi forslag.
   const typeKnown = !!a.kind?.choice && a.kind.choice !== "ukjent" && conf(a.kind);
   const contractorKnown = !!a.contractor?.choice && a.contractor.choice !== "ukjent" && conf(a.contractor);
-  const ready = jevReady || (fastTrack && (questionsAsked >= 2 || (typeKnown && (contractorKnown || questionsAsked >= 1))));
+  const ready = jevReady || (fastTrack && (questionsAsked >= 2 || (typeKnown && contractorKnown)));
   console.log("Jev preassess", JSON.stringify({ known, missing, ready, jevReady, fastTrack, questionsAsked }));
   const hint = `\n\nFORHÅNDSVURDERING AV SAMTALEN (automatisk, ikke vis til brukeren):
 Allerede kjent – IKKE spør om dette igjen: ${known.join("; ") || "ingenting ennå"}.
