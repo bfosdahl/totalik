@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search, FolderKanban, Loader2, Settings, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,36 +30,36 @@ export default function Ks2Dashboard() {
   >({});
 
   // Fremdrift per prosjekt basert på egenkontroller/sjekklister (samme tall som inne i prosjektet)
-  useEffect(() => {
-    const fetchChecklistProgress = async () => {
-      if (!profile?.company_id || projects.length === 0 || isNewProjectOpen) return;
+  const refreshChecklistProgress = useCallback(async () => {
+    if (!profile?.company_id || projects.length === 0 || isNewProjectOpen) return;
 
-      const projectIds = projects.map((p) => p.id);
-      const { data, error } = await supabase
-        .from("ks_module2_checklists")
-        .select("project_id, status")
-        .in("project_id", projectIds);
+    const projectIds = projects.map((p) => p.id);
+    const { data, error } = await supabase
+      .from("ks_module2_checklists")
+      .select("project_id, status")
+      .in("project_id", projectIds);
 
-      if (error) {
-        console.error("Error fetching checklist progress:", error);
-        return;
-      }
+    if (error) {
+      console.error("Error fetching checklist progress:", error);
+      return;
+    }
 
-      const acc: Record<string, { completed: number; total: number; percent: number }> = {};
-      (data || []).forEach((row: any) => {
-        const cur = acc[row.project_id] || { completed: 0, total: 0, percent: 0 };
-        cur.total += 1;
-        if (row.status === "completed") cur.completed += 1;
-        acc[row.project_id] = cur;
-      });
-      Object.values(acc).forEach((v) => {
-        v.percent = v.total > 0 ? Math.round((v.completed / v.total) * 100) : 0;
-      });
-      setProjectChecklistProgress(acc);
-    };
-
-    fetchChecklistProgress();
+    const acc: Record<string, { completed: number; total: number; percent: number }> = {};
+    (data || []).forEach((row: any) => {
+      const cur = acc[row.project_id] || { completed: 0, total: 0, percent: 0 };
+      cur.total += 1;
+      if (row.status === "completed") cur.completed += 1;
+      acc[row.project_id] = cur;
+    });
+    Object.values(acc).forEach((v) => {
+      v.percent = v.total > 0 ? Math.round((v.completed / v.total) * 100) : 0;
+    });
+    setProjectChecklistProgress(acc);
   }, [projects, profile?.company_id, isNewProjectOpen]);
+
+  useEffect(() => {
+    refreshChecklistProgress();
+  }, [refreshChecklistProgress]);
 
   const archivedCount = useMemo(
     () => projects.filter((p) => p.status === "completed").length,
@@ -166,7 +166,7 @@ export default function Ks2Dashboard() {
     navigate(`/ks/project/${projectId}`);
   };
 
-  if (isLoading) {
+  if (isLoading && projects.length === 0) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -281,6 +281,7 @@ export default function Ks2Dashboard() {
         onOpenChange={setIsNewProjectOpen}
         onSubmit={handleCreateProject}
         isSaving={isSaving}
+        onProjectCreated={refreshChecklistProgress}
       />
 
       {/* Copy project dialog */}

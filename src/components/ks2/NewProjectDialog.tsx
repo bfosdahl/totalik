@@ -160,6 +160,7 @@ interface NewProjectDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: NewKsModule2ProjectInput) => Promise<any>;
   isSaving: boolean;
+  onProjectCreated?: () => void;
 }
 
 const getEmptyFormData = (): NewKsModule2ProjectInput => ({
@@ -184,7 +185,7 @@ const getEmptyFormData = (): NewKsModule2ProjectInput => ({
   description: "",
 });
 
-export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: NewProjectDialogProps) {
+export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving, onProjectCreated }: NewProjectDialogProps) {
   const { users } = useCompanyUsers();
   const { profile, isCompanyAdmin } = useAuth();
   const { templates: customTemplates, createTemplate, deleteTemplate } = useCompanyProjectTemplates();
@@ -239,6 +240,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
     if (!formData.project_name.trim()) return;
 
     await onSubmit({ ...formData, project_type: selectedProjectType || "standard" });
+    onProjectCreated?.();
     setFormData(getEmptyFormData());
     setSelectedTemplate("blank");
     setSelectedProjectType(null);
@@ -383,6 +385,7 @@ export function NewProjectDialog({ open, onOpenChange, onSubmit, isSaving }: New
           data.recommended_routines || []
         );
       }
+      onProjectCreated?.();
 
       const checklistCount = data.recommended_checklists?.length || 0;
       const routineCount = data.recommended_routines?.length || 0;

@@ -231,7 +231,7 @@ export default function Ks2Prosjektrapport() {
           checkpoints: (sections.includeChecklistDetails || sections.includeChecklistPhotos) && c.checklist_items?.length 
             ? await Promise.all(c.checklist_items.map(async (item: any) => ({
                 label: getChecklistItemText(item, "Sjekkpunkt"),
-                response: item.value === true ? "OK" : item.value === false ? "Nei" : item.value?.toString() || "-",
+                response: item.value === true || item.value === "yes" ? "OK" : item.value === false || item.value === "no" ? "Nei" : item.value?.toString() || "-",
                 comment: item.comment,
                 photos: sections.includeChecklistPhotos ? await reSignPhotos(item.photos || []) : [],
               })))
