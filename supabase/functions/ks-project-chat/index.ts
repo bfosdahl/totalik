@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_KS } from "../_shared/faq-knowledge.ts";
 import { NAV_MAP, KS_PROJECT_NAV_MAP } from "../_shared/nav-map.ts";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL, isModelTestKey } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -180,7 +180,12 @@ VIKTIG: Generer ALLTID en handlig (action) når brukeren eksplisitt ber om å le
 }
 
 // Jev forhåndsvurderer samtalen (punkt 1 + 2): hva er allerede kjent, så hjelperen slipper unødvendige spørsmål.
-async function jevPreassess(messages: any[], key: string): Promise<string> {
+async function jevPreassess(
+  messages: any[],
+  key: string,
+  fastTrack = false,
+  questionsAsked = 0,
+): Promise<string> {
   const text = messages.filter((m) => m?.role === "user").map((m) =>
     Array.isArray(m.content) ? m.content.filter((p: any) => p?.type === "text").map((p: any) => p.text).join("\n") : String(m.content ?? "")
   ).join("\n---\n").slice(-6000).trim();
@@ -220,14 +225,20 @@ async function jevPreassess(messages: any[], key: string): Promise<string> {
   if ((a.name?.noul ?? 0) >= 0.6) known.push("Prosjektnavn er oppgitt"); else missing.push("prosjektnavn");
   if ((a.address?.noul ?? 0) >= 0.6) known.push("Adresse er oppgitt"); else missing.push("adresse");
   if ((a.client?.noul ?? 0) >= 0.6) known.push("Byggherre er oppgitt"); else missing.push("byggherre");
-  const ready = (a.ready?.noul ?? 0) >= 0.6;
-  console.log("Jev preassess", JSON.stringify({ known, missing, ready }));
+  const jevReady = (a.ready?.noul ?? 0) >= 0.6;
+  // Fast-track (kun modelltestbrukarar): kjent prosjekttype – «mindre» (bad,
+  // kjøkken) teljer med – pluss evt. entrepriseform, held for at vi kan gi forslag.
+  const typeKnown = !!a.kind?.choice && a.kind.choice !== "ukjent" && conf(a.kind);
+  const contractorKnown = !!a.contractor?.choice && a.contractor.choice !== "ukjent" && conf(a.contractor);
+  const ready = jevReady || (fastTrack && (questionsAsked >= 2 || (typeKnown && (contractorKnown || questionsAsked >= 1))));
+  console.log("Jev preassess", JSON.stringify({ known, missing, ready, jevReady, fastTrack, questionsAsked }));
   return `\n\nFORHÅNDSVURDERING AV SAMTALEN (automatisk, ikke vis til brukeren):
 Allerede kjent – IKKE spør om dette igjen: ${known.join("; ") || "ingenting ennå"}.
 Mangler: ${missing.join(", ") || "ingenting viktig"}.
 ${ready
     ? "Brukeren har gitt nok informasjon. Gå RETT til forslag med JSON-blokken nå. Manglende navn/adresse/byggherre kan stå tomt eller få et fornuftig arbeidsnavn – ikke still flere spørsmål."
-    : "Still NØYAKTIG ETT kort oppfølgingsspørsmål – ingen punktliste med flere spørsmål. Spør om det viktigste som mangler for å lage oppsettet (type/omfang, ellers entrepriseform). Spør IKKE om prosjektnavn, adresse eller byggherre – det kan fylles ut senere. Ikke spør om noe som allerede er kjent."}`;
+    : "Still NØYAKTIG ETT kort oppfølgingsspørsmål – ingen punktliste med flere spørsmål. Spør om det viktigste som mangler for å lage oppsettet (type/omfang, ellers entrepriseform). Spør IKKE om prosjektnavn, adresse eller byggherre – det kan fylles ut senere. Ikke spør om noe som allerede er kjent." +
+      (fastTrack ? " Hvis prosjekttype er kjent men entrepriseform mangler, spør om entrepriseform; ellers spør om type/omfang." : "")}`;
 }
 
 serve(async (req) => {
@@ -266,9 +277,16 @@ serve(async (req) => {
     }
 
     let systemPrompt = buildSystemPrompt(projectContext, setupMode);
+    // Kun modelltestbrukarar får raskare tempo i oppsettet.
+    const fastTrack = !!setupMode && isModelTestKey(user.id);
     if (setupMode && Array.isArray(messages)) {
-      const hint = await jevPreassess(messages, LOVABLE_API_KEY).catch((e) => { console.error("Jev preassess failed", e); return ""; });
+      const questionsAsked = messages.filter((m: any) => m?.role === "assistant").length;
+      const hint = await jevPreassess(messages, LOVABLE_API_KEY, fastTrack, questionsAsked).catch((e) => { console.error("Jev preassess failed", e); return ""; });
       if (hint) systemPrompt += hint;
+    }
+    if (fastTrack) {
+      // Legges til også når Jev feilet (tom hint) – tempoet skal gjelde uansett.
+      systemPrompt += `\n\nTEMPO: Still maks 2 korte oppfølgingsspørsmål totalt i hele samtalen, ett om gangen. Spør aldri om prosjektnavn, adresse eller byggherre – de kan fylles ut senere (bruk et fornuftig arbeidsnavn, f.eks. "Totalrenovering bad"). Når prosjekttype og omfang er kjent, gi forslaget med JSON-blokken med en gang. Mangler entrepriseform etter 2 spørsmål, anta totalentreprise og si kort at det kan endres. I oppsummeringen skal du nevne de viktigste sjekklistene du foreslår med navn.`;
     }
     console.log("Project chat for user:", user.id, "project:", projectContext?.project?.project_number || "none");
 
