@@ -305,7 +305,7 @@ serve(async (req) => {
         ? lastUserMsg.content.filter((p: any) => p?.type === "text").map((p: any) => p.text).join("\n")
         : String(lastUserMsg.content ?? "");
     const askedForProposal = /forslag/i.test(lastUserText);
-    const forceProposal = fastTrack && (pre.ready || questionsAsked >= 3 || askedForProposal);
+    const forceProposal = fastTrack && (questionsAsked >= 2 || askedForProposal);
     console.log("ks-project-chat forceProposal", forceProposal);
     if (fastTrack) {
       // Legges til også når Jev feilet (tom hint) – tempoet skal gjelde uansett.
