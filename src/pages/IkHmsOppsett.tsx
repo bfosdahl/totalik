@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useNavigate } from "react-router-dom";
-import { IkHmsChatSetup, clearChatState as clearHmsChatState } from "@/components/setup/IkHmsChatSetup";
+import { IkHmsChatSetup, clearChatState as clearHmsChatState, hasInProgressChatState as hasInProgressHmsChat } from "@/components/setup/IkHmsChatSetup";
 import { HandbookImportUploader } from "@/components/setup/HandbookImportUploader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -30,7 +30,7 @@ const IkHmsOppsett = () => {
   };
 
   // Check if setup was previously completed
-  const previouslyCompleted = !isRestarting && modules.some(m => 
+  const previouslyCompleted = !isRestarting && !(companyId && hasInProgressHmsChat(companyId)) && modules.some(m => 
     m.module_type === 'IK_HMS' && 
     (m.settings as any)?.setupCompletedAt
   );

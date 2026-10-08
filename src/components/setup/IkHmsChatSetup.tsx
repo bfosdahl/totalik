@@ -123,6 +123,11 @@ export function clearChatState(companyId: string, departmentId?: string) {
   catch (e) { /* ignore */ }
 }
 
+export function hasInProgressChatState(companyId: string, departmentId?: string): boolean {
+  const state = loadChatState(companyId, departmentId);
+  return !!state && state.currentStep < HMS_SETUP_STEPS.length - 1;
+}
+
 export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsChatSetupProps) {
   const isDepartmentSetup = !!departmentId;
   const initialState = loadChatState(companyId, departmentId);
