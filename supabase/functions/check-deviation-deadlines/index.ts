@@ -74,13 +74,20 @@ const handler = async (req: Request): Promise<Response> => {
     weekFromNow.setDate(weekFromNow.getDate() + 7);
 
     // Get all open/in-progress deviations with assignees
-    const { data: deviations, error: devError } = await supabase
+    let deviationsQuery = supabase
       .from("deviations")
       .select("id, deviation_number, title, due_date, assignee_name, assignee_id, company_id, status")
       .in("status", ["open", "in-progress"])
       .eq("is_deleted", false)
       .not("due_date", "is", null)
-      .not("assignee_id", "is", null);
+      .not("assignee_id", "is", null)
+      .gte("due_date", cutoff.toISOString().slice(0, 10));
+
+    if (onlyCompany) {
+      deviationsQuery = deviationsQuery.eq("company_id", onlyCompany);
+    }
+
+    const { data: deviations, error: devError } = await deviationsQuery;
 
     if (devError) {
       console.error("Error fetching deviations:", devError);

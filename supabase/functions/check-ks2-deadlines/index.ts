@@ -69,7 +69,7 @@ const handler = async (req: Request): Promise<Response> => {
     today.setHours(0, 0, 0, 0);
 
     // Get all incomplete checklists with deadlines and responsible users
-    const { data: checklists, error: checklistError } = await supabase
+    let checklistsQuery = supabase
       .from("ks_module2_checklists")
       .select(`
         id, title, deadline_date, responsible_user_name, responsible_user_id, status, project_id,
@@ -78,7 +78,14 @@ const handler = async (req: Request): Promise<Response> => {
       .in("status", ["planned", "in_progress"])
       .eq("is_deleted", false)
       .not("deadline_date", "is", null)
-      .not("responsible_user_id", "is", null);
+      .not("responsible_user_id", "is", null)
+      .gte("deadline_date", cutoff.toISOString().slice(0, 10));
+
+    if (onlyCompany) {
+      checklistsQuery = checklistsQuery.eq("ks_module2_projects.company_id", onlyCompany);
+    }
+
+    const { data: checklists, error: checklistError } = await checklistsQuery;
 
     if (checklistError) {
       console.error("Error fetching checklists:", checklistError);
