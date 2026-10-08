@@ -89,7 +89,9 @@
     "enterEmailFirst": "Enter your email address first",
     "resetEmailSent": "Check your email for password reset link",
     "accountCreatedSuccess": "Account and company created! Welcome!",
-    "emailAlreadyRegistered": "This email address is already registered"
+    "emailAlreadyRegistered": "This email address is already registered",
+    "encrypted": "Encrypted connection",
+    "hostedInEu": "Hosted in the EU"
   },
   "nav": {
     "dashboard": "Dashboard",

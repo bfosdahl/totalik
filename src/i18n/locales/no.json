@@ -89,7 +89,9 @@
     "enterEmailFirst": "Skriv inn e-postadressen din først",
     "resetEmailSent": "Sjekk e-posten din for lenke til å sette nytt passord",
     "accountCreatedSuccess": "Konto og bedrift opprettet! Velkommen!",
-    "emailAlreadyRegistered": "Denne e-postadressen er allerede registrert"
+    "emailAlreadyRegistered": "Denne e-postadressen er allerede registrert",
+    "encrypted": "Kryptert tilkobling",
+    "hostedInEu": "Hostet i EU"
   },
   "nav": {
     "dashboard": "Dashboard",

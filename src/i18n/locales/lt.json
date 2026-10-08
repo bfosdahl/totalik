@@ -89,7 +89,9 @@
     "enterEmailFirst": "Pirmiausia įveskite savo el. pašto adresą",
     "resetEmailSent": "Patikrinkite el. paštą, kad gautumėte slaptažodžio atstatymo nuorodą",
     "accountCreatedSuccess": "Paskyra ir įmonė sukurta! Sveiki!",
-    "emailAlreadyRegistered": "Šis el. pašto adresas jau užregistruotas"
+    "emailAlreadyRegistered": "Šis el. pašto adresas jau užregistruotas",
+    "encrypted": "Šifruotas ryšys",
+    "hostedInEu": "Talpinama ES"
   },
   "nav": {
     "dashboard": "Valdymo pultas",

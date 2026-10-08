@@ -89,7 +89,9 @@
     "enterEmailFirst": "Vispirms ievadiet savu e-pasta adresi",
     "resetEmailSent": "Pārbaudiet savu e-pastu, lai atjaunotu paroles saiti",
     "accountCreatedSuccess": "Konts un uzņēmums izveidoti! Laipni lūdzam!",
-    "emailAlreadyRegistered": "Šī e-pasta adrese jau ir reģistrēta"
+    "emailAlreadyRegistered": "Šī e-pasta adrese jau ir reģistrēta",
+    "encrypted": "Šifrēts savienojums",
+    "hostedInEu": "Hostinga ES"
   },
   "nav": {
     "dashboard": "Informācijas panelis",

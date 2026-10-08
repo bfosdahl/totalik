@@ -89,7 +89,9 @@
     "enterEmailFirst": "Najpierw wprowadź swój adres e-mail",
     "resetEmailSent": "Sprawdź e-mail, aby uzyskać link do resetowania hasła",
     "accountCreatedSuccess": "Konto i firma utworzone! Witamy!",
-    "emailAlreadyRegistered": "Ten adres e-mail jest już zarejestrowany"
+    "emailAlreadyRegistered": "Ten adres e-mail jest już zarejestrowany",
+    "encrypted": "Szyfrowane połączenie",
+    "hostedInEu": "Hostowane w UE"
   },
   "nav": {
     "dashboard": "Panel główny",
