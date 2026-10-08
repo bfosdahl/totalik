@@ -124,6 +124,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [wasInterrupted, setWasInterrupted] = useState(initialState?.wasStreaming ?? false);
+  const [streamCutOff, setStreamCutOff] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(initialState?.lastUserMessage);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -397,11 +398,13 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
         throw new Error("Failed to start stream");
       }
 
+      setStreamCutOff(false);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
       let assistantMessage = "";
       let streamDone = false;
+      let lastFinishReason: string | null = null;
 
       // Add placeholder for assistant message
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
@@ -429,6 +432,8 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
 
           try {
             const parsed = JSON.parse(jsonStr);
+            const finishReason = parsed.choices?.[0]?.finish_reason as string | null | undefined;
+            if (finishReason) lastFinishReason = finishReason;
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantMessage += content;
@@ -453,6 +458,9 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       // Stream completed successfully - clear the wasStreaming flag
       isStreamingRef.current = false;
       setWasInterrupted(false);
+      if (!streamDone || (lastFinishReason && lastFinishReason.toLowerCase() !== 'stop')) {
+        setStreamCutOff(true);
+      }
       
       // Update storage to reflect completed state
       saveChatState(companyId, {
@@ -569,6 +577,13 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                   <RefreshCcw className="h-4 w-4" />
                   {t("auto.proev_igjen")}
                 </Button>
+              </div>
+            )}
+            {streamCutOff && !isLoading && (
+              <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-400 font-medium text-center">
+                  {t("auto.svaret_ble_avbrutt_skriv_fortsett")}
+                </p>
               </div>
             )}
             {/* Auto-scroll anchor */}
