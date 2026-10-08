@@ -523,7 +523,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
 
     // Step 1: Check for Brreg confirmation or org number
     if (currentStep === 0) {
-      const lowerInput = userInput.toLowerCase();
+      const lowerInput = userInput.toLowerCase().trim().replace(/[\s\p{P}\p{Extended_Pictographic}]+$/u, "");
       
       // Check negative FIRST to avoid "stemmer ikke" matching positive "stemmer"
       const isNegative = /^(nei|nope|feil)$/i.test(lowerInput) 
@@ -533,6 +533,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       
       const isPositive = !isNegative && (
         /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)$/i.test(lowerInput) 
+        || /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)[,\s]/i.test(lowerInput)
         || lowerInput.includes('stemmer')
         || lowerInput.includes('det er riktig')
       );
