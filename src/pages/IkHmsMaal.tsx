@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Target, Save, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
+import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 
 interface CompanyGoal {
   id: string;
