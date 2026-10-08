@@ -614,7 +614,30 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
     const stepNumber = currentStep + 1;
     
     // Check if user confirmation means we should advance
-    const isConfirmation = /^(ja|ok|okei|fint|bra|stemmer|japp|jepp|supert)$/i.test(userInput);
+    const normalizedInput = userInput.toLowerCase().trim().replace(/[\s\p{P}\p{Extended_Pictographic}]+$/u, "");
+    const isNegativeConfirmation = /^(nei|nope|feil)$/i.test(normalizedInput)
+      || normalizedInput.includes('stemmer ikke')
+      || normalizedInput.includes('er feil')
+      || normalizedInput.includes('ikke riktig')
+      || normalizedInput.includes('ikke bra')
+      || normalizedInput.includes('ikke ok');
+    const hasChangeRequest = normalizedInput.includes(' men ')
+      || normalizedInput.includes('legg til')
+      || normalizedInput.includes('endre')
+      || normalizedInput.includes('bytt')
+      || normalizedInput.includes('fjern');
+    const isConfirmation = !isNegativeConfirmation && !hasChangeRequest && (
+      /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)$/i.test(normalizedInput)
+      || /^(ja|japp|jepp|ok|okei|fint|bra|stemmer|supert|korrekt|riktig|yes|yep|bekreft)[,\s]/i.test(normalizedInput)
+      || normalizedInput.includes('stemmer')
+      || normalizedInput.includes('det er riktig')
+      || normalizedInput.includes('ser bra ut')
+      || normalizedInput.includes('ser fint ut')
+      || normalizedInput.includes('godkjent')
+      || normalizedInput.includes('godkjenner')
+      || normalizedInput.includes('gå videre')
+      || normalizedInput.includes('neste')
+    );
     
     let stepAdvanceContext = "";
     if (isConfirmation) {
