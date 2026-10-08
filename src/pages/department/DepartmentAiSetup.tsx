@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { IkHmsChatSetup } from "@/components/setup/IkHmsChatSetup";
+import { IkHmsChatSetup, clearChatState, hasInProgressChatState } from "@/components/setup/IkHmsChatSetup";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Building2, CheckCircle2, AlertTriangle, RefreshCw, Loader2, ArrowLeft } from "lucide-react";
@@ -121,6 +121,10 @@ const DepartmentAiSetup = () => {
     );
   }
 
+  // A restarted setup in progress must restore the chat instead of showing "fullført"
+  const chatInProgress =
+    !!companyId && !!departmentId && hasInProgressChatState(companyId, departmentId);
+
   return (
     <AppLayout>
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
@@ -144,7 +148,7 @@ const DepartmentAiSetup = () => {
           </p>
         </div>
 
-        {(setupCompleted || (previouslyCompleted && !isRestarting)) ? (
+        {(setupCompleted || (previouslyCompleted && !isRestarting && !chatInProgress)) ? (
           <div className="space-y-4 sm:space-y-6">
             <Alert className="border-success bg-success/10">
               <CheckCircle2 className="h-4 w-4 text-success" />
@@ -201,6 +205,7 @@ const DepartmentAiSetup = () => {
               <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowRestartDialog(false);
+                if (companyId && departmentId) clearChatState(companyId, departmentId);
                 setIsRestarting(true);
                 setSetupCompleted(false);
               }}>
