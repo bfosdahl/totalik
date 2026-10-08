@@ -211,13 +211,7 @@ export const useAdminGlobalChemicals = () => {
         .eq("global_chemical_id", chemicalId);
 
       // Upload new file
-      const sanitizedName = sdsFile.name
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[æÆ]/g, "ae")
-        .replace(/[øØ]/g, "o")
-        .replace(/[åÅ]/g, "a")
-        .replace(/[^a-zA-Z0-9.-]/g, "_");
+      const sanitizedName = sanitizeSdsFileName(sdsFile.name);
 
       const filePath = `${chemicalId}/${Date.now()}_v${nextVersion}_${sanitizedName}`;
 
