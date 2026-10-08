@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { t } from "@/i18n/t";
+import { emptySdsExtra, sdsExtraFromRow, sdsExtraToDb } from "@/lib/sdsFields";
+import { SdsExtraForm } from "@/components/stoffkartotek/SdsExtraFields";
 
 interface IkHmsStoffkartotek {
   id: string;
@@ -58,6 +60,7 @@ export function EditIkHmsChemicalDialog({
     danger_classes: [] as string[],
     location: "",
     notes: "",
+    ...emptySdsExtra(),
   });
 
   // Load existing product data
@@ -85,6 +88,7 @@ export function EditIkHmsChemicalDialog({
         danger_classes: product.danger_classes || [],
         location: product.location || "",
         notes: product.notes || "",
+        ...sdsExtraFromRow(product),
       });
     } catch (error) {
       console.error("Error loading product:", error);
@@ -110,6 +114,7 @@ export function EditIkHmsChemicalDialog({
           danger_classes: formData.danger_classes,
           location: formData.location || null,
           notes: formData.notes || null,
+          ...sdsExtraToDb(formData),
           last_updated: new Date().toISOString(),
         } as any)
         .eq("id", productId);
@@ -209,6 +214,7 @@ export function EditIkHmsChemicalDialog({
                 rows={3}
               />
             </div>
+            <SdsExtraForm value={formData} onChange={(extra) => setFormData((prev) => ({ ...prev, ...extra }))} />
             <div className="flex gap-2 pt-2">
               <Button
                 onClick={handleSave}
