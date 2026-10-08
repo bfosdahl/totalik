@@ -1,0 +1,1 @@
+create index if not exists email_logs_bounced_recipient_idx on public.email_logs (lower(recipient_email)) where status in ('bounced','complained');

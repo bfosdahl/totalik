@@ -8,6 +8,13 @@
       "when": 1791487342329,
       "tag": "0000_rls_initplan_batch1_a_c",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791489068673,
+      "tag": "0001_email_logs_bounced_recipient_idx",
+      "breakpoints": true
     }
   ]
 }
