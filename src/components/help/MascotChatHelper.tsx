@@ -9,6 +9,7 @@ import { useLocation } from "react-router-dom";
 import { getProffConfig, ProffConfig } from "./proffConfig";
 import { useSpeech } from "@/hooks/useSpeech";
 import { t } from "@/i18n/t";
+import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 
 interface Message {
   id: string;
@@ -384,7 +385,7 @@ export const MascotChatHelper = () => {
                             : "bg-primary text-primary-foreground rounded-br-none"
                       }`}
                     >
-                      {message.content}
+                      {message.isBot ? <ChatMarkdown content={message.content} /> : message.content}
                     </div>
                   </div>
                 ))}

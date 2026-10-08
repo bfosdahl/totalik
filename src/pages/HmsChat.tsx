@@ -8,6 +8,7 @@ import { Send, Bot, User, Loader2, MessageSquare, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/i18n/t";
+import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 
 type Message = {
   role: "user" | "assistant";
@@ -232,7 +233,11 @@ export default function HmsChat() {
                             : "bg-muted"
                         }`}
                       >
-                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        {message.role === "assistant" ? (
+                          <ChatMarkdown content={message.content} className="text-sm" />
+                        ) : (
+                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        )}
                       </div>
                       {message.role === "user" && (
                         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
