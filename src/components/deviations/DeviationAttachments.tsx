@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useRef, useState, useEffect } from "react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -26,12 +27,6 @@ const getFileIcon = (fileType: string | null) => {
   return File;
 };
 
-const formatFileSize = (bytes: number | null) => {
-  if (!bytes) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
 
 // Component to display attachment with async URL loading
 function AttachmentItem({ 
@@ -77,7 +72,7 @@ function AttachmentItem({
           {attachment.file_name}
         </p>
         <p className="text-xs text-muted-foreground">
-          {formatFileSize(attachment.file_size)} • {attachment.uploaded_by_name} • {format(new Date(attachment.created_at), "d. MMM yyyy", { locale: nb })}
+          {formatFileSize(attachment.file_size, "")} • {attachment.uploaded_by_name} • {format(new Date(attachment.created_at), "d. MMM yyyy", { locale: nb })}
         </p>
       </div>
       

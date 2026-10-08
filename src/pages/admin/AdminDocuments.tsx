@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -450,12 +451,6 @@ export default function AdminDocuments() {
     setSelectedDocIds(allIds);
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const getFileIcon = (fileType: string | null) => {
     if (!fileType) return File;
@@ -908,7 +903,7 @@ export default function AdminDocuments() {
                             </div>
 
                             <p className="text-xs text-muted-foreground mt-2">
-                              {formatFileSize(doc.file_size)} •{" "}
+                              {formatFileSize(doc.file_size, "")} •{" "}
                               {format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}
                             </p>
 
@@ -964,7 +959,7 @@ export default function AdminDocuments() {
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-sm truncate">{doc.document_name}</h4>
                             <p className="text-xs text-muted-foreground">
-                              {formatFileSize(doc.file_size)} •{" "}
+                              {formatFileSize(doc.file_size, "")} •{" "}
                               {format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}
                             </p>
                           </div>

@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef } from "react";
 import { FileText, Upload, Download, Trash2, FolderOpen, Search, Plus, File, FileSpreadsheet, FileImage, Filter, Shield, UserCheck, AlertTriangle, ClipboardList, GraduationCap, FlaskConical, HeartPulse, FolderPlus, ChevronDown, ChevronRight, FileCheck, Clock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -152,12 +153,6 @@ export default function IkHmsDokumentsenter() {
     }
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "Ukjent størrelse";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const getFileIcon = (fileType: string | null) => {
     if (!fileType) return <File className="h-8 w-8 text-muted-foreground" />;
@@ -305,7 +300,7 @@ export default function IkHmsDokumentsenter() {
                                       <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
                                     )}
                                     <span className="text-xs text-muted-foreground">
-                                      {formatFileSize(doc.file_size)}
+                                      {formatFileSize(doc.file_size, "Ukjent størrelse")}
                                     </span>
                                   </div>
                                   <Button
@@ -374,7 +369,7 @@ export default function IkHmsDokumentsenter() {
                                               <div className="flex-1 min-w-0">
                                                 <h4 className="font-medium text-sm truncate">{doc.document_name}</h4>
                                                 <span className="text-xs text-muted-foreground">
-                                                  {formatFileSize(doc.file_size)}
+                                                  {formatFileSize(doc.file_size, "Ukjent størrelse")}
                                                 </span>
                                               </div>
                                               <Button
@@ -434,7 +429,7 @@ export default function IkHmsDokumentsenter() {
                         <div className="text-left">
                           <p className="font-medium">{selectedFile.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {formatFileSize(selectedFile.size)}
+                            {formatFileSize(selectedFile.size, "Ukjent størrelse")}
                           </p>
                         </div>
                       </div>
@@ -657,7 +652,7 @@ export default function IkHmsDokumentsenter() {
                                     )}
                                     <div className="flex flex-wrap items-center gap-1 mt-1">
                                       <span className="text-xs text-muted-foreground">
-                                        {formatFileSize(doc.file_size)}
+                                        {formatFileSize(doc.file_size, "Ukjent størrelse")}
                                       </span>
                                       <span className="text-xs text-muted-foreground">
                                         • {format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}

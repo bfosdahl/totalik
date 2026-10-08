@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef, useMemo } from "react";
 import {
   FileText,
@@ -266,12 +267,6 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
     setFolderToDelete(null);
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "Ukjent størrelse";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const getFileIcon = (fileType: string | null) => {
     if (!fileType) return <File className="h-8 w-8 text-muted-foreground" />;
@@ -448,7 +443,7 @@ export function MyDocumentsTab({ moduleType, accentColor = "amber" }: MyDocument
                       <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
                     )}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                      <span>{formatFileSize(doc.file_size)}</span>
+                      <span>{formatFileSize(doc.file_size, "Ukjent størrelse")}</span>
                       <span>•</span>
                       <span>{format(new Date(doc.created_at), "d. MMM yyyy", { locale: nb })}</span>
                       <span>•</span>

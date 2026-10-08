@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,12 +114,6 @@ export default function IkKsDokumenter() {
     }
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const filteredDocuments = searchQuery
     ? documents.filter(d => 
@@ -376,7 +371,7 @@ function FolderItem({
   onDownload: (doc: CompanyKsDocument) => void;
   onDelete: (id: string) => void;
   onDeleteFolder: () => void;
-  formatFileSize: (bytes: number | null) => string;
+  formatFileSize: (bytes: number | null, emptyText?: string) => string;
   isSaving: boolean;
 }) {
   return (
@@ -448,7 +443,7 @@ function DocumentRow({
   doc: CompanyKsDocument;
   onDownload: () => void;
   onDelete: () => void;
-  formatFileSize: (bytes: number | null) => string;
+  formatFileSize: (bytes: number | null, emptyText?: string) => string;
   isSaving: boolean;
 }) {
   return (
@@ -458,7 +453,7 @@ function DocumentRow({
         <div className="min-w-0">
           <p className="text-sm font-medium truncate">{doc.document_name}</p>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{formatFileSize(doc.file_size)}</span>
+            <span>{formatFileSize(doc.file_size, "")}</span>
             {doc.project && (
               <>
                 <span>•</span>

@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState, useRef } from "react";
 import { readEdgeFunctionError } from "@/utils/edgeFunctionError";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -283,12 +284,6 @@ export default function Ks2Admin() {
     return <FileText className="h-8 w-8 text-muted-foreground" />;
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "Ukjent størrelse";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -740,7 +735,7 @@ export default function Ks2Admin() {
                           <div className="space-y-2">
                             <FileText className="h-10 w-10 mx-auto text-primary" />
                             <p className="font-medium">{uploadFile.name}</p>
-                            <p className="text-sm text-muted-foreground">{formatFileSize(uploadFile.size)}</p>
+                            <p className="text-sm text-muted-foreground">{formatFileSize(uploadFile.size, "Ukjent størrelse")}</p>
                             <Button variant="outline" size="sm" onClick={() => setUploadFile(null)}>
                               {t("auto.fjern")}
                             </Button>
@@ -840,7 +835,7 @@ export default function Ks2Admin() {
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-base truncate">{doc.title}</CardTitle>
                           <CardDescription className="text-xs">
-                            {doc.file_name} • {formatFileSize(doc.file_size)}
+                            {doc.file_name} • {formatFileSize(doc.file_size, "Ukjent størrelse")}
                           </CardDescription>
                         </div>
                       </div>

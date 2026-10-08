@@ -1,3 +1,4 @@
+import { formatFileSize } from "@/utils/formatFileSize";
 import { useState } from "react";
 import { FileText, Download, FolderOpen, Search, File, FileSpreadsheet, FileImage, ChevronDown, ChevronRight, ArrowLeft, ExternalLink, BookOpen, Scale, GraduationCap, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -100,12 +101,6 @@ export default function IkAlkoholDokumentsenter() {
     }
   };
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return "Ukjent størrelse";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const getFileIcon = (fileType: string | null) => {
     if (!fileType) return <File className="h-8 w-8 text-muted-foreground" />;
@@ -223,7 +218,7 @@ export default function IkAlkoholDokumentsenter() {
                           <p className="text-xs text-muted-foreground line-clamp-1">{doc.description}</p>
                         )}
                         <span className="text-xs text-muted-foreground">
-                          {formatFileSize(doc.file_size)}
+                          {formatFileSize(doc.file_size, "Ukjent størrelse")}
                         </span>
                       </div>
                       <Button
