@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { BRAND, brandedEmail, brandButton } from "../_shared/email-brand.ts";
+import { fetchAllRows, fetchAllIn } from "../_shared/fetchAll.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -143,13 +144,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Bedrifter med aktiv modul
-    const { data: modules, error: modErr } = await supabase
+    const modules = await fetchAllRows<any>(() => supabase
       .from("company_modules")
       .select("company_id")
       .eq("module_type", moduleType)
       .eq("is_active", true)
-      .eq("is_deleted", false);
-    if (modErr) throw modErr;
+      .eq("is_deleted", false)
+      .order("id"));
 
     const companyIds = Array.from(new Set((modules ?? []).map((m: any) => m.company_id).filter(Boolean)));
     if (companyIds.length === 0) {
@@ -158,21 +159,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    const { data: profiles, error: profErr } = await supabase
+    const profiles = await fetchAllIn<any>(companyIds as string[], (chunk) => supabase
       .from("profiles")
       .select("user_id, email, first_name, company_id, is_active, companies (name)")
-      .in("company_id", companyIds)
-      .eq("is_active", true);
-    if (profErr) throw profErr;
+      .in("company_id", chunk)
+      .eq("is_active", true)
+      .order("user_id"));
 
     let candidates = (profiles ?? []).filter((p: any) => p.email);
 
     if (audience === "company_admins") {
-      const { data: roles, error: roleErr } = await supabase
+      const roles = await fetchAllIn<any>(candidates.map((p: any) => p.user_id), (chunk) => supabase
         .from("user_roles")
         .select("user_id, role")
-        .in("user_id", candidates.map((p: any) => p.user_id));
-      if (roleErr) throw roleErr;
+        .in("user_id", chunk)
+        .order("user_id")
+        .order("role"));
       const adminIds = new Set(
         (roles ?? [])
           .filter((r: any) => r.role === "company_admin" || r.role === "system_admin")

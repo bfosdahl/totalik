@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminHoursSummary } from "@/hooks/useAdminHoursSummary";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { fetchAllRows, fetchAllIn } from "@/lib/fetchAll";
 import { supabase } from "@/integrations/supabase/client";
 import {
   exportPayrollGeneric,
@@ -104,15 +105,16 @@ export default function TimeOversikt() {
     setExporting(true);
     try {
       // Hent registreringer
-      let q = supabase
-        .from("time_entries")
-        .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, description, status, approved_by_name, approved_at, hour_type, overtime_segments")
-        .eq("company_id", profile.company_id)
-        .gte("entry_date", start)
-        .lte("entry_date", end);
-      if (onlyApproved) q = q.eq("status", "approved");
-      const { data: entries, error } = await q.order("entry_date", { ascending: true });
-      if (error) throw error;
+      const entries = await fetchAllRows<any>(() => {
+        let q = supabase
+          .from("time_entries")
+          .select("id, user_id, user_name, entry_date, hours, start_time, end_time, project_name, description, status, approved_by_name, approved_at, hour_type, overtime_segments")
+          .eq("company_id", profile.company_id)
+          .gte("entry_date", start)
+          .lte("entry_date", end);
+        if (onlyApproved) q = q.eq("status", "approved");
+        return q.order("entry_date", { ascending: true }).order("id");
+      });
 
       const entryList = (entries || []) as any[];
       // Filtrer på søk hvis aktivt
@@ -125,10 +127,12 @@ export default function TimeOversikt() {
       const allowances: AllowanceDetailRow[] = [];
       const allowanceByEntry = new Map<string, number>();
       if (ids.length > 0) {
-        const { data: allowData } = await supabase
+        const allowData = await fetchAllIn<any>(ids, (chunk) => supabase
           .from("time_entry_allowances")
           .select("time_entry_id, amount, type_name, unit, quantity, rate_snapshot, notes")
-          .in("time_entry_id", ids);
+          .in("time_entry_id", chunk)
+          .order("time_entry_id")
+          .order("id")).catch(() => null);
         (allowData || []).forEach((a: any) => {
           const r = filtered.find((x) => x.id === a.time_entry_id);
           if (!r) return;
@@ -147,10 +151,12 @@ export default function TimeOversikt() {
         });
 
         // Materialforbruk (vises i egen kolonne i eksporten)
-        const { data: matData } = await supabase
+        const matData = await fetchAllIn<any>(ids, (chunk) => supabase
           .from("time_entry_materials")
           .select("time_entry_id, name, unit, quantity, unit_price, amount, notes")
-          .in("time_entry_id", ids);
+          .in("time_entry_id", chunk)
+          .order("time_entry_id")
+          .order("id")).catch(() => null);
         (matData || []).forEach((m: any) => {
           const r = filtered.find((x) => x.id === m.time_entry_id);
           if (!r) return;
