@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Send, Sparkles, Lightbulb, Loader2, GripVertical, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
