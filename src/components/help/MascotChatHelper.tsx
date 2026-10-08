@@ -107,26 +107,28 @@ export const MascotChatHelper = () => {
     } catch { /* ignore */ }
   }, [isOpen]);
 
-  // Persist messages per proff id so tab/route switches don't wipe history
+  // Persist messages per user+company+proff so tab/route switches don't wipe history
   useEffect(() => {
+    if (!storageKey) return;
     try {
-      sessionStorage.setItem(`${STORAGE_PREFIX}${proffConfig.id}`, JSON.stringify(messages));
+      sessionStorage.setItem(storageKey, JSON.stringify(messages));
     } catch { /* ignore */ }
-  }, [messages, proffConfig.id]);
+  }, [messages, storageKey]);
 
-  // Update proff config when route changes; load that proff's history
+  // Update proff config when route or user/company scope changes; load that scope's history
   useEffect(() => {
     const newConfig = getProffConfig(location.pathname);
+    const key = scopeKey ? `${SCOPED_PREFIX}${scopeKey}:${newConfig.id}` : null;
     if (newConfig.id !== proffConfig.id) {
       setProffConfig(newConfig);
-      const persisted = loadPersistedMessages(newConfig.id);
-      setMessages(
-        persisted && persisted.length > 0
-          ? persisted
-          : [{ id: "welcome", content: newConfig.welcomeMessage, isBot: true }]
-      );
     }
-  }, [location.pathname, proffConfig.id]);
+    const persisted = loadPersistedMessages(key);
+    setMessages(
+      persisted && persisted.length > 0
+        ? persisted
+        : [{ id: "welcome", content: newConfig.welcomeMessage, isBot: true }]
+    );
+  }, [location.pathname, proffConfig.id, scopeKey]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
