@@ -39,7 +39,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { lookupBrregCompany, isValidOrgNumber } from "@/lib/brregLookup";
 
 interface Customer {
@@ -74,7 +74,7 @@ const emptyForm = {
   notes: "",
 };
 
-const fmtDate = (d: string | null) => (d ? format(new Date(d), "dd.MM.yyyy") : "–");
+const fmtDate = (d: string | null) => safeFormatDate(d, "dd.MM.yyyy", "–");
 
 export default function Ks2Kunder() {
   const { profile } = useAuth();

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { 
   Calendar, 
   Clock, 
@@ -310,13 +309,7 @@ export function DeviationDetailDialog({
   };
 
   const generateDeviationEmailHtml = () => {
-    const formatDateStr = (dateStr: string) => {
-      try {
-        return format(new Date(dateStr), "d. MMMM yyyy", { locale: nb });
-      } catch {
-        return dateStr;
-      }
-    };
+    const formatDateStr = (dateStr: string) => safeFormatDate(dateStr, "d. MMMM yyyy", dateStr);
 
     const priorityLabels: Record<string, string> = {
       low: "Lav",
@@ -479,13 +472,7 @@ export function DeviationDetailDialog({
   };
 
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return format(new Date(dateStr), "d. MMMM yyyy", { locale: nb });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatDate = (dateStr: string) => safeFormatDate(dateStr, "d. MMMM yyyy", dateStr);
 
   // Find current assignee in users list
   const currentAssigneeUser = users.find(u => 

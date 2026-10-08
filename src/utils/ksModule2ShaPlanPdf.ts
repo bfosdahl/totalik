@@ -2,17 +2,11 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { supabase } from "@/integrations/supabase/client";
 import type { ShaPlan, ShaTilpasning } from "@/hooks/useKsModule2ShaPlan";
 
-function fmtDate(value?: string | null): string {
-  if (!value) return "-";
-  try {
-    return format(new Date(value), "dd.MM.yyyy", { locale: nb });
-  } catch {
-    return "-";
-  }
-}
+const fmtDate = (value?: string | null) => safeFormatDate(value, "dd.MM.yyyy", "-");
 
 async function fetchContext(shaPlan: ShaPlan) {
   const [{ data: project }, { data: company }] = await Promise.all([

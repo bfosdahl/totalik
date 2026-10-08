@@ -36,8 +36,7 @@ import VernerundeForm from "@/components/audits/VernerundeForm";
 import HmsAarshjul from "@/components/audits/HmsAarshjul";
 import HmsEgenerklaeringSeksjon from "@/components/audits/HmsEgenerklaeringSeksjon";
 import VerneombudSeksjon from "@/components/audits/VerneombudSeksjon";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { t } from "@/i18n/t";
 
 const typeConfig = {
@@ -157,13 +156,7 @@ const Audits = () => {
     }
   }, [searchParams]);
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "d. MMM yyyy", { locale: nb });
-    } catch {
-      return dateString;
-    }
-  };
+  const formatDate = (dateString: string) => safeFormatDate(dateString, "d. MMM yyyy", dateString);
 
   if (isLoading || isLoadingResponses) {
     return (

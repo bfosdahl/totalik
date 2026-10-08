@@ -21,8 +21,7 @@ import {
   Download,
   ArrowLeft
 } from "lucide-react";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import jsPDF from "jspdf";
 import { t } from "@/i18n/t";
 
@@ -32,14 +31,7 @@ export default function IkKsEgenerklaering() {
   const { selfDeclaration, isLoading, hasSelfDeclaration, refetch } = useKsDeclarations();
   const [showDialog, setShowDialog] = useState(false);
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Ikke angitt";
-    try {
-      return format(new Date(dateString), "d. MMMM yyyy", { locale: nb });
-    } catch {
-      return dateString;
-    }
-  };
+  const formatDate = (dateString: string | null) => safeFormatDate(dateString, "d. MMMM yyyy", dateString || "Ikke angitt");
 
   const handleDownloadPdf = () => {
     if (!selfDeclaration) return;

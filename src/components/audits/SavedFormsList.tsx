@@ -1,6 +1,5 @@
 import React from "react";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -100,14 +99,7 @@ const SavedFormsList: React.FC<SavedFormsListProps> = ({
     </Button>
   );
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "-";
-    try {
-      return format(new Date(dateString), "d. MMM yyyy", { locale: nb });
-    } catch {
-      return dateString;
-    }
-  };
+  const formatDate = (dateString: string | null) => safeFormatDate(dateString, "d. MMM yyyy", dateString || "-");
 
   const drafts = responses.filter((r) => r.status === "draft");
   const completed = responses.filter((r) => r.status === "completed");

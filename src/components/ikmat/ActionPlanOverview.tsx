@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { IkMatActionItem, IkMatRisk } from "@/hooks/useIkMatContent";
 import { AlertCircle, CheckCircle2, Clock, Filter, ExternalLink } from "lucide-react";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { t } from "@/i18n/t";
 
 interface ActionPlanOverviewProps {
@@ -83,14 +84,7 @@ export const ActionPlanOverview = ({
     }
   };
 
-  const formatDate = (date: string) => {
-    if (!date) return 'Ingen frist';
-    return new Date(date).toLocaleDateString('nb-NO', { 
-      day: 'numeric', 
-      month: 'short',
-      year: 'numeric'
-    });
-  };
+  const formatDate = (date: string) => safeFormatDate(date, "d. MMM yyyy", "Ingen frist");
 
   if (actions.length === 0) {
     return (
