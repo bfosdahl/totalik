@@ -166,6 +166,11 @@ const handler = async (req: Request): Promise<Response> => {
         year: "numeric",
       });
 
+      if (dryRun) {
+        emailsSent.push(`DRYRUN ${deviation.deviation_number} (${reminderType})`);
+        continue;
+      }
+
       try {
         const emailResponse = await resend.emails.send({
           from: `${companyName} <noreply@totalik.no>`,
