@@ -5,6 +5,7 @@ import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { DEFAULT_PASSWORD, loginBlockHtml } from "../_shared/default-password.ts";
 import { insertProvisioningLog } from "../_shared/provisioning-log.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -249,7 +250,7 @@ Deno.serve(async (req) => {
             html: buildWelcomeEmailHtml(item.displayName, item.companyName, item.email, item.resetLink)
           }));
 
-          const { error: batchError } = await resend.batch.send(emailBatchPayload);
+          const { error: batchError } = await guardedResendBatch(supabaseAdmin, "bulk-create-users", resend, emailBatchPayload);
 
           if (batchError) {
             console.error(`Resend batch send returned error (chunk ${i / RESEND_BATCH_SIZE}):`, batchError);

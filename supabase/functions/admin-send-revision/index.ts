@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const html = `<!doctype html><html><body style="font-family:Arial,Helvetica,sans-serif;color:#111;max-width:720px;margin:auto;padding:24px">
 <h2 style="color:#0b3d6e;margin:0 0 4px">Revisjonsrapport HMS &ndash; Erlend Fasseland AS</h2>
@@ -80,7 +81,7 @@ serve(async (req) => {
   if (secret !== Deno.env.get("CRON_SECRET")) {
     return new Response("forbidden", { status: 403 });
   }
-  const r = await fetch("https://api.resend.com/emails", {
+  const r = await guardedResendFetch(null, "admin-send-revision", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${Deno.env.get("RESEND_API_KEY")}`,

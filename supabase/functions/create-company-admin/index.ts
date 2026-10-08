@@ -6,6 +6,7 @@ import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { DEFAULT_PASSWORD, defaultPasswordHtml, loginBlockHtml } from "../_shared/default-password.ts";
 import { insertProvisioningLog } from "../_shared/provisioning-log.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -167,7 +168,7 @@ serve(async (req) => {
           const userName = firstName || existingProfile?.first_name || "Administrator";
           const safeUserName = escapeHtml(userName);
           const safeCompanyName = escapeHtml(company.name);
-          const emailResponse = await resend.emails.send({
+          const emailResponse = await guardedResendSend(supabaseAdmin, "create-company-admin", resend, {
             from: "Total-IK <noreply@totalik.no>",
             to: [email],
             subject: `Du er administrator for ${company.name}`,
@@ -287,7 +288,7 @@ serve(async (req) => {
         const safeUserName = escapeHtml(userName);
         const safeEmail = escapeHtml(email);
 
-        const emailResponse = await resend.emails.send({
+        const emailResponse = await guardedResendSend(supabaseAdmin, "create-company-admin", resend, {
           from: "Total-IK <noreply@totalik.no>",
           to: [email],
           subject: `Du er administrator for ${companyName}`,

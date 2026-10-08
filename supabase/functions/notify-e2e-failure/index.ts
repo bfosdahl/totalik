@@ -1,3 +1,4 @@
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 // Public edge function called from GitHub Actions on E2E failure.
 // Auth: shared token via X-Notify-Token header.
 const corsHeaders = {
@@ -77,7 +78,7 @@ Deno.serve(async (req) => {
   </div>
 </div></body></html>`;
 
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await guardedResendFetch(null, "notify-e2e-failure", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { escapeHtml } from "../_shared/html-escape.ts";
 import { DEFAULT_PASSWORD, loginBlockHtml } from "../_shared/default-password.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -133,7 +134,7 @@ serve(async (req) => {
           `,
         });
 
-        const r = await resend.emails.send({
+        const r = await guardedResendSend(supa, "admin-onboard-user", resend, {
           from: "Total-IK <noreply@totalik.no>",
           to: cleanEmail,
           subject: "Velkommen til Total-IK - innloggingsinformasjon",

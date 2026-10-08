@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -116,7 +117,7 @@ serve(async (req) => {
 
     const resend = new Resend(resendApiKey);
 
-    await resend.emails.send({
+    await guardedResendSend(supabase, "send-support-ticket", resend, {
       from: "Total-IK Support <noreply@totalik.no>",
       to: recipients,
       replyTo: profile.email || user.email,

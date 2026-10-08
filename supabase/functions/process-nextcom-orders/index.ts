@@ -5,6 +5,7 @@ import {
   type ServiceTemplateKey,
 } from "../_shared/service-email-templates/index.ts";
 import {
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
   cleanText,
   loadPriceBook,
   normalizeProductName,
@@ -537,7 +538,7 @@ async function sendServiceEmails(
     let errorMessage: string | null = null;
 
     try {
-      const res = await fetch("https://api.resend.com/emails", {
+      const res = await guardedResendFetch(supabase, "process-nextcom-orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

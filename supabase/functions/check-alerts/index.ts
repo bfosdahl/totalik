@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { recordJobRun } from "../_shared/jobRun.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -336,7 +337,7 @@ Deno.serve(async (req) => {
             }
 
             if (emailBatchPayload.length > 0) {
-              const { error: batchError } = await resend.batch.send(emailBatchPayload);
+              const { error: batchError } = await guardedResendBatch(adminClient, "check-alerts", resend, emailBatchPayload);
               if (batchError) {
                 console.error("Resend batch send returned error:", batchError);
               }

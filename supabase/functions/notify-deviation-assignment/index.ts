@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -129,7 +130,7 @@ serve(async (req: Request): Promise<Response> => {
     const priorityLabel = priorityLabels[priority] || String(priority || '');
     const priorityColor = priorityColors[priority] || "#6b7280";
 
-    const emailResponse = await resend.emails.send({
+    const emailResponse = await guardedResendSend(admin, "notify-deviation-assignment", resend, {
       from: "Total-IK <noreply@totalik.no>",
       to: [assignee_email],
       subject: `Du er tildelt avvik ${deviation_number}: ${deviation_title}`,

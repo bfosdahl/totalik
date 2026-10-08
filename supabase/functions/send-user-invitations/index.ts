@@ -4,6 +4,7 @@ import { brandedEmail } from "../_shared/email-brand.ts";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
 import { loginBlockHtml } from "../_shared/default-password.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,7 +70,7 @@ Deno.serve(async (req) => {
           type: "recovery", email: p.email, options: { redirectTo: "https://totalik.no/auth" },
         });
         const resetLink = link?.properties?.action_link || "https://totalik.no/auth";
-        const { error } = await resend.emails.send({
+        const { error } = await guardedResendSend(admin, "send-user-invitations", resend, {
           from: "Total-IK <noreply@totalik.no>",
           to: [p.email],
           subject: `Velkommen til ${companyName} - Din konto er opprettet`,

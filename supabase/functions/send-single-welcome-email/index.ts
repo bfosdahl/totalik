@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -131,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const resend = new Resend(resendApiKey);
 
-    await resend.emails.send({
+    await guardedResendSend(supabase, "send-single-welcome-email", resend, {
       from: `Total-IK <noreply@totalik.no>`,
       to: [profile.email],
       subject: `Velkommen til ${companyName} - Innloggingsinfo`,

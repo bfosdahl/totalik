@@ -3,6 +3,7 @@ import { brandedEmail } from "../_shared/email-brand.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { loginBlockHtml } from "../_shared/default-password.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -232,7 +233,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Build email content - use recovery link if available, otherwise just login link
     const actionButtonHtml = loginBlockHtml(email, recoveryLink);
 
-    const emailResponse = await resend.emails.send({
+    const emailResponse = await guardedResendSend(supabase, "invite-ue-access", resend, {
       from: "Total-IK <noreply@totalik.no>",
       to: [email],
       subject: `Du er invitert til prosjekt: ${projectInfo}`,

@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { escapeHtml } from '../_shared/html-escape.ts';
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -75,7 +76,7 @@ Deno.serve(async (req) => {
         <p><strong>Telefon:</strong> ${escapeHtml(phone)}</p>`;
 
       const send = (to: string[], subject: string, html: string) =>
-        fetch('https://api.resend.com/emails', {
+        guardedResendFetch(supabase, "submit-nybygg-lead", {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${resendKey}`,

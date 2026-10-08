@@ -4,6 +4,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 import { recordJobRun } from "../_shared/jobRun.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -136,7 +137,7 @@ Deno.serve(async (req) => {
           <p style="color:#6b7280; font-size: 13px;">Dette er eneste varsel som sendes for denne bedriften.</p>
         </div>`;
 
-      const { error: mailErr } = await resend.emails.send({
+      const { error: mailErr } = await guardedResendSend(supabase, "enforce-license-terminations", resend, {
         from: FROM,
         to: recipients,
         subject: `Lisens utløper ${formatNo(endDate)} – ${c.name}`,
