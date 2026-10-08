@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NewKsModule2ProjectInput } from "@/hooks/useKsModule2Projects";
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
+import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 
 async function extractPdfText(file: File): Promise<string> {
   const pdfjs: any = await import("pdfjs-dist");

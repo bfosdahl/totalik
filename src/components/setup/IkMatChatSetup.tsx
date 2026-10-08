@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getSafeModuleSettings } from "@/lib/moduleDefaults";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 import { t } from "@/i18n/t";
+import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 
 interface Message {
   role: 'user' | 'assistant';

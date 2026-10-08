@@ -9,6 +9,7 @@ import { useLocation } from "react-router-dom";
 import { getProffConfig, ProffConfig } from "./proffConfig";
 import { useSpeech } from "@/hooks/useSpeech";
 import { t } from "@/i18n/t";
+import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 
 interface Message {
   id: string;

@@ -8,6 +8,7 @@ import { Send, Bot, User, Loader2, MessageSquare, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/i18n/t";
+import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 
 type Message = {
   role: "user" | "assistant";
