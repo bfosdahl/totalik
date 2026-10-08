@@ -123,6 +123,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingSetup, setIsGeneratingSetup] = useState(false);
   const [wasInterrupted, setWasInterrupted] = useState(initialState?.wasStreaming ?? false);
   const [streamCutOff, setStreamCutOff] = useState(false);
   const [lastUserMessage, setLastUserMessage] = useState<string | undefined>(initialState?.lastUserMessage);
@@ -174,6 +175,19 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Warn before leaving the page while the setup is being generated or saved
+  useEffect(() => {
+    if (!isSaving && !isGeneratingSetup) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isSaving, isGeneratingSetup]);
 
   const saveGeneratedContent = async (jsonContent: string) => {
     setIsSaving(true);
@@ -405,6 +419,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
       let assistantMessage = "";
       let streamDone = false;
       let lastFinishReason: string | null = null;
+      let sawJsonStart = false;
 
       // Add placeholder for assistant message
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
@@ -437,6 +452,10 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantMessage += content;
+              if (!sawJsonStart && assistantMessage.includes('|||JSON_START|||')) {
+                sawJsonStart = true;
+                setIsGeneratingSetup(true);
+              }
               // Show only the display content (without JSON)
               const displayContent = getDisplayContent(assistantMessage);
               setMessages((prev) => {
@@ -487,6 +506,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
     } finally {
       setIsLoading(false);
       isStreamingRef.current = false;
+      setIsGeneratingSetup(false);
     }
   };
 
@@ -557,7 +577,7 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                 </div>
               </div>
             )}
-            {isSaving && (
+            {(isSaving || isGeneratingSetup) && (
               <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
                 <p className="text-xs sm:text-sm text-success font-medium">{t("auto.setter_opp_ik_mat_systemet_ditt")}</p>

@@ -140,6 +140,7 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(!initialState);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingSetup, setIsGeneratingSetup] = useState(false);
   const [pendingBrregInfo, setPendingBrregInfo] = useState<BrregInfo | null>(initialState?.pendingBrregInfo ?? null);
   const [confirmedEmployeeCount, setConfirmedEmployeeCount] = useState<number | null>(initialState?.confirmedEmployeeCount ?? null);
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(initialState?.selectedIndustry ?? null);
@@ -176,6 +177,19 @@ export function IkHmsChatSetup({ companyId, departmentId, onComplete }: IkHmsCha
     if (document.hidden) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, currentStep]);
+
+  // Warn before leaving the page while the setup is being generated or saved
+  useEffect(() => {
+    if (!isSaving && !isGeneratingSetup) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isSaving, isGeneratingSetup]);
 
   // Tab switching: save state, keep stream alive, and recover on return
   useEffect(() => {
@@ -451,6 +465,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       let assistantMessage = "";
       let streamDone = false;
       let lastFinishReason: string | null = null;
+      let sawJsonStart = false;
 
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
@@ -474,6 +489,10 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantMessage += content;
+              if (!sawJsonStart && assistantMessage.includes('|||JSON_START|||')) {
+                sawJsonStart = true;
+                setIsGeneratingSetup(true);
+              }
               const displayContent = getDisplayContent(assistantMessage);
               setMessages(prev => {
                 const newMessages = [...prev];
@@ -506,6 +525,7 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
     } finally {
       setIsLoading(false);
       isStreamingRef.current = false;
+      setIsGeneratingSetup(false);
     }
   };
 
@@ -1280,7 +1300,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
               </div>
             )}
 
-            {isSaving && (
+            {(isSaving || isGeneratingSetup) && (
               <div className="flex items-center justify-center gap-2 p-3 sm:p-4 bg-success/10 rounded-lg border border-success/20">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-success animate-pulse" />
                 <p className="text-xs sm:text-sm text-success font-medium">{t("auto.setter_opp_hms_systemet_ditt")}</p>
