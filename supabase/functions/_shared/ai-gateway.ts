@@ -9,10 +9,12 @@ export const AI_CHAT_MODEL = "google/gemini-2.5-flash";
 
 // TEMPORARY – model migration test. Remove after the global switch.
 export const AI_CHAT_MODEL_CANDIDATE = "google/gemini-3.8-flash";
+// Testbedriftens id + testbrukernes profile-id (profiles.id) og auth user-id.
 const MODEL_TEST_KEYS = new Set<string>([
   "efac813d-4038-4a81-8c4a-ffeca0094069", // company: TEST Grok AS (slett meg)
   "02f52ccc-d821-4c55-be0a-ff386917ce75", "4c5e047e-4df7-436a-8af2-a39c763fe1da", "37e6bfd4-36eb-4590-93c0-46cf41b12ec8",
   "4c9f2da2-458a-4c02-b8d5-0c0611cce5d5", "8b746c7a-9cbb-4330-ae4e-04955fb80aff", "bfb728e5-5ec8-4d71-ae1e-8621406ddd07", // users of that company
+  "ced408a7-bd4a-4cae-bd5c-a5431c200383", "b4a65346-9c9e-46e1-be24-e46c6995c6e2", "c5b74377-3542-4b31-830b-8fe8b95f7b64", "6456d3da-07b3-4638-8399-6004b9a80331", "f60f612c-cf7a-47ea-94e7-cb5e5161d805", "6279d77c-47b5-4128-978b-697473d435d9", // auth user ids of the same test users (bfosdahl+testadmin, +test1..5)
 ]);
 
 export function isModelTestKey(key?: string | null): boolean {
