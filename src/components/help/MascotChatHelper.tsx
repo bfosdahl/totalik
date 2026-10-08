@@ -48,6 +48,16 @@ export const MascotChatHelper = () => {
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Refresh lists after the assistant performed an action
+  const notifyDataChanged = useCallback((data: unknown) => {
+    const actions = (data as { actions?: unknown[] } | null)?.actions;
+    if (Array.isArray(actions) && actions.length > 0) {
+      queryClient.invalidateQueries();
+      window.dispatchEvent(new CustomEvent(AI_DATA_CHANGED_EVENT));
+    }
+  }, [queryClient]);
   const [currentTip, setCurrentTip] = useState(0);
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [interimText, setInterimText] = useState("");
