@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_HMS } from "../_shared/faq-knowledge.ts";
 import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_CHAT_MODEL, isModelTestKey } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -788,6 +788,7 @@ serve(async (req) => {
     }
 
     const companyId = profile.company_id;
+    const useCandidateBudget = isModelTestKey(companyId);
 
     const { message, history = [] } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -820,7 +821,7 @@ serve(async (req) => {
       messages,
       tools,
       tool_choice: "auto",
-      max_tokens: 1000,
+      max_tokens: useCandidateBudget ? 4000 : 1000,
     }, companyId);
 
     if (!response.ok) {
@@ -847,6 +848,11 @@ serve(async (req) => {
 
     const data = await response.json();
     const assistantMessage = data.choices?.[0]?.message;
+
+    // A truncated answer is still the best we have – log it so the size can be checked.
+    if (data.choices?.[0]?.finish_reason === "length" && assistantMessage?.content) {
+      console.warn("mascot-chat: reply truncated");
+    }
 
     // Check if the AI wants to call tools
     if (assistantMessage?.tool_calls && assistantMessage.tool_calls.length > 0) {
@@ -879,25 +885,33 @@ serve(async (req) => {
 
       // Get a friendly summary from the AI
       const summaryMessages = [
-        { role: "system", content: "Du er HMS-hjelperen. Gi en kort, vennlig oppsummering av handlingene DU akkurat utførte for brukeren (f.eks. at et avvik ble opprettet). Beskriv aldri noe brukeren skal ha gjort selv. Bruk emojis." },
+        { role: "system", content: "Du er HMS-hjelperen. Gi en kort, vennlig oppsummering av handlingene DU akkurat utførte for brukeren (f.eks. at et avvik ble opprettet). Beskriv aldri noe brukeren skal ha gjort selv. Bruk emojis. Svar på norsk, maks 2–3 setninger. Ta med nummer og frist fra handlingene. Ikke vis tankeprosess eller engelsk tekst." },
         { role: "user", content: `Handlinger utført:\n${combinedResult}\n\nGi en kort oppsummering til brukeren.` }
       ];
 
       const summaryResponse = await callAiGateway(LOVABLE_API_KEY, {
         model: AI_CHAT_MODEL,
         messages: summaryMessages,
-        max_tokens: 300,
+        max_tokens: useCandidateBudget ? 2000 : 300,
       }, companyId);
 
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();
         const summaryReply = summaryData.choices?.[0]?.message?.content;
-        if (summaryReply) {
+        const summaryFinishReason = summaryData.choices?.[0]?.finish_reason;
+        // A cut-off summary ("length") is worse than the raw tool results, so only
+        // accept a complete answer and otherwise fall through to the fallback below.
+        const summaryUsable =
+          typeof summaryReply === "string" &&
+          summaryReply.trim().length > 0 &&
+          (summaryFinishReason === undefined || summaryFinishReason === null || summaryFinishReason === "stop");
+        if (summaryUsable) {
           return new Response(
             JSON.stringify({ reply: summaryReply, actions: toolResults }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
+        console.warn(`mascot-chat: summary rejected, finish_reason=${String(summaryFinishReason)}`);
       }
 
       // Fallback to raw results
