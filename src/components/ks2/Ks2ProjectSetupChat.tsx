@@ -108,6 +108,8 @@ function cleanPlaceholder(value: unknown): string {
   const lower = text.toLowerCase();
   if (lower.includes("eksempel")) return "";
   if (lower.startsWith("mangler ")) return "";
+  const PLACEHOLDER_PREFIXES = ["oppgis", "oppdater", "ikke spesifisert", "ikke angitt", "ikke oppgitt", "usikker", "ukjent", "fyll inn", "legg inn", "skriv inn"];
+  if (PLACEHOLDER_PREFIXES.some((p) => lower.startsWith(p))) return "";
   if (PLACEHOLDER_VALUES.includes(lower) || GENERATED_EXAMPLE_VALUES.includes(lower)) return "";
   return text;
 }
@@ -125,6 +127,7 @@ function isInventedValue(text: string): boolean {
   if (/\b(bygg|bygge|test|prosjekt|adresse|gatenavn|veinavn|eksempel)(veien|vegen|vei|veg|gata|gaten|gate)\b/.test(lower)) return true;
   if (/\b0000\b/.test(lower) || lower.includes("poststed")) return true;
   if (/^standard\b|\bstandard$/.test(lower) || lower.includes("nordmann") || lower.includes("normann") || lower.includes("eksmepel")) return true;
+  if (lower.includes("standardprosjekt") || lower.includes("generelt byggeprosjekt") || lower.includes("generelt prosjekt") || lower.includes("byggherre as") || lower.includes("privatkunde")) return true;
   return false;
 }
 
