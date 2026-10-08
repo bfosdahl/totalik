@@ -16,6 +16,7 @@ import { InlineVerneombudStep } from "./InlineVerneombudStep";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 import { t } from "@/i18n/t";
 import { assertSaved } from "@/lib/assertSaved";
+import { formatHazardName } from "@/lib/formatHazardName";
 import { defaultRisks, defaultRoutines, defaultActions } from "@/lib/defaultHmsSetup";
 
 interface Message {
@@ -819,18 +820,18 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
             });
             const rawHazard = (risk.hazard_source as string) || 'annet';
             const hazardAllowed = ALLOWED_HAZARD_SOURCES.includes(rawHazard);
-            return { id: riskId, hazard_source: hazardAllowed ? rawHazard : 'annet', hazard_source_custom: hazardAllowed ? ((risk.hazard_source_custom as string) || '') : ((risk.hazard_source_custom as string) || rawHazard), events, created_at: new Date().toISOString(), created_by: 'Oppsett-hjelperen', is_ai_generated: true };
+            return { id: riskId, hazard_source: hazardAllowed ? rawHazard : 'annet', hazard_source_custom: formatHazardName(hazardAllowed ? ((risk.hazard_source_custom as string) || '') : ((risk.hazard_source_custom as string) || rawHazard)), events, created_at: new Date().toISOString(), created_by: 'Oppsett-hjelperen', is_ai_generated: true };
           }
           
           return {
-            id: riskId, hazard_source: 'annet', hazard_source_custom: (risk.description as string) || '',
+            id: riskId, hazard_source: 'annet', hazard_source_custom: formatHazardName((risk.description as string) || ''),
             events: [{ id: crypto.randomUUID(), description: (risk.description as string) || '', consequence: typeof risk.consequence === 'number' ? risk.consequence : 3, probability: typeof risk.probability === 'number' ? risk.probability : 3, measures: [(risk.existing_measures as string) || '', (risk.planned_measures as string) || ''].filter(Boolean).join('. '), responsible: '', deadline: '', status: 'planlagt' as const }],
             created_at: new Date().toISOString(), created_by: 'Oppsett-hjelperen', is_ai_generated: true,
           };
         }) || [];
 
         const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({
-          ...action, id: `ai-${crypto.randomUUID()}`, ...(action.risk_id != null && riskIdMap.has(String(action.risk_id)) ? { risk_id: riskIdMap.get(String(action.risk_id)) } : {}), deadline: ensureFutureDeadline(action.deadline, ({ kritisk: 1, 'høy': 1, medium: 3, lav: 6 } as Record<string, number>)[String(action.priority)] ?? 3), is_ai_generated: true,
+          ...action, id: `ai-${crypto.randomUUID()}`, ...(action.risk_id != null && riskIdMap.has(String(action.risk_id)) ? { risk_id: riskIdMap.get(String(action.risk_id)) } : {}), ...(typeof action.risk_source === 'string' && action.risk_source.trim() ? { risk_source: formatHazardName(action.risk_source as string) } : {}), deadline: ensureFutureDeadline(action.deadline, ({ kritisk: 1, 'høy': 1, medium: 3, lav: 6 } as Record<string, number>)[String(action.priority)] ?? 3), is_ai_generated: true,
         })) || [];
 
         const newSettings = {
