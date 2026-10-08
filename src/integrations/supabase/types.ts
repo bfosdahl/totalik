@@ -5787,35 +5787,53 @@ export type Database = {
       global_chemicals: {
         Row: {
           cas_number: string | null
+          cas_numbers: Json
           created_at: string
           danger_classes: string[] | null
+          emergency_phone: string | null
+          hazard_statements: Json
           id: string
           manufacturer: string | null
           notes: string | null
+          pictograms: string[]
           product_name: string
+          revision_date: string | null
           search_vector: unknown
+          signal_word: string | null
           updated_at: string
         }
         Insert: {
           cas_number?: string | null
+          cas_numbers?: Json
           created_at?: string
           danger_classes?: string[] | null
+          emergency_phone?: string | null
+          hazard_statements?: Json
           id?: string
           manufacturer?: string | null
           notes?: string | null
+          pictograms?: string[]
           product_name: string
+          revision_date?: string | null
           search_vector?: unknown
+          signal_word?: string | null
           updated_at?: string
         }
         Update: {
           cas_number?: string | null
+          cas_numbers?: Json
           created_at?: string
           danger_classes?: string[] | null
+          emergency_phone?: string | null
+          hazard_statements?: Json
           id?: string
           manufacturer?: string | null
           notes?: string | null
+          pictograms?: string[]
           product_name?: string
+          revision_date?: string | null
           search_vector?: unknown
+          signal_word?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -7734,54 +7752,72 @@ export type Database = {
       }
       ik_hms_stoffkartotek: {
         Row: {
+          cas_numbers: Json
           company_id: string
           created_at: string
           danger_classes: string[] | null
           deleted_at: string | null
           deleted_by: string | null
           department_id: string | null
+          emergency_phone: string | null
+          hazard_statements: Json
           id: string
           is_deleted: boolean
           last_updated: string
           location: string | null
           manufacturer: string | null
           notes: string | null
+          pictograms: string[]
           product_name: string
+          revision_date: string | null
           sds_file_path: string | null
+          signal_word: string | null
           updated_at: string
         }
         Insert: {
+          cas_numbers?: Json
           company_id: string
           created_at?: string
           danger_classes?: string[] | null
           deleted_at?: string | null
           deleted_by?: string | null
           department_id?: string | null
+          emergency_phone?: string | null
+          hazard_statements?: Json
           id?: string
           is_deleted?: boolean
           last_updated?: string
           location?: string | null
           manufacturer?: string | null
           notes?: string | null
+          pictograms?: string[]
           product_name: string
+          revision_date?: string | null
           sds_file_path?: string | null
+          signal_word?: string | null
           updated_at?: string
         }
         Update: {
+          cas_numbers?: Json
           company_id?: string
           created_at?: string
           danger_classes?: string[] | null
           deleted_at?: string | null
           deleted_by?: string | null
           department_id?: string | null
+          emergency_phone?: string | null
+          hazard_statements?: Json
           id?: string
           is_deleted?: boolean
           last_updated?: string
           location?: string | null
           manufacturer?: string | null
           notes?: string | null
+          pictograms?: string[]
           product_name?: string
+          revision_date?: string | null
           sds_file_path?: string | null
+          signal_word?: string | null
           updated_at?: string
         }
         Relationships: [
