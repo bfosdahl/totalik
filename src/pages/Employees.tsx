@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { t } from "@/i18n/t";
+import { getInitials } from "@/lib/getInitials";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BulkMessageDialog } from "@/components/hr/BulkMessageDialog";
 import { useDepartmentMembership } from "@/hooks/useDepartmentMembership";
@@ -87,11 +88,6 @@ export default function Employees() {
     return false;
   }) || [];
 
-  const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    const first = firstName?.charAt(0) || "";
-    const last = lastName?.charAt(0) || "";
-    return (first + last).toUpperCase() || "?";
-  };
 
   const selectedEmployee = employees?.find(e => e.id === selectedEmployeeId);
 

@@ -22,6 +22,7 @@ import {
   Ban
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getInitials } from "@/lib/getInitials";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -613,14 +614,6 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     }
   };
 
-  const getInitials = (firstName: string | null, lastName: string | null, email: string | null) => {
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    }
-    if (firstName) return firstName[0].toUpperCase();
-    if (email) return email[0].toUpperCase();
-    return "?";
-  };
 
   if (!company) {
     return (
