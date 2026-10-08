@@ -63,6 +63,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    const body = await req.clone().json().catch(() => ({} as Record<string, unknown>));
+    const cutoff = new Date(String((body as any)?.asOf ?? "2026-10-09") + "T00:00:00Z");
+    const dryRun = Boolean((body as any)?.dryRun);
+    const onlyCompany = (body as any)?.companyId ? String((body as any).companyId) : null;
     
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -74,13 +79,20 @@ const handler = async (req: Request): Promise<Response> => {
     weekFromNow.setDate(weekFromNow.getDate() + 7);
 
     // Get all open/in-progress deviations with assignees
-    const { data: deviations, error: devError } = await supabase
+    let deviationsQuery = supabase
       .from("deviations")
       .select("id, deviation_number, title, due_date, assignee_name, assignee_id, company_id, status")
       .in("status", ["open", "in-progress"])
       .eq("is_deleted", false)
       .not("due_date", "is", null)
-      .not("assignee_id", "is", null);
+      .not("assignee_id", "is", null)
+      .gte("due_date", cutoff.toISOString().slice(0, 10));
+
+    if (onlyCompany) {
+      deviationsQuery = deviationsQuery.eq("company_id", onlyCompany);
+    }
+
+    const { data: deviations, error: devError } = await deviationsQuery;
 
     if (devError) {
       console.error("Error fetching deviations:", devError);
@@ -143,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("email, first_name")
-        .eq("user_id", deviation.assignee_id)
+        .eq("id", deviation.assignee_id)
         .maybeSingle();
 
       if (!profile?.email) {
@@ -165,6 +177,11 @@ const handler = async (req: Request): Promise<Response> => {
         month: "long",
         year: "numeric",
       });
+
+      if (dryRun) {
+        emailsSent.push(`DRYRUN ${deviation.deviation_number} (${reminderType})`);
+        continue;
+      }
 
       try {
         const emailResponse = await resend.emails.send({

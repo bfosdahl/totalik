@@ -68,8 +68,13 @@ const handler = async (req: Request): Promise<Response> => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const body = await req.clone().json().catch(() => ({} as Record<string, unknown>));
+    const cutoff = new Date(String((body as any)?.asOf ?? "2026-10-09") + "T00:00:00Z");
+    const dryRun = Boolean((body as any)?.dryRun);
+    const onlyCompany = (body as any)?.companyId ? String((body as any).companyId) : null;
+
     // Get all incomplete checklists with deadlines and responsible users
-    const { data: checklists, error: checklistError } = await supabase
+    let checklistsQuery = supabase
       .from("ks_module2_checklists")
       .select(`
         id, title, deadline_date, responsible_user_name, responsible_user_id, status, project_id,
@@ -78,7 +83,14 @@ const handler = async (req: Request): Promise<Response> => {
       .in("status", ["planned", "in_progress"])
       .eq("is_deleted", false)
       .not("deadline_date", "is", null)
-      .not("responsible_user_id", "is", null);
+      .not("responsible_user_id", "is", null)
+      .gte("deadline_date", cutoff.toISOString().slice(0, 10));
+
+    if (onlyCompany) {
+      checklistsQuery = checklistsQuery.eq("ks_module2_projects.company_id", onlyCompany);
+    }
+
+    const { data: checklists, error: checklistError } = await checklistsQuery;
 
     if (checklistError) {
       console.error("Error fetching checklists:", checklistError);
@@ -142,7 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("email, first_name")
-        .eq("user_id", checklist.responsible_user_id)
+        .eq("id", checklist.responsible_user_id)
         .maybeSingle();
 
       if (!profile?.email) {
@@ -164,6 +176,11 @@ const handler = async (req: Request): Promise<Response> => {
         month: "long",
         year: "numeric",
       });
+
+      if (dryRun) {
+        emailsSent.push(`DRYRUN ${checklist.title} (${reminderType})`);
+        continue;
+      }
 
       try {
         const emailResponse = await resend.emails.send({
