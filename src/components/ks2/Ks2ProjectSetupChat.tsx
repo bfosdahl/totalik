@@ -98,7 +98,7 @@ const GENERATED_EXAMPLE_VALUES = [
 function cleanPlaceholder(value: unknown): string {
   if (typeof value !== "string") return "";
   const text = value
-    .replace(/\((foreslått|forslag|arbeidsnavn|midlertidig)\)/gi, "")
+    .replace(/\((foreslått|forslag|arbeidsnavn|midlertidig|foreløpig)\)/gi, "")
     .replace(/\[[^\]]*\]/g, "")
     .replace(/<[^>]*>/g, "")
     .replace(/\{[^}]*\}/g, "")
@@ -107,12 +107,34 @@ function cleanPlaceholder(value: unknown): string {
   if (!text) return "";
   const lower = text.toLowerCase();
   if (lower.includes("eksempel")) return "";
+  if (lower.startsWith("mangler ")) return "";
   if (PLACEHOLDER_VALUES.includes(lower) || GENERATED_EXAMPLE_VALUES.includes(lower)) return "";
   return text;
 }
 
+/**
+ * Verdiar AI-en finn på sjølv: generiske namn, påfunne gatenamn og
+ * tomme postnummer. Brukast berre på prosjektnavn, adresse og
+ * byggherre – ikkje på beskrivelsen.
+ */
+function isInventedValue(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  if (!lower) return false;
+  if (lower.includes("typisk") || lower.includes("standard prosjekt")) return true;
+  if (/^(bygge?prosjekt|prosjekt|firma|bedrift|entreprenør|byggherre|kunde|oppdragsgiver)( as)?$/.test(lower)) return true;
+  if (/\b(bygg|bygge|test|prosjekt|adresse|gatenavn|veinavn|eksempel)(veien|vegen|vei|veg|gata|gaten|gate)\b/.test(lower)) return true;
+  if (/\b0000\b/.test(lower) || lower.includes("poststed")) return true;
+  return false;
+}
+
+/** Plasshaldar eller AI-fantasi → tom streng. */
+function cleanField(value: unknown): string {
+  const v = cleanPlaceholder(value);
+  return v && isInventedValue(v) ? "" : v;
+}
+
 function cleanProjectName(value: unknown): string {
-  return cleanPlaceholder(value);
+  return cleanField(value);
 }
 
 type MessageContent = string | any[];
@@ -289,8 +311,8 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           const projectData: ProposalData = {
             project_name: cleanProjectName(parsed.project_info?.project_name),
             description: cleanPlaceholder(parsed.project_info?.description),
-            address: cleanPlaceholder(parsed.project_info?.address),
-            client_name: cleanPlaceholder(parsed.project_info?.client_name),
+            address: cleanField(parsed.project_info?.address),
+            client_name: cleanField(parsed.project_info?.client_name),
             contractor_type: (() => {
               const ct = String(parsed.contractor_type || "").toLowerCase();
               if (["total", "totalentreprise"].includes(ct)) return "total" as const;
@@ -332,7 +354,7 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
           }
 
           setProposal(projectData);
-          setProposalName(projectData.project_name || "");
+          setProposalName(projectData.project_name || "Nytt prosjekt");
           setSetupComplete(true);
         } catch (e) {
           console.error("Error parsing JSON:", e, jsonContent);
