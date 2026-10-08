@@ -184,7 +184,7 @@ export const MascotChatHelper = () => {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [input, isLoading, messages, proffConfig.edgeFunction, autoSpeak, speech]);
+  }, [input, isLoading, messages, proffConfig.edgeFunction, autoSpeak, speech, notifyDataChanged]);
 
   // Speak new bot messages if autoSpeak is enabled
   const handleBotResponse = useCallback((response: string) => {
