@@ -721,11 +721,11 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             {users.filter((u) => inviteFilter === "all" || inviteState(u) === inviteFilter).map((companyUser) => (
               <div
                 key={companyUser.id}
-                className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ${
+                className={`flex items-center justify-between gap-2 min-w-0 p-4 hover:bg-muted/50 transition-colors ${
                   companyUser.status === "pending_approval" ? "bg-amber-50/50 dark:bg-amber-950/10" : ""
                 }`}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   {companyUser.user_id !== user?.id && companyUser.role !== "system_admin" && companyUser.is_active && inviteState(companyUser) !== "logged_in" && (
                     <Checkbox
                       aria-label="Velg for invitasjon"
@@ -746,7 +746,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       </div>
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium">
                         {companyUser.first_name || companyUser.last_name
@@ -765,7 +765,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{companyUser.email}</p>
+                    <p className="text-sm text-muted-foreground truncate">{companyUser.email}</p>
                     {(() => {
                       const st = inviteState(companyUser);
                       const s = loginStatus[companyUser.user_id];
@@ -776,7 +776,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                     })()}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {companyUser.status === "pending_approval" && (
                     <Button 
                       size="sm" 
