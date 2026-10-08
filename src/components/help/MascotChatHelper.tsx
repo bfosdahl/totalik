@@ -156,6 +156,7 @@ export const MascotChatHelper = () => {
 
           if (error) throw error;
 
+          notifyDataChanged(data);
           const responseText = data?.reply || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
           const botResponse: Message = {
             id: (Date.now() + 1).toString(),
@@ -226,6 +227,7 @@ export const MascotChatHelper = () => {
 
       if (error) throw error;
 
+      notifyDataChanged(data);
       const responseText = data?.reply || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
