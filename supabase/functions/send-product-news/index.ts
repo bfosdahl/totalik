@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { BRAND, brandedEmail, brandButton } from "../_shared/email-brand.ts";
 import { fetchAllRows, fetchAllIn } from "../_shared/fetchAll.ts";
+import { filterSuppressed } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -217,6 +218,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
     const resend = new Resend(resendApiKey);
 
+    const { kept: keptRecipients, skipped: suppressedSkipped } = await filterSuppressed(supabase, recipients, (r) => r.email);
+    for (const e of suppressedSkipped) console.warn(`[send-product-news] skipped suppressed recipient: ${e}`);
+    const skippedSuppressed = suppressedSkipped.length;
+    recipients = keptRecipients;
+
     const payload = recipients.map((r) => ({
       from: "Total-IK <noreply@totalik.no>",
       to: [r.email],
@@ -260,6 +266,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         success: true,
         companies: companyIds.length,
         recipients: recipients.length,
+        skippedSuppressed,
         sent,
         failed: recipients.length - sent,
         test: Boolean(testEmail),
