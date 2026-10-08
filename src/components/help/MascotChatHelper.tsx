@@ -110,7 +110,7 @@ export const MascotChatHelper = () => {
 
   // Persist messages per user+company+proff so tab/route switches don't wipe history
   useEffect(() => {
-    if (!storageKey) return;
+    if (!storageKey || messagesKeyRef.current !== storageKey) return;
     try {
       sessionStorage.setItem(storageKey, JSON.stringify(messages));
     } catch { /* ignore */ }
