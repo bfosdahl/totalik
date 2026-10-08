@@ -501,10 +501,8 @@ serve(async (req) => {
       { role: "system", content: stepPrompt },
     ];
 
-    // Kun modelltestbedriften får datoene i prompten ennå (samme key som ai-gateway.ts).
-    if (isModelTestKey(companyId)) {
-      systemMessages.push({ role: "system", content: buildDeadlinePrompt() });
-    }
+    // Fristreglane med konkrete datoar gjeld for alle bedrifter.
+    systemMessages.push({ role: "system", content: buildDeadlinePrompt() });
 
     const knownFacts = buildKnownFactsMessage(messages);
     if (knownFacts) {
