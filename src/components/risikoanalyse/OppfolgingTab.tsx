@@ -17,6 +17,7 @@ import {
   Check
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatHazardName } from "@/lib/formatHazardName";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -423,7 +424,7 @@ export function OppfolgingTab() {
                               <p className="font-medium text-sm">{action.action_description}</p>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1 ml-6">
-                              {action.risk_source}: {action.event_description}
+                              {formatHazardName(action.risk_source)}: {action.event_description}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">

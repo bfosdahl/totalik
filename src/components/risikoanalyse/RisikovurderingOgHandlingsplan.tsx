@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
+import { formatHazardName } from "@/lib/formatHazardName";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -668,9 +669,11 @@ export function RisikovurderingOgHandlingsplan() {
     }
 
     const { risk, event } = selectedEventForAction;
-    const hazardLabel = risk.hazard_source === "annet" 
-      ? risk.hazard_source_custom 
-      : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source;
+    const hazardLabel = formatHazardName(
+      risk.hazard_source === "annet"
+        ? risk.hazard_source_custom
+        : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source
+    );
     
     const level = getRiskLevel(event.consequence, event.probability);
 
@@ -937,9 +940,11 @@ export function RisikovurderingOgHandlingsplan() {
     // Create actions for yellow/red risks
     const newActions: ActionItem[] = [];
     exampleRisks.forEach(risk => {
-      const hazardLabel = risk.hazard_source === "annet" 
-        ? risk.hazard_source_custom 
-        : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source;
+      const hazardLabel = formatHazardName(
+        risk.hazard_source === "annet"
+          ? risk.hazard_source_custom
+          : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source
+      );
       
       risk.events.forEach(event => {
         const level = getRiskLevel(event.consequence, event.probability);
@@ -1288,9 +1293,11 @@ export function RisikovurderingOgHandlingsplan() {
               ) : (
                 <div className="space-y-3 max-h-[600px] overflow-y-auto">
                   {risks.map(risk => {
-                    const hazardLabel = risk.hazard_source === "annet" 
-                      ? risk.hazard_source_custom 
-                      : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source;
+                    const hazardLabel = formatHazardName(
+                      risk.hazard_source === "annet"
+                        ? risk.hazard_source_custom
+                        : PREDEFINED_HAZARDS.find(h => h.value === risk.hazard_source)?.label || risk.hazard_source
+                    );
                     const highestLevel = getHighestRiskLevel(risk);
                     const isExpanded = expandedRisk === risk.id;
 
@@ -1609,9 +1616,11 @@ export function RisikovurderingOgHandlingsplan() {
             {selectedEventForAction && (
               <div className="space-y-4">
                 <div className="p-3 rounded bg-muted text-sm">
-                  <strong>{t("auto.farekilde_2")}</strong> {selectedEventForAction.risk.hazard_source === "annet" 
-                    ? selectedEventForAction.risk.hazard_source_custom 
-                    : PREDEFINED_HAZARDS.find(h => h.value === selectedEventForAction.risk.hazard_source)?.label || selectedEventForAction.risk.hazard_source}
+                  <strong>{t("auto.farekilde_2")}</strong> {formatHazardName(
+                    selectedEventForAction.risk.hazard_source === "annet"
+                      ? selectedEventForAction.risk.hazard_source_custom
+                      : PREDEFINED_HAZARDS.find(h => h.value === selectedEventForAction.risk.hazard_source)?.label || selectedEventForAction.risk.hazard_source
+                  )}
                   <div className="mt-1"><strong>{t("auto.hendelse")}</strong> {selectedEventForAction.event.description}</div>
                   <div className="text-xs text-muted-foreground mt-1">
                     Risiko: {selectedEventForAction.event.consequence}×{selectedEventForAction.event.probability} = {selectedEventForAction.event.consequence * selectedEventForAction.event.probability}
