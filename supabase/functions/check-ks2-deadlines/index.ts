@@ -142,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("email, first_name")
-        .eq("user_id", checklist.responsible_user_id)
+        .eq("id", checklist.responsible_user_id)
         .maybeSingle();
 
       if (!profile?.email) {
