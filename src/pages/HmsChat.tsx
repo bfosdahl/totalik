@@ -233,7 +233,11 @@ export default function HmsChat() {
                             : "bg-muted"
                         }`}
                       >
-                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        {message.role === "assistant" ? (
+                          <ChatMarkdown content={message.content} className="text-sm" />
+                        ) : (
+                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        )}
                       </div>
                       {message.role === "user" && (
                         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">

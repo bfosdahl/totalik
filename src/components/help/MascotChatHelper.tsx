@@ -385,7 +385,7 @@ export const MascotChatHelper = () => {
                             : "bg-primary text-primary-foreground rounded-br-none"
                       }`}
                     >
-                      {message.content}
+                      {message.isBot ? <ChatMarkdown content={message.content} /> : message.content}
                     </div>
                   </div>
                 ))}

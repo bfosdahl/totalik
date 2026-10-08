@@ -553,13 +553,13 @@ export const IkMatChatSetup = ({ companyId, onComplete }: IkMatChatSetupProps) =
                   </div>
                 )}
                 <div
-                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 whitespace-pre-wrap text-xs sm:text-sm break-words ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 text-xs sm:text-sm break-words ${
                     message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground whitespace-pre-wrap'
                       : 'bg-muted'
                   }`}
                 >
-                  {message.content}
+                  {message.role === 'assistant' ? <ChatMarkdown content={message.content} /> : message.content}
                 </div>
                 {message.role === 'user' && (
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
