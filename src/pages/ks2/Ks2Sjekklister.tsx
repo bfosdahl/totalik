@@ -1,6 +1,6 @@
 import { getChecklistItemText } from "@/lib/checklistItemText";
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,15 @@ export default function Ks2Sjekklister() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"maler" | "pagaende" | "fullforte">("maler");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<"maler" | "pagaende" | "fullforte">(
+    initialTabParam === "pagaende" || initialTabParam === "fullforte" || initialTabParam === "maler"
+      ? initialTabParam
+      : searchParams.get("checklistId") ? "pagaende" : "maler"
+  );
+  const tabChosenRef = useRef(!!initialTabParam || !!searchParams.get("checklistId"));
+  const checklistParamHandledRef = useRef(false);
   const [showWizard, setShowWizard] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
   const [selectedTemplateForWizard, setSelectedTemplateForWizard] = useState<PreSelectedTemplate | null>(null);
@@ -174,6 +182,51 @@ export default function Ks2Sjekklister() {
     setSelectedTemplateForWizard(null);
     setShowWizard(true);
   };
+
+  // URL-parametre: ?tab=, ?new=true, ?checklistId= (håndteres én gang, fjernes deretter)
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const isNew = searchParams.get("new") === "true";
+    if (!tab && !isNew) return;
+    if (isNew) {
+      setExistingChecklist(null);
+      setSelectedTemplateForWizard(null);
+      setShowWizard(true);
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete("tab");
+    next.delete("new");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => {
+    const id = searchParams.get("checklistId");
+    if (!id || checklistParamHandledRef.current || loadingChecklists) return;
+    checklistParamHandledRef.current = true;
+    const found = checklists.find((c) => c.id === id);
+    if (!found) {
+      setActiveTab("pagaende");
+      toast({ title: "Fant ikke egenkontrollen", variant: "destructive" });
+    } else if (found.status === "completed" || found.status === "rejected") {
+      setActiveTab("fullforte");
+      setViewingChecklist(found);
+    } else {
+      setActiveTab("pagaende");
+      handleContinueChecklist(found);
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete("checklistId");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, checklists, loadingChecklists]);
+
+  useEffect(() => {
+    if (tabChosenRef.current || loadingTemplates || loadingChecklists) return;
+    tabChosenRef.current = true;
+    const hasOngoing = checklists.some((c) => c.status === "in_progress" || c.status === "planned");
+    if (checklistTemplates.length === 0 && hasOngoing) setActiveTab("pagaende");
+  }, [loadingTemplates, loadingChecklists, checklistTemplates, checklists]);
 
   const renderChecklistRow = (checklist: KsModule2Checklist) => {
     const items = Array.isArray(checklist.checklist_items) ? checklist.checklist_items : [];
