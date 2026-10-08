@@ -962,6 +962,7 @@ export function RisikovurderingOgHandlingsplan() {
     totalSources: risks.length,
     totalEvents: allEvents.length,
     red: allEvents.filter(e => e.consequence * e.probability >= 11).length,
+    redWithoutAction: allEvents.filter(e => e.consequence * e.probability >= 11 && !eventHasAction(e.id)).length,
     yellow: allEvents.filter(e => {
       const score = e.consequence * e.probability;
       return score >= 6 && score <= 10;
@@ -1244,12 +1245,12 @@ export function RisikovurderingOgHandlingsplan() {
         </div>
 
         {/* Alert for red risks */}
-        {stats.red > 0 && (
+        {stats.redWithoutAction > 0 && (
           <Card className="border-red-300 bg-red-50">
             <CardContent className="p-3 flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-red-600" />
               <span className="text-sm text-red-700">
-                <strong>{stats.red} hendelser</strong> {t("auto.krever_tiltak_roed_risiko_kan_ikke_godkj")}
+                <strong>{stats.redWithoutAction} {stats.redWithoutAction === 1 ? "hendelse" : "hendelser"}</strong> {t("auto.krever_tiltak_roed_risiko_kan_ikke_godkj")}
               </span>
             </CardContent>
           </Card>
