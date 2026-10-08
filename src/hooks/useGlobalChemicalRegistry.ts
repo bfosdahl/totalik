@@ -204,53 +204,14 @@ export const useGlobalChemicalRegistry = (projectId: string | null) => {
     }) => {
       if (!company?.id || !projectId) throw new Error("Mangler bedrift eller prosjekt");
 
-      // 1. Create global chemical
-      const { data: globalChemical, error: chemError } = await supabase
-        .from("global_chemicals" as any)
-        .insert({
-          product_name: productName,
-          manufacturer: manufacturer || null,
-          cas_number: casNumber || null,
-          danger_classes: dangerClasses,
-          notes: notes || null,
-        } as any)
-        .select()
-        .single();
-
-      if (chemError) throw chemError;
-
-      // 2. Upload SDS file if provided
-      if (sdsFile && (globalChemical as any).id) {
-        const sanitizedName = sdsFile.name
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/[æÆ]/g, "ae")
-          .replace(/[øØ]/g, "o")
-          .replace(/[åÅ]/g, "a")
-          .replace(/[^a-zA-Z0-9.-]/g, "_");
-        
-        const filePath = `${(globalChemical as any).id}/${Date.now()}_${sanitizedName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from("global-sds-files")
-          .upload(filePath, sdsFile);
-
-        if (uploadError) {
-          console.error("SDS upload error:", uploadError);
-        } else {
-          // Create SDS version record
-          await supabase
-            .from("global_chemical_sds_versions" as any)
-            .insert({
-              global_chemical_id: (globalChemical as any).id,
-              version_number: 1,
-              sds_file_path: filePath,
-              file_name: sdsFile.name,
-              file_size: sdsFile.size,
-              is_current: true,
-            } as any);
-        }
-      }
+      const globalChemical = await createGlobalChemicalWithSds({
+        productName,
+        manufacturer,
+        casNumber,
+        dangerClasses,
+        notes,
+        sdsFile,
+      });
 
       // 3. Add to company's registry
       const { data: companyEntry, error: entryError } = await supabase
