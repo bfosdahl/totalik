@@ -26,21 +26,42 @@ const CANDIDATE_FIRST_CHUNK_TIMEOUT_MS = 20_000; // stream: headers + first body
 const CANDIDATE_TOTAL_TIMEOUT_MS = 45_000; // non-stream: full body
 const CANDIDATE_REASONING_EFFORT = "low"; // lower thinking on the primary model
 
-async function callCandidateWithTimeout(apiKey: string, body: Record<string, unknown>): Promise<Response | null> {
+// Optional per-call settings. Leaving any field out keeps today's default above.
+export interface AiGatewayOptions {
+  reasoningEffort?: "minimal" | "low" | "medium" | "high"; // default "low"
+  firstChunkTimeoutMs?: number; // stream only, default 20 s
+  totalTimeoutMs?: number; // non-stream only, default 45 s
+  disableFallback?: boolean; // default false: on error/timeout retry once on AI_CHAT_MODEL
+}
+
+async function callCandidateWithTimeout(
+  apiKey: string,
+  body: Record<string, unknown>,
+  options: AiGatewayOptions = {},
+): Promise<Response | null> {
   const isStream = body.stream === true;
+  const timeoutMs = isStream
+    ? options.firstChunkTimeoutMs ?? CANDIDATE_FIRST_CHUNK_TIMEOUT_MS
+    : options.totalTimeoutMs ?? CANDIDATE_TOTAL_TIMEOUT_MS;
+  const reasoningEffort = options.reasoningEffort ?? CANDIDATE_REASONING_EFFORT;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), isStream ? CANDIDATE_FIRST_CHUNK_TIMEOUT_MS : CANDIDATE_TOTAL_TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(AI_GATEWAY_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, model: AI_CHAT_MODEL_CANDIDATE, reasoning_effort: CANDIDATE_REASONING_EFFORT }),
+      body: JSON.stringify({ ...body, model: AI_CHAT_MODEL_CANDIDATE, reasoning_effort: reasoningEffort }),
       signal: ctrl.signal,
     });
     console.log(`[ai-gateway] primary model ${AI_CHAT_MODEL_CANDIDATE} status=${res.status}`);
     const contentType = res.headers.get("content-type") ?? (isStream ? "text/event-stream" : "application/json");
     if (!res.ok) {
       clearTimeout(timer);
+      if (options.disableFallback) {
+        // No fallback wanted: hand the primary model's own error back to the caller.
+        const text = await res.text().catch(() => "");
+        return new Response(text, { status: res.status, headers: { "Content-Type": contentType } });
+      }
       try { await res.body?.cancel(); } catch (_) { /* ignore */ }
       return null;
     }
@@ -68,14 +89,26 @@ async function callCandidateWithTimeout(apiKey: string, body: Record<string, unk
   } catch (e) {
     clearTimeout(timer);
     console.warn(`[ai-gateway] primary model ${AI_CHAT_MODEL_CANDIDATE} aborted/failed (${e instanceof Error ? e.name : "error"})`);
+    if (options.disableFallback) {
+      return new Response(JSON.stringify({ error: "AI primary model timed out or failed" }), {
+        status: 504,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     return null;
   }
 }
 
-export async function callAiGateway(apiKey: string, body: unknown, overrideKey?: string | null): Promise<Response> {
+// options is optional; existing callers (no 4th argument) behave exactly as before.
+export async function callAiGateway(
+  apiKey: string,
+  body: unknown,
+  overrideKey?: string | null,
+  options?: AiGatewayOptions,
+): Promise<Response> {
   const b = body as { model?: string } | null;
   if (b?.model === AI_CHAT_MODEL) {
-    const res = await callCandidateWithTimeout(apiKey, b as Record<string, unknown>);
+    const res = await callCandidateWithTimeout(apiKey, b as Record<string, unknown>, options);
     if (res) return res;
     console.warn(`[ai-gateway] primary model failed or timed out, falling back to ${AI_CHAT_MODEL}`);
   }
