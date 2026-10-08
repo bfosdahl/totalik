@@ -20,6 +20,7 @@ import {
   Bell,
   ShieldAlert,
   Timer,
+  ChevronRight,
 } from "lucide-react";
 import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
 import { useKsModule2Subcontractors } from "@/hooks/useKsModule2Subcontractors";
@@ -393,8 +394,16 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                   return (
                     <div
                       key={checklist.id}
-                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer"
-                      onClick={() => navigate(`/ks/project/${projectId}/egenkontroller`)}
+                      role="button"
+                      tabIndex={0}
+                      className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                      onClick={() => navigate(`/ks/project/${projectId}/egenkontroller?checklistId=${checklist.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          navigate(`/ks/project/${projectId}/egenkontroller?checklistId=${checklist.id}`);
+                        }
+                      }}
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{checklist.title}</p>
@@ -405,6 +414,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                       <Badge variant={daysLeft <= 1 ? "destructive" : daysLeft <= 3 ? "secondary" : "outline"}>
                         {daysLeft === 0 ? "I dag" : daysLeft === 1 ? "I morgen" : `${daysLeft} dager`}
                       </Badge>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </div>
                   );
                 })}
@@ -438,7 +448,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                         navigate(`/ks/project/${projectId}/egenkontroller?checklistId=${checklist.id}`);
                       }
                     }}
-                    className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
+                    className="flex items-center gap-3 p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                   >
                     <div className="w-10 h-10 rounded bg-green-500/10 flex items-center justify-center shrink-0">
                       <ClipboardCheck className="h-5 w-5 text-green-500" />
@@ -449,6 +459,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
                         {checklist.completed_at && format(parseISO(checklist.completed_at), "d. MMM yyyy", { locale: nb })}
                       </p>
                     </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                   </div>
                 ))}
               </div>

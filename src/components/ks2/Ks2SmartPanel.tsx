@@ -1,11 +1,12 @@
 import { getChecklistItemText } from "@/lib/checklistItemText";
 import { safeFormatDate } from "@/utils/safeFormatDate";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Loader2, AlertTriangle, Calendar, ClipboardCheck } from "lucide-react";
+import { Sparkles, Loader2, AlertTriangle, Calendar, ClipboardCheck, ChevronRight } from "lucide-react";
 import { jevAssist } from "@/lib/jevAssist";
 import { differenceInDays, parseISO } from "date-fns";
 
@@ -15,6 +16,7 @@ interface ChecklistLike {
   status: string;
   deadline_date?: string | null;
   checklist_items?: any[];
+  responsible_user_name?: string | null;
 }
 interface AvvikLike {
   id: string;
@@ -46,6 +48,21 @@ export function Ks2SmartPanel({
   const [priorities, setPriorities] = useState<{ item: PriorityItem; noul: number | null }[] | null>(null);
   const [triage, setTriage] = useState<{ item: ChecklistLike; critical: number | null; assignee: { id: string; name: string } | null }[] | null>(null);
   const [review, setReview] = useState<{ item: ChecklistLike; noul: number | null; severity: string | null }[] | null>(null);
+
+  const [crewCount, setCrewCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    supabase
+      .from("ks_module2_project_crew")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", projectId)
+      .eq("is_active", true)
+      .then(({ count, error }) => {
+        if (!cancelled && !error) setCrewCount(count ?? 0);
+      });
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   const overdue = useMemo(
     () => checklists.filter((c) => c.status !== "completed" && c.deadline_date && differenceInDays(new Date(), parseISO(c.deadline_date)) > 0),
@@ -120,7 +137,13 @@ export function Ks2SmartPanel({
     setLoading(null);
   };
 
-  const goChecklists = () => navigate(`/ks/project/${projectId}/egenkontroller`);
+  const goChecklist = (id: string) => navigate(`/ks/project/${projectId}/egenkontroller?checklistId=${encodeURIComponent(id)}`);
+  const goCrew = () => navigate(`/ks/project/${projectId}/mannskap`);
+  const onKey = (fn: () => void) => (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
+  };
+  const rowFocus = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
   const goAvvik = () => navigate(`/ks/project/${projectId}/avvik`);
 
   if (!overdue.length && !upcoming.length && !openAvvik.length && !recentCompleted.length) return null;
@@ -160,15 +183,16 @@ export function Ks2SmartPanel({
                 key={p.item.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => (p.item.type === "åpent avvik" ? goAvvik() : goChecklists())}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); p.item.type === "åpent avvik" ? goAvvik() : goChecklists(); } }}
-                className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2 cursor-pointer hover:bg-muted"
+                onClick={() => (p.item.type === "åpent avvik" ? goAvvik() : goChecklist(p.item.id))}
+                onKeyDown={onKey(() => (p.item.type === "åpent avvik" ? goAvvik() : goChecklist(p.item.id)))}
+                className={`flex items-center gap-2 rounded-lg border border-border bg-background p-2 cursor-pointer hover:bg-muted ${rowFocus}`}
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{p.item.title}</p>
                   <p className="text-xs text-muted-foreground">{p.item.detail}</p>
                 </div>
                 <Badge variant={p.item.type === "åpent avvik" ? "destructive" : "secondary"} className="shrink-0">{p.item.type}</Badge>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
             ))}
           </div>
@@ -178,18 +202,46 @@ export function Ks2SmartPanel({
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Forfalte kontroller:</p>
             {triage.map((tr) => (
-              <div key={tr.item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
-                <div className="min-w-0">
+              <div
+                key={tr.item.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => goChecklist(tr.item.id)}
+                onKeyDown={onKey(() => goChecklist(tr.item.id))}
+                className={`flex items-center gap-2 rounded-lg border border-border bg-background p-2 cursor-pointer hover:bg-muted ${rowFocus}`}
+              >
+                <div className="min-w-0 flex-1 flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0 max-w-full">
                   <p className="text-sm font-medium truncate">{tr.item.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {tr.assignee ? `Forslag: ${tr.assignee.name} bør få oppgaven` : "Ingen tydelig kandidat i mannskapet"}
+                  <p className="text-xs text-muted-foreground break-words">
+                    {tr.item.responsible_user_name ? (
+                      `Ansvarlig: ${tr.item.responsible_user_name}`
+                    ) : tr.assignee ? (
+                      `Forslag: ${tr.assignee.name} bør få oppgaven`
+                    ) : crewCount === 0 ? (
+                      <>
+                        Ingen mannskap registrert på prosjektet{" "}
+                        <button
+                          type="button"
+                          className="text-primary underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                          onClick={(e) => { e.stopPropagation(); goCrew(); }}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        >
+                          Legg til mannskap
+                        </button>
+                      </>
+                    ) : (
+                      "Velg ansvarlig selv"
+                    )}
                   </p>
                 </div>
                 {tr.critical != null && tr.critical >= 0.5 ? (
                   <Badge variant="destructive" className="shrink-0">Kritisk – bør gjøres før arbeid fortsetter</Badge>
                 ) : (
-                  <Badge variant="outline" className="shrink-0">Kan ettergjøres</Badge>
+                  <Badge variant="outline" className="shrink-0">Kan tas senere</Badge>
                 )}
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
             ))}
           </div>
