@@ -15,6 +15,13 @@
       "when": 1791489068673,
       "tag": "0001_email_logs_bounced_recipient_idx",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791490129910,
+      "tag": "0002_suppressed_emails_rpc",
+      "breakpoints": true
     }
   ]
 }
