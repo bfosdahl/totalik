@@ -19006,6 +19006,7 @@ export type Database = {
         Args: { p_record_id: string; p_table_name: string }
         Returns: Json
       }
+      suppressed_emails: { Args: { p_emails: string[] }; Returns: string[] }
       user_can_manage_fdv: {
         Args: { _company_id: string; _user_id: string }
         Returns: boolean
