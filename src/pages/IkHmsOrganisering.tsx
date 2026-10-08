@@ -119,6 +119,7 @@ const IkHmsOrganisering = () => {
 
   // Auto-sync roles to company_organization when org chart nodes change
   const initialLoadRef = useRef(true);
+  const lastSyncedContentRef = useRef<string | null>(null);
   useEffect(() => {
     // Skip initial load and wait for description to be loaded
     if (isLoadingDescription || isLoading || !profile?.company_id) return;
@@ -144,6 +145,15 @@ const IkHmsOrganisering = () => {
     })() : [];
     
     const content = JSON.stringify({ description, roles });
+    // The first time we can see the chart, just remember it. Writing here used
+    // to upsert the same roles on every page open. Later runs write only when
+    // the snapshot actually changed (a role was added, renamed or moved).
+    if (lastSyncedContentRef.current === null) {
+      lastSyncedContentRef.current = content;
+      return;
+    }
+    if (content === lastSyncedContentRef.current) return;
+    lastSyncedContentRef.current = content;
     supabase
       .from("company_organization")
       .upsert({
@@ -154,7 +164,10 @@ const IkHmsOrganisering = () => {
         updated_at: new Date().toISOString(),
       }, { onConflict: "company_id,department_id" })
       .then(({ error }) => {
-        if (error) console.error("Error auto-syncing roles:", error);
+        if (error) {
+          lastSyncedContentRef.current = null;
+          console.error("Error auto-syncing roles:", error);
+        }
       });
   }, [nodes, tree, profile?.company_id]);
 
