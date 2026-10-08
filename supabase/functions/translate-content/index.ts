@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -122,22 +123,16 @@ RULES:
 
 Respond ONLY with JSON: {"detected":"<code>","text":"<result>"}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: content },
-        ],
-        temperature: 0.2,
-        response_format: { type: "json_object" },
-      }),
-    });
+    // 3.8 (low) first, automatic fallback to 2.5 on error or after 45 s.
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+      model: AI_CHAT_MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: content },
+      ],
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+    }, null, { totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       const errorText = await response.text();
