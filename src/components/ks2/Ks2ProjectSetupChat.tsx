@@ -328,7 +328,6 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
       if (jsonContent) {
         try {
           const parsed = JSON.parse(jsonContent);
-          console.log("Parsed project data:", parsed);
 
           const projectData: ProposalData = {
             project_name: cleanProjectName(parsed.project_info?.project_name),

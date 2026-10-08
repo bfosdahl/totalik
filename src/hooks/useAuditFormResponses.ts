@@ -91,7 +91,6 @@ export function useAuditFormResponses() {
       status: "draft" | "completed" = "draft",
       existingId?: string
     ) => {
-      console.log("[useAuditFormResponses] saveFormResponse called", { formType, status, existingId, companyId });
       if (!companyId) {
         toast.error("Ingen bedrift funnet");
         console.error("[useAuditFormResponses] No companyId found");
@@ -137,7 +136,6 @@ export function useAuditFormResponses() {
         }
 
         await fetchResponses();
-        console.log("[useAuditFormResponses] Save successful", { status, result });
         toast.success(status === "completed" ? "Skjema fullført og lagret" : "Skjema lagret som utkast");
         return result as AuditFormResponse;
       } catch (error) {

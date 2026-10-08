@@ -494,7 +494,6 @@ export const KalenderTab = () => {
                           setShowTodayTasksDialog(false);
                           // Navigate using full URL with window.location.origin
                           const fullUrl = `${window.location.origin}${actionPath}`;
-                          console.log('Navigating to:', fullUrl);
                           setTimeout(() => {
                             window.location.href = fullUrl;
                           }, 100);
