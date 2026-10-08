@@ -473,7 +473,8 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       let lastFinishReason: string | null = null;
       let sawJsonStart = false;
 
-      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      const isFinalStep = stepNumber === 9;
+      if (!isFinalStep) setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
       while (!streamDone) {
         const { done, value } = await reader.read();
@@ -499,12 +500,14 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
                 sawJsonStart = true;
                 setIsGeneratingSetup(true);
               }
-              const displayContent = getDisplayContent(assistantMessage);
-              setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1] = { role: "assistant", content: displayContent };
-                return newMessages;
-              });
+              if (!isFinalStep) {
+                const displayContent = getDisplayContent(assistantMessage);
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = { role: "assistant", content: displayContent };
+                  return newMessages;
+                });
+              }
             }
           } catch { textBuffer = line + "\n" + textBuffer; break; }
         }
@@ -520,6 +523,11 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
       const jsonContent = extractJsonFromContent(assistantMessage);
       if (jsonContent) {
         await saveSetupData(jsonContent, stepNumber === 9);
+      } else if (isFinalStep) {
+        const displayContent = getDisplayContent(assistantMessage);
+        if (displayContent.trim()) {
+          setMessages(prev => [...prev, { role: "assistant", content: displayContent }]);
+        }
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
