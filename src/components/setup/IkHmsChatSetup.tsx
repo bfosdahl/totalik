@@ -16,6 +16,7 @@ import { InlineVerneombudStep } from "./InlineVerneombudStep";
 import { checkFallbackResponse } from "@/lib/aiSetupFallback";
 import { t } from "@/i18n/t";
 import { assertSaved } from "@/lib/assertSaved";
+import { defaultRisks, defaultRoutines, defaultActions } from "@/lib/defaultHmsSetup";
 
 interface Message {
   role: "user" | "assistant";
@@ -703,9 +704,47 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
       try {
         const data = JSON.parse(jsonContent);
 
+        const ALLOWED_HAZARD_SOURCES = ['maskinarbeid', 'sveising', 'klemskader', 'tunge_loft', 'kjemikalier', 'stoystov', 'arbeid_i_hoyden', 'varmt_arbeid', 'elektrisk_arbeid', 'trafikk', 'alenearbeid', 'trange_rom', 'utgravning', 'stress', 'vold_trusler', 'annet'];
+        const riskIdMap = new Map<string, string>();
+        const stableStringify = (v: unknown): string => {
+          if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
+          if (v && typeof v === 'object') return `{${Object.keys(v as Record<string, unknown>).sort().map(k => `${JSON.stringify(k)}:${stableStringify((v as Record<string, unknown>)[k])}`).join(',')}}`;
+          return JSON.stringify(v);
+        };
+        const isUntouchedStandardRisk = (r: Record<string, unknown>): boolean => {
+          if (r.created_by !== 'Standard oppsett') return false;
+          const seed = defaultRisks.find(d => d.id === r.id);
+          if (!seed) return false;
+          const { created_at: _c, events, ...rest } = r;
+          const strippedEvents = Array.isArray(events) ? (events as Array<Record<string, unknown>>).map(({ id: _id, ...e }) => e) : events;
+          const expected = {
+            id: seed.id, hazard_source: 'annet', hazard_source_custom: seed.description,
+            events: [{ description: seed.description, consequence: seed.consequence, probability: seed.probability, measures: [seed.existing_measures, seed.planned_measures].filter(Boolean).join('. '), responsible: '', deadline: '', status: 'planlagt' }],
+            created_by: 'Standard oppsett', is_predefined: true,
+          };
+          return stableStringify({ ...rest, events: strippedEvents }) === stableStringify(expected);
+        };
+        const isUntouchedStandardRoutine = (r: Record<string, unknown>): boolean => {
+          if (!r.is_predefined || r.is_ai_generated) return false;
+          const seed = defaultRoutines.find(d => d.id === r.id);
+          return !!seed && stableStringify(r) === stableStringify(seed);
+        };
+        const isUntouchedStandardAction = (a: Record<string, unknown>): boolean => {
+          const seed = defaultActions.find(d => d.id === a.id);
+          return !!seed && stableStringify(a) === stableStringify(seed);
+        };
+        const numberAiRoutines = (kept: Array<Record<string, unknown>>, aiRoutines: Array<Record<string, unknown>>) => {
+          const maxExisting = kept.reduce((max, r) => {
+            const m = /^R(\d+)$/.exec(String(r.routine_number || ''));
+            return m ? Math.max(max, parseInt(m[1], 10)) : max;
+          }, 0);
+          aiRoutines.forEach((r, i) => { r.routine_number = `R${(maxExisting + i + 1).toString().padStart(3, '0')}`; });
+          return aiRoutines;
+        };
+
         const transformedRoutines = data.routines?.map((routine: Record<string, unknown>, index: number) => ({
-          id: routine.id || `ai-routine-${index + 1}`,
-          routine_number: routine.routine_number || `R${(index + 1).toString().padStart(3, '0')}`,
+          id: `ai-${crypto.randomUUID()}`,
+          routine_number: `R${(index + 1).toString().padStart(3, '0')}`,
           routine_name: routine.routine_name || routine.name || 'Ukjent rutine',
           category: routine.category || 'Generelt',
           purpose: routine.purpose || routine.description || '',
@@ -718,7 +757,8 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         })) || [];
 
         const transformedRisks = data.risks?.map((risk: Record<string, unknown>, index: number) => {
-          const riskId = (risk.id as string) || `ai-risk-${index + 1}`;
+          const riskId = `ai-${crypto.randomUUID()}`;
+          if (risk.id) riskIdMap.set(String(risk.id), riskId);
           const hasNewFormat = risk.hazard_source && Array.isArray(risk.events) && (risk.events as Array<Record<string, unknown>>).length > 0;
           
           if (hasNewFormat) {
@@ -732,7 +772,9 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
               deadline: (event.deadline as string) || '',
               status: (event.status as string) || 'planlagt',
             }));
-            return { id: riskId, hazard_source: (risk.hazard_source as string) || 'annet', hazard_source_custom: (risk.hazard_source_custom as string) || '', events, created_at: new Date().toISOString(), created_by: 'Oppsett-hjelperen', is_ai_generated: true };
+            const rawHazard = (risk.hazard_source as string) || 'annet';
+            const hazardAllowed = ALLOWED_HAZARD_SOURCES.includes(rawHazard);
+            return { id: riskId, hazard_source: hazardAllowed ? rawHazard : 'annet', hazard_source_custom: hazardAllowed ? ((risk.hazard_source_custom as string) || '') : ((risk.hazard_source_custom as string) || rawHazard), events, created_at: new Date().toISOString(), created_by: 'Oppsett-hjelperen', is_ai_generated: true };
           }
           
           return {
@@ -743,7 +785,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         }) || [];
 
         const transformedActions = data.actions?.map((action: Record<string, unknown>, index: number) => ({
-          ...action, id: action.id || `ai-action-${index + 1}`, is_ai_generated: true,
+          ...action, id: `ai-${crypto.randomUUID()}`, ...(action.risk_id != null && riskIdMap.has(String(action.risk_id)) ? { risk_id: riskIdMap.get(String(action.risk_id)) } : {}), is_ai_generated: true,
         })) || [];
 
         const newSettings = {
@@ -789,7 +831,7 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
           if (data.routines?.length > 0) {
             const { data: existing } = await supabase.from("department_routines").select("routines").eq("department_id", departmentId).single();
             const userRoutines = (existing?.routines as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated);
-            await supabase.from("department_routines").upsert({ department_id: departmentId, routines: [...userRoutines, ...transformedRoutines] });
+            await supabase.from("department_routines").upsert({ department_id: departmentId, routines: [...userRoutines, ...numberAiRoutines(userRoutines, transformedRoutines)] });
           }
 
           queryClient.invalidateQueries({ queryKey: ["department-goals"] });
@@ -936,18 +978,20 @@ KRITISK: GENERER |||JSON_START||| og |||JSON_END||| blokken NÅ med alle mål, o
         }
         if (data.risks?.length > 0) {
           const { data: existing } = await supabase.from("company_risk_assessments").select("risks").eq("company_id", companyId).maybeSingle();
-          const userRisks = (existing?.risks as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated);
+          const userRisks = (existing?.risks as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated && !isUntouchedStandardRisk(r));
           await assertSaved("company_risk_assessments", await supabase.from("company_risk_assessments").upsert({ company_id: companyId, risks: [...userRisks, ...transformedRisks] }, { onConflict: "company_id,department_id" }));
         }
         if (data.actions?.length > 0) {
           const { data: existing } = await supabase.from("company_action_plans").select("actions").eq("company_id", companyId).maybeSingle();
-          const userActions = (existing?.actions as Array<Record<string, unknown>> || []).filter(a => !a.is_ai_generated);
+          const { data: riskRow } = await supabase.from("company_risk_assessments").select("risks").eq("company_id", companyId).maybeSingle();
+          const keptRiskIds = new Set((riskRow?.risks as Array<Record<string, unknown>> || []).map(r => String(r.id)));
+          const userActions = (existing?.actions as Array<Record<string, unknown>> || []).filter(a => !a.is_ai_generated && !(isUntouchedStandardAction(a) && !keptRiskIds.has(String(a.risk_id))));
           await assertSaved("company_action_plans", await supabase.from("company_action_plans").upsert({ company_id: companyId, actions: [...userActions, ...transformedActions] }, { onConflict: "company_id,department_id" }));
         }
         if (data.routines?.length > 0) {
           const { data: existing } = await supabase.from("company_routines").select("routines").eq("company_id", companyId).maybeSingle();
-          const userRoutines = (existing?.routines as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated);
-          await assertSaved("company_routines", await supabase.from("company_routines").upsert({ company_id: companyId, routines: [...userRoutines, ...transformedRoutines] }, { onConflict: "company_id,department_id" }));
+          const userRoutines = (existing?.routines as Array<Record<string, unknown>> || []).filter(r => !r.is_ai_generated && !isUntouchedStandardRoutine(r));
+          await assertSaved("company_routines", await supabase.from("company_routines").upsert({ company_id: companyId, routines: [...userRoutines, ...numberAiRoutines(userRoutines, transformedRoutines)] }, { onConflict: "company_id,department_id" }));
         }
 
         // Auto-generate laws (Step 9)
