@@ -35,6 +35,7 @@ function callGateway(apiKey: string, body: unknown): Promise<Response> {
 // TEMPORARY – model migration test. Candidate-only timeout so a stalled candidate call falls back to AI_CHAT_MODEL.
 const CANDIDATE_FIRST_CHUNK_TIMEOUT_MS = 45_000; // stream: headers + first body chunk
 const CANDIDATE_TOTAL_TIMEOUT_MS = 90_000; // non-stream: full body
+const CANDIDATE_REASONING_EFFORT = "low"; // TEMPORARY – model migration test: lower thinking on the candidate only
 
 async function callCandidateWithTimeout(apiKey: string, body: Record<string, unknown>): Promise<Response | null> {
   const isStream = body.stream === true;
@@ -44,7 +45,7 @@ async function callCandidateWithTimeout(apiKey: string, body: Record<string, unk
     const res = await fetch(AI_GATEWAY_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, model: AI_CHAT_MODEL_CANDIDATE }),
+      body: JSON.stringify({ ...body, model: AI_CHAT_MODEL_CANDIDATE, reasoning_effort: CANDIDATE_REASONING_EFFORT }),
       signal: ctrl.signal,
     });
     console.log(`[ai-gateway] TEMPORARY model test: ${AI_CHAT_MODEL_CANDIDATE} status=${res.status}`);
