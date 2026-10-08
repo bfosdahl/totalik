@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { X, Send, Sparkles, Lightbulb, Loader2, GripVertical, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +48,16 @@ export const MascotChatHelper = () => {
   });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Refresh lists after the assistant performed an action
+  const notifyDataChanged = useCallback((data: unknown) => {
+    const actions = (data as { actions?: unknown[] } | null)?.actions;
+    if (Array.isArray(actions) && actions.length > 0) {
+      queryClient.invalidateQueries();
+      window.dispatchEvent(new CustomEvent(AI_DATA_CHANGED_EVENT));
+    }
+  }, [queryClient]);
   const [currentTip, setCurrentTip] = useState(0);
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [interimText, setInterimText] = useState("");
@@ -144,6 +156,7 @@ export const MascotChatHelper = () => {
 
           if (error) throw error;
 
+          notifyDataChanged(data);
           const responseText = data?.reply || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
           const botResponse: Message = {
             id: (Date.now() + 1).toString(),
@@ -171,7 +184,7 @@ export const MascotChatHelper = () => {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [input, isLoading, messages, proffConfig.edgeFunction, autoSpeak, speech]);
+  }, [input, isLoading, messages, proffConfig.edgeFunction, autoSpeak, speech, notifyDataChanged]);
 
   // Speak new bot messages if autoSpeak is enabled
   const handleBotResponse = useCallback((response: string) => {
@@ -214,6 +227,7 @@ export const MascotChatHelper = () => {
 
       if (error) throw error;
 
+      notifyDataChanged(data);
       const responseText = data?.reply || "Beklager, jeg forstod ikke helt. Kan du prøve igjen?";
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),

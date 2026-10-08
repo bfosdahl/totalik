@@ -15,6 +15,7 @@ import {
 } from "@/utils/deviationSanitizer";
 import type { DeviationStatus } from "@/utils/deviationSanitizer";
 import { t } from "@/i18n/t";
+import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 
 // Valid database category values
 export type DeviationCategory = "quality" | "safety" | "environment" | "documentation" | "other" | "process" | "equipment" | "personnel" | "temperature" | "cleaning" | "pest_control" | "allergen" | "traceability" | "hygiene" | "storage" | "pests" | "expiry" | "contamination" | "receiving" | "other_food";
@@ -209,6 +210,13 @@ export function useDeviations() {
 
   useEffect(() => {
     fetchDeviations();
+  }, [fetchDeviations]);
+
+  // Refresh when an AI assistant (HMS/MAT Proffen) changed data
+  useEffect(() => {
+    const handler = () => { fetchDeviations(); };
+    window.addEventListener(AI_DATA_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(AI_DATA_CHANGED_EVENT, handler);
   }, [fetchDeviations]);
 
   // Create deviation with sanitized data — no `as any`

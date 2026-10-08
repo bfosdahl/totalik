@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -340,6 +341,14 @@ export const RutinerTab = () => {
     if (profile?.company_id) {
       fetchRoutines();
     }
+  }, [profile?.company_id, filterDepartmentId]);
+
+  // Refresh when an AI assistant (HMS/MAT Proffen) changed data
+  useEffect(() => {
+    const handler = () => { fetchRoutines(); };
+    window.addEventListener(AI_DATA_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(AI_DATA_CHANGED_EVENT, handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.company_id, filterDepartmentId]);
 
   const fetchRoutines = async () => {

@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Target, Save, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { t } from "@/i18n/t";
+import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 
 interface CompanyGoal {
   id: string;
@@ -25,6 +26,14 @@ const IkHmsMaal = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Refresh when an AI assistant (HMS/MAT Proffen) changed data
+  useEffect(() => {
+    const handler = () => setRefreshKey((k) => k + 1);
+    window.addEventListener(AI_DATA_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(AI_DATA_CHANGED_EVENT, handler);
+  }, []);
 
   // Fetch existing goals
   useEffect(() => {
@@ -52,7 +61,7 @@ const IkHmsMaal = () => {
     };
 
     fetchGoals();
-  }, [profile?.company_id, filterDepartmentId]);
+  }, [profile?.company_id, filterDepartmentId, refreshKey]);
 
   const handleUpdateGoal = (id: string, text: string) => {
     setGoals(goals.map(g => g.id === id ? { ...g, goal_text: text } : g));

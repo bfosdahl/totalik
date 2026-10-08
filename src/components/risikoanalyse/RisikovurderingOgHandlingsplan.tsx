@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -278,6 +279,13 @@ export function RisikovurderingOgHandlingsplan() {
 
   // Load data - uses a key to force re-fetch after deletions
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Refresh when an AI assistant (HMS/MAT Proffen) changed data
+  useEffect(() => {
+    const handler = () => setRefreshKey((k) => k + 1);
+    window.addEventListener(AI_DATA_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(AI_DATA_CHANGED_EVENT, handler);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
