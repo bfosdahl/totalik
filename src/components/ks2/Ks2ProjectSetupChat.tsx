@@ -82,6 +82,18 @@ const PLACEHOLDER_VALUES = [
   "undefined",
 ];
 
+/** Verdiar AI-en ofte finner på sjølv ("Byggherre AS", "Adresse" osv.). */
+const GENERATED_EXAMPLE_VALUES = [
+  "byggherre as",
+  "kunde as",
+  "oppdragsgiver as",
+  "byggherre",
+  "oppdragsgiver",
+  "kunde",
+  "adresse",
+  "prosjektnavn",
+];
+
 /** Tommer AI-felt som berre inneheld plasshaldartekst ("Ikke oppgitt" osv.). */
 function cleanPlaceholder(value: unknown): string {
   if (typeof value !== "string") return "";
@@ -93,7 +105,10 @@ function cleanPlaceholder(value: unknown): string {
     .replace(/^[\s\-–—:,/|]+|[\s\-–—:,/|]+$/g, "")
     .trim();
   if (!text) return "";
-  return PLACEHOLDER_VALUES.includes(text.toLowerCase()) ? "" : text;
+  const lower = text.toLowerCase();
+  if (lower.includes("eksempel")) return "";
+  if (PLACEHOLDER_VALUES.includes(lower) || GENERATED_EXAMPLE_VALUES.includes(lower)) return "";
+  return text;
 }
 
 function cleanProjectName(value: unknown): string {
@@ -487,6 +502,9 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             ].filter(s => s.items.length > 0);
             const itemTitle = (x: any) =>
               typeof x === "string" ? x : String(x?.title || x?.name || x?.area || "");
+            const proposalAddress = typeof proposal.address === "string" ? proposal.address.trim() : "";
+            const proposalClient =
+              typeof proposal.client_name === "string" ? proposal.client_name.trim() : "";
             return (
               <Card className="p-4 space-y-4 border-primary/40">
                 <div className="space-y-1">
@@ -498,6 +516,12 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Prosjektnavn"
                   />
+                  {(proposalAddress || proposalClient) && (
+                    <div className="space-y-0.5 pt-1 text-xs text-muted-foreground">
+                      {proposalAddress && <p>Adresse: {proposalAddress}</p>}
+                      {proposalClient && <p>Byggherre: {proposalClient}</p>}
+                    </div>
+                  )}
                 </div>
                 {sections.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
