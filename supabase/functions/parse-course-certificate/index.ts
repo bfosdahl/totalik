@@ -72,15 +72,14 @@ Svar ALLTID i følgende JSON-format, selv om du ikke finner all informasjon:
 Vær nøye med datoer - konverter alle datoer til YYYY-MM-DD format.
 Hvis dokumentet er et HMS-kort, varme arbeider-sertifikat, truckkurs, eller lignende norsk sertifikat, gjenkjenn dette.`;
 
-    // Use Lovable AI with Gemini Flash
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    const response = await callAiGateway(LOVABLE_API_KEY, {
+        model: AI_CHAT_MODEL,
         messages: [
           {
             role: "user",
@@ -95,9 +94,8 @@ Hvis dokumentet er et HMS-kort, varme arbeider-sertifikat, truckkurs, eller lign
             ],
           },
         ],
-        max_tokens: 1000,
-      }),
-    });
+        max_tokens: 2000,
+    }, null, { totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       const errorText = await response.text();
