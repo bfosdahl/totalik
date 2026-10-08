@@ -38,7 +38,7 @@ Analyser H-setninger (faresetninger) og P-setninger (sikkerhetssetninger) for å
 I tillegg til feltene over skal du ta med disse feltene. Bruk tom streng eller tom liste når opplysningen ikke står i dokumentet. ALDRI finn på verdier, og ALDRI legg til verneutstyr (required_ppe) som ikke er nevnt i dokumentet:
 
 - cas_numbers: liste, ett objekt per komponent/stoff som er oppgitt. Hvert objekt har "name" (komponentnavn), "cas" (CAS-nummer), "ec" (EC-/EC/NLP-nummer) og "percentage" (mengde/prosent slik det står). Utelat en nøkkel eller bruk tom streng når den ikke står.
-- hazard_statements: liste over faresetninger. Hvert objekt har "code" (f.eks. "H225" eller, når dokumentet bare har gamle R-setninger, "R11") og "text" (setningsteksten slik den står).
+- hazard_statements: liste over faresetninger. Hvert objekt har "code" (f.eks. "H225" eller, når dokumentet bare har gamle R-setninger, "R11") og "text". "text" skal kun være setningen slik den er trykt i dokumentet. Hvis bare koden står (f.eks. R36, R67, R20), skal text være tom streng. Ikke bruk standardteksten til koden fra hukommelsen, og ikke bruk teksten under et faresymbol som setningstekst.
 - signal_word: varselsord slik det står, f.eks. "Fare" eller "Advarsel". Tom streng hvis det ikke står.
 - revision_date: revisjonsdato eller utgivelsesdato på ISO-format YYYY-MM-DD. Tom streng hvis det ikke står.
 - emergency_phone: nødtelefonnummer slik det står, inkludert eventuelt navn på tjenesten. Tom streng hvis det ikke står.
