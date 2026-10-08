@@ -57,6 +57,28 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+const PLACEHOLDER_VALUES = [
+  "ikke oppgitt",
+  "ikke angitt",
+  "ukjent",
+  "ikke kjent",
+  "n/a",
+  "na",
+  "-",
+  "–",
+  "tbd",
+  "adresse hvis kjent",
+  "byggherre / oppdragsgiver hvis kjent",
+];
+
+/** Tommer AI-felt som berre inneheld plasshaldartekst ("Ikke oppgitt" osv.). */
+function cleanPlaceholder(value: unknown): string {
+  if (typeof value !== "string") return "";
+  const text = value.trim();
+  if (!text) return "";
+  return PLACEHOLDER_VALUES.includes(text.toLowerCase()) ? "" : text;
+}
+
 type MessageContent = string | any[];
 
 interface Message {
@@ -229,9 +251,9 @@ export function Ks2ProjectSetupChat({ onComplete, onCancel }: Ks2ProjectSetupCha
             milestones?: any[];
           } = {
             project_name: parsed.project_info?.project_name || "",
-            description: parsed.project_info?.description || "",
-            address: parsed.project_info?.address || "",
-            client_name: parsed.project_info?.client_name || "",
+            description: cleanPlaceholder(parsed.project_info?.description),
+            address: cleanPlaceholder(parsed.project_info?.address),
+            client_name: cleanPlaceholder(parsed.project_info?.client_name),
             contractor_type: (() => {
               const ct = String(parsed.contractor_type || "").toLowerCase();
               if (["total", "totalentreprise"].includes(ct)) return "total" as const;
