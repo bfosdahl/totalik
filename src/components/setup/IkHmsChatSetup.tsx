@@ -672,12 +672,14 @@ Foreslå 3-5 brede HMS-mål tilpasset bransjen. Forklar at kunden kan tilpasse m
   };
 
   // Step 9: Auto-generate laws
+  const STEP9_MESSAGE = "**Steg 9: Lover og forskrifter** ✅\n\nJeg har automatisk lagt til relevante lover og forskrifter basert på bransjen og bedriftsinformasjonen. Du finner oversikten under «Lover og forskrifter» i systemet.\n\n🎉 **Oppsettet er nå fullført!** HMS-systemet ditt er klart til bruk. Du kan se alt i Håndboken og gjøre endringer når som helst.";
+
   const handleAutoGenerateLaws = async () => {
     completeStep("lover");
-    
+
     setMessages(prev => [...prev, {
       role: "assistant",
-      content: "**Steg 9: Lover og forskrifter** ✅\n\nJeg har automatisk lagt til relevante lover og forskrifter basert på bransjen og bedriftsinformasjonen. Du finner oversikten under «Lover og forskrifter» i systemet.\n\n🎉 **Oppsettet er nå fullført!** HMS-systemet ditt er klart til bruk. Du kan se alt i Håndboken og gjøre endringer når som helst.",
+      content: STEP9_MESSAGE,
     }]);
     
     // The laws will be generated as part of saveSetupData
