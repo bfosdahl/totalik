@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IkMatRisk } from "@/hooks/useIkMatContent";
 import { Calendar, Thermometer, ClipboardCheck, ExternalLink, AlertTriangle } from "lucide-react";
 import { getLocalDateString } from "@/lib/dateUtils";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { t } from "@/i18n/t";
 
 interface ControlPlanOverviewProps {
@@ -182,12 +183,7 @@ const ControlCard = ({ risk, onOpenRisk, showDate, showFrequency }: ControlCardP
   const today = getLocalDateString();
   const isOverdue = risk.controlDate && risk.controlDate < today;
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('nb-NO', { 
-      day: 'numeric', 
-      month: 'short'
-    });
-  };
+  const formatDate = (date: string) => safeFormatDate(date, "d. MMM", date);
 
   return (
     <Card className={isOverdue ? 'border-red-300 dark:border-red-800' : ''}>

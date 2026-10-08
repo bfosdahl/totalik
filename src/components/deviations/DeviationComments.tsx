@@ -4,8 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Trash2, MessageSquare, Send, Loader2 } from 'lucide-react';
 import { useDeviationComments } from '@/hooks/useDeviationComments';
 import { useAuth } from '@/contexts/AuthContext';
-import { format } from 'date-fns';
-import { nb } from 'date-fns/locale';
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { t } from "@/i18n/t";
 
 interface DeviationCommentsProps {
@@ -33,9 +32,7 @@ export function DeviationComments({ deviationId }: DeviationCommentsProps) {
     return commentUserId === user?.id || isCompanyAdmin || isSystemAdmin;
   };
 
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'd. MMM yyyy, HH:mm', { locale: nb });
-  };
+  const formatDate = (dateString: string) => safeFormatDate(dateString, "d. MMM yyyy, HH:mm", dateString);
 
   return (
     <div className="space-y-4">

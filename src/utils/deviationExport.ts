@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import { Deviation } from "@/hooks/useDeviations";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 
 const priorityLabels: Record<string, string> = {
   low: "Lav",
@@ -19,13 +20,7 @@ const statusLabels: Record<string, string> = {
   closed: "Lukket",
 };
 
-const formatDate = (dateString: string) => {
-  try {
-    return format(new Date(dateString), "dd.MM.yyyy", { locale: nb });
-  } catch {
-    return dateString;
-  }
-};
+const formatDate = (dateString: string) => safeFormatDate(dateString, "dd.MM.yyyy", dateString);
 
 export const exportDeviationsToPDF = (deviations: Deviation[], companyName?: string) => {
   const doc = new jsPDF();

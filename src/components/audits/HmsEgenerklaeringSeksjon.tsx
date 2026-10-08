@@ -17,8 +17,7 @@ import {
   User,
   Building2
 } from "lucide-react";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
+import { safeFormatDate } from "@/utils/safeFormatDate";
 import { t } from "@/i18n/t";
 
 export default function HmsEgenerklaeringSeksjon() {
@@ -35,14 +34,7 @@ export default function HmsEgenerklaeringSeksjon() {
     );
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Ikke angitt";
-    try {
-      return format(new Date(dateString), "d. MMMM yyyy", { locale: nb });
-    } catch {
-      return dateString;
-    }
-  };
+  const formatDate = (dateString: string | null) => safeFormatDate(dateString, "d. MMMM yyyy", dateString || "Ikke angitt");
 
   return (
     <div className="space-y-6">
