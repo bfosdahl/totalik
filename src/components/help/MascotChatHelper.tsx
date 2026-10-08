@@ -444,6 +444,19 @@ export const MascotChatHelper = () => {
                 </div>
               )}
               
+              {!showTips && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Vis tips"
+                  title="Vis tips"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={showTipsAgain}
+                  className={`${headerTextClass} hover:bg-white/20`}
+                >
+                  <Lightbulb className="h-5 w-5" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -455,7 +468,7 @@ export const MascotChatHelper = () => {
             </div>
 
             {/* Chat messages */}
-            <ScrollArea className="h-[300px] p-4" ref={scrollRef}>
+            <ScrollArea className={`${isMobile && !showTips ? "h-[380px]" : "h-[300px]"} p-4`} ref={scrollRef}>
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -486,24 +499,34 @@ export const MascotChatHelper = () => {
             </ScrollArea>
 
             {/* Tips section */}
-            <div className={`border-t border-b ${tipsBgClass} p-3`}>
-              <div className="flex items-start gap-2">
-                <Lightbulb className={`h-5 w-5 ${tipsIconClass} shrink-0 mt-0.5`} />
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground mb-1">{t("auto.dagens_tips")}</p>
-                  <p className="text-sm">{proffConfig.tips[currentTip]}</p>
+            {showTips && (
+              <div className={`border-t border-b ${tipsBgClass} p-3`}>
+                <div className="flex items-start gap-2 min-w-0">
+                  <Lightbulb className={`h-5 w-5 ${tipsIconClass} shrink-0 mt-0.5`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1">{t("auto.dagens_tips")}</p>
+                    <p className="text-sm break-words">{proffConfig.tips[currentTip % proffConfig.tips.length]}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={nextTip}
+                    className="shrink-0 text-xs h-7"
+                  >
+                    {t("auto.neste")}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Skjul tips"
+                    onClick={dismissTips}
+                    className="shrink-0 h-7 w-7"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={nextTip}
-                  className="shrink-0 text-xs"
-                >
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  {t("auto.neste")}
-                </Button>
               </div>
-            </div>
+            )}
 
             {/* Input */}
             <div className="p-3 flex gap-2">
