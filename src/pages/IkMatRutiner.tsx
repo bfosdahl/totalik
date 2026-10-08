@@ -148,7 +148,7 @@ const IkMatRutiner = () => {
   return (
     <AppLayout>
       <div className="container max-w-5xl mx-auto py-6 px-4 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
               <BookOpen className="h-7 w-7 text-primary" />
@@ -158,7 +158,7 @@ const IkMatRutiner = () => {
               {t("auto.rutiner_og_prosedyrer_for_matsikkerhet")}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <AiRoutineDialog module="ik_mat" onAdopt={handleAdoptFromLibrary} />
             <RoutineLibraryDialog 
               module="ik_mat" 
