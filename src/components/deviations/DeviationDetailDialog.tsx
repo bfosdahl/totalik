@@ -505,6 +505,15 @@ export function DeviationDetailDialog({
                   {priorityConfig[deviation.priority].label}
                 </Badge>
               )}
+              {!isEditing && deviation.category && (
+                categoryConfig[deviation.category as DeviationCategory] ? (
+                  <Badge className={categoryConfig[deviation.category as DeviationCategory].color}>
+                    {getDeviationCategoryLabel(deviation.category)}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline">{getDeviationCategoryLabel(deviation.category)}</Badge>
+                )
+              )}
             </div>
             {onUpdate && !isEditing && (
               <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="gap-1.5">

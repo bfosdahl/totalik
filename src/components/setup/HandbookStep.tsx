@@ -151,7 +151,7 @@ export function HandbookStep({
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
   // Refresh company info to get latest logo
-  const refreshCompanyInfo = async () => {
+  const refreshCompanyInfo = async (opts?: { silent?: boolean }) => {
     if (!companyInfo?.id) return;
     
     setIsRefreshing(true);
@@ -175,7 +175,7 @@ export function HandbookStep({
           email: data.email || undefined,
           logo_url: data.logo_url,
         });
-        toast.success(t("auto.bedriftsinformasjon_oppdatert_2"));
+        if (!opts?.silent) toast.success(t("auto.bedriftsinformasjon_oppdatert_2"));
       }
     } catch (error) {
       console.error("Error refreshing company info:", error);
@@ -187,7 +187,7 @@ export function HandbookStep({
   // Auto-refresh on mount to get latest data
   useEffect(() => {
     if (companyInfo?.id) {
-      refreshCompanyInfo();
+      refreshCompanyInfo({ silent: true });
     }
   }, [companyInfo?.id]);
 
@@ -1308,11 +1308,11 @@ export function HandbookStep({
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               {completionStatus.goals ? (
-                <CheckCircle2 className="w-5 h-5 text-success" />
+                <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
               ) : (
-                <XCircle className="w-5 h-5 text-destructive" />
+                <XCircle className="w-5 h-5 shrink-0 text-destructive" />
               )}
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{t("auto.maal")}</span>
@@ -1325,11 +1325,11 @@ export function HandbookStep({
 
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               {completionStatus.organization ? (
-                <CheckCircle2 className="w-5 h-5 text-success" />
+                <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
               ) : (
-                <XCircle className="w-5 h-5 text-destructive" />
+                <XCircle className="w-5 h-5 shrink-0 text-destructive" />
               )}
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{t("auto.organisering")}</span>
@@ -1342,11 +1342,11 @@ export function HandbookStep({
 
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               {completionStatus.riskAssessment ? (
-                <CheckCircle2 className="w-5 h-5 text-success" />
+                <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
               ) : (
-                <XCircle className="w-5 h-5 text-destructive" />
+                <XCircle className="w-5 h-5 shrink-0 text-destructive" />
               )}
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{t("auto.risikoer")}</span>
@@ -1359,11 +1359,11 @@ export function HandbookStep({
 
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               {completionStatus.actionPlan ? (
-                <CheckCircle2 className="w-5 h-5 text-success" />
+                <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
               ) : (
-                <XCircle className="w-5 h-5 text-destructive" />
+                <XCircle className="w-5 h-5 shrink-0 text-destructive" />
               )}
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <ClipboardList className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{t("auto.handlinger")}</span>
@@ -1376,11 +1376,11 @@ export function HandbookStep({
 
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               {completionStatus.routines ? (
-                <CheckCircle2 className="w-5 h-5 text-success" />
+                <CheckCircle2 className="w-5 h-5 shrink-0 text-success" />
               ) : (
-                <XCircle className="w-5 h-5 text-destructive" />
+                <XCircle className="w-5 h-5 shrink-0 text-destructive" />
               )}
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <ListChecks className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{t("auto.rutiner")}</span>
@@ -1402,7 +1402,7 @@ export function HandbookStep({
             <Button
               variant="ghost"
               size="sm"
-              onClick={refreshCompanyInfo}
+              onClick={() => refreshCompanyInfo()}
               disabled={isRefreshing}
             >
               <RefreshCw className={`w-4 h-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
