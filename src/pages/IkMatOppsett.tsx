@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { IkMatChatSetup } from "@/components/setup/IkMatChatSetup";
+import { IkMatChatSetup, clearChatState, hasInProgressChatState } from "@/components/setup/IkMatChatSetup";
 import { IkMatHandbookImportUploader } from "@/components/setup/IkMatHandbookImportUploader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -18,6 +18,7 @@ const IkMatOppsett = () => {
   const [setupCompleted, setSetupCompleted] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
+  const [restartKey, setRestartKey] = useState(0);
 
   // Combined loading state - wait for both auth and modules to load
   const isLoading = authLoading || modulesLoading;
@@ -37,7 +38,7 @@ const IkMatOppsett = () => {
     // Check if setup is already completed (only if not restarting)
     if (modules.length > 0 && !isRestarting) {
       const ikMatModule = modules.find(m => m.module_type === 'IK_MAT');
-      if (ikMatModule?.settings && (ikMatModule.settings as any).setupCompletedAt) {
+      if (ikMatModule?.settings && (ikMatModule.settings as any).setupCompletedAt && !hasInProgressChatState(company.id)) {
         setSetupCompleted(true);
       }
     }
@@ -131,6 +132,7 @@ const IkMatOppsett = () => {
               }}
             />
             <IkMatChatSetup
+              key={restartKey}
               companyId={company.id}
               onComplete={() => {
                 setSetupCompleted(true);
@@ -161,6 +163,8 @@ const IkMatOppsett = () => {
               <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
               <AlertDialogAction onClick={() => {
                 setShowRestartDialog(false);
+                clearChatState(company.id);
+                setRestartKey((k) => k + 1);
                 setIsRestarting(true);
                 setSetupCompleted(false);
               }}>
