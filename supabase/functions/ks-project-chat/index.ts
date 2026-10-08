@@ -9,6 +9,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// Gjeld for alle bedrifter i oppsettsmodus: aldri oppdikta namn/adressar.
+const NO_INVENTED_DATA = `\n\nINGEN OPPDIKTEDE DATA: project_name skal være et kort arbeidsnavn uten hakeparenteser eller plassholdere (f.eks. "Totalrenovering bad"). address og client_name skal være tom streng "" når de ikke er kjent – aldri plassholdertekst som 'Ikke oppgitt', 'Ukjent' eller '[adresse]'. Finn ALDRI på prosjektnavn, adresse, byggherre, personnavn eller firmanavn. Er de ikke oppgitt av brukeren: address = "", client_name = "", og project_name = en nøytral beskrivelse av prosjekttypen (f.eks. "Nybygg enebolig", "Totalrenovering bad"), eller "Nytt prosjekt" hvis typen er ukjent – aldri ord som 'Typisk', 'Standard', 'Eksempel' eller 'AS'.`;
+
 function buildSetupPrompt(): string {
   return `Du er Prosjekt-hjelperen, en vennlig norsk AI-assistent som hjelper brukere å sette opp nye byggeprosjekter i et KS-system.
 
