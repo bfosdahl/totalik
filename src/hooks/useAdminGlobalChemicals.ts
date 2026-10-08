@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  createGlobalChemicalWithSds,
+  sanitizeSdsFileName,
+} from "@/lib/globalChemicals";
 import type { GlobalChemical, GlobalChemicalSdsVersion } from "./useGlobalChemicalRegistry";
 
 export interface GlobalChemicalWithStats extends GlobalChemical {
@@ -77,55 +81,14 @@ export const useAdminGlobalChemicals = () => {
       notes?: string;
       sdsFile?: File;
     }) => {
-      // 1. Create global chemical
-      const { data: globalChemical, error: chemError } = await supabase
-        .from("global_chemicals" as any)
-        .insert({
-          product_name: productName,
-          manufacturer: manufacturer || null,
-          cas_number: casNumber || null,
-          danger_classes: dangerClasses,
-          notes: notes || null,
-        } as any)
-        .select()
-        .single();
-
-      if (chemError) throw chemError;
-
-      // 2. Upload SDS file if provided
-      if (sdsFile && (globalChemical as any).id) {
-        const sanitizedName = sdsFile.name
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/[æÆ]/g, "ae")
-          .replace(/[øØ]/g, "o")
-          .replace(/[åÅ]/g, "a")
-          .replace(/[^a-zA-Z0-9.-]/g, "_");
-
-        const filePath = `${(globalChemical as any).id}/${Date.now()}_${sanitizedName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("global-sds-files")
-          .upload(filePath, sdsFile);
-
-        if (uploadError) {
-          console.error("SDS upload error:", uploadError);
-        } else {
-          // Create SDS version record
-          await supabase
-            .from("global_chemical_sds_versions" as any)
-            .insert({
-              global_chemical_id: (globalChemical as any).id,
-              version_number: 1,
-              sds_file_path: filePath,
-              file_name: sdsFile.name,
-              file_size: sdsFile.size,
-              is_current: true,
-            } as any);
-        }
-      }
-
-      return globalChemical;
+      return createGlobalChemicalWithSds({
+        productName,
+        manufacturer,
+        casNumber,
+        dangerClasses,
+        notes,
+        sdsFile,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-global-chemicals"] });
@@ -252,13 +215,7 @@ export const useAdminGlobalChemicals = () => {
         .eq("global_chemical_id", chemicalId);
 
       // Upload new file
-      const sanitizedName = sdsFile.name
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[æÆ]/g, "ae")
-        .replace(/[øØ]/g, "o")
-        .replace(/[åÅ]/g, "a")
-        .replace(/[^a-zA-Z0-9.-]/g, "_");
+      const sanitizedName = sanitizeSdsFileName(sdsFile.name);
 
       const filePath = `${chemicalId}/${Date.now()}_v${nextVersion}_${sanitizedName}`;
 
