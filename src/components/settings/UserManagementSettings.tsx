@@ -314,6 +314,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       if (data?.error) throw new Error(data.error);
 
       // Assign to department if selected (not "none")
+      let departmentLinkError: string | null = null;
       if (createForm.departmentId && createForm.departmentId !== "none" && data?.userId) {
         const { data: createdProfile } = await supabase
           .from("profiles")
@@ -321,14 +322,19 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           .eq("user_id", data.userId)
           .eq("company_id", company?.id ?? "")
           .maybeSingle();
-        await supabase.from("user_departments").insert({
+        const { error: deptError } = await supabase.from("user_departments").insert({
           user_id: createdProfile?.id ?? data.userId,
           department_id: createForm.departmentId,
           is_department_admin: createForm.isDepartmentAdmin,
         });
+        if (deptError) departmentLinkError = deptError.message;
       }
 
-      toast.success(sendDirectNow ? t("auto.bruker_opprettet_2") : "Bruker opprettet (ingen e-post sendt)");
+      if (departmentLinkError) {
+        toast.error("Bruker opprettet, men kunne ikke knyttes til avdelingen: " + departmentLinkError);
+      } else {
+        toast.success(sendDirectNow ? t("auto.bruker_opprettet_2") : "Bruker opprettet (ingen e-post sendt)");
+      }
       setSendDirectNow(false);
       setCreateDirectDialogOpen(false);
       setCreateForm({ email: "", password: "", firstName: "", lastName: "", role: "user", departmentId: "", isDepartmentAdmin: false });
@@ -362,17 +368,23 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       // Update role if changed
       if (editForm.role !== selectedUser.role) {
         // Remove existing role (except system_admin)
-        await supabase
+        {
+          const { error } = await supabase
           .from("user_roles")
           .delete()
           .eq("user_id", selectedUser.user_id)
           .neq("role", "system_admin");
+          if (error) throw error;
+        }
 
         // Remove existing department admin status
-        await supabase
+        {
+          const { error } = await supabase
           .from("user_departments")
           .update({ is_department_admin: false })
           .eq("user_id", selectedUser.id);
+          if (error) throw error;
+        }
 
         // Add new role based on selection
         if (editForm.role === "company_admin") {
@@ -385,26 +397,34 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           if (roleError) throw roleError;
         } else if (editForm.role === "department_admin" && editForm.departmentId && editForm.departmentId !== "none") {
           // Handle department admin - upsert to user_departments
-          const { data: existing } = await supabase
+          const { data: existing, error: existingError } = await supabase
             .from("user_departments")
             .select("id")
             .eq("user_id", selectedUser.id)
             .eq("department_id", editForm.departmentId)
             .maybeSingle();
 
+          if (existingError) throw existingError;
+
           if (existing) {
-            await supabase
+            {
+              const { error } = await supabase
               .from("user_departments")
               .update({ is_department_admin: true })
               .eq("id", existing.id);
+              if (error) throw error;
+            }
           } else {
-            await supabase
+            {
+              const { error } = await supabase
               .from("user_departments")
               .insert({
                 user_id: selectedUser.id,
                 department_id: editForm.departmentId,
                 is_department_admin: true,
               });
+              if (error) throw error;
+            }
           }
         }
       } else if (editForm.role === "department_admin") {
@@ -413,34 +433,45 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         if (editForm.departmentId !== currentDeptId && editForm.departmentId && editForm.departmentId !== "none") {
           // Remove old department admin
           if (currentDeptId) {
-            await supabase
+            {
+              const { error } = await supabase
               .from("user_departments")
               .update({ is_department_admin: false })
               .eq("user_id", selectedUser.id)
               .eq("department_id", currentDeptId);
+              if (error) throw error;
+            }
           }
           
           // Add new department admin
-          const { data: existing } = await supabase
+          const { data: existing, error: existingError } = await supabase
             .from("user_departments")
             .select("id")
             .eq("user_id", selectedUser.id)
             .eq("department_id", editForm.departmentId)
             .maybeSingle();
 
+          if (existingError) throw existingError;
+
           if (existing) {
-            await supabase
+            {
+              const { error } = await supabase
               .from("user_departments")
               .update({ is_department_admin: true })
               .eq("id", existing.id);
+              if (error) throw error;
+            }
           } else {
-            await supabase
+            {
+              const { error } = await supabase
               .from("user_departments")
               .insert({
                 user_id: selectedUser.id,
                 department_id: editForm.departmentId,
                 is_department_admin: true,
               });
+              if (error) throw error;
+            }
           }
         }
       }
