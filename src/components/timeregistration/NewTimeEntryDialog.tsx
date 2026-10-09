@@ -754,10 +754,10 @@ export function NewTimeEntryDialog({
                 }}
               />
               <div className="flex flex-wrap gap-1">
-                <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setBreakMin("0"); recalcFromSpan(startTime, endTime, 0); }}>
+                <Button type="button" variant="outline" size="sm" aria-pressed={breakNum === 0} className={cn("mt-1 h-7 rounded-full px-3 text-xs", breakNum === 0 && "bg-primary/10 border-primary text-primary")} onClick={() => { setBreakMin("0"); recalcFromSpan(startTime, endTime, 0); }}>
                   Ingen pause
                 </Button>
-                <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setBreakMin("30"); recalcFromSpan(startTime, endTime, 30); }}>
+                <Button type="button" variant="outline" size="sm" aria-pressed={breakNum === 30} className={cn("mt-1 h-7 rounded-full px-3 text-xs", breakNum === 30 && "bg-primary/10 border-primary text-primary")} onClick={() => { setBreakMin("30"); recalcFromSpan(startTime, endTime, 30); }}>
                   30 min
                 </Button>
               </div>

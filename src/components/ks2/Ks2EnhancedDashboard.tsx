@@ -26,7 +26,8 @@ import { useKsModule2Checklists } from "@/hooks/useKsModule2Checklists";
 import { useKsModule2Subcontractors } from "@/hooks/useKsModule2Subcontractors";
 import { useKsModule2Avvik } from "@/hooks/useKsModule2Avvik";
 import { useKsModule2Templates } from "@/hooks/useKsModule2Templates";
-import { format, isThisWeek, parseISO, subDays, isAfter, isBefore, startOfWeek, endOfWeek, eachDayOfInterval, differenceInDays } from "date-fns";
+import { format, isThisWeek, parseISO, subDays, isAfter, isBefore, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import {
   BarChart,
@@ -390,7 +391,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
             ) : (
               <div className="space-y-2">
                 {enhancedStats.upcomingDeadlines.slice(0, 5).map((checklist) => {
-                  const daysLeft = differenceInDays(parseISO(checklist.deadline_date!), new Date());
+                  const daysLeft = (calendarDaysFromToday(checklist.deadline_date!) ?? 0);
                   return (
                     <div
                       key={checklist.id}

@@ -72,7 +72,7 @@ export function CustomerImportDialog({ open, onOpenChange, companyId, existing }
         toast.error("Fant ingen kolonne for kundenavn (f.eks. «Navn» eller «Kunde») i filen");
         return;
       }
-      const m = suggestMapping(sheet[h]);
+      const m = suggestMapping(sheet[h], sheet.slice(h + 1, h + 11));
       setFileName(file.name);
       setRows(sheet);
       setHeaderIndex(h);
@@ -182,11 +182,24 @@ export function CustomerImportDialog({ open, onOpenChange, companyId, existing }
                       </SelectContent>
                     </Select>
                     {combined && (
-                      <p className="text-xs text-muted-foreground">Hentes fra «{String(header[mapping.postnrSted!])}»</p>
+                      <p className="text-xs text-muted-foreground">Hentes fra «{String(header[mapping.postnrSted!] || `Kolonne ${mapping.postnrSted! + 1}`)}» (postnr + sted)</p>
                     )}
                   </div>
                 );
               })}
+              <div className="space-y-1 min-w-0 sm:col-span-2">
+                <Label>Postnr + sted i samme kolonne</Label>
+                <Select value={mapping.postnrSted !== undefined ? String(mapping.postnrSted) : NONE} onValueChange={(v) => setField("postnrSted", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>Ikke importer</SelectItem>
+                    {header.map((h, i) => (
+                      <SelectItem key={i} value={String(i)}>{String(h || `Kolonne ${i + 1}`)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Bruk denne hvis postnummer og sted står i samme celle, f.eks. «0585 Oslo».</p>
+              </div>
             </div>
           )}
 
@@ -198,9 +211,9 @@ export function CustomerImportDialog({ open, onOpenChange, companyId, existing }
             <>
               <div className="flex flex-wrap gap-2 text-sm">
                 <Badge>{counts.nye} nye</Badge>
-                <Badge variant="secondary">{counts.finnes} finnes</Badge>
-                <Badge variant="outline">{counts.dubletter} dubletter</Badge>
-                <Badge variant="destructive">{counts.utenNavn} uten navn</Badge>
+                {counts.finnes > 0 && <Badge variant="secondary">{counts.finnes} finnes</Badge>}
+                {counts.dubletter > 0 && <Badge variant="outline">{counts.dubletter} dubletter</Badge>}
+                {counts.utenNavn > 0 && <Badge variant="destructive">{counts.utenNavn} uten navn</Badge>}
               </div>
               <div className="border rounded-md overflow-x-auto max-h-[40vh] overflow-y-auto">
                 <Table>

@@ -10,7 +10,8 @@ import { useFdvBuildings } from "@/hooks/useFdvBuildings";
 import { useFdvControls } from "@/hooks/useFdvControls";
 import { useFdvRiskAssessments } from "@/hooks/useFdvRiskAssessments";
 import { useCompanyModules } from "@/hooks/useCompanyModules";
-import { format, differenceInDays } from "date-fns";
+import { format } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
 
@@ -42,7 +43,7 @@ export default function FdvDashboard() {
   // Upcoming controls in next 30 days
   const upcomingIn30Days = upcomingControls.filter(c => {
     if (!c.next_due_date) return false;
-    const days = differenceInDays(new Date(c.next_due_date), new Date());
+    const days = (calendarDaysFromToday(c.next_due_date) ?? 0);
     return days <= 30 && days >= 0;
   });
 

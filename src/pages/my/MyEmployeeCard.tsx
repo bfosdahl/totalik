@@ -19,7 +19,8 @@ import { AddCourseDialog } from "@/components/employees/AddCourseDialog";
 import { UploadDocumentDialog } from "@/components/employees/UploadDocumentDialog";
 import { HmsCardSection } from "@/components/employees/HmsCardSection";
 import { SignatureManager } from "@/components/employees/SignatureManager";
-import { format, differenceInDays } from "date-fns";
+import { format } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments, useUserDepartments } from "@/hooks/useDepartments";
@@ -171,7 +172,7 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
 
   const getCourseStatus = (expiryDate: string | null) => {
     if (!expiryDate) return { label: t("auto.ingen_utloep"), variant: "secondary" as const };
-    const daysUntil = differenceInDays(new Date(expiryDate), new Date());
+    const daysUntil = (calendarDaysFromToday(expiryDate) ?? 0);
     if (daysUntil < 0) return { label: t("auto.utgaatt"), variant: "destructive" as const };
     if (daysUntil <= 30) return { label: t("auto.utloeper_snart"), variant: "outline" as const };
     return { label: t("auto.gyldig"), variant: "secondary" as const };
@@ -444,8 +445,8 @@ function EmployeeCardContent({ employee }: { employee: Employee }) {
               {courses?.map((course) => {
                 const status = getCourseStatus(course.expiry_date);
                 const isExpiring = course.expiry_date &&
-                  differenceInDays(new Date(course.expiry_date), new Date()) <= 30 &&
-                  differenceInDays(new Date(course.expiry_date), new Date()) >= 0;
+                  (calendarDaysFromToday(course.expiry_date) ?? 0) <= 30 &&
+                  (calendarDaysFromToday(course.expiry_date) ?? 0) >= 0;
                 return (
                   <Card key={course.id} className={isExpiring ? "border-yellow-500" : ""}>
                     <CardContent className="flex items-center justify-between py-3">

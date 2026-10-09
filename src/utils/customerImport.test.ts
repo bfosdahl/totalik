@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import * as XLSX from "xlsx";
 import { decodeCsvBytes } from "./employeeImport";
 import {
-  suggestMapping, findCustomerHeaderRow, buildCustomers, cleanOrgNumber, splitPostnrSted, buildAddress, countStatuses, chunk,
+  suggestMapping, findCustomerHeaderRow, buildCustomers, cleanOrgNumber, splitPostnrSted, normalizePostnr, buildAddress, countStatuses, chunk,
   STATUS_NEW, STATUS_EXISTS, STATUS_DUPLICATE, STATUS_NO_NAME,
 } from "./customerImport";
 
@@ -63,5 +63,21 @@ describe("customerImport", () => {
 
   it("chunks in batches of 100", () => {
     expect(chunk(Array.from({ length: 250 }), 100).map((c) => c.length)).toEqual([100, 100, 50]);
+  });
+
+  it("pads 3-digit postnr from Excel numbers", () => {
+    expect(normalizePostnr("585")).toBe("0585");
+    expect(normalizePostnr("8170")).toBe("8170");
+    expect(normalizePostnr("12")).toBe("12");
+    expect(splitPostnrSted("585 Oslo")).toEqual({ postnr: "0585", sted: "Oslo" });
+    const rows = parse("Navn,Postnr,Sted\nA,585,Oslo\n");
+    expect(buildCustomers(rows, 0, suggestMapping(rows[0]), [])[0].address).toBe("0585 Oslo");
+  });
+
+  it("maps «Poststed» without digits to Sted", () => {
+    const rows = parse("Navn,Postnr,Poststed\nA,0585,Oslo\nB,8170,Engavågen\n");
+    expect(suggestMapping(rows[0], rows.slice(1))).toEqual({ name: 0, postnr: 1, sted: 2 });
+    const combo = parse("Navn,Poststed\nA,0585 Oslo\n");
+    expect(suggestMapping(combo[0], combo.slice(1))).toEqual({ name: 0, postnrSted: 1 });
   });
 });

@@ -27,7 +27,8 @@ import {
   Trash2,
   Info
 } from "lucide-react";
-import { format, differenceInDays, subYears } from "date-fns";
+import { format, subYears } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { 
   useAnonymousMessages, 
@@ -340,7 +341,7 @@ export default function AnonymousMessages() {
                   Viser {filteredMessages.length} av {tabMessages.length} meldinger
                 </p>
                 {filteredMessages.map((msg) => {
-                  const daysOld = differenceInDays(new Date(), new Date(msg.created_at));
+                  const daysOld = -(calendarDaysFromToday(msg.created_at) ?? 0);
                   return (
                     <Card 
                       key={msg.id} 
@@ -446,7 +447,7 @@ function MessageDetailDialog({
     setNewComment("");
   };
 
-  const daysOld = differenceInDays(new Date(), new Date(message.created_at));
+  const daysOld = -(calendarDaysFromToday(message.created_at) ?? 0);
   const isExpired = daysOld > 730; // 2 years
 
   return (

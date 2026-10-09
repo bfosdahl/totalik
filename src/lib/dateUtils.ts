@@ -38,3 +38,60 @@ export function getLocalDayEndISO(date: Date = new Date()): string {
   end.setHours(23, 59, 59, 999);
   return end.toISOString();
 }
+
+const osloFmt = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Oslo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** YYYY-MM-DD for the given instant in Europe/Oslo, independent of the browser's time zone. */
+export function osloDateString(d: Date = new Date()): string {
+  const parts = osloFmt.formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+const PLAIN_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+function toOsloDay(target: string | Date): string | null {
+  if (target instanceof Date) return isNaN(target.getTime()) ? null : osloDateString(target);
+  const s = String(target).trim();
+  if (!s) return null;
+  if (PLAIN_DATE.test(s)) return s;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : osloDateString(d);
+}
+
+function dayUtc(day: string): number | null {
+  const m = day.match(PLAIN_DATE);
+  if (!m) return null;
+  const v = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return isNaN(v) ? null : v;
+}
+
+/**
+ * Whole Oslo calendar days from today to target. Positive = future, 0 = today,
+ * negative = past. Null for empty/invalid input. DST-safe.
+ */
+export function calendarDaysFromToday(
+  target: string | Date | null | undefined,
+  now: Date = new Date(),
+): number | null {
+  if (target === null || target === undefined) return null;
+  const day = toOsloDay(target);
+  if (!day) return null;
+  const a = dayUtc(day);
+  const b = dayUtc(osloDateString(now));
+  if (a === null || b === null) return null;
+  return Math.round((a - b) / 86400000);
+}
+
+/** 0 «I dag», 1 «I morgen», -1 «I går», n>1 «Om n dager», n<-1 «n dager siden». */
+export function relativeDayLabel(days: number): string {
+  if (days === 0) return "I dag";
+  if (days === 1) return "I morgen";
+  if (days === -1) return "I går";
+  return days > 1 ? `Om ${days} dager` : `${-days} dager siden`;
+}

@@ -26,7 +26,8 @@ import { useFdvBuildings } from "@/hooks/useFdvBuildings";
 import { FdvControlDialog } from "@/components/fdv/FdvControlDialog";
 import { FdvCompleteControlDialog } from "@/components/fdv/FdvCompleteControlDialog";
 import { FdvControl, FDV_CONTROL_TYPE_LABELS } from "@/types/fdv";
-import { format, differenceInDays, isBefore, startOfDay } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
 
@@ -91,7 +92,7 @@ export default function FdvControls() {
     if (!control.next_due_date) return <Badge variant="outline">{t("auto.ikke_planlagt")}</Badge>;
     
     const dueDate = new Date(control.next_due_date);
-    const daysUntil = differenceInDays(dueDate, today);
+    const daysUntil = (calendarDaysFromToday(control.next_due_date) ?? 0);
     
     if (control.status === 'avvik') {
       return <Badge variant="destructive">{t("auto.avvik")}</Badge>;
@@ -224,7 +225,7 @@ export default function FdvControls() {
                   <p className="text-2xl font-bold">
                     {controls.filter(c => {
                       if (!c.next_due_date) return false;
-                      const days = differenceInDays(new Date(c.next_due_date), today);
+                      const days = (calendarDaysFromToday(c.next_due_date) ?? 0);
                       return days > 0 && days <= 30;
                     }).length}
                   </p>

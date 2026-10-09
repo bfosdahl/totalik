@@ -37,7 +37,7 @@ import { Plus, Calendar, Trash2, Edit, ChevronRight, Target, Clock, CheckCircle2
 import { Ks2ProjectTimeline } from "@/components/ks2/Ks2ProjectTimeline";
 import { useAuth } from "@/contexts/AuthContext";
 import { useKsModule2Milestones, Milestone } from "@/hooks/useKsModule2Milestones";
-import { format, differenceInDays, isWithinInterval, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, isSameDay } from "date-fns";
+import { format, differenceInCalendarDays, isWithinInterval, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameMonth, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
 
@@ -121,7 +121,7 @@ export default function Ks2Fremdriftsplan() {
   }, [dateRange]);
 
   // Calculate total days
-  const totalDays = differenceInDays(dateRange.end, dateRange.start) + 1;
+  const totalDays = differenceInCalendarDays(dateRange.end, dateRange.start) + 1;
 
   // Stats
   const stats = useMemo(() => {
@@ -242,8 +242,8 @@ export default function Ks2Fremdriftsplan() {
     const start = parseISO(milestone.start_date);
     const end = parseISO(milestone.end_date);
     
-    const startOffset = differenceInDays(start, dateRange.start);
-    const duration = differenceInDays(end, start) + 1;
+    const startOffset = differenceInCalendarDays(start, dateRange.start);
+    const duration = differenceInCalendarDays(end, start) + 1;
     
     const left = (startOffset / totalDays) * 100;
     const width = (duration / totalDays) * 100;
@@ -483,7 +483,7 @@ export default function Ks2Fremdriftsplan() {
                       </div>
                       <div className="flex-1 flex">
                         {months.map((month, i) => {
-                          const daysInMonth = differenceInDays(endOfMonth(month), startOfMonth(month)) + 1;
+                          const daysInMonth = differenceInCalendarDays(endOfMonth(month), startOfMonth(month)) + 1;
                           const width = (daysInMonth / totalDays) * 100;
                           return (
                             <div
@@ -527,7 +527,7 @@ export default function Ks2Fremdriftsplan() {
                               {/* Background grid */}
                               <div className="absolute inset-0 flex">
                                 {months.map((month, i) => {
-                                  const daysInMonth = differenceInDays(endOfMonth(month), startOfMonth(month)) + 1;
+                                  const daysInMonth = differenceInCalendarDays(endOfMonth(month), startOfMonth(month)) + 1;
                                   const width = (daysInMonth / totalDays) * 100;
                                   return (
                                     <div

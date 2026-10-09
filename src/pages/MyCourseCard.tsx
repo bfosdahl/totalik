@@ -13,7 +13,8 @@ import {
   FileText,
   ExternalLink
 } from "lucide-react";
-import { format, isPast, differenceInDays } from "date-fns";
+import { format, isPast } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { EmployeeCourse } from "@/hooks/useEmployees";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,7 @@ export default function MyCourseCard() {
     }
     
     const expiryDate = new Date(course.expiry_date);
-    const daysUntilExpiry = differenceInDays(expiryDate, new Date());
+    const daysUntilExpiry = (calendarDaysFromToday(course.expiry_date) ?? 0);
     
     if (isPast(expiryDate)) {
       return { status: "expired", label: t("auto.utloept"), color: "bg-red-500", icon: XCircle };

@@ -29,6 +29,8 @@ const EXACT: Record<string, CustomerField> = {
   orgnr: "org_number", organisasjonsnummer: "org_number", orgnummer: "org_number", organisasjonsnr: "org_number",
 };
 
+const txt = (v: unknown) => String(v ?? "").replace(/\s+/g, " ").trim();
+
 export function customerHeaderField(cell: unknown): CustomerField | null {
   const h = normalizeHeader(cell);
   if (!h) return null;
@@ -45,10 +47,15 @@ export function customerHeaderField(cell: unknown): CustomerField | null {
 /** Column index per field ("postnrSted" is a combined column). -1 / undefined = not imported. */
 export type CustomerMapping = Partial<Record<CustomerField, number>>;
 
-export function suggestMapping(header: unknown[]): CustomerMapping {
+export function suggestMapping(header: unknown[], sampleRows: unknown[][] = []): CustomerMapping {
   const m: CustomerMapping = {};
   header.forEach((cell, i) => {
-    const f = customerHeaderField(cell);
+    let f = customerHeaderField(cell);
+    // «Poststed» without digits in the data is just the place name.
+    if (f === "postnrSted" && normalizeHeader(cell) === "poststed") {
+      const vals = sampleRows.map((r) => txt(r?.[i])).filter(Boolean);
+      if (vals.length > 0 && vals.every((v) => !/\d/.test(v))) f = "sted";
+    }
     if (f && m[f] === undefined) m[f] = i;
   });
   // A combined column fills postnr/sted only when no separate column exists.
@@ -67,8 +74,14 @@ export function findCustomerHeaderRow(rows: unknown[][]): number {
 
 export function splitPostnrSted(value: string): { postnr: string; sted: string } {
   const v = value.replace(/\s+/g, " ").trim();
-  const m = v.match(/^(\d{4})\s*(.*)$/);
-  return m ? { postnr: m[1], sted: m[2].trim() } : { postnr: "", sted: v };
+  const m = v.match(/^(\d{3,4})(?:\s+(.*))?$/) || v.match(/^(\d{4})(.*)$/);
+  return m ? { postnr: normalizePostnr(m[1]), sted: (m[2] || "").trim() } : { postnr: "", sted: v };
+}
+
+/** Excel stores 0585 as 585: pad a 3-digit postnr to 4. Other values unchanged. */
+export function normalizePostnr(value: string): string {
+  const v = String(value ?? "").trim();
+  return /^\d{3}$/.test(v) ? `0${v}` : v;
 }
 
 export function cleanOrgNumber(value: string): string {
@@ -99,7 +112,6 @@ export interface ImportedCustomer {
   status: CustomerStatus;
 }
 
-const txt = (v: unknown) => String(v ?? "").replace(/\s+/g, " ").trim();
 const nameKey = (n: string) => n.replace(/\s+/g, " ").trim().toLowerCase();
 
 export function buildCustomers(
@@ -120,7 +132,7 @@ export function buildCustomers(
   rows.slice(headerIndex + 1).forEach((row, idx) => {
     if (!row || row.every((v) => txt(v) === "")) return;
     const name = get(row, "name");
-    let postnr = get(row, "postnr");
+    let postnr = normalizePostnr(get(row, "postnr"));
     let sted = get(row, "sted");
     const combo = get(row, "postnrSted");
     if (combo && (!postnr || !sted)) {
