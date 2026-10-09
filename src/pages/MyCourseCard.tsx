@@ -85,7 +85,7 @@ export default function MyCourseCard() {
 
   const validCourses = courses.filter(c => {
     if (!c.expiry_date) return true;
-    return !isPast(new Date(c.expiry_date));
+    return !isBeforeToday(c.expiry_date);
   });
 
   const openCertificate = async (filePath: string) => {

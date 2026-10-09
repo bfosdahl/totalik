@@ -77,14 +77,14 @@ export default function Employees() {
 
   const expiredCourses = courses?.filter(course => {
     if (!course.expiry_date) return false;
-    return isPast(new Date(course.expiry_date));
+    return isBeforeToday(course.expiry_date);
   }) || [];
 
   // Calculate HMS card stats
   const hmsCardIssues = employees?.filter(emp => {
     if (!emp.hms_card_required) return false;
     if (!emp.hms_card_obtained) return true;
-    if (emp.hms_card_expiry_date && isPast(new Date(emp.hms_card_expiry_date))) return true;
+    if (emp.hms_card_expiry_date && isBeforeToday(emp.hms_card_expiry_date)) return true;
     if (emp.hms_card_expiry_date && (calendarDaysFromToday(emp.hms_card_expiry_date) ?? 0) <= 30) return true;
     return false;
   }) || [];
@@ -363,13 +363,13 @@ export default function Employees() {
                         return days <= 30 && days >= 0;
                       }).length;
                       const expiredCount = employeeCourses.filter(c => 
-                        c.expiry_date && isPast(new Date(c.expiry_date))
+                        c.expiry_date && isBeforeToday(c.expiry_date)
                       ).length;
 
                       // HMS card status
                       const hmsCardMissing = employee.hms_card_required && !employee.hms_card_obtained;
                       const hmsCardExpired = employee.hms_card_required && employee.hms_card_obtained && 
-                        employee.hms_card_expiry_date && isPast(new Date(employee.hms_card_expiry_date));
+                        employee.hms_card_expiry_date && isBeforeToday(employee.hms_card_expiry_date);
                       const hmsCardExpiring = employee.hms_card_required && employee.hms_card_obtained && 
                         employee.hms_card_expiry_date && 
                         (calendarDaysFromToday(employee.hms_card_expiry_date) ?? 0) <= 30 &&
@@ -462,7 +462,7 @@ export default function Employees() {
                         <tbody>
                           {courses?.map((course) => {
                             const employee = employees?.find(e => e.id === course.employee_id);
-                            const isExpired = course.expiry_date && isPast(new Date(course.expiry_date));
+                            const isExpired = course.expiry_date && isBeforeToday(course.expiry_date);
                             const isExpiringSoon = course.expiry_date && !isExpired && 
                               (calendarDaysFromToday(course.expiry_date) ?? 0) <= 30;
                             
@@ -519,7 +519,7 @@ export default function Employees() {
                     <div className="md:hidden space-y-3">
                       {courses?.map((course) => {
                         const employee = employees?.find(e => e.id === course.employee_id);
-                        const isExpired = course.expiry_date && isPast(new Date(course.expiry_date));
+                        const isExpired = course.expiry_date && isBeforeToday(course.expiry_date);
                         const isExpiringSoon = course.expiry_date && !isExpired && 
                           (calendarDaysFromToday(course.expiry_date) ?? 0) <= 30;
                         

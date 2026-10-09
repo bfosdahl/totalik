@@ -290,11 +290,11 @@ export default function FdvControls() {
           </TabsContent>
 
           <TabsContent value="upcoming" className="space-y-4 mt-4">
-            {controls.filter(c => c.next_due_date && !isBefore(new Date(c.next_due_date), today)).length === 0 ? (
+            {controls.filter(c => c.next_due_date && !isBeforeToday(c.next_due_date)).length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">{t("auto.ingen_kommende_kontroller")}</div>
             ) : (
               controls
-                .filter(c => c.next_due_date && !isBefore(new Date(c.next_due_date), today))
+                .filter(c => c.next_due_date && !isBeforeToday(c.next_due_date))
                 .map((control) => <ControlCard key={control.id} control={control} />)
             )}
           </TabsContent>

@@ -95,3 +95,8 @@ export function relativeDayLabel(days: number): string {
   if (days === -1) return "I går";
   return days > 1 ? `Om ${days} dager` : `${-days} dager siden`;
 }
+
+/** True when a date-only value (deadline/expiry) is before today's Oslo calendar day. False for null/invalid. */
+export function isBeforeToday(value: string | Date | null | undefined, now: Date = new Date()): boolean {
+  return (calendarDaysFromToday(value as any, now) ?? 0) < 0;
+}

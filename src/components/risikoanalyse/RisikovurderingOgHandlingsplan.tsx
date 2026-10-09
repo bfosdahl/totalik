@@ -982,7 +982,7 @@ export function RisikovurderingOgHandlingsplan() {
     }).length,
     green: allEvents.filter(e => e.consequence * e.probability <= 5).length,
     openActions: actions.filter(a => a.status !== "utført").length,
-    overdueActions: actions.filter(a => a.status !== "utført" && a.deadline && new Date(a.deadline) < new Date()).length,
+    overdueActions: actions.filter(a => a.status !== "utført" && a.deadline && isBeforeToday(a.deadline)).length,
   };
 
   // Get highest risk level for a risk item
@@ -1447,7 +1447,7 @@ export function RisikovurderingOgHandlingsplan() {
               ) : (
                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
                   {actions.map(action => {
-                    const isOverdue = action.status !== "utført" && action.deadline && new Date(action.deadline) < new Date();
+                    const isOverdue = action.status !== "utført" && action.deadline && isBeforeToday(action.deadline);
                     
                     return (
                       <div key={action.id} className={cn(

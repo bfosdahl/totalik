@@ -113,8 +113,8 @@ export function useDepartmentDashboardStats(departmentId: string | undefined): D
           .select("*", { count: "exact", head: true })
           .eq("department_id", departmentId)
           .in("status", ["open", "in-progress"])
-          .gte("due_date", today.toISOString().split("T")[0])
-          .lte("due_date", sevenDaysFromNow.toISOString().split("T")[0]);
+          .gte("due_date", osloDateString(today))
+          .lte("due_date", osloDateString(sevenDaysFromNow));
 
         setStats({
           compliancePercent,
