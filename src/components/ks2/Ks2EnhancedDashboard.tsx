@@ -78,12 +78,13 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
     ).length;
 
     // Upcoming deadlines (next 7 days)
-    const upcomingDeadlines = checklists.filter((c) => {
-      if (!c.deadline_date || c.status === "completed") return false;
-      const deadline = parseISO(c.deadline_date);
-      const weekFromNow = subDays(now, -7);
-      return isAfter(deadline, now) && isBefore(deadline, weekFromNow);
-    });
+    const upcomingDeadlines = checklists
+      .filter((c) => {
+        if (!c.deadline_date || c.status === "completed") return false;
+        const days = calendarDaysFromToday(c.deadline_date);
+        return days !== null && days >= 0 && days <= 7;
+      })
+      .sort((a, b) => (calendarDaysFromToday(a.deadline_date) ?? 0) - (calendarDaysFromToday(b.deadline_date) ?? 0));
 
     // Subcontractor stats
     const approvedSubcontractors = subcontractors.filter((s) => s.approval_status === "approved").length;

@@ -361,7 +361,7 @@ export function useKsModule2Checklists(projectId: string) {
     overdue: checklists.filter(c => 
       c.status !== "completed" && 
       c.deadline_date && 
-      new Date(c.deadline_date) < new Date()
+      (calendarDaysFromToday(c.deadline_date) ?? 0) < 0
     ).length,
     waitingPaper: checklists.filter(c => c.is_paper_version && !c.paper_uploaded).length,
     progressPercent: checklists.length > 0 
