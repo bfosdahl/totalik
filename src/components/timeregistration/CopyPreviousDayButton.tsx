@@ -64,16 +64,21 @@ export function CopyPreviousDayButton({
       return;
     }
 
+    const toCopy = previousDayEntries.filter((e) => e.description?.trim());
+    const skipped = previousDayEntries.length - toCopy.length;
+    if (skipped > 0) toast.warning(`${skipped} føringer uten beskrivelse ble ikke kopiert`);
+    if (toCopy.length === 0) return;
+
     setIsCopying(true);
     let successCount = 0;
 
-    for (const entry of previousDayEntries) {
+    for (const entry of toCopy) {
       const success = await onCopy({
         entry_date: format(currentDate, "yyyy-MM-dd"),
         hours: entry.hours,
         project_name: entry.project_name || undefined,
         project_id: entry.project_id || undefined,
-        description: entry.description || undefined,
+        description: entry.description!.trim(),
       });
       
       if (success) successCount++;
@@ -172,9 +177,13 @@ export function CopyPreviousWeekButton({
       toast.error("Ingen nye timer å kopiere fra forrige uke");
       return;
     }
+    const toCopy = lastWeekEntries.filter((e) => e.description?.trim());
+    const skipped = lastWeekEntries.length - toCopy.length;
+    if (skipped > 0) toast.warning(`${skipped} føringer uten beskrivelse ble ikke kopiert`);
+    if (toCopy.length === 0) return;
     setIsCopying(true);
     let successCount = 0;
-    for (const entry of lastWeekEntries) {
+    for (const entry of toCopy) {
       const src = new Date(entry.entry_date);
       const offset = Math.round((src.getTime() - lastWeekStart.getTime()) / 86400000);
       const target = addDays(thisWeekStart, offset);
@@ -183,7 +192,7 @@ export function CopyPreviousWeekButton({
         hours: entry.hours,
         project_name: entry.project_name || undefined,
         project_id: entry.project_id || undefined,
-        description: entry.description || undefined,
+        description: entry.description!.trim(),
       });
       if (ok) successCount++;
     }
