@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,9 +78,9 @@ Hvis dokumentet er et HMS-kort, varme arbeider-sertifikat, truckkurs, eller lign
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    // Model, reasoning effort, timeout and fallback are set centrally in _shared/ai-gateway.ts.
     const response = await callAiGateway(LOVABLE_API_KEY, {
-        model: AI_CHAT_MODEL,
+        model: AI_PRIMARY_MODEL,
         messages: [
           {
             role: "user",
@@ -96,7 +96,7 @@ Hvis dokumentet er et HMS-kort, varme arbeider-sertifikat, truckkurs, eller lign
           },
         ],
         max_tokens: 2000,
-    }, null, { totalTimeoutMs: 45_000 });
+    }, { totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       const errorText = await response.text();

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -123,16 +123,16 @@ RULES:
 
 Respond ONLY with JSON: {"detected":"<code>","text":"<result>"}`;
 
-    // 3.8 (low) first, automatic fallback to 2.5 on error or after 45 s.
+    // Model, reasoning effort, timeout and fallback are set centrally in _shared/ai-gateway.ts.
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: AI_CHAT_MODEL,
+      model: AI_PRIMARY_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: content },
       ],
       temperature: 0.2,
       response_format: { type: "json_object" },
-    }, null, { totalTimeoutMs: 90_000 });
+    }, { totalTimeoutMs: 90_000 });
 
     if (!response.ok) {
       const errorText = await response.text();

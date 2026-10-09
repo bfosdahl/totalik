@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,9 +28,9 @@ Deno.serve(async (req) => {
 
     const key = Deno.env.get("LOVABLE_API_KEY");
     if (!key) return json({ error: "AI er ikke satt opp" }, 500);
-    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    // Model, reasoning effort, timeout and fallback are set centrally in _shared/ai-gateway.ts.
     const res = await callAiGateway(key, {
-      model: AI_CHAT_MODEL,
+      model: AI_PRIMARY_MODEL,
       messages: [
         { role: "system", content: 'Hent ut alle ansatte fra dokumentet. Returner KUN JSON: {"employees":[{"firstName":"","lastName":"","email":"","admin":false}]}. admin=true kun for daglig leder, eier/innehaver eller administrerende direktør. Systemadministrator, IT-administrator og andre IT-roller er IKKE admin (admin=false). Ikke finn på e-poster; la feltet være tomt hvis det mangler.' },
         { role: "user", content: [
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
         ] },
       ],
       response_format: { type: "json_object" },
-    }, null, { totalTimeoutMs: 45_000 });
+    }, { totalTimeoutMs: 45_000 });
     if (!res.ok) {
       const t = await res.text();
       console.error("AI error", res.status, t);

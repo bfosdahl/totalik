@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -186,12 +186,12 @@ serve(async (req) => {
 
     console.log('Parsing handbook with AI...');
 
-    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    // Model, reasoning effort, timeout and fallback are set centrally in _shared/ai-gateway.ts.
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: AI_CHAT_MODEL,
+      model: AI_PRIMARY_MODEL,
       messages,
       temperature: 0.1,
-    }, null, { totalTimeoutMs: 90_000 });
+    }, { totalTimeoutMs: 90_000 });
 
     if (!response.ok) {
       const errorText = await response.text();

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -141,9 +141,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // 3.8 (low) first, automatic fallback to 2.5 on error or after 45 s.
+    // Model, reasoning effort, timeout and fallback are set centrally in _shared/ai-gateway.ts.
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: AI_CHAT_MODEL,
+      model: AI_PRIMARY_MODEL,
       messages: [
           { role: "system", content: systemPrompt },
           { 
@@ -162,7 +162,7 @@ serve(async (req) => {
             ]
           }
         ],
-    }, null, { reasoningEffort: "low", totalTimeoutMs: 45_000 });
+    }, { reasoningEffort: "low", totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       if (response.status === 429) {

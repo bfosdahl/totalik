@@ -7,7 +7,7 @@ import {
   createStreamWithFallback,
   ChatMsg,
 } from "../_shared/ai-setup.ts";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -359,14 +359,14 @@ serve(async (req) => {
     const messageHash = createMessageHash(messages);
 
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: AI_CHAT_MODEL,
+      model: AI_PRIMARY_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         ...(buildKnownFactsMessage(messages) ? [{ role: "system", content: buildKnownFactsMessage(messages)! }] : []),
         ...messages
       ],
       stream: true,
-    }, companyId);
+    });
 
     if (!response.ok) {
       if (response.status === 429) return new Response(JSON.stringify({ error: "For mange forespørsler." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
