@@ -893,7 +893,7 @@ export function AppSidebar({ isOpen, onClose }: AppSidebarProps) {
             return (
               <>
                 <ModulePlacementContext.Provider value="owned">{moduleBlock}</ModulePlacementContext.Provider>
-                {lockedCount > 0 && !collapsed && (
+                {isSystemAdmin && lockedCount > 0 && !collapsed && (
                   <div className="pt-2">
                     <button
                       onClick={() => setMoreModulesOpen((o) => !o)}
