@@ -267,7 +267,7 @@ export default function TimeRegistration() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {[7, 7.5, 8].map((h) => (
+                    {[7, 7.5, 8, 9, 10].map((h) => (
                       <SelectItem key={h} value={String(h)}>
                         Standard dag: {String(h).replace(".", ",")} t
                       </SelectItem>

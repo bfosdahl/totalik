@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HourQuickPicks } from "./HourQuickPicks";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -386,6 +387,7 @@ export function WeeklyTimeView({
                 value={hours}
                 onChange={(e) => setHours(e.target.value)}
               />
+              <HourQuickPicks value={hours} onPick={(h) => setHours(String(h))} />
             </div>
 
             {hasByggModule && activeProjects.length > 0 ? (
