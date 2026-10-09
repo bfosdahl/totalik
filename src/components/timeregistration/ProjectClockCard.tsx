@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,10 @@ export function ProjectClockCard({ projectId, projectName, geofence }: ProjectCl
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [reason, setReason] = useState("");
+  const [descOpen, setDescOpen] = useState(false);
+  const [outDesc, setOutDesc] = useState("");
+  const [outDescError, setOutDescError] = useState(false);
+  const outDescRef = useRef("");
 
   const fenceActive = !!geofence?.enabled && geofence.lat != null && geofence.lng != null;
   const activeHere = activeEntry && (activeEntry as any).project_id === projectId;
@@ -96,7 +100,7 @@ export function ProjectClockCard({ projectId, projectName, geofence }: ProjectCl
       reason: reasonText,
     };
     if (type === "in") await clockIn(undefined, geo);
-    else await clockOut(undefined, geo);
+    else await clockOut(outDescRef.current || undefined, geo);
     setBusy(false);
   };
 
@@ -150,7 +154,7 @@ export function ProjectClockCard({ projectId, projectName, geofence }: ProjectCl
               </Button>
             )}
             {activeHere && (
-              <Button variant="outline" onClick={() => runCheck("out")} disabled={busy} className="gap-2">
+              <Button variant="outline" onClick={() => { setOutDesc(""); setOutDescError(false); setDescOpen(true); }} disabled={busy} className="gap-2">
                 <LogOut className="h-4 w-4" /> Stopp arbeidstid
               </Button>
             )}
@@ -224,6 +228,41 @@ export function ProjectClockCard({ projectId, projectName, geofence }: ProjectCl
               }
             >
               {pending?.type === "in" ? "Start likevel" : "Stopp likevel"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={descOpen} onOpenChange={setDescOpen}>
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Hva jobbet du med?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label htmlFor="clockout-desc">Beskrivelse *</Label>
+            <Textarea id="clockout-desc" value={outDesc} onChange={(e) => setOutDesc(e.target.value)} rows={3} />
+            {outDescError && !outDesc.trim() && (
+              <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>
+            )}
+          </div>
+          <DialogFooter className="flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={() => setDescOpen(false)}>Avbryt</Button>
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                const d = outDesc.trim();
+                if (!d) {
+                  setOutDescError(true);
+                  toast.error("Beskrivelse må fylles ut");
+                  return;
+                }
+                outDescRef.current = d;
+                setDescOpen(false);
+                runCheck("out");
+              }}
+            >
+              Stopp arbeidstid
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { HourQuickPicks } from "./HourQuickPicks";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -81,6 +82,7 @@ export function WeeklyTimeView({
   const [projectId, setProjectId] = useState("");
   const [customProject, setCustomProject] = useState("");
   const [description, setDescription] = useState("");
+  const [descError, setDescError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmingScheduleId, setConfirmingScheduleId] = useState<string | null>(null);
 
@@ -167,10 +169,16 @@ export function WeeklyTimeView({
     setProjectId("");
     setCustomProject("");
     setDescription("");
+    setDescError(false);
   };
 
   const handleSubmit = async () => {
     if (!editingDay || !hours) return;
+    if (!description.trim()) {
+      setDescError(true);
+      toast.error("Beskrivelse må fylles ut");
+      return;
+    }
 
     const hoursNum = parseFloat(hours);
     if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) return;
@@ -189,7 +197,7 @@ export function WeeklyTimeView({
       hours: hoursNum,
       project_id: selectedProject ? projectId : undefined,
       project_name: projectName,
-      description: description || undefined,
+      description: description.trim(),
     });
 
     if (success) {
@@ -427,12 +435,13 @@ export function WeeklyTimeView({
             )}
 
             <div className="space-y-2">
-              <Label>{t("auto.beskrivelse_valgfritt")}</Label>
+              <Label>Beskrivelse *</Label>
               <Textarea
                 placeholder={t("auto.hva_jobbet_du_med")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+              {descError && !description.trim() && <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>}
             </div>
 
             <div className="flex gap-2">

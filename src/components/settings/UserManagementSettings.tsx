@@ -315,8 +315,14 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
 
       // Assign to department if selected (not "none")
       if (createForm.departmentId && createForm.departmentId !== "none" && data?.userId) {
+        const { data: createdProfile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("user_id", data.userId)
+          .eq("company_id", company?.id ?? "")
+          .maybeSingle();
         await supabase.from("user_departments").insert({
-          user_id: data.userId,
+          user_id: createdProfile?.id ?? data.userId,
           department_id: createForm.departmentId,
           is_department_admin: createForm.isDepartmentAdmin,
         });

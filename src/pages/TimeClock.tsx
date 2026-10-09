@@ -34,6 +34,7 @@ export default function TimeClock() {
   const [qrCodeName, setQrCodeName] = useState<string | null>(null);
   const [qrCodeId, setQrCodeId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [descError, setDescError] = useState(false);
   const [removeBreak, setRemoveBreak] = useState(false);
   const [processing, setProcessing] = useState(false);
   const { data: projectOptions = [] } = useProjectOptions();
@@ -77,7 +78,7 @@ export default function TimeClock() {
     if (type === "in") {
       await clockIn(qrCodeId || undefined, geo);
     } else {
-      const ok = await clockOut(notes || undefined, geo, { removeBreak });
+      const ok = await clockOut(notes.trim() || undefined, geo, { removeBreak });
       if (ok) {
         setNotes("");
         setRemoveBreak(false);
@@ -142,7 +143,14 @@ export default function TimeClock() {
 
   const handleClockIn = () => runClock("in");
 
-  const handleClockOut = () => runClock("out");
+  const handleClockOut = () => {
+    if (!notes.trim()) {
+      setDescError(true);
+      toast.error("Beskrivelse må fylles ut");
+      return;
+    }
+    runClock("out");
+  };
 
   const handleStartBreak = async () => {
     setProcessing(true);
@@ -274,18 +282,19 @@ export default function TimeClock() {
               )}
 
               {/* Notes for clock out */}
-              {!isOnBreak && (
-                <div>
-                  <Label htmlFor="notes">{t("auto.notat_valgfritt")}</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder={t("auto.legg_til_et_notat_om_arbeidsdagen")}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              )}
+              <div>
+                <Label htmlFor="notes">Beskrivelse *</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Hva jobbet du med?"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                />
+                {descError && !notes.trim() && (
+                  <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>
+                )}
+              </div>
 
               {activeEntry && ((activeEntry.total_break_minutes || 0) > 0 || isOnBreak) && (
                 <div className="rounded-lg border p-3 space-y-2 text-sm">

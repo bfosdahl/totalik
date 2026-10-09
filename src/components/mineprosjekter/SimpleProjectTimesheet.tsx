@@ -91,8 +91,15 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
     setShowDialog(true);
   };
 
+  const [descError, setDescError] = useState(false);
+
   const handleSave = async () => {
     if (!formData.hours || !profile?.company_id) return;
+    if (!formData.description.trim()) {
+      setDescError(true);
+      toast.error("Beskrivelse må fylles ut");
+      return;
+    }
 
     const selectedUser = users.find((u) => u.id === formData.employee_id);
     const employeeName = selectedUser
@@ -107,7 +114,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
           .update({
             date: formData.date,
             hours: parseFloat(formData.hours),
-            description: formData.description || null,
+            description: formData.description.trim(),
             employee_id: formData.employee_id || null,
             employee_name: employeeName,
           })
@@ -121,7 +128,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
           company_id: profile.company_id,
           date: formData.date,
           hours: parseFloat(formData.hours),
-          description: formData.description || null,
+          description: formData.description.trim(),
           employee_id: formData.employee_id || null,
           employee_name: employeeName,
         });
@@ -271,13 +278,14 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{t("auto.beskrivelse_valgfritt")}</Label>
+              <Label>Beskrivelse *</Label>
               <Textarea
                 placeholder={t("auto.hva_ble_gjort")}
                 value={formData.description}
                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 rows={3}
               />
+              {descError && !formData.description.trim() && <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>}
             </div>
           </div>
           <DialogFooter>

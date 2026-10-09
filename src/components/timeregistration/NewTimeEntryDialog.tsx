@@ -103,6 +103,7 @@ export function NewTimeEntryDialog({
   const [subproject, setSubproject] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [description, setDescription] = useState("");
+  const [descError, setDescError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useCustomProject, setUseCustomProject] = useState(false);
   const [allowanceRows, setAllowanceRows] = useState<AllowanceRow[]>([]);
@@ -181,7 +182,7 @@ export function NewTimeEntryDialog({
   );
   const draftData = {
     date: format(date, "yyyy-MM-dd"),
-    startTime, endTime, hours, hourType,
+    startTime, endTime, hours, hourType, breakMin,
     selectedProjectId, customProjectName, customerName,
     projectNumber, subproject, tagsInput, description,
     useCustomProject, allowanceRows, materialRows, overtimeSegments, onBehalfUserId,
@@ -209,6 +210,7 @@ export function NewTimeEntryDialog({
     setSubproject(d.subproject || "");
     setTagsInput(d.tagsInput || "");
     setDescription(d.description || "");
+    if (d.breakMin != null) setBreakMin(String(d.breakMin));
     setUseCustomProject(!!d.useCustomProject);
     setAllowanceRows(d.allowanceRows || []);
     setMaterialRows(d.materialRows || []);
@@ -251,6 +253,7 @@ export function NewTimeEntryDialog({
     setCustomProjectName(defaultProjectId || remembered ? "" : prefs.lastCustomProjectName || "");
     setCustomerName(prefs.lastCustomerName || "");
     setDescription("");
+    setDescError(false);
     setUseCustomProject(false);
     setAllowanceRows([]);
     setMaterialRows([]);
@@ -264,6 +267,12 @@ export function NewTimeEntryDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!description.trim()) {
+      setDescError(true);
+      toast.error("Beskrivelse må fylles ut");
+      return;
+    }
 
     const hoursNum = parseFloat(hours);
     if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) {
@@ -388,7 +397,7 @@ export function NewTimeEntryDialog({
         project_number: resolvedProjectNumber || null,
         subproject: subproject.trim() || null,
         tags: tagList.length > 0 ? tagList : null,
-        description: description || undefined,
+        description: description.trim() || undefined,
         allowances,
         materials,
         overtime_segments: persistSegments,
@@ -415,7 +424,7 @@ export function NewTimeEntryDialog({
       project_id: projectId,
       ks_project_id: ksProjectId || null,
       customer_name: customerName || null,
-      description: description || undefined,
+      description: description.trim() || undefined,
       allowances,
       materials,
       on_behalf_user_id: onBehalfId,
@@ -815,16 +824,23 @@ export function NewTimeEntryDialog({
 
           {/* Beskrivelse */}
           <div className="space-y-2">
-            <Label>{t("auto.beskrivelse")}</Label>
+            <Label>Beskrivelse *</Label>
             <div className="relative">
               <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Textarea
                 placeholder={t("auto.hva_jobbet_du_med")}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (e.target.value.trim()) setDescError(false);
+                }}
                 className="pl-10 min-h-[60px]"
+                aria-invalid={descError}
               />
             </div>
+            {descError && !description.trim() && (
+              <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>
+            )}
             {descriptionSuggestions.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {descriptionSuggestions.map((s) => (

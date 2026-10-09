@@ -96,7 +96,7 @@ export function DailyTimeView({
       hours,
       ks_project_id: result.ksProjectId,
       project_name: result.projectName ?? undefined,
-      description: `Automatisk registrert (${format(new Date(), "HH:mm")})`,
+      description: result.description,
       start_lat: result.startGeo?.lat ?? null,
       start_lng: result.startGeo?.lng ?? null,
       end_lat: result.endGeo?.lat ?? null,
