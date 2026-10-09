@@ -821,7 +821,7 @@ serve(async (req) => {
       tools: tools,
       tool_choice: "auto",
       max_tokens: 4000,
-    }, companyId);
+    }, companyId, { totalTimeoutMs: 25_000 });
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -892,7 +892,7 @@ serve(async (req) => {
         model: AI_CHAT_MODEL,
         messages: summaryMessages,
         max_tokens: 2000,
-      }, companyId);
+      }, companyId, { totalTimeoutMs: 25_000 });
 
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();

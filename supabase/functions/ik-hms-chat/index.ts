@@ -515,7 +515,7 @@ serve(async (req) => {
       model: AI_CHAT_MODEL,
       messages: [...systemMessages, ...messages],
       stream: true,
-    }, companyId);
+    }, companyId, { firstChunkTimeoutMs: 30_000 });
 
     if (!response.ok) {
       if (response.status === 429) return new Response(JSON.stringify({ error: "For mange forespørsler." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });

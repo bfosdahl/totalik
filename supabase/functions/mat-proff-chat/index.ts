@@ -735,7 +735,7 @@ serve(async (req) => {
       tools,
       tool_choice: "auto",
       max_tokens: 1500,
-    }, companyId);
+    }, companyId, { totalTimeoutMs: 25_000 });
 
     if (!response.ok) {
       if (response.status === 429) {
