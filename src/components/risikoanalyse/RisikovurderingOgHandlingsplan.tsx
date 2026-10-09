@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isBeforeToday } from "@/lib/dateUtils";
 import { AI_DATA_CHANGED_EVENT } from "@/lib/aiDataEvents";
 import { formatHazardName } from "@/lib/formatHazardName";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
