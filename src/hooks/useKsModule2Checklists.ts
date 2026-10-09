@@ -1,5 +1,5 @@
 import { getChecklistItemText } from "@/lib/checklistItemText";
-import { calendarDaysFromToday } from "@/lib/dateUtils";
+import { ksChecklistStats } from "@/lib/ksChecklistStats";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -353,22 +353,8 @@ export function useKsModule2Checklists(projectId: string) {
     }
   };
 
-  // Calculate stats
-  const stats = {
-    total: checklists.length,
-    completed: checklists.filter(c => c.status === "completed").length,
-    inProgress: checklists.filter(c => c.status === "in_progress").length,
-    planned: checklists.filter(c => c.status === "planned").length,
-    overdue: checklists.filter(c => 
-      c.status !== "completed" && 
-      c.deadline_date && 
-      (calendarDaysFromToday(c.deadline_date) ?? 0) < 0
-    ).length,
-    waitingPaper: checklists.filter(c => c.is_paper_version && !c.paper_uploaded).length,
-    progressPercent: checklists.length > 0 
-      ? Math.round((checklists.filter(c => c.status === "completed").length / checklists.length) * 100)
-      : 0,
-  };
+  // Calculate stats (exclusive buckets: overdue is not also counted as planned/inProgress)
+  const stats = ksChecklistStats(checklists);
 
   return {
     checklists,
