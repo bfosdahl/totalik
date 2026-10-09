@@ -26,7 +26,7 @@ import { useFdvBuildings } from "@/hooks/useFdvBuildings";
 import { FdvControlDialog } from "@/components/fdv/FdvControlDialog";
 import { FdvCompleteControlDialog } from "@/components/fdv/FdvCompleteControlDialog";
 import { FdvControl, FDV_CONTROL_TYPE_LABELS } from "@/types/fdv";
-import { format, isBefore, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import { calendarDaysFromToday, isBeforeToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
@@ -86,7 +86,6 @@ export default function FdvControls() {
     }
   };
 
-  const today = startOfDay(new Date());
   
   const getStatusBadge = (control: FdvControl) => {
     if (!control.next_due_date) return <Badge variant="outline">{t("auto.ikke_planlagt")}</Badge>;
