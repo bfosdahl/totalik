@@ -131,6 +131,11 @@ function reportToInitial(r: DailyReport): CreateDailyReport {
   };
 }
 
+/** "1 bilde" / "N bilder" (0 og 2+ = bilder). */
+export function bilderLabel(n: number): string {
+  return n === 1 ? "1 bilde" : `${n} bilder`;
+}
+
 function DailyReportForm({
   initialReport,
   onClose,
@@ -138,6 +143,7 @@ function DailyReportForm({
   createReport,
   updateReport,
   onSaved,
+  pendingSaveRef,
 }: {
   initialReport: DailyReport | null;
   onClose: () => void;
@@ -145,6 +151,7 @@ function DailyReportForm({
   createReport: ReportsApi["createReport"];
   updateReport: ReportsApi["updateReport"];
   onSaved?: (r: DailyReport) => void;
+  pendingSaveRef?: React.MutableRefObject<Promise<void> | null>;
 }) {
   const { projectId } = useParams();
   const initialData = initialReport ? reportToInitial(initialReport) : undefined;
@@ -424,6 +431,8 @@ function DailyReportForm({
     if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null; }
     if (autosave) {
       if (fieldSig !== lastSavedSigRef.current && (reportIdRef.current || hasContent)) void runAutosave();
+      // Gi ventende lagring til forelderen, så «Ny dagsrapport» kan vente på den.
+      if (pendingSaveRef) pendingSaveRef.current = chainRef.current;
     } else {
       const saved = new Set(((initialReport?.photos || []) as DailyReportPhoto[]).map((p) => p.path));
       const orphans = photos.filter((p) => sessionUploadedRef.current.has(p.path) && !saved.has(p.path));
@@ -800,6 +809,9 @@ export default function Ks2Dagsrapport() {
   const [formNumber, setFormNumber] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
   const closeRef = useRef<(() => void) | null>(null);
+  const pendingSaveRef = useRef<Promise<void> | null>(null);
+  const lastSavedRef = useRef<DailyReport | null>(null);
+  const [waitingSave, setWaitingSave] = useState(false);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
   const [emailReport, setEmailReport] = useState<DailyReport | null>(null);
   const [emailAttachment, setEmailAttachment] = useState<{ filename: string; content: string; contentType: string } | null>(null);
@@ -821,7 +833,23 @@ export default function Ks2Dagsrapport() {
     setFormKey((k) => k + 1);
     setFormOpen(true);
   };
-  const openNew = () => openForm(todaysDraft);
+  const isTodaysOwnDraft = (r: DailyReport | null): r is DailyReport =>
+    !!r && r.status === "draft" && r.report_date === today && r.user_id === user?.id && (!projectId || r.project_id === projectId);
+  // Venter på ventende autolagring fra forrige skjema før nytt skjema åpnes,
+  // slik at det aldri opprettes to utkast for samme dag.
+  const openNew = async () => {
+    if (waitingSave) return;
+    const pending = pendingSaveRef.current;
+    if (pending) {
+      setWaitingSave(true);
+      try { await pending; } catch { /* autolagring håndterer egne feil */ } finally {
+        if (pendingSaveRef.current === pending) pendingSaveRef.current = null;
+        setWaitingSave(false);
+      }
+    }
+    const last = lastSavedRef.current;
+    openForm(todaysDraft ?? (isTodaysOwnDraft(last) ? last : null));
+  };
   const closeForm = () => {
     closeRef.current = null;
     setFormOpen(false);
@@ -837,7 +865,7 @@ export default function Ks2Dagsrapport() {
     setDownloadingId(report.id);
     const photoCount = report.photos?.length || 0;
     const toastId = photoCount > 5
-      ? toast.loading(`Genererer PDF (0 / ${photoCount} bilder)…`)
+      ? toast.loading(`Genererer PDF (0 / ${bilderLabel(photoCount)})…`)
       : toast.loading("Genererer PDF…");
     try {
       const effectiveProjectId = report.project_id || projectId || null;
@@ -851,7 +879,7 @@ export default function Ks2Dagsrapport() {
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
       await generateDailyReportPdf(report, projectData as any, companyData as any, (cur, tot) => {
-        toast.loading(`Genererer PDF (${cur} / ${tot} bilder)…`, { id: toastId });
+        toast.loading(`Genererer PDF (${cur} / ${bilderLabel(tot)})…`, { id: toastId });
       });
       toast.success(t("auto.pdf_lastet_ned"), { id: toastId });
     } catch (err) {
@@ -866,7 +894,7 @@ export default function Ks2Dagsrapport() {
     setPreparingEmail(report.id);
     const photoCount = report.photos?.length || 0;
     const toastId = photoCount > 5
-      ? toast.loading(`Forbereder e-post (0 / ${photoCount} bilder)…`)
+      ? toast.loading(`Forbereder e-post (0 / ${bilderLabel(photoCount)})…`)
       : toast.loading("Forbereder e-post…");
     try {
       const effectiveProjectId = report.project_id || projectId || null;
@@ -880,7 +908,7 @@ export default function Ks2Dagsrapport() {
         supabase.from("companies").select("name, address, postal_code, city, org_number, phone, email, logo_url").eq("id", report.company_id).maybeSingle(),
       ]);
       const { base64, fileName } = await generateDailyReportPdfBase64(report, projectData as any, companyData as any, (cur, tot) => {
-        toast.loading(`Forbereder e-post (${cur} / ${tot} bilder)…`, { id: toastId });
+        toast.loading(`Forbereder e-post (${cur} / ${bilderLabel(tot)})…`, { id: toastId });
       });
       setEmailAttachment({ filename: fileName, content: base64, contentType: "application/pdf" });
       setEmailReport(report);
@@ -913,8 +941,8 @@ export default function Ks2Dagsrapport() {
           <h2 className="text-xl font-semibold">{t("auto.dagsrapporter")}</h2>
           <p className="text-sm text-muted-foreground">{t("auto.daglige_rapporter_for_arbeid_mannskap_va")}</p>
         </div>
-        <Button onClick={openNew}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={openNew} disabled={waitingSave}>
+          {waitingSave ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
           {t("auto.ny_dagsrapport")}
         </Button>
       </div>
@@ -941,7 +969,8 @@ export default function Ks2Dagsrapport() {
               closeRef={closeRef}
               createReport={createReport}
               updateReport={updateReport}
-              onSaved={(r) => setFormNumber(r.report_number)}
+              pendingSaveRef={pendingSaveRef}
+              onSaved={(r) => { lastSavedRef.current = r; setFormNumber(r.report_number); }}
             />
           )}
         </DialogContent>
@@ -954,9 +983,9 @@ export default function Ks2Dagsrapport() {
               <p className="font-medium">Du har en påbegynt dagsrapport for i dag</p>
               <p className="text-sm text-muted-foreground whitespace-nowrap">{todaysDraft.report_number} · utkast</p>
             </div>
-            <Button onClick={() => openForm(todaysDraft)} className="shrink-0">
-              <Camera className="h-4 w-4 mr-2" />
-              Fortsett dagens rapport ({todaysDraft.photos?.length || 0} bilder)
+            <Button onClick={openNew} className="shrink-0" disabled={waitingSave}>
+              {waitingSave ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Camera className="h-4 w-4 mr-2" />}
+              Fortsett dagens rapport ({bilderLabel(todaysDraft.photos?.length || 0)})
             </Button>
           </CardContent>
         </Card>
