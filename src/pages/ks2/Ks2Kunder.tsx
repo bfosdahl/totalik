@@ -34,6 +34,7 @@ import {
   AlertTriangle,
   FolderKanban,
   Merge,
+  Upload,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { safeFormatDate } from "@/utils/safeFormatDate";
 import { lookupBrregCompany, isValidOrgNumber } from "@/lib/brregLookup";
+import { CustomerImportDialog } from "@/components/ks2/CustomerImportDialog";
+
 
 interface Customer {
   id: string;
@@ -88,6 +91,7 @@ export default function Ks2Kunder() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mergeTarget, setMergeTarget] = useState("");
   const [orgLookupLoading, setOrgLookupLoading] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const handleOrgNumberChange = async (value: string) => {
     setForm((prev) => ({ ...prev, org_number: value }));
@@ -275,9 +279,16 @@ export default function Ks2Kunder() {
               Alle prosjekter samlet per kunde, med kontaktinfo og nøkkeltall.
             </p>
           </div>
-          <Button onClick={openNew} className="gap-2">
-            <Plus className="h-4 w-4" /> Ny kunde
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {companyId && (
+              <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2">
+                <Upload className="h-4 w-4" /> Importer kunder
+              </Button>
+            )}
+            <Button onClick={openNew} className="gap-2">
+              <Plus className="h-4 w-4" /> Ny kunde
+            </Button>
+          </div>
         </div>
 
         <div className="relative">
@@ -521,6 +532,9 @@ export default function Ks2Kunder() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {companyId && (
+        <CustomerImportDialog open={importOpen} onOpenChange={setImportOpen} companyId={companyId} existing={customers} />
+      )}
     </AppLayout>
   );
 }
