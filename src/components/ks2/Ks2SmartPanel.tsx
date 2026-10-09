@@ -10,6 +10,7 @@ import { Sparkles, Loader2, AlertTriangle, Calendar, ClipboardCheck, ChevronRigh
 import { jevAssist } from "@/lib/jevAssist";
 import { parseISO } from "date-fns";
 import { calendarDaysFromToday } from "@/lib/dateUtils";
+import { isKsChecklistOverdue } from "@/lib/ksChecklistStats";
 
 interface ChecklistLike {
   id: string;
@@ -66,7 +67,7 @@ export function Ks2SmartPanel({
   }, [projectId]);
 
   const overdue = useMemo(
-    () => checklists.filter((c) => c.status !== "completed" && c.deadline_date && (calendarDaysFromToday(c.deadline_date) ?? 0) < 0),
+    () => checklists.filter((c) => isKsChecklistOverdue(c)),
     [checklists]
   );
   const upcoming = useMemo(

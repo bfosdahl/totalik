@@ -303,7 +303,7 @@ export function Ks2EnhancedDashboard({ contractorType, projectAddress, noSubcont
               <Clock className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
             </div>
             <div>
-              <p className="text-lg md:text-xl font-bold">{stats.planned + stats.inProgress}</p>
+              <p className="text-lg md:text-xl font-bold">{stats.planned + stats.inProgress + stats.overdue}</p>
               <p className="text-xs text-muted-foreground">{t("auto.ufullfoert")}</p>
             </div>
           </CardContent>
