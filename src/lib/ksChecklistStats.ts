@@ -9,10 +9,11 @@ export interface KsChecklistLike {
 
 /**
  * One single overdue definition for KS checklists:
- * not completed, has a deadline, and the deadline is before today's Oslo calendar day.
+ * not completed and not rejected, has a deadline, and the deadline is
+ * before today's Oslo calendar day.
  */
 export function isKsChecklistOverdue(c: KsChecklistLike, now: Date = new Date()): boolean {
-  return c.status !== "completed" && !!c.deadline_date && isBeforeToday(c.deadline_date, now);
+  return c.status !== "completed" && c.status !== "rejected" && !!c.deadline_date && isBeforeToday(c.deadline_date, now);
 }
 
 export interface KsChecklistStats {

@@ -20,6 +20,10 @@ describe("isKsChecklistOverdue", () => {
   it("planned checklist without deadline is NOT overdue", () => {
     expect(isKsChecklistOverdue({ status: "planned", deadline_date: null }, NOW)).toBe(false);
   });
+
+  it("rejected checklist with deadline yesterday is NOT overdue", () => {
+    expect(isKsChecklistOverdue({ status: "rejected", deadline_date: "2026-10-08" }, NOW)).toBe(false);
+  });
 });
 
 describe("ksChecklistStats", () => {
