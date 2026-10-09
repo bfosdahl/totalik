@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { t } from "@/i18n/t";
@@ -26,6 +28,7 @@ export interface TimerResult {
   projectName: string | null;
   startGeo?: GeoStamp | null;
   endGeo?: GeoStamp | null;
+  description: string;
 }
 
 interface StartStopTimerProps {
@@ -43,6 +46,9 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
   const [pausedSeconds, setPausedSeconds] = useState(0);
   const [startGeo, setStartGeo] = useState<GeoStamp | null>(null);
   const [locating, setLocating] = useState(false);
+  const [pending, setPending] = useState<{ hours: number; endGeo: GeoStamp | null } | null>(null);
+  const [stopDesc, setStopDesc] = useState("");
+  const [stopDescError, setStopDescError] = useState(false);
 
   // Load saved timer state from localStorage
   useEffect(() => {
@@ -147,6 +153,17 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
     }
   };
 
+  const resetTimer = () => {
+    setIsRunning(false);
+    setStartTime(null);
+    setElapsedSeconds(0);
+    setPausedSeconds(0);
+    setIsPaused(false);
+    setStartGeo(null);
+    localStorage.removeItem("activeTimer");
+    localStorage.removeItem("pauseStart");
+  };
+
   const handleStop = async () => {
     if (!startTime) return;
 
@@ -156,26 +173,40 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
     const endGeo = await stampPosition();
     setLocating(false);
 
-    // Only register if at least 1 minute
-    if (hours >= 1/60) {
-      onComplete(Math.round(hours * 4) / 4, {
-        ksProjectId: projectId === NO_PROJECT ? null : projectId,
-        projectName: selectedProject?.project_name ?? null,
-        startGeo,
-        endGeo,
-      }); // Round to nearest 0.25 hour
+    // Under 1 minutt: bare nullstill uten dialog
+    if (hours < 1 / 60) {
+      resetTimer();
+      return;
     }
+    setStopDesc("");
+    setStopDescError(false);
+    setPending({ hours: Math.round(hours * 4) / 4, endGeo }); // nærmeste 0,25 t
+  };
 
-    
-    // Reset state
-    setIsRunning(false);
-    setStartTime(null);
-    setElapsedSeconds(0);
-    setPausedSeconds(0);
-    setIsPaused(false);
-    setStartGeo(null);
-    localStorage.removeItem("activeTimer");
-    localStorage.removeItem("pauseStart");
+  const handleSaveStop = () => {
+    if (!pending) return;
+    const desc = stopDesc.trim();
+    if (!desc) {
+      setStopDescError(true);
+      toast.error("Beskrivelse må fylles ut");
+      return;
+    }
+    onComplete(pending.hours, {
+      ksProjectId: projectId === NO_PROJECT ? null : projectId,
+      projectName: selectedProject?.project_name ?? null,
+      startGeo,
+      endGeo: pending.endGeo,
+      description: desc,
+    });
+    setPending(null);
+    resetTimer();
+  };
+
+  const formatDuration = (h: number) => {
+    const total = Math.round(h * 60);
+    const hh = Math.floor(total / 60);
+    const mm = total % 60;
+    return hh > 0 ? `${hh} t${mm ? ` ${mm} min` : ""}` : `${mm} min`;
   };
 
   const formatTime = (seconds: number) => {
@@ -230,6 +261,7 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
 
 
   return (
+    <>
     <Card className={cn(
       "border-2",
       isPaused ? "border-orange-500 bg-orange-500/5" : "border-green-500 bg-green-500/5"
@@ -291,5 +323,34 @@ export function StartStopTimer({ onComplete, isDisabled }: StartStopTimerProps) 
         </div>
       </CardContent>
     </Card>
+    <Dialog open={!!pending} onOpenChange={(o) => { if (!o) setPending(null); }}>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()} className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Hva jobbet du med?</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-sm">
+            Tid som registreres: <span className="font-semibold">{pending ? formatDuration(pending.hours) : ""}</span>
+          </p>
+          <div className="space-y-1.5">
+            <Label htmlFor="timer-desc">Beskrivelse *</Label>
+            <Textarea
+              id="timer-desc"
+              value={stopDesc}
+              onChange={(e) => setStopDesc(e.target.value)}
+              rows={3}
+            />
+            {stopDescError && !stopDesc.trim() && (
+              <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>
+            )}
+          </div>
+        </div>
+        <DialogFooter className="flex-wrap gap-2">
+          <Button type="button" variant="outline" onClick={() => setPending(null)}>Avbryt</Button>
+          <Button type="button" onClick={handleSaveStop}>Lagre timer</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
