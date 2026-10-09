@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { JevCheckPanel } from "@/components/shared/JevCheckPanel";
 import DOMPurify from "dompurify";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +59,7 @@ const PersonalhandbokPage = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const seedLockRef = useRef(false);
 
   const isAdmin = isCompanyAdmin || isSystemAdmin;
 
@@ -94,6 +95,8 @@ const PersonalhandbokPage = () => {
 
   const handleSeedClick = async () => {
     if (!isAdmin || seeding || !company?.id) return;
+    if (seedLockRef.current) return;
+    seedLockRef.current = true;
     setSeeding(true);
     try {
       // Sjekk på nytt rett før innsetting at firmaet fortsatt har 0 kapitler.
@@ -134,6 +137,7 @@ const PersonalhandbokPage = () => {
       console.error("Error seeding chapters:", error);
       toast.error("Kunne ikke opprette personalhåndboken");
     } finally {
+      seedLockRef.current = false;
       setSeeding(false);
     }
   };
