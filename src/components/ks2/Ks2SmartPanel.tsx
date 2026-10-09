@@ -66,7 +66,7 @@ export function Ks2SmartPanel({
   }, [projectId]);
 
   const overdue = useMemo(
-    () => checklists.filter((c) => c.status !== "completed" && c.deadline_date && -(calendarDaysFromToday(c.deadline_date) ?? 0) > 0),
+    () => checklists.filter((c) => c.status !== "completed" && c.deadline_date && (calendarDaysFromToday(c.deadline_date) ?? 0) < 0),
     [checklists]
   );
   const upcoming = useMemo(

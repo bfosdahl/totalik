@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { differenceInDays, parseISO, addDays } from "date-fns";
+import { differenceInCalendarDays, parseISO, addDays } from "date-fns";
 
 export interface EmployeeAbsence {
   id: string;
@@ -96,7 +96,7 @@ export function useEmployeeAbsence() {
     try {
       const startDate = parseISO(absence.start_date);
       const endDate = parseISO(absence.end_date);
-      const totalDays = differenceInDays(endDate, startDate) + 1;
+      const totalDays = differenceInCalendarDays(endDate, startDate) + 1;
 
       if (totalDays < 1) {
         toast.error("Sluttdato må være etter eller lik startdato");
