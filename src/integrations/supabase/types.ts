@@ -18241,6 +18241,7 @@ export type Database = {
           department_id: string
           id: string
           is_department_admin: boolean
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -18248,6 +18249,7 @@ export type Database = {
           department_id: string
           id?: string
           is_department_admin?: boolean
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -18255,6 +18257,7 @@ export type Database = {
           department_id?: string
           id?: string
           is_department_admin?: boolean
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
