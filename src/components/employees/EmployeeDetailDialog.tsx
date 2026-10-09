@@ -46,7 +46,8 @@ import { AddCourseDialog } from "./AddCourseDialog";
 import { UploadDocumentDialog } from "./UploadDocumentDialog";
 import { HmsCardSection } from "./HmsCardSection";
 import { SignatureManager } from "./SignatureManager";
-import { format, differenceInDays, isPast } from "date-fns";
+import { format, isPast } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useDepartments, useUserDepartments } from "@/hooks/useDepartments";
@@ -264,7 +265,7 @@ export function EmployeeDetailDialog({
 
   const getCourseStatus = (expiryDate: string | null) => {
     if (!expiryDate) return { label: t("auto.ingen_utloep"), variant: "secondary" as const };
-    const daysUntil = differenceInDays(new Date(expiryDate), new Date());
+    const daysUntil = (calendarDaysFromToday(expiryDate) ?? 0);
     if (daysUntil < 0) return { label: t("auto.utgaatt"), variant: "destructive" as const };
     if (daysUntil <= 30) return { label: t("auto.utloeper_snart"), variant: "outline" as const };
     return { label: t("auto.gyldig"), variant: "secondary" as const };
@@ -812,8 +813,8 @@ export function EmployeeDetailDialog({
                   {courses?.map((course) => {
                     const status = getCourseStatus(course.expiry_date);
                     const isExpiring = course.expiry_date && 
-                      differenceInDays(new Date(course.expiry_date), new Date()) <= 30 &&
-                      differenceInDays(new Date(course.expiry_date), new Date()) >= 0;
+                      (calendarDaysFromToday(course.expiry_date) ?? 0) <= 30 &&
+                      (calendarDaysFromToday(course.expiry_date) ?? 0) >= 0;
 
                     return (
                       <Card key={course.id} className={isExpiring ? "border-yellow-500" : ""}>

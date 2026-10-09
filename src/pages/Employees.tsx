@@ -14,7 +14,8 @@ import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, Cred
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialog";
-import { format, differenceInDays, isPast } from "date-fns";
+import { format, isPast } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -70,7 +71,7 @@ export default function Employees() {
   // Calculate expiring courses
   const expiringCourses = courses?.filter(course => {
     if (!course.expiry_date) return false;
-    const daysUntilExpiry = differenceInDays(new Date(course.expiry_date), new Date());
+    const daysUntilExpiry = (calendarDaysFromToday(course.expiry_date) ?? 0);
     return daysUntilExpiry <= 30 && daysUntilExpiry >= 0;
   }) || [];
 
@@ -84,7 +85,7 @@ export default function Employees() {
     if (!emp.hms_card_required) return false;
     if (!emp.hms_card_obtained) return true;
     if (emp.hms_card_expiry_date && isPast(new Date(emp.hms_card_expiry_date))) return true;
-    if (emp.hms_card_expiry_date && differenceInDays(new Date(emp.hms_card_expiry_date), new Date()) <= 30) return true;
+    if (emp.hms_card_expiry_date && (calendarDaysFromToday(emp.hms_card_expiry_date) ?? 0) <= 30) return true;
     return false;
   }) || [];
 
@@ -358,7 +359,7 @@ export default function Employees() {
                       const employeeCourses = courses?.filter(c => c.employee_id === employee.id) || [];
                       const expiringCount = employeeCourses.filter(c => {
                         if (!c.expiry_date) return false;
-                        const days = differenceInDays(new Date(c.expiry_date), new Date());
+                        const days = (calendarDaysFromToday(c.expiry_date) ?? 0);
                         return days <= 30 && days >= 0;
                       }).length;
                       const expiredCount = employeeCourses.filter(c => 
@@ -371,8 +372,8 @@ export default function Employees() {
                         employee.hms_card_expiry_date && isPast(new Date(employee.hms_card_expiry_date));
                       const hmsCardExpiring = employee.hms_card_required && employee.hms_card_obtained && 
                         employee.hms_card_expiry_date && 
-                        differenceInDays(new Date(employee.hms_card_expiry_date), new Date()) <= 30 &&
-                        differenceInDays(new Date(employee.hms_card_expiry_date), new Date()) >= 0;
+                        (calendarDaysFromToday(employee.hms_card_expiry_date) ?? 0) <= 30 &&
+                        (calendarDaysFromToday(employee.hms_card_expiry_date) ?? 0) >= 0;
 
                       return (
                         <button
@@ -463,7 +464,7 @@ export default function Employees() {
                             const employee = employees?.find(e => e.id === course.employee_id);
                             const isExpired = course.expiry_date && isPast(new Date(course.expiry_date));
                             const isExpiringSoon = course.expiry_date && !isExpired && 
-                              differenceInDays(new Date(course.expiry_date), new Date()) <= 30;
+                              (calendarDaysFromToday(course.expiry_date) ?? 0) <= 30;
                             
                             return (
                               <tr key={course.id} className="border-b last:border-0 hover:bg-muted/50">
@@ -520,7 +521,7 @@ export default function Employees() {
                         const employee = employees?.find(e => e.id === course.employee_id);
                         const isExpired = course.expiry_date && isPast(new Date(course.expiry_date));
                         const isExpiringSoon = course.expiry_date && !isExpired && 
-                          differenceInDays(new Date(course.expiry_date), new Date()) <= 30;
+                          (calendarDaysFromToday(course.expiry_date) ?? 0) <= 30;
                         
                         return (
                           <div key={course.id} className="p-4 border rounded-lg space-y-3">

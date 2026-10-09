@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Loader2, AlertTriangle, Calendar, ClipboardCheck, ChevronRight } from "lucide-react";
 import { jevAssist } from "@/lib/jevAssist";
-import { differenceInDays, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 
 interface ChecklistLike {
   id: string;
@@ -65,13 +66,13 @@ export function Ks2SmartPanel({
   }, [projectId]);
 
   const overdue = useMemo(
-    () => checklists.filter((c) => c.status !== "completed" && c.deadline_date && differenceInDays(new Date(), parseISO(c.deadline_date)) > 0),
+    () => checklists.filter((c) => c.status !== "completed" && c.deadline_date && -(calendarDaysFromToday(c.deadline_date) ?? 0) > 0),
     [checklists]
   );
   const upcoming = useMemo(
     () => checklists.filter((c) => {
       if (c.status === "completed" || !c.deadline_date) return false;
-      const d = differenceInDays(parseISO(c.deadline_date), new Date());
+      const d = (calendarDaysFromToday(c.deadline_date) ?? 0);
       return d >= 0 && d <= 7;
     }),
     [checklists]
@@ -84,7 +85,7 @@ export function Ks2SmartPanel({
 
   const runPriorities = async () => {
     const items: PriorityItem[] = [
-      ...overdue.map((c) => ({ id: c.id, type: "forfalt kontroll", title: c.title, detail: `Forfalt for ${differenceInDays(new Date(), parseISO(c.deadline_date!))} dager siden` })),
+      ...overdue.map((c) => ({ id: c.id, type: "forfalt kontroll", title: c.title, detail: `Forfalt for ${-(calendarDaysFromToday(c.deadline_date!) ?? 0)} dager siden` })),
       ...upcoming.map((c) => ({ id: c.id, type: "frist", title: c.title, detail: `Frist ${safeFormatDate(c.deadline_date, "dd.MM.yyyy")}` })),
       ...openAvvik.map((a) => ({ id: a.id, type: "åpent avvik", title: a.title, detail: `Alvorlighet: ${SEV_LABEL[a.severity || ""] || a.severity || "ukjent"}` })),
     ].slice(0, 25);
@@ -105,7 +106,7 @@ export function Ks2SmartPanel({
       mode: "overdue_triage",
       projectId,
       projectName,
-      items: overdue.slice(0, 15).map((c) => ({ id: c.id, title: c.title, daysOverdue: differenceInDays(new Date(), parseISO(c.deadline_date!)) })),
+      items: overdue.slice(0, 15).map((c) => ({ id: c.id, title: c.title, daysOverdue: -(calendarDaysFromToday(c.deadline_date!) ?? 0) })),
     });
     if (d) {
       const byId = new Map(overdue.map((c) => [c.id, c]));

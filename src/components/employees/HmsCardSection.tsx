@@ -19,7 +19,8 @@ import { Employee, useUpdateEmployee } from "@/hooks/useEmployees";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { format, differenceInDays, isPast } from "date-fns";
+import { format, isPast } from "date-fns";
+import { calendarDaysFromToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import {
   AlertDialog,
@@ -119,7 +120,7 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
       return { label: t("auto.mangler"), variant: "destructive" as const, icon: AlertCircle };
     }
     if (employee.hms_card_expiry_date) {
-      const daysUntil = differenceInDays(new Date(employee.hms_card_expiry_date), new Date());
+      const daysUntil = (calendarDaysFromToday(employee.hms_card_expiry_date) ?? 0);
       if (daysUntil < 0) {
         return { label: t("auto.utgaatt"), variant: "destructive" as const, icon: AlertCircle };
       }
@@ -274,9 +275,9 @@ export function HmsCardSection({ employee, canManage }: HmsCardSectionProps) {
                         {employee.hms_card_expiry_date && (
                           <p>
                             Utløper: {format(new Date(employee.hms_card_expiry_date), "d. MMMM yyyy", { locale: nb })}
-                            {differenceInDays(new Date(employee.hms_card_expiry_date), new Date()) <= 30 && (
+                            {(calendarDaysFromToday(employee.hms_card_expiry_date) ?? 0) <= 30 && (
                               <span className="text-yellow-600 ml-2">
-                                ({differenceInDays(new Date(employee.hms_card_expiry_date), new Date())} dager igjen)
+                                ({(calendarDaysFromToday(employee.hms_card_expiry_date) ?? 0)} dager igjen)
                               </span>
                             )}
                           </p>
