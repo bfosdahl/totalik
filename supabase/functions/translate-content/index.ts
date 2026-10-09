@@ -132,7 +132,7 @@ Respond ONLY with JSON: {"detected":"<code>","text":"<result>"}`;
       ],
       temperature: 0.2,
       response_format: { type: "json_object" },
-    }, null, { totalTimeoutMs: 45_000 });
+    }, null, { totalTimeoutMs: 90_000 });
 
     if (!response.ok) {
       const errorText = await response.text();

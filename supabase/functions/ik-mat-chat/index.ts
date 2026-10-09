@@ -429,7 +429,7 @@ serve(async (req) => {
         ...messages
       ],
       stream: true,
-    }, companyId);
+    }, companyId, { firstChunkTimeoutMs: 30_000 });
 
     if (!response.ok) {
       if (response.status === 429) {
