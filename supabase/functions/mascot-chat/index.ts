@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { FAQ_HMS } from "../_shared/faq-knowledge.ts";
 import { NAV_MAP, isNavigationQuestion, lookupNavigation } from "../_shared/nav-map.ts";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -816,12 +816,12 @@ serve(async (req) => {
 
     // First API call with tools
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: AI_CHAT_MODEL,
+      model: AI_PRIMARY_MODEL,
       messages,
       tools: tools,
       tool_choice: "auto",
       max_tokens: 4000,
-    }, companyId, { totalTimeoutMs: 25_000 });
+    }, { totalTimeoutMs: 25_000 });
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -889,10 +889,10 @@ serve(async (req) => {
       ];
 
       const summaryResponse = await callAiGateway(LOVABLE_API_KEY, {
-        model: AI_CHAT_MODEL,
+        model: AI_PRIMARY_MODEL,
         messages: summaryMessages,
         max_tokens: 2000,
-      }, companyId, { totalTimeoutMs: 25_000 });
+      }, { totalTimeoutMs: 25_000 });
 
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();

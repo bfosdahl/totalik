@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -53,9 +53,9 @@ serve(async (req) => {
     console.log("Calling Lovable AI for image analysis...");
     console.log("Image base64 length:", imageBase64.length);
 
-    // Primary: gemini-3.8-flash (low reasoning), automatic fallback to AI_CHAT_MODEL (2.5-flash) via the shared gateway.
+    // Model, reasoning effort, timeout and fallback are set centrally in _shared/ai-gateway.ts.
     const response = await callAiGateway(LOVABLE_API_KEY, {
-        model: AI_CHAT_MODEL,
+        model: AI_PRIMARY_MODEL,
         messages: [
           {
             role: "system",
@@ -101,7 +101,7 @@ Svar KUN med JSON-objektet, ingen annen tekst.`
           }
         ],
         temperature: 0.1,
-    }, null, { totalTimeoutMs: 45_000 });
+    }, { totalTimeoutMs: 45_000 });
 
     if (!response.ok) {
       const errorText = await response.text();

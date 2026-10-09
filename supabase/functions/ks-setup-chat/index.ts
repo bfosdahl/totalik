@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callAiGateway, AI_CHAT_MODEL } from "../_shared/ai-gateway.ts";
+import { callAiGateway, AI_PRIMARY_MODEL } from "../_shared/ai-gateway.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -186,13 +186,13 @@ serve(async (req) => {
     }
 
     const response = await callAiGateway(LOVABLE_API_KEY, {
-      model: AI_CHAT_MODEL,
+      model: AI_PRIMARY_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
         ...messages
       ],
       stream: true,
-    }, user.id);
+    });
 
     if (!response.ok) {
       if (response.status === 429) {
