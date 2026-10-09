@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { workedHoursFromSpan, breakFromSpan, endTimeFor } from "@/utils/timeCalc";
+import { HourQuickPicks } from "./HourQuickPicks";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +51,14 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [hours, setHours] = useState("");
+  const [breakMin, setBreakMin] = useState("0");
+  const breakNum = Math.max(0, parseInt(breakMin, 10) || 0);
+  const recalc = (from: string, to: string, br: number) => {
+    if (from && to) {
+      const w = workedHoursFromSpan(from, to, br);
+      if (w > 0) setHours(String(w));
+    }
+  };
   const [hourType, setHourType] = useState<HourType>("normal");
   const [description, setDescription] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -64,6 +74,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
     setStartTime((entry.start_time || "").substring(0, 5));
     setEndTime((entry.end_time || "").substring(0, 5));
     setHours(String(entry.hours ?? ""));
+    setBreakMin(String(breakFromSpan((entry.start_time || "").substring(0, 5), (entry.end_time || "").substring(0, 5), Number(entry.hours) || 0)));
     setHourType((entry.hour_type as HourType) || "normal");
     setDescription(entry.description || "");
     setProjectName(entry.project_name || "");
@@ -147,17 +158,14 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="space-y-1">
               <Label>{t("auto.fra")}</Label>
               <TimeInput24
                 value={startTime}
                 onChange={(v) => {
                   setStartTime(v);
-                  if (v && endTime) {
-                    const d = calcHoursBetween(v, endTime);
-                    if (d > 0) setHours(d.toFixed(2));
-                  }
+                  recalc(v, endTime, breakNum);
                 }}
               />
             </div>
@@ -167,17 +175,42 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
                 value={endTime}
                 onChange={(v) => {
                   setEndTime(v);
-                  if (startTime && v) {
-                    const d = calcHoursBetween(startTime, v);
-                    if (d > 0) setHours(d.toFixed(2));
-                  }
+                  recalc(startTime, v, breakNum);
                 }}
               />
             </div>
             <div className="space-y-1">
-              <Label>{t("auto.timer")}</Label>
-              <Input type="number" step="0.25" min="0.25" max="24" value={hours} onChange={(e) => setHours(e.target.value)} />
+              <Label>Pause (min)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="5"
+                value={breakMin}
+                onChange={(e) => {
+                  setBreakMin(e.target.value);
+                  recalc(startTime, endTime, Math.max(0, parseInt(e.target.value, 10) || 0));
+                }}
+              />
+              <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setBreakMin("0"); recalc(startTime, endTime, 0); }}>
+                Ingen pause
+              </Button>
             </div>
+            <div className="space-y-1">
+              <Label>{t("auto.timer")}</Label>
+              <Input type="number" step="0.25" min="0.25" max="24" value={hours} onChange={(e) => {
+                setHours(e.target.value);
+                if (startTime && endTime) setBreakMin(String(breakFromSpan(startTime, endTime, parseFloat(e.target.value) || 0)));
+              }} />
+            </div>
+            <HourQuickPicks
+              className="col-span-2 sm:col-span-4"
+              value={hours}
+              onPick={(h) => {
+                setHours(String(h));
+                if (startTime) setEndTime(endTimeFor(startTime, h, breakNum));
+                else setEndTime("");
+              }}
+            />
           </div>
 
           <div className="space-y-1">
