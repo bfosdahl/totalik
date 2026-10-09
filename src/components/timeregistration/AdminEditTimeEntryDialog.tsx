@@ -61,6 +61,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
   };
   const [hourType, setHourType] = useState<HourType>("normal");
   const [description, setDescription] = useState("");
+  const [descError, setDescError] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [projectNumber, setProjectNumber] = useState("");
   const [subproject, setSubproject] = useState("");
@@ -77,6 +78,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
     setBreakMin(String(breakFromSpan((entry.start_time || "").substring(0, 5), (entry.end_time || "").substring(0, 5), Number(entry.hours) || 0)));
     setHourType((entry.hour_type as HourType) || "normal");
     setDescription(entry.description || "");
+    setDescError(false);
     setProjectName(entry.project_name || "");
     setProjectNumber(entry.project_number || "");
     setSubproject(entry.subproject || "");
@@ -86,6 +88,11 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
 
   const handleSave = async () => {
     if (!entry) return;
+    if (!description.trim()) {
+      setDescError(true);
+      toast.error("Beskrivelse må fylles ut");
+      return;
+    }
     if (reason.trim().length < 3) {
       toast.error(t("auto.du_maa_skrive_en_kort_aarsak_til_endring"));
       return;
@@ -106,7 +113,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
             hours: hoursNum,
             start_time: startTime || null,
             end_time: endTime || null,
-            description: description || null,
+            description: description.trim(),
             hour_type: hourType,
             project_name: projectName || null,
             project_number: projectNumber.trim() || null,
@@ -236,8 +243,9 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
 
 
           <div className="space-y-1">
-            <Label>{t("auto.beskrivelse")}</Label>
+            <Label>Beskrivelse *</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[60px]" />
+              {descError && !description.trim() && <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>}
           </div>
 
           <div className="space-y-1 border-t pt-3">

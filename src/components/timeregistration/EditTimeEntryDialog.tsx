@@ -50,6 +50,7 @@ interface EditTimeEntryDialogProps {
 export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditTimeEntryDialogProps) {
   const [hours, setHours] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [descError, setDescError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [materialRows, setMaterialRows] = useState<MaterialRow[]>([]);
   const { types: materialTypes } = useMaterialTypes({ onlyActive: true });
@@ -58,6 +59,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
     if (entry) {
       setHours(String(entry.hours ?? ""));
       setDescription(entry.description ?? "");
+      setDescError(false);
     }
   }, [entry]);
 
@@ -139,9 +141,14 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
     if (!entry) return;
     const parsed = parseFloat(hours.replace(",", "."));
     if (isNaN(parsed) || parsed < 0 || parsed > 24) return;
+    if (!description.trim()) {
+      setDescError(true);
+      toast.error("Beskrivelse må fylles ut");
+      return;
+    }
     setSaving(true);
     const matOk = await saveMaterials(entry.id);
-    const ok = await onSave(entry.id, { hours: parsed, description });
+    const ok = await onSave(entry.id, { hours: parsed, description: description.trim() });
     setSaving(false);
     if (ok && matOk) onOpenChange(false);
   };
@@ -174,7 +181,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
             </p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-desc">{t("auto.beskrivelse")}</Label>
+            <Label htmlFor="edit-desc">Beskrivelse *</Label>
             <Textarea
               id="edit-desc"
               value={description}
@@ -182,6 +189,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
               rows={3}
               onClick={(e) => e.stopPropagation()}
             />
+              {descError && !description.trim() && <p className="text-sm text-destructive">Beskrivelse må fylles ut</p>}
           </div>
 
           {/* Materialforbruk */}
