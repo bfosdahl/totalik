@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { FdvControl, FdvControlLog } from "@/types/fdv";
 import { toast } from "sonner";
-import { addMonths, isBefore, startOfDay } from "date-fns";
+import { addMonths } from "date-fns";
+import { isBeforeToday } from "@/lib/dateUtils";
 
 export function useFdvControls(buildingId?: string) {
   const { profile } = useAuth();
@@ -160,12 +161,11 @@ export function useFdvControls(buildingId?: string) {
   };
 
   // Calculate control stats
-  const today = startOfDay(new Date());
   const overdueControls = controls.filter(c => 
-    c.next_due_date && isBefore(new Date(c.next_due_date), today) && c.status !== 'utfort'
+    c.next_due_date && isBeforeToday(c.next_due_date) && c.status !== 'utfort'
   );
   const upcomingControls = controls.filter(c => 
-    c.next_due_date && !isBefore(new Date(c.next_due_date), today)
+    c.next_due_date && !isBeforeToday(c.next_due_date)
   );
 
   return {

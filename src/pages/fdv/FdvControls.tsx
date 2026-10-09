@@ -26,8 +26,8 @@ import { useFdvBuildings } from "@/hooks/useFdvBuildings";
 import { FdvControlDialog } from "@/components/fdv/FdvControlDialog";
 import { FdvCompleteControlDialog } from "@/components/fdv/FdvCompleteControlDialog";
 import { FdvControl, FDV_CONTROL_TYPE_LABELS } from "@/types/fdv";
-import { format, isBefore, startOfDay } from "date-fns";
-import { calendarDaysFromToday } from "@/lib/dateUtils";
+import { format } from "date-fns";
+import { calendarDaysFromToday, isBeforeToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
 
@@ -86,18 +86,16 @@ export default function FdvControls() {
     }
   };
 
-  const today = startOfDay(new Date());
   
   const getStatusBadge = (control: FdvControl) => {
     if (!control.next_due_date) return <Badge variant="outline">{t("auto.ikke_planlagt")}</Badge>;
     
-    const dueDate = new Date(control.next_due_date);
     const daysUntil = (calendarDaysFromToday(control.next_due_date) ?? 0);
     
     if (control.status === 'avvik') {
       return <Badge variant="destructive">{t("auto.avvik")}</Badge>;
     }
-    if (isBefore(dueDate, today)) {
+    if (isBeforeToday(control.next_due_date)) {
       return <Badge variant="destructive">{t("auto.forfalt")}</Badge>;
     }
     if (daysUntil <= 14) {
@@ -290,11 +288,11 @@ export default function FdvControls() {
           </TabsContent>
 
           <TabsContent value="upcoming" className="space-y-4 mt-4">
-            {controls.filter(c => c.next_due_date && !isBefore(new Date(c.next_due_date), today)).length === 0 ? (
+            {controls.filter(c => c.next_due_date && !isBeforeToday(c.next_due_date)).length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">{t("auto.ingen_kommende_kontroller")}</div>
             ) : (
               controls
-                .filter(c => c.next_due_date && !isBefore(new Date(c.next_due_date), today))
+                .filter(c => c.next_due_date && !isBeforeToday(c.next_due_date))
                 .map((control) => <ControlCard key={control.id} control={control} />)
             )}
           </TabsContent>

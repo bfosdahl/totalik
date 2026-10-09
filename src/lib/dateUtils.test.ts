@@ -1,4 +1,4 @@
-import { getLocalDateString, osloDateString, calendarDaysFromToday, relativeDayLabel } from "./dateUtils";
+import { getLocalDateString, osloDateString, calendarDaysFromToday, relativeDayLabel, isBeforeToday } from "./dateUtils";
 
 describe("getLocalDateString", () => {
   const originalTz = process.env.TZ;
@@ -53,4 +53,13 @@ describe("calendarDaysFromToday", () => {
   test("relativeDayLabel", () => {
     expect([0, -1, 3, -4].map(relativeDayLabel)).toEqual(["I dag", "I går", "Om 3 dager", "4 dager siden"]);
   });
+});
+
+describe("isBeforeToday", () => {
+  const now = new Date("2026-10-09T10:00:00Z"); // Oslo 9 Oct
+  test("yesterday is before today", () => expect(isBeforeToday("2026-10-08", now)).toBe(true));
+  test("today is not before today", () => expect(isBeforeToday("2026-10-09", now)).toBe(false));
+  test("tomorrow is not before today", () => expect(isBeforeToday("2026-10-10", now)).toBe(false));
+  test("null is false", () => expect(isBeforeToday(null, now)).toBe(false));
+  test("timestamp 23:30 Oslo yesterday is true", () => expect(isBeforeToday("2026-10-08T21:30:00Z", now)).toBe(true));
 });

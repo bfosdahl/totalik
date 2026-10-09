@@ -22,7 +22,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDepartmentContext } from "@/contexts/DepartmentContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { format, isPast, isToday } from "date-fns";
+import { format } from "date-fns";
+import { isBeforeToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import type { Json } from "@/integrations/supabase/types";
 import { t } from "@/i18n/t";
@@ -193,8 +194,7 @@ export function OppfolgingTab() {
     if (action.status === "utført") {
       return { label: t("auto.utfoert"), icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" };
     }
-    const deadlineDate = safeParseDate(action.deadline);
-    if (deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate)) {
+    if (isBeforeToday(action.deadline)) {
       return { label: t("auto.forfalt"), icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" };
     }
     if (action.status === "pågår") {
@@ -205,8 +205,7 @@ export function OppfolgingTab() {
 
   // Filter actions
   const filteredActions = actions.filter(action => {
-    const deadlineDate = safeParseDate(action.deadline);
-    const isOverdue = deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate) && action.status !== "utført";
+    const isOverdue = isBeforeToday(action.deadline) && action.status !== "utført";
     
     switch (filter) {
       case "åpne":
@@ -225,8 +224,7 @@ export function OppfolgingTab() {
     total: actions.length,
     open: actions.filter(a => a.status !== "utført").length,
     overdue: actions.filter(a => {
-      const deadlineDate = safeParseDate(a.deadline);
-      return a.status !== "utført" && deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate);
+      return a.status !== "utført" && isBeforeToday(a.deadline);
     }).length,
     completed: actions.filter(a => a.status === "utført").length,
   };
