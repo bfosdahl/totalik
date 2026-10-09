@@ -2,9 +2,9 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
 import { brandedEmail } from "../_shared/email-brand.ts";
 import { getTermsHtml, getTermsNoticeHtml } from "../_shared/terms-content.ts";
-import { loginBlockHtml } from "../_shared/default-password.ts";
+import { loginBlockHtml, DEFAULT_PASSWORD } from "../_shared/default-password.ts";
 import { escapeHtml } from "../_shared/html-escape.ts";
-import { guardedResendSend, guardedResendBatch, guardedResendFetch } from "../_shared/emailSuppression.ts";
+import { guardedResendSend, guardedResendBatch, guardedResendFetch, filterSuppressed } from "../_shared/emailSuppression.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,8 +44,22 @@ Deno.serve(async (req) => {
       : [];
     if (userIds.length === 0) return json({ error: "Ingen ansatte valgt" }, 400);
 
-    const { data: me } = await admin.from("profiles").select("company_id").eq("user_id", callerId).limit(1).maybeSingle();
-    const companyId = isSys && body?.companyId ? body.companyId : me?.company_id;
+    // Company scope: company admins are always limited to their own company.
+    // System admins use the companyId sent by the client, or else the (single) company of the selected users.
+    let companyId: string | undefined;
+    if (isSys) {
+      if (typeof body?.companyId === "string" && body.companyId) {
+        companyId = body.companyId;
+      } else {
+        const { data: tp } = await admin.from("profiles").select("company_id").in("user_id", userIds);
+        const ids = [...new Set((tp || []).map((r) => r.company_id).filter(Boolean))];
+        if (ids.length > 1) return json({ error: "Velg brukere fra én bedrift om gangen" }, 400);
+        companyId = ids[0];
+      }
+    } else {
+      const { data: me } = await admin.from("profiles").select("company_id").eq("user_id", callerId).limit(1).maybeSingle();
+      companyId = me?.company_id;
+    }
     if (!companyId) return json({ error: "Fant ikke bedrift" }, 400);
 
     const { data: company } = await admin.from("companies").select("name").eq("id", companyId).single();
@@ -57,6 +71,13 @@ Deno.serve(async (req) => {
       .eq("company_id", companyId)
       .in("user_id", userIds);
 
+    // Never let a non-system admin reset a system admin's password.
+    const { data: sysRows } = await admin.from("user_roles").select("user_id").eq("role", "system_admin").in("user_id", userIds);
+    const sysTargets = new Set((sysRows || []).map((r) => r.user_id));
+    // Skip bounced/complained addresses before touching their password.
+    const { skipped: suppressed } = await filterSuppressed(admin, targets || [], (t) => t.email);
+    const suppressedSet = new Set(suppressed);
+
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (!resendKey) return json({ error: "E-posttjenesten er ikke satt opp" }, 500);
     const resend = new Resend(resendKey);
@@ -64,13 +85,12 @@ Deno.serve(async (req) => {
     let sent = 0;
     const failed: string[] = [];
     for (const p of targets || []) {
-      if (!p.email || p.is_active === false) { failed.push(p.email || p.user_id); continue; }
+      if (!p.email || p.is_active === false || (!isSys && sysTargets.has(p.user_id)) || suppressedSet.has(p.email.trim().toLowerCase())) { failed.push(p.email || p.user_id); continue; }
       try {
-        const { data: link } = await admin.auth.admin.generateLink({
-          type: "recovery", email: p.email, options: { redirectTo: "https://totalik.no/auth" },
-        });
-        const resetLink = link?.properties?.action_link || "https://totalik.no/auth";
-        const { error } = await guardedResendSend(admin, "send-user-invitations", resend, {
+        // The email prints DEFAULT_PASSWORD, so actually set it (same as send-single-welcome-email).
+        const { error: pwErr } = await admin.auth.admin.updateUserById(p.user_id, { password: DEFAULT_PASSWORD });
+        if (pwErr) throw pwErr;
+        const sendRes = await guardedResendSend(admin, "send-user-invitations", resend, {
           from: "Total-IK <noreply@totalik.no>",
           to: [p.email],
           subject: `Velkommen til ${companyName} - Din konto er opprettet`,
@@ -79,13 +99,14 @@ Deno.serve(async (req) => {
             bodyHtml: `
               <p style="margin:0 0 14px 0;">Hei ${escapeHtml(p.first_name || "")},</p>
               <p style="margin:0 0 14px 0;">Du har f&aring;tt tilgang til HMS- og kvalitetssystemet til <strong>${escapeHtml(companyName)}</strong> i Total IK.</p>
-              ${loginBlockHtml(p.email, resetLink)}
+              ${loginBlockHtml(p.email)}
               ${getTermsNoticeHtml()}
               ${getTermsHtml()}
               <p style="margin:18px 0 0 0;color:#6B7280;font-size:13px;">Ved &aring; logge inn bekrefter du at du har lest og godtar avtalevilk&aring;rene ovenfor.</p>`,
           }),
         });
-        if (error) throw error;
+        if (sendRes?.error) throw sendRes.error;
+        if (sendRes?.skipped) throw new Error("suppressed");
         await admin.from("profiles")
           .update({ invitation_sent_at: new Date().toISOString(), invitation_sent_by: callerId })
           .eq("user_id", p.user_id);
