@@ -14,7 +14,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import { format, isPast } from "date-fns";
-import { calendarDaysFromToday } from "@/lib/dateUtils";
+import { calendarDaysFromToday, isBeforeToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { EmployeeCourse } from "@/hooks/useEmployees";
 import { Button } from "@/components/ui/button";

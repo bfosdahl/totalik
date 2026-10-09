@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { FdvControl, FdvControlLog } from "@/types/fdv";
 import { toast } from "sonner";
 import { addMonths, isBefore, startOfDay } from "date-fns";
+import { isBeforeToday } from "@/lib/dateUtils";
 
 export function useFdvControls(buildingId?: string) {
   const { profile } = useAuth();

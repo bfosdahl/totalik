@@ -14,8 +14,8 @@ import { Search, Users, GraduationCap, FileText, AlertCircle, ChevronRight, Cred
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployees } from "@/hooks/useEmployees";
 import { EmployeeDetailDialog } from "@/components/employees/EmployeeDetailDialog";
-import { format, isPast } from "date-fns";
-import { calendarDaysFromToday } from "@/lib/dateUtils";
+import { format } from "date-fns";
+import { calendarDaysFromToday, isBeforeToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";

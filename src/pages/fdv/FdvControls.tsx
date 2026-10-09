@@ -27,7 +27,7 @@ import { FdvControlDialog } from "@/components/fdv/FdvControlDialog";
 import { FdvCompleteControlDialog } from "@/components/fdv/FdvCompleteControlDialog";
 import { FdvControl, FDV_CONTROL_TYPE_LABELS } from "@/types/fdv";
 import { format, isBefore, startOfDay } from "date-fns";
-import { calendarDaysFromToday } from "@/lib/dateUtils";
+import { calendarDaysFromToday, isBeforeToday } from "@/lib/dateUtils";
 import { nb } from "date-fns/locale";
 import { t } from "@/i18n/t";
 
