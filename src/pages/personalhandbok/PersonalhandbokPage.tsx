@@ -58,6 +58,7 @@ const PersonalhandbokPage = () => {
   const [confirmations, setConfirmations] = useState<any[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const isAdmin = isCompanyAdmin || isSystemAdmin;
 
@@ -80,13 +81,9 @@ const PersonalhandbokPage = () => {
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
-        setChapters(data as Chapter[]);
-        if (!selectedChapter) setSelectedChapter(data[0] as Chapter);
-      } else {
-        // Seed default chapters
-        await seedDefaultChapters();
-      }
+      // Skriver aldri ved sidevisning – tom liste viser tom-tilstand.
+      setChapters((data || []) as Chapter[]);
+      if (data && data.length > 0 && !selectedChapter) setSelectedChapter(data[0] as Chapter);
     } catch (error) {
       console.error("Error fetching chapters:", error);
       toast.error(t("auto.kunne_ikke_laste_kapitler"));
@@ -95,10 +92,22 @@ const PersonalhandbokPage = () => {
     }
   };
 
-  const seedDefaultChapters = async () => {
+  const handleSeedClick = async () => {
+    if (!isAdmin || seeding || !company?.id) return;
+    setSeeding(true);
     try {
+      // Sjekk på nytt rett før innsetting at firmaet fortsatt har 0 kapitler.
+      const { count, error: countError } = await supabase
+        .from("personalhandbok_chapters")
+        .select("id", { count: "exact", head: true })
+        .eq("company_id", company.id);
+      if (countError) throw countError;
+      if ((count ?? 0) > 0) {
+        await fetchChapters();
+        return;
+      }
       const chaptersToInsert = defaultPersonalhandbokChapters.map(ch => ({
-        company_id: company!.id,
+        company_id: company.id,
         title: ch.title,
         slug: ch.slug,
         content: ch.content,
@@ -115,12 +124,17 @@ const PersonalhandbokPage = () => {
         .select();
 
       if (error) throw error;
-      if (data) {
-        setChapters(data as Chapter[]);
-        setSelectedChapter(data[0] as Chapter);
+      if (data && data.length > 0) {
+        const sorted = [...(data as Chapter[])].sort((a, b) => a.sort_order - b.sort_order);
+        setChapters(sorted);
+        setSelectedChapter(sorted[0]);
       }
+      toast.success("Personalhåndboken er opprettet");
     } catch (error) {
       console.error("Error seeding chapters:", error);
+      toast.error("Kunne ikke opprette personalhåndboken");
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -256,6 +270,32 @@ const PersonalhandbokPage = () => {
 
   const currentVersion = Math.max(...chapters.map(c => c.version), 1);
   const hasConfirmedCurrentVersion = confirmation && confirmation.handbook_version >= currentVersion;
+
+  if (!loading && chapters.length === 0) {
+    return (
+      <AppLayout>
+        <div className="max-w-3xl mx-auto p-4 md:p-6">
+          <Card>
+            <CardContent className="py-12 text-center space-y-4">
+              <BookOpen className="w-10 h-10 mx-auto text-muted-foreground/60" />
+              {isAdmin ? (
+                <>
+                  <p className="font-medium">Personalhåndboken er ikke satt opp ennå</p>
+                  <Button onClick={handleSeedClick} disabled={seeding}>
+                    {seeding ? "Oppretter…" : "Opprett standard personalhåndbok"}
+                  </Button>
+                </>
+              ) : (
+                <p className="text-muted-foreground">
+                  Personalhåndboken er ikke satt opp ennå. Be en administrator om å opprette den.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
