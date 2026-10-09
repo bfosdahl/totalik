@@ -36,6 +36,13 @@
       "when": 1791492490570,
       "tag": "0004_email_suppression_rpc_refine",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791545519609,
+      "tag": "0005_add_updated_at_to_user_departments",
+      "breakpoints": true
     }
   ]
 }
