@@ -280,6 +280,10 @@ export function NewTimeEntryDialog({
       return;
     }
 
+    // KS-valget vises kun når bedriften har IK_BYGG og aktive prosjekter.
+    // Uten valget er fritekstfeltet eneste måte å oppgi prosjekt på.
+    const showsKsSelect = hasKsBygg && activeProjects.length > 0;
+
     let projectName: string | undefined;
     let projectId: string | undefined;
     let ksProjectId: string | undefined;
@@ -297,8 +301,8 @@ export function NewTimeEntryDialog({
         ksProjectId = selectedProject.id;
         if (!projectNumber) resolvedProjectNumber = selectedProject.project_number || "";
       }
-    } else if (useCustomProject && customProjectName) {
-      projectName = customProjectName;
+    } else if ((useCustomProject || !showsKsSelect) && customProjectName.trim()) {
+      projectName = customProjectName.trim();
     }
 
     // Påkrevd prosjekt: enten KS-prosjekt eller fritekst-prosjekt
