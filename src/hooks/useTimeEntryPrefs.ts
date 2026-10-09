@@ -13,6 +13,7 @@ export interface TimeEntryPrefs {
   lastEndTime?: string;
   lastHours?: string;
   lastHourType?: string;
+  lastBreakMinutes?: number;
   /** projectId (eller fritekstnavn) -> antall ganger brukt */
   projectCounts: Record<string, number>;
   /** materialtype-id -> antall ganger brukt */
@@ -87,6 +88,7 @@ export function useTimeEntryPrefs() {
       endTime?: string;
       hours?: string;
       hourType?: string;
+      breakMinutes?: number;
       description?: string;
       materialTypeIds?: string[];
       allowanceTypeIds?: string[];
@@ -125,6 +127,7 @@ export function useTimeEntryPrefs() {
         lastEndTime: input.endTime || current.lastEndTime,
         lastHours: input.hours || current.lastHours,
         lastHourType: input.hourType || current.lastHourType,
+        lastBreakMinutes: input.breakMinutes ?? current.lastBreakMinutes,
         projectCounts: counts,
         materialCounts,
         allowanceCounts,

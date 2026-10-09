@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { workedHoursFromSpan, breakFromSpan, endTimeFor } from "@/utils/timeCalc";
+import { HourQuickPicks } from "./HourQuickPicks";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { CalendarIcon, Clock, FolderOpen, FileText, Plus, Trash2, Building2, Zap, Save, Package } from "lucide-react";
@@ -91,6 +93,8 @@ export function NewTimeEntryDialog({
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [hours, setHours] = useState("");
+  const [breakMin, setBreakMin] = useState("0");
+  const breakNum = Math.max(0, parseInt(breakMin, 10) || 0);
   const [hourType, setHourType] = useState<HourType>("normal");
   const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProjectId || "");
   const [customProjectName, setCustomProjectName] = useState("");
@@ -153,8 +157,21 @@ export function NewTimeEntryDialog({
   const applyTimes = (from: string, to: string) => {
     setStartTime(from);
     setEndTime(to);
-    const diff = calcHoursBetween(from, to);
-    if (diff > 0) setHours(diff.toFixed(2));
+    const w = workedHoursFromSpan(from, to, breakNum);
+    if (w > 0) setHours(String(w));
+  };
+
+  const recalcFromSpan = (from: string, to: string, br: number) => {
+    if (from && to) {
+      const w = workedHoursFromSpan(from, to, br);
+      if (w > 0) setHours(String(w));
+    }
+  };
+
+  const pickHours = (h: number) => {
+    setHours(String(h));
+    if (startTime) setEndTime(endTimeFor(startTime, h, breakNum));
+    else setEndTime("");
   };
 
   // Utkast-lagring: tar vare på påbegynt føring hvis dialogen lukkes
@@ -218,9 +235,11 @@ export function NewTimeEntryDialog({
     // Forhåndsfyll med brukerens vanlige valg (lagret lokalt)
     setStartTime(prefs.lastStartTime || "");
     setEndTime(prefs.lastEndTime || "");
+    const initBreak = Math.max(0, Number(prefs.lastBreakMinutes) || 0);
+    setBreakMin(String(initBreak));
     setHours(
       prefs.lastStartTime && prefs.lastEndTime
-        ? (calcHoursBetween(prefs.lastStartTime, prefs.lastEndTime) || 0).toFixed(2)
+        ? String(workedHoursFromSpan(prefs.lastStartTime, prefs.lastEndTime, initBreak))
         : String(standardHours)
     );
     setHourType(((prefs.lastHourType as HourType) || "normal") as HourType);
@@ -422,6 +441,7 @@ export function NewTimeEntryDialog({
       endTime: endTime || undefined,
       hours: hours || undefined,
       hourType,
+      breakMinutes: breakNum,
       description: description.trim() || undefined,
       materialTypeIds: materialRows.map((r) => r.typeId).filter(Boolean),
       allowanceTypeIds: allowanceRows.map((r) => r.typeId).filter(Boolean),
@@ -664,18 +684,6 @@ export function NewTimeEntryDialog({
               variant="outline"
               size="sm"
               onClick={() => {
-                setHours(String(standardHours));
-                setStartTime("");
-                setEndTime("");
-              }}
-            >
-              {String(standardHours).replace(".", ",")} timer
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
                 applyTimes("07:00", "15:00");
                 setHourType("normal");
                 if (!description.trim()) setDescription("Reisedag");
@@ -696,18 +704,17 @@ export function NewTimeEntryDialog({
             </Button>
           </div>
 
-          {/* Tid fra-til + total timer */}
-          <div className="grid grid-cols-3 gap-3">
+          <HourQuickPicks value={hours} onPick={pickHours} />
+
+          {/* Tid fra-til + pause + total timer */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="space-y-2">
               <Label>{t("auto.fra")}</Label>
               <TimeInput24
                 value={startTime}
                 onChange={(v) => {
                   setStartTime(v);
-                  if (v && endTime) {
-                    const diff = calcHoursBetween(v, endTime);
-                    if (diff > 0) setHours(diff.toFixed(2));
-                  }
+                  recalcFromSpan(v, endTime, breakNum);
                 }}
               />
             </div>
@@ -717,12 +724,30 @@ export function NewTimeEntryDialog({
                 value={endTime}
                 onChange={(v) => {
                   setEndTime(v);
-                  if (startTime && v) {
-                    const diff = calcHoursBetween(startTime, v);
-                    if (diff > 0) setHours(diff.toFixed(2));
-                  }
+                  recalcFromSpan(startTime, v, breakNum);
                 }}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Pause (min)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="5"
+                value={breakMin}
+                onChange={(e) => {
+                  setBreakMin(e.target.value);
+                  recalcFromSpan(startTime, endTime, Math.max(0, parseInt(e.target.value, 10) || 0));
+                }}
+              />
+              <div className="flex flex-wrap gap-1">
+                <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setBreakMin("0"); recalcFromSpan(startTime, endTime, 0); }}>
+                  Ingen pause
+                </Button>
+                <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setBreakMin("30"); recalcFromSpan(startTime, endTime, 30); }}>
+                  30 min
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>{t("auto.timer")}</Label>
@@ -735,7 +760,12 @@ export function NewTimeEntryDialog({
                   max="24"
                   placeholder={String(standardHours)}
                   value={hours}
-                  onChange={(e) => setHours(e.target.value)}
+                  onChange={(e) => {
+                    setHours(e.target.value);
+                    if (startTime && endTime) {
+                      setBreakMin(String(breakFromSpan(startTime, endTime, parseFloat(e.target.value) || 0)));
+                    }
+                  }}
                   className="pl-10"
                 />
               </div>
