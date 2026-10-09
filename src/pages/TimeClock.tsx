@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ongoingBreakMinutes } from "@/utils/timeCalc";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -32,6 +34,7 @@ export default function TimeClock() {
   const [qrCodeName, setQrCodeName] = useState<string | null>(null);
   const [qrCodeId, setQrCodeId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [removeBreak, setRemoveBreak] = useState(false);
   const [processing, setProcessing] = useState(false);
   const { data: projectOptions = [] } = useProjectOptions();
   const { settings } = useKsModule2Settings();
@@ -74,8 +77,11 @@ export default function TimeClock() {
     if (type === "in") {
       await clockIn(qrCodeId || undefined, geo);
     } else {
-      const ok = await clockOut(notes || undefined, geo);
-      if (ok) setNotes("");
+      const ok = await clockOut(notes || undefined, geo, { removeBreak });
+      if (ok) {
+        setNotes("");
+        setRemoveBreak(false);
+      }
     }
     setProcessing(false);
   };
@@ -281,12 +287,31 @@ export default function TimeClock() {
                 </div>
               )}
 
+              {activeEntry && ((activeEntry.total_break_minutes || 0) > 0 || isOnBreak) && (
+                <div className="rounded-lg border p-3 space-y-2 text-sm">
+                  <div>
+                    Registrert pause:{" "}
+                    {(activeEntry.total_break_minutes || 0) +
+                      ongoingBreakMinutes(activeEntry.break_start, activeEntry.break_end, new Date())}{" "}
+                    min
+                  </div>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={removeBreak}
+                      onCheckedChange={(v) => setRemoveBreak(v === true)}
+                      className="mt-0.5"
+                    />
+                    <span>Jeg jobbet uten pause (fjern pausen)</span>
+                  </label>
+                </div>
+              )}
+
               <Button
                 size="lg"
                 className="w-full h-14 text-lg"
                 variant="destructive"
                 onClick={handleClockOut}
-                disabled={processing || isOnBreak}
+                disabled={processing}
               >
                 <LogOut className="mr-2 h-5 w-5" />
                 {processing ? "Stempler ut..." : "Stemple ut"}

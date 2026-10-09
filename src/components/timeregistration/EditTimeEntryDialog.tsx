@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { HourQuickPicks } from "./HourQuickPicks";
 import { safeFormatDate } from "@/utils/safeFormatDate";
 import {
   Dialog,
@@ -167,6 +168,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry, onSave }: EditT
               onChange={(e) => setHours(e.target.value)}
               onClick={(e) => e.stopPropagation()}
             />
+            <HourQuickPicks value={hours} onPick={(h) => setHours(String(h))} />
             <p className="text-xs text-muted-foreground">
               {t("auto.maks_24_timer_per_doegn_bruk_0_25_i_oekn")}
             </p>

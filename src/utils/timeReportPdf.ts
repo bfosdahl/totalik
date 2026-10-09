@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { breakFromSpan } from "@/utils/timeCalc";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -61,16 +62,7 @@ function durationCell(e: TimeReportEntry): string {
 /** Pause i minutter: registrert pause, ellers utledet av fra/til minus timer */
 export function breakMinutes(e: TimeReportEntry): number {
   if (e.total_break_minutes != null) return Number(e.total_break_minutes) || 0;
-  const from = fmtTime(e.start_time);
-  const to = fmtTime(e.end_time);
-  if (!from || !to) return 0;
-  const [fh, fm] = from.split(":").map(Number);
-  const [th, tm] = to.split(":").map(Number);
-  let span = th * 60 + tm - (fh * 60 + fm);
-  if (span < 0) span += 24 * 60;
-  const worked = (Number(e.hours) || 0) * 60;
-  const diff = Math.round(span - worked);
-  return diff > 0 && diff <= 180 ? diff : 0;
+  return breakFromSpan(fmtTime(e.start_time), fmtTime(e.end_time), Number(e.hours) || 0);
 }
 
 /** "50%", "100%", "50% / 100%" eller tom */

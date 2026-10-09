@@ -196,7 +196,7 @@ export function useEmploymentContracts() {
           working_hours_per_week: formData.working_hours_per_week || 37.5,
           working_hours_per_day: formData.working_hours_per_day || null,
           work_time_arrangement: formData.work_time_arrangement || 'normal',
-          break_duration_minutes: formData.break_duration_minutes || 30,
+          break_duration_minutes: formData.break_duration_minutes ?? 30,
           variable_working_hours: formData.variable_working_hours || false,
           variable_hours_description: formData.variable_hours_description || null,
           shift_change_rules: formData.shift_change_rules || null,

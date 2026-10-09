@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { HourQuickPicks } from "@/components/timeregistration/HourQuickPicks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Plus, Trash2, Loader2, Edit2, Save, X } from "lucide-react";
@@ -248,6 +249,7 @@ export function SimpleProjectTimesheet({ projectId }: SimpleProjectTimesheetProp
                   value={formData.hours}
                   onChange={(e) => setFormData((prev) => ({ ...prev, hours: e.target.value }))}
                 />
+                <HourQuickPicks value={formData.hours} onPick={(h) => setFormData((prev) => ({ ...prev, hours: String(h) }))} />
               </div>
             </div>
             <div className="space-y-2">

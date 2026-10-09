@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { clockWorkedHours, ongoingBreakMinutes } from "@/utils/timeCalc";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ export interface TimeClockEntry {
   break_start: string | null;
   break_end: string | null;
   total_break_minutes: number | null;
+  break_paid?: boolean | null;
   project_id?: string | null;
   clock_in_lat?: number | null;
   clock_in_lng?: number | null;
@@ -187,7 +189,11 @@ export function useTimeClock() {
     }
   };
 
-  const clockOut = async (notes?: string, geo?: GeofenceClockInfo): Promise<boolean> => {
+  const clockOut = async (
+    notes?: string,
+    geo?: GeofenceClockInfo,
+    opts?: { removeBreak?: boolean }
+  ): Promise<boolean> => {
     if (!activeEntry) {
       toast.error("Du er ikke stemplet inn");
       return false;
@@ -195,14 +201,19 @@ export function useTimeClock() {
 
     try {
       const clockOut = new Date();
-      const clockIn = new Date(activeEntry.clock_in);
-      const hoursWorked = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60 * 60);
+      const running = ongoingBreakMinutes(activeEntry.break_start, activeEntry.break_end, clockOut);
+      const closedBreak = !!activeEntry.break_start && !activeEntry.break_end;
+      const totalBreak = opts?.removeBreak ? 0 : (activeEntry.total_break_minutes || 0) + running;
+      const subtract = activeEntry.break_paid === true ? 0 : totalBreak;
+      const hoursWorked = clockWorkedHours(activeEntry.clock_in, clockOut.toISOString(), subtract);
 
       const { error } = await supabase
         .from("time_clock_entries")
         .update({
           clock_out: clockOut.toISOString(),
-          hours_worked: Math.round(hoursWorked * 100) / 100,
+          hours_worked: hoursWorked,
+          total_break_minutes: totalBreak,
+          ...(closedBreak ? { break_end: clockOut.toISOString() } : {}),
           notes: notes || null,
           status: "completed",
           clock_out_lat: geo?.lat ?? null,
