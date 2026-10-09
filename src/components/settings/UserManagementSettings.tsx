@@ -166,13 +166,13 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
       const { data: deptAdmins } = await supabase
         .from("user_departments")
         .select("user_id, department_id, is_department_admin")
-        .in("user_id", userIds)
+        .in("user_id", profiles?.map(p => p.id) || [])
         .eq("is_department_admin", true);
 
       // Combine profile and role data
       const usersWithRoles: CompanyUser[] = (profiles || []).map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.user_id);
-        const userDeptAdmins = deptAdmins?.filter(d => d.user_id === profile.user_id) || [];
+        const userDeptAdmins = deptAdmins?.filter(d => d.user_id === profile.id) || [];
         const isDeptAdmin = userDeptAdmins.length > 0;
         
         // Determine role priority: system_admin > company_admin > department_admin > user
@@ -372,7 +372,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
         await supabase
           .from("user_departments")
           .update({ is_department_admin: false })
-          .eq("user_id", selectedUser.user_id);
+          .eq("user_id", selectedUser.id);
 
         // Add new role based on selection
         if (editForm.role === "company_admin") {
@@ -388,7 +388,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           const { data: existing } = await supabase
             .from("user_departments")
             .select("id")
-            .eq("user_id", selectedUser.user_id)
+            .eq("user_id", selectedUser.id)
             .eq("department_id", editForm.departmentId)
             .maybeSingle();
 
@@ -401,7 +401,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             await supabase
               .from("user_departments")
               .insert({
-                user_id: selectedUser.user_id,
+                user_id: selectedUser.id,
                 department_id: editForm.departmentId,
                 is_department_admin: true,
               });
@@ -416,7 +416,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             await supabase
               .from("user_departments")
               .update({ is_department_admin: false })
-              .eq("user_id", selectedUser.user_id)
+              .eq("user_id", selectedUser.id)
               .eq("department_id", currentDeptId);
           }
           
@@ -424,7 +424,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           const { data: existing } = await supabase
             .from("user_departments")
             .select("id")
-            .eq("user_id", selectedUser.user_id)
+            .eq("user_id", selectedUser.id)
             .eq("department_id", editForm.departmentId)
             .maybeSingle();
 
@@ -437,7 +437,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
             await supabase
               .from("user_departments")
               .insert({
-                user_id: selectedUser.user_id,
+                user_id: selectedUser.id,
                 department_id: editForm.departmentId,
                 is_department_admin: true,
               });

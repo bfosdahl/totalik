@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { workedHoursFromSpan, breakFromSpan, endTimeFor } from "@/utils/timeCalc";
 import { HourQuickPicks } from "./HourQuickPicks";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimeInput24 } from "@/components/ui/time-input-24";
@@ -198,7 +199,7 @@ export function AdminEditTimeEntryDialog({ open, onOpenChange, entry, onSaved }:
                   recalc(startTime, endTime, Math.max(0, parseInt(e.target.value, 10) || 0));
                 }}
               />
-              <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { setBreakMin("0"); recalc(startTime, endTime, 0); }}>
+              <Button type="button" variant="outline" size="sm" aria-pressed={breakNum === 0} className={cn("mt-1 h-7 rounded-full px-3 text-xs", breakNum === 0 && "bg-primary/10 border-primary text-primary")} onClick={() => { setBreakMin("0"); recalc(startTime, endTime, 0); }}>
                 Ingen pause
               </Button>
             </div>
