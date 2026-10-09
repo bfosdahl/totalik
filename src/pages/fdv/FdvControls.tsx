@@ -91,13 +91,12 @@ export default function FdvControls() {
   const getStatusBadge = (control: FdvControl) => {
     if (!control.next_due_date) return <Badge variant="outline">{t("auto.ikke_planlagt")}</Badge>;
     
-    const dueDate = new Date(control.next_due_date);
     const daysUntil = (calendarDaysFromToday(control.next_due_date) ?? 0);
     
     if (control.status === 'avvik') {
       return <Badge variant="destructive">{t("auto.avvik")}</Badge>;
     }
-    if (isBefore(dueDate, today)) {
+    if (isBeforeToday(control.next_due_date)) {
       return <Badge variant="destructive">{t("auto.forfalt")}</Badge>;
     }
     if (daysUntil <= 14) {
