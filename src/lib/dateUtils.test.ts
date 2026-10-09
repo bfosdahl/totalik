@@ -1,4 +1,4 @@
-import { getLocalDateString } from "./dateUtils";
+import { getLocalDateString, osloDateString, calendarDaysFromToday, relativeDayLabel } from "./dateUtils";
 
 describe("getLocalDateString", () => {
   const originalTz = process.env.TZ;
@@ -21,7 +21,6 @@ describe("getLocalDateString", () => {
   });
 });
 
-import { osloDateString, calendarDaysFromToday, relativeDayLabel } from "./dateUtils";
 
 describe("calendarDaysFromToday", () => {
   test("23:30 Oslo 8 Oct → 10 Oct is 2 days", () => {
