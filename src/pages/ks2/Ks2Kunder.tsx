@@ -532,6 +532,9 @@ export default function Ks2Kunder() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {companyId && (
+        <CustomerImportDialog open={importOpen} onOpenChange={setImportOpen} companyId={companyId} existing={customers} />
+      )}
     </AppLayout>
   );
 }
