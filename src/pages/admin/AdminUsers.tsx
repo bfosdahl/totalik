@@ -90,6 +90,7 @@ export default function AdminUsers() {
 
   const [isBulkImportDialogOpen, setIsBulkImportDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isWelcomeDialogOpen, setIsWelcomeDialogOpen] = useState(false);
   const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
   
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -371,6 +372,28 @@ export default function AdminUsers() {
       toast({
         title: t("auto.e_post_endret"),
         description: `Brukeren logger nå inn med ${data.email}`,
+      });
+    },
+    onError: (error) => {
+      toast({ title: t("auto.feil"), description: error.message, variant: "destructive" });
+    },
+  });
+
+  const sendWelcomeMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const { data, error } = await supabase.functions.invoke("send-single-welcome-email", {
+        body: { email },
+      });
+      if (error) throw new Error(await readEdgeFunctionError(error, "Kunne ikke sende velkomstmail"));
+      if (data?.error) throw new Error(data.error);
+      return data as { success: boolean; email: string };
+    },
+    onSuccess: (data) => {
+      setIsWelcomeDialogOpen(false);
+      setSelectedUser(null);
+      toast({
+        title: "Velkomstmail sendt",
+        description: `Sendt til ${data?.email}. Passordet er satt til standardpassordet.`,
       });
     },
     onError: (error) => {
@@ -819,6 +842,17 @@ export default function AdminUsers() {
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
+                              disabled={!profile.email || !profile.is_active}
+                              onClick={() => {
+                                setSelectedUser(profile);
+                                setIsWelcomeDialogOpen(true);
+                              }}
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Send velkomstmail
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
                               onClick={() =>
                                 toggleActiveMutation.mutate({
                                   userId: profile.user_id,
@@ -954,6 +988,19 @@ export default function AdminUsers() {
                     </Button>
                   </div>
                   <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 sm:flex-none"
+                      disabled={!profile.email || !profile.is_active}
+                      onClick={() => {
+                        setSelectedUser(profile);
+                        setIsWelcomeDialogOpen(true);
+                      }}
+                    >
+                      <Mail className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Velkomstmail</span>
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1421,6 +1468,50 @@ export default function AdminUsers() {
                     disabled={newPassword.length < 6 || resetPasswordMutation.isPending}
                   >
                     {resetPasswordMutation.isPending ? "Oppdaterer..." : "Endre passord"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Send welcome email confirmation dialog */}
+        <Dialog open={isWelcomeDialogOpen} onOpenChange={setIsWelcomeDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl">Send velkomstmail</DialogTitle>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4 mt-4">
+                <p className="text-xs sm:text-sm leading-relaxed">
+                  Send velkomstmail med innloggingsinfo til{" "}
+                  <span className="font-medium">
+                    {selectedUser.first_name} {selectedUser.last_name}
+                  </span>{" "}
+                  ({selectedUser.email}){selectedUser.companies?.name ? ` i ${selectedUser.companies.name}` : ""}?
+                </p>
+                <div className="p-3 sm:p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <p className="text-xs sm:text-sm font-medium">
+                    Passordet tilbakestilles til standardpassordet, og brukeren får en e-post med innloggingsinfo.
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                    Et eventuelt passord brukeren har satt selv, slutter å virke.
+                  </p>
+                </div>
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsWelcomeDialogOpen(false)}
+                    className="w-full sm:w-auto"
+                  >
+                    {t("auto.avbryt")}
+                  </Button>
+                  <Button
+                    onClick={() => sendWelcomeMutation.mutate(selectedUser.email)}
+                    disabled={sendWelcomeMutation.isPending || !selectedUser.email}
+                    className="w-full sm:w-auto"
+                  >
+                    {sendWelcomeMutation.isPending ? "Sender..." : "Send velkomstmail"}
                   </Button>
                 </div>
               </div>

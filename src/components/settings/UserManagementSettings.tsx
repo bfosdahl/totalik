@@ -96,6 +96,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
   const [createDirectDialogOpen, setCreateDirectDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pendingInviteIds, setPendingInviteIds] = useState<string[] | null>(null);
   const [selectedUser, setSelectedUser] = useState<CompanyUser | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -549,7 +550,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
     if (!ids.length) return;
     setSendingInvites(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-user-invitations", { body: { userIds: ids } });
+      const { data, error } = await supabase.functions.invoke("send-user-invitations", { body: { userIds: ids, companyId: company?.id } });
       if (error) {
         let msg = "Kunne ikke sende invitasjon";
         try { const j = await (error as any).context?.json?.(); msg = j?.error || msg; } catch { /* ignore */ }
@@ -738,7 +739,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
               </Button>
             ))}
             {selectedIds.size > 0 && (
-              <Button size="sm" className="ml-auto" disabled={sendingInvites} onClick={() => sendInvitations([...selectedIds])}>
+              <Button size="sm" className="ml-auto" disabled={sendingInvites} onClick={() => setPendingInviteIds([...selectedIds])}>
                 {sendingInvites ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
                 Send invitasjon til valgte ({selectedIds.size})
               </Button>
@@ -834,7 +835,7 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         {companyUser.is_active && (
-                          <DropdownMenuItem onClick={() => sendInvitations([companyUser.user_id])}>
+                          <DropdownMenuItem onClick={() => setPendingInviteIds([companyUser.user_id])}>
                             <Mail className="w-4 h-4 mr-2" />
                             {inviteState(companyUser) === "not_invited" ? "Send invitasjon" : "Send brukerinfo på nytt"}
                           </DropdownMenuItem>
@@ -1284,6 +1285,33 @@ export function UserManagementSettings({ onBack }: UserManagementSettingsProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Invitation confirmation dialog */}
+      <AlertDialog open={!!pendingInviteIds} onOpenChange={(open) => { if (!open) setPendingInviteIds(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Send innloggingsinfo til {pendingInviteIds?.length ?? 0} {pendingInviteIds?.length === 1 ? "bruker" : "brukere"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Passordet tilbakestilles til standardpassordet, og hver bruker får en e-post med innloggingsinfo. Et passord brukeren har satt selv, slutter å virke.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("auto.avbryt")}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={sendingInvites}
+              onClick={() => {
+                const ids = pendingInviteIds || [];
+                setPendingInviteIds(null);
+                sendInvitations(ids);
+              }}
+            >
+              Send
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
