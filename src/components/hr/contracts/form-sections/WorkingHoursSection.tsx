@@ -75,7 +75,12 @@ export function WorkingHoursSection({ formData, onChange }: WorkingHoursSectionP
             min={0}
             max={120}
             value={formData.break_duration_minutes}
-            onChange={(e) => onChange({ break_duration_minutes: parseInt(e.target.value) || 30 })}
+            onChange={(e) => {
+              const raw = e.target.value.trim();
+              if (raw === "") return onChange({ break_duration_minutes: 0 });
+              const n = parseInt(raw, 10);
+              if (Number.isFinite(n) && n >= 0) onChange({ break_duration_minutes: n });
+            }}
           />
         </div>
       </div>

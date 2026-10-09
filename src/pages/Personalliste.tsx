@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { clockWorkedHours, ongoingBreakMinutes } from "@/utils/timeCalc";
 import { format, formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Clock, Users, UserPlus, Settings as SettingsIcon, Printer, RefreshCw, ShieldCheck, Coffee, LogOut, FileArchive, ArrowLeft } from "lucide-react";
@@ -425,11 +426,26 @@ function GuestWorkerPanel({ companyId, activeEntries }: { companyId: string; act
 
   const clockOutGuest = async (id: string) => {
     const clockOut = new Date();
-    const { data: entry } = await supabase.from("time_clock_entries").select("clock_in").eq("id", id).maybeSingle();
-    const hours = entry ? (clockOut.getTime() - new Date(entry.clock_in).getTime()) / 3_600_000 : null;
+    const { data: entry } = await supabase
+      .from("time_clock_entries")
+      .select("clock_in, break_start, break_end, total_break_minutes, break_paid")
+      .eq("id", id)
+      .maybeSingle();
+    const running = entry ? ongoingBreakMinutes(entry.break_start, entry.break_end, clockOut) : 0;
+    const closedBreak = !!entry?.break_start && !entry?.break_end;
+    const totalBreak = (entry?.total_break_minutes || 0) + running;
+    const hours = entry
+      ? clockWorkedHours(entry.clock_in, clockOut.toISOString(), entry.break_paid === true ? 0 : totalBreak)
+      : null;
     const { error } = await supabase
       .from("time_clock_entries")
-      .update({ clock_out: clockOut.toISOString(), status: "completed", hours_worked: hours ? Math.round(hours * 100) / 100 : null } as any)
+      .update({
+        clock_out: clockOut.toISOString(),
+        status: "completed",
+        hours_worked: hours ? hours : null,
+        ...(entry ? { total_break_minutes: totalBreak } : {}),
+        ...(closedBreak ? { break_end: clockOut.toISOString() } : {}),
+      } as any)
       .eq("id", id);
     if (error) {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
